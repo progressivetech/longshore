@@ -1,0 +1,27 @@
+# This is a comment
+FROM debian:jessie 
+MAINTAINER Jamie McClelland <jamie@progressivetech.org>
+RUN apt-get update && \
+  export DEBIAN_FRONTEND=noninteractive && \
+  apt-get install --no-install-recommends -y \
+  mysql-server  && \
+  rm -rf /var/lib/apt/lists/*
+
+# /var/lib/mysql will be mounted and configured via docker-entrypoint - so remove the one created by the installer.
+RUN rm -rf /var/lib/mysql/*
+
+# Use consistent UIDs so we can more easily understand ownership from the host.
+RUN usermod -u 5003 -g 5003 mysql
+
+# Ensure networking will work.
+RUN sed -i "s/^bind-address/#bind-address/g" /etc/mysql/my.cnf
+
+# Avoid key buffer size warnings
+RUN sed -i "s/^key_buffer\t/key_buffer_size\t/g" /etc/mysql/my.cnf
+
+COPY optimize-ptp-civicrm.cnf /etc/mysq/conf.d/
+COPY docker-entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+EXPOSE 3306
+CMD ["mysqld"]
+

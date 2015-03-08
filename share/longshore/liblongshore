@@ -1,0 +1,116 @@
+# This file should be sourced by all scripts. It contains
+# shared functions
+
+# Variables that can be set via the environment are:
+# LONG_DRUSH_ARGS - to pass arbitrary args to all drush invocations,
+#   such as --debug or -v
+# LONG_YES - to bypass any prompts that this libraries handles
+#   (that does not include drush prompts, so you may need to 
+#   combine with LONG_DRUSH_ARGS=-y if you want to fully automate
+#   a script).
+
+# Use can change the value of LONG_BASE by setting it as an environment
+# variable. For proper standard fs would be just: /
+[ -z "$LONG_BASE" ] && LONG_BASE=/srv/longshore/
+
+# Pull in defaults
+source "$LONG_BASE/etc/longshore/longshore.conf"
+
+# One liner for printing message and dying
+function long_die() {
+  exit_code="$2"
+  [ -z "$exit_code" ] && exit_code=1
+  printf "%s\n" "$1"
+  exit "$exit_code"
+}
+
+# Return defined $long_usage_message and die 
+function long_usage() {
+  exit_code="$1"
+  [ -z "$exit_code" ] && exit_code=1
+  long_die "$long_usage_message" "$exit_code"
+}
+
+# Ensure the number of required arguments have been passed
+# and if not, run long_usage (which will exit).
+function long_check_args() {
+  # The sub command is one argument that we don't count, so subtract 1 from 
+  # the number of arguments passed.
+  first_arg="$1"
+  num_passed=$(( $2 - 1 ))
+  num_required="$3"
+  [ -z "$num_passed" ] && num_passed=0
+  [ -z "$num_required" ] && num_required=0
+  if [ "$first_arg" = "-h" ] || [ "$first_arg" = "--help" ]; then
+    long_usage  
+  fi 
+  if [ "$num_passed" -lt "$num_required" ] ; then
+    printf "Not enough arguments passed. Expecting at least %s, received %s.\n" "$num_required" "$num_passed"
+    long_usage
+  fi
+}
+
+# Given a site, set the ssh variable to empty if it should 
+# be run locally or a working ssh command that connects to
+# the appropriate frontend.
+function long_set_ssh_command() {
+  site="$1"
+  host=$(hostname)
+  frontend=$(ptp-get-frontend-for-site "$site")
+  ssh=
+  [ -n "$frontend" ] && [ "$host" != "$frontend" ] && ssh="ssh ${frontend}.mayfirst.org"
+}
+
+# Given a site, check if we should connect to a remote aegir frontend to run
+# the given command that was called (in which case, make the connection and run
+# the command) or run it locally. This function should be called by scripts
+# that need to be run locally.
+function long_rerun_over_network() { 
+  site="$1"
+  long_set_ssh_command "$site"
+  # Return 0 (aka success) to indicate that we did
+  # run the command over ssh
+  if [ -n "$ssh" ]; then
+    $ssh "$0" "$site" "$2" "$3"
+    return 0
+  fi
+  # Return 1 (aka failure) to indicate that we didn't
+  # rerun it over the network and the script should
+  # proceed to run it locally.
+  return 1
+}
+
+# Prompt the user with a given message ($1) and the question
+# "Proceed? [Yn]" - set $reply variable to either y or n, properly
+# parsing case and the default.
+long_prompt() {
+  msg=$1
+  shift
+  printf "${msg}\n" "$@"
+  if [ "$LONG_YES" = "1" ]; then
+    printf " Automatically proceeding without prompt.\n"
+    reply=y
+    return
+  fi
+  read -p "Proceed? [Yn] "
+  reply=n
+  if [ -z "$REPLY" ] || [ "$REPLY" == "Y" ] || [ "$REPLY" == "y" ]; then
+    reply=y
+  fi
+}
+
+# Either output a message to standard error or send it by email
+# depending on whether we are running from a cron job or not
+long_debug() {
+  msg="$1"
+  subject="$2"
+  pid="$!"
+  if grep -q cron /proc/"$pid"/cmdline &> /dev/null; then
+    echo "$msg" | mail -s "$subj" "$LONG_DEBUG_EMAIL"
+  else
+    echo "$subject" >&2
+    echo "$msg" >&2
+  fi
+  exit 1
+}
+

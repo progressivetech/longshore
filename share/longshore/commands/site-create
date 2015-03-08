@@ -1,0 +1,38 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) <site> [<db>] [<platform>]
+Create a site on a specific platform. 
+
+Arguments
+  <site> - The site you want to create, e.g. ptp 
+  <db> - The db container you want to link this site to. If blank, use default.
+  <platform> - The platform you want this site to use. If blank, use default"
+
+long_check_args "$2" "$#" 1
+
+site="$1"
+db="$2"
+platform="$3"
+
+[ -z "$db" ] && db="$LONG_DEFAULT_DB"
+[ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
+
+# Sanity check - make sure platform exists 
+if [ ! -d "${LONG_SRV}${platform}" ]; then
+  long_die "That platform doesn't seem to exist."
+fi
+
+# If the database doesn't exist, confirm that we should create it.
+if ! longshore container-exists "$db"; then
+  long_prompt "Creating new database container ($db)."
+  if [ "$reply" = "n" ]; then
+    long_die "Not creating new database container. Exiting." "0"
+  fi
+
+  # Create new database container
+  longshore container-create mysql "$db"
+fi
+
+# Build out directories and variables.
+longshore container-create site "$site" "$platform"
+

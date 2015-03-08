@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Base program for longshore. A command is required as first argument. 
+# If not specified,  use `help` as command.
+
+command="$1"
+[ -z "$command" ] && command=help
+
+# Try to find a config file
+locations="~/.config/longshore/longshore.conf /etc/longshore/longshore.conf /usr/local/etc/longshore/longshore.conf"
+
+config_file=
+for location in $locations; do
+  if [ -f "$location" ]; then
+     config_file="$location"
+    break;
+  fi
+done
+
+if [ "$config_file" = "" ]; then
+  # Last chance...
+  location=$(dirname "$0")/../etc/longshore/longshore.conf
+  if [ -f "$location" ]; then
+    config_file="$location"
+  fi
+fi
+
+if [ ! -f "$config_file" ]; then
+  printf "Can't find configuration file.\n"
+  exit 1
+fi
+
+# Get the config file
+source "$config_file"
+
+# Get the bash library
+source ${LONG_SHARE}liblongshore
+
+if [ ! -f "${LONG_SHARE}commands/${command}" ]; then
+  printf "That command (%s) doesn't exist.\n" "$command"
+  command=help
+fi
+
+source "${LONG_SHARE}commands/${command}"

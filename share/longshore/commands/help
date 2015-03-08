@@ -1,0 +1,5 @@
+#!/bin/bash
+
+printf " The following commands are available.\n Add -h after a command for more info.\n"
+
+ls "${LONG_SHARE}commands"

@@ -1,0 +1,98 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0)
+Initialize a server to use longshore."
+long_check_args "$2" "$#"
+
+# A few sanity checks
+user=$(whoami)
+[ "$user" != "root" ] && long_die "You must run this command as root."
+
+[ ! -e /srv/longshore/bin/longshore ] && long_die "You must have longshore installed in /srv/longshore/bin/longshore"
+
+# Check what needs to be installed first.
+docker=n
+sudo=n
+sudoers_file=n
+longshore_user=n
+php_user=n
+nginx_user=n
+mysql_user=n
+
+install=
+if ! dpkg -l docker.io 2>/dev/null | grep ^ii >/dev/null; then
+  if ! dpkg -l lxc-docker 2>/dev/null | grep ^ii >/dev/null; then
+    install=docker
+  fi
+fi
+
+if ! dpkg -l sudo 2>/dev/null | grep ^ii >/dev/null; then
+  install="$install sudo"
+fi
+
+if [ -n "$install" ]; then
+  long_prompt "Installing $install"
+  [ "$reply" = "y" ] && apt-get update && apt-get install $install
+fi
+
+users=
+if ! getent passwd longshore > /dev/null; then
+  users=longshore:5000
+fi
+
+if ! getent passwd longshore-nginx > /dev/null; then
+  users="$users longshore-nginx:5002"
+fi
+
+if ! getent passwd longshore-php > /dev/null; then
+  users="$users longshore-php:5001"
+fi
+
+if getent passwd longshore-mysql > /dev/null; then
+  users="$users longshore-mysql:5003"
+fi
+
+if [ -n "$users" ]; then
+  long_prompt "Installing the following users/UIDs:%s" "$users."
+  if [ "$reply" = "y" ]; then
+    for user in $users; do
+      username=$(echo "$user" | cut -d: -f1)
+      uid=$(echo "$user" | cut -d: -f2)
+      groupadd "$username" -g "$uid"
+      home=
+      if [ "$user" = "longshoare" ]; then
+        home="-m"
+      fi
+      useradd $home -u "$uid" -g "$uid" "$username"
+    done
+  fi
+fi
+
+if ! groups longshore | grep docker >/dev/null; then
+	long_prompt "Adding longshore user to the docker group"
+	adduser longshore docker
+fi
+longshore_sudo="longshore ALL=NOPASSWD: /bin/chown"
+longshore_sudo_file=/etc/sudoers.d/longshore
+
+if [ ! -f "$longshore_sudo_file" ] || ! head -n1 "$longshore_sudo_file" | grep "$longshore_sudo" >/dev/null; then
+  long_prompt "Granting longshore user sudo rights to chown files"
+  if [ "$reply" = "y" ]; then
+    echo "$longshore_sudo" > "$longshore_sudo_file"
+  fi
+fi
+
+touch /home/longshore/.profile
+if ! grep 'PATH="/srv/longshore/bin' /home/longshore/.profile > /dev/null; then
+  long_prompt "Adding /srv/longshore/bin to PATH"
+  if [ "$reply" = "y" ]; then
+    echo 'PATH="/srv/longshore/bin:$PATH"' > /home/longshore/.profile
+    chown longshore:longshore /home/longshore/.profile
+  fi
+fi
+
+long_prompt "Chown'ing files"
+if [ "$reply" = "y" ]; then
+  chown -R longshore:longshore /srv/longshore/bin /srv/longshore/share /srv/longshore/etc /srv/longshore/platforms /srv/longshore/nginx
+  chown longshore:longshore /srv/longshore/databases /srv/longshore/databases/* /srv/longshore/sites /srv/longshore/sites/*
+fi
