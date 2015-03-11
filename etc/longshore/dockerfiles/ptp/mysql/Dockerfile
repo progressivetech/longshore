@@ -7,9 +7,6 @@ RUN apt-get update && \
   mysql-server && \
   rm -rf /var/lib/apt/lists/*
 
-# Ensure that our databases survive restarts.
-VOLUME /var/lib/mysql
-
 # Ensure networking will work.
 RUN sed -i "s/^bind-address/#bind-address/g" /etc/mysql/my.cnf
 

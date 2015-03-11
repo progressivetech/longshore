@@ -45,10 +45,11 @@ if [ "$ctype" = "mysql" ]; then
     fi
   fi
 
-  # Ensure our database directory exists and generate a my.cnf file in it.
-  mkdir -p "$dir"
-  # The my.cnf file will allow us to easily connect to the database from the host.
+  # Make sure our base directory and a mysql sub directory exists.
+  # Our my.cnf file will go in ${dir}/my.cnf and be mounted in the host
+  # in /mnt/my.cnf and ${dir}/mysql will get mounted at /var/lib/mysql.
+  mkdir -p "${dir}/mysql"
   long_generate_my_cnf "$dir" "$password" "$port"
-  docker create --name "$name" -v "${dir}:/mnt" -p 127.0.0.1:${port}:3306 ptp-mysql:latest mysqld
+  docker create --name "$name" -v "${dir}/mysql":/var/lib/mysql -v "${dir}/my.cnf:/mnt/my.cnf" -p 127.0.0.1:${port}:3306 ptp-mysql:latest mysqld
 fi
 
