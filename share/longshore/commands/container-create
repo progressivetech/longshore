@@ -1,0 +1,54 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) <type> <name>
+Create a container. 
+
+Arguments
+  <type> - The container type you want to create (site, mysql, nginx) 
+  <name> - The name to give the container."
+
+long_check_args "$2" "$#" 2
+
+ctype="$2"
+name="$3"
+
+# Make sure the container doesn't already exist. 
+if long_container_exists "$name"; then
+  long_die "A container with that name exists." "1"
+fi
+
+# Sanity checking.
+if [ "$ctype" != "mysql" -a "$ctype" != "site" -a "$ctype" != "nginx" ]; then
+  long_die "I don't know how to make a container of that type ($ctype)."
+fi
+
+# Create a mysql container.
+if [ "$ctype" = "mysql" ]; then
+  dir="${LONG_SRV}databases/${name}"
+
+  # Use our password generation utility which uses /dev/urandom.
+  # long_pwgen will assign a new password to the variable $password.
+  password=
+  long_pwgen
+
+  # Get the port number. Each MySQL container is assigned a unique port
+  # on the host.
+  if [ -f "$dir/.my.cnf" ]; then
+    port=$(grep port "${dir}/.my.cnf" | cut -d= -f2)
+  else
+    # If we don't already have a .my.cnf file, find the next available port.
+    last_port=$(grep port= databases/*/.my.cnf 2>/dev/null | cut -d= -f2)
+    if [ -z "$last_port" ]; then
+      port="$LONG_MYSQL_START_PORT"
+    else
+      port=$(( $last_port + 1 ))
+    fi
+  fi
+
+  # Ensure our database directory exists and generate a .my.cnf file in it.
+  mkdir -p "$dir"
+  # The .my.cnf file will allow us to easily connect to the database from the host.
+  long_generate_my_cnf "$dir" "$password" "$port"
+  docker create --name "$name" -v "${dir}:/root" -p 127.0.0.1:${port}:3306 ptp-mysql:latest mysqld
+fi
+
