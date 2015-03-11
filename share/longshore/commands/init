@@ -72,10 +72,10 @@ if ! groups longshore | grep docker >/dev/null; then
 	long_prompt "Adding longshore user to the docker group"
 	adduser longshore docker
 fi
-longshore_sudo="longshore ALL=NOPASSWD: /bin/chown"
+longshore_sudo='longshore ALL=NOPASSWD: /bin/chown -R 5001\:5001 /srv/longshore/sites/*/drupal/*, /bin/chown 5001\:5001 /srv/longshore/sites/*/drupal/*'
 longshore_sudo_file=/etc/sudoers.d/longshore
 
-if [ ! -f "$longshore_sudo_file" ] || ! head -n1 "$longshore_sudo_file" | grep "$longshore_sudo" >/dev/null; then
+if [ ! -f "$longshore_sudo_file" ]; then
   long_prompt "Granting longshore user sudo rights to chown files"
   if [ "$reply" = "y" ]; then
     echo "$longshore_sudo" > "$longshore_sudo_file"
@@ -91,8 +91,12 @@ if ! grep 'PATH="/srv/longshore/bin' /home/longshore/.profile > /dev/null; then
   fi
 fi
 
-long_prompt "Chown'ing files"
-if [ "$reply" = "y" ]; then
-  chown -R longshore:longshore /srv/longshore/bin /srv/longshore/share /srv/longshore/etc /srv/longshore/platforms /srv/longshore/nginx
-  chown longshore:longshore /srv/longshore/databases /srv/longshore/databases/* /srv/longshore/sites /srv/longshore/sites/*
+# If this is the first time we have run - we may have checked out these files
+# as root so we should chown them.
+if ! stat /srv/longshore/bin | grep "Uid" | grep longshore >/dev/null; then
+  long_prompt "Chown'ing files"
+  if [ "$reply" = "y" ]; then
+    chown -R longshore:longshore /srv/longshore/bin /srv/longshore/share /srv/longshore/etc /srv/longshore/platforms /srv/longshore/nginx
+    chown longshore:longshore /srv/longshore/databases /srv/longshore/databases/* /srv/longshore/sites /srv/longshore/sites/*
+  fi
 fi
