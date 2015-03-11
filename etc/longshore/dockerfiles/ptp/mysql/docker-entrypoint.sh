@@ -2,13 +2,14 @@
 set -e
 
 sql_init_file=/root/temp.sql
+mycnf=/mnt/my.cnf
 
 if [ "$1" = 'mysqld' ]; then
-  if [ -f "/root/.my.cnf" ]; then
-    # initialize root password.
-    password=$(grep password /root/.my.cnf | cut -d= -f2)
+  if [ -f "$mycnf" ]; then
+    # Initialize root password if /mnt/my.cnf is available.
+    password=$(grep password "$mycnf" | cut -d= -f2)
     if [ -z "$password" ]; then
-      echo "Failed to extract password from /root/my.cnf"
+      printf "Failed to extract password from %s.\n" "$mycnf"
       exit 1
     fi
     cat > "$sql_init_file" <<-EOSQL

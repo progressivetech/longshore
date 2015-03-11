@@ -4,7 +4,6 @@ MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 RUN apt-get update && \
   export DEBIAN_FRONTEND=noninteractive && \
   apt-get install --no-install-recommends -y \
-  mysql-client \
   mysql-server && \
   rm -rf /var/lib/apt/lists/*
 

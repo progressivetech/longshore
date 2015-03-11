@@ -133,7 +133,7 @@ long_generate_my_cnf() {
   dir="$1"
   password="$2"
   port="$3"
-  printf "[client]\nuser=root\npassword=%s\nport=%s\nhost=127.0.0.1\n" "$password" "$port" > "$dir"/.my.cnf
+  printf "[client]\nuser=root\npassword=%s\nport=%s\nhost=127.0.0.1\n" "$password" "$port" > "$dir"/my.cnf
 }
 
 # Generate a random password

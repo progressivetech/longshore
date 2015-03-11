@@ -33,11 +33,11 @@ if [ "$ctype" = "mysql" ]; then
 
   # Get the port number. Each MySQL container is assigned a unique port
   # on the host.
-  if [ -f "$dir/.my.cnf" ]; then
-    port=$(grep port "${dir}/.my.cnf" | cut -d= -f2)
+  if [ -f "$dir/my.cnf" ]; then
+    port=$(grep port "${dir}/my.cnf" | cut -d= -f2)
   else
     # If we don't already have a .my.cnf file, find the next available port.
-    last_port=$(grep port= databases/*/.my.cnf 2>/dev/null | cut -d= -f2)
+    last_port=$(grep port= databases/*/my.cnf 2>/dev/null | cut -d= -f2)
     if [ -z "$last_port" ]; then
       port="$LONG_MYSQL_START_PORT"
     else
@@ -45,10 +45,10 @@ if [ "$ctype" = "mysql" ]; then
     fi
   fi
 
-  # Ensure our database directory exists and generate a .my.cnf file in it.
+  # Ensure our database directory exists and generate a my.cnf file in it.
   mkdir -p "$dir"
-  # The .my.cnf file will allow us to easily connect to the database from the host.
+  # The my.cnf file will allow us to easily connect to the database from the host.
   long_generate_my_cnf "$dir" "$password" "$port"
-  docker create --name "$name" -v "${dir}:/root" -p 127.0.0.1:${port}:3306 ptp-mysql:latest mysqld
+  docker create --name "$name" -v "${dir}:/mnt" -p 127.0.0.1:${port}:3306 ptp-mysql:latest mysqld
 fi
 
