@@ -16,6 +16,13 @@
 # Pull in defaults
 source "$LONG_BASE/etc/longshore/longshore.conf"
 
+# Determine whether we are running on a live server or not.
+hostname=$(hostname)
+if echo "$LONG_LIVE_FRONTENDS" | grep ":$hostname:" >/dev/null; then
+  LONG_LIVE=y
+else
+  LONG_LIVE=n
+fi
 # One liner for printing message and dying
 function long_die() {
   exit_code="$2"
@@ -138,7 +145,7 @@ long_generate_my_cnf() {
 
 # Generate a random password
 long_pwgen() {
-  # Excluding characters that commonly cause problems.
-  password=$(hexdump -e '"%_p"' /dev/urandom | tr -d '.\n:[]"! \\*><}{)`(;|#' | tr -d "'" | head -c 25)
+  # Excluding characters that commonly cause problems. Sigh.
+  password=$(hexdump -e '"%_p"' /dev/urandom | tr -d '[:punct:]\n' | head -c 25)
 }
 

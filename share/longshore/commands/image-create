@@ -1,0 +1,22 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) <type>
+Create an image. 
+
+Arguments
+  <type> - The image type you want to create (ptp-mysql, ptp-nginx, etc.)" 
+
+long_check_args "$2" "$#" 1
+
+itype="$2"
+
+# Sanity checking.
+if [ "$itype" != "ptp-mysql" -a "$itype" != "ptp-nginx" -a "ictype" != "ptp-php" ]; then
+  long_die "I don't know how to make an image of that type ($itype)."
+fi
+
+# Create a mysql image.
+if [ "$itype" = "ptp-mysql" ]; then
+  docker build -t ptp-mysql ${LONG_ETC}dockerfiles/ptp/mysql
+fi
+

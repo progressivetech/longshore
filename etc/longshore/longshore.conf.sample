@@ -1,5 +1,4 @@
 # This is a bash file that should be sourced.
-#
 
 # Path to share files
 LONG_SHARE=/srv/longshore/share/longshore/

@@ -15,7 +15,7 @@ docker exec -i -t NAME bash
 ## MySQL Container
 
 # First build:
-docker build -t ptp-mysql /srv/longshore/etc/dockerfiles/ptp/mysql
+docker build -t ptp-mysql /srv/longshore/etc/longshore/dockerfiles/ptp/mysql
 
 # then create or run
 docker run --name db01 -e MYSQL_ROOT_PASSWORD=mysecretpassword -v /srv/longshore/databases/db01:/var/lib/mysql -p 127.0.0.1:5001:3306 -d ptp-mysql:latest mysqld
