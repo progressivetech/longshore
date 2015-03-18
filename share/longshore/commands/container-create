@@ -1,16 +1,25 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) <type> <name>
+long_usage_message="usage: $(basename $0) <type> [<name>]
 Create a container. 
 
 Arguments
   <type> - The container type you want to create (site, mysql, nginx) 
-  <name> - The name to give the container."
+  <name> - The name to give the container. Optional for nginx, not for
+  site or db."
 
-long_check_args "$2" "$#" 2
+long_check_args "$2" "$#" 1
 
 ctype="$2"
 name="$3"
+
+if [ -z "$name" ]; then
+  if [ "$ctype" = "nginx" ]; then
+    name=nginx
+  else
+    long_die "Containers of this type need a name passed as second argument."
+  fi
+fi
 
 # Make sure the container doesn't already exist. 
 if long_container_exists "$name"; then
@@ -56,6 +65,23 @@ if [ "$ctype" = "mysql" ]; then
     -v "${dir}/my.cnf:/root/.my.cnf" \
     -v "${dir}/logs:/var/log/mysql" \
     -e "LONG_LIVE=$LONG_LIVE" \
-    -p 127.0.0.1:${port}:3306 ptp-mysql:latest mysqld
+    -p "$LONG_IP:${port}:3306" \
+    ptp-mysql:latest mysqld
+
+elif [ "$ctype" = "nginx" ]; then
+  dir="${LONG_SRV}nginx"
+  # Make sure we have our base directories
+  mkdir -p "$dir/x509"
+  mkdir -p "$dir/sites-enabled"
+  mkdir -p "$dir/logs"
+
+  docker create --name "$name" \
+    -v "${dir}/x509":/etc/nginx/x509 \
+    -v "${dir}/sites-enabled:/etc/nginx/sites-enabled" \
+    -v "${dir}/logs:/var/log/nginx" \
+    -p "$LONG_IP:80:80" \
+    -p "$LONG_IP:443:443" \
+    ptp-nginx:latest nginx 
+
 fi
 

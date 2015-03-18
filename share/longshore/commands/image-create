@@ -10,13 +10,12 @@ long_check_args "$2" "$#" 1
 
 itype="$2"
 
-# Sanity checking.
-if [ "$itype" != "ptp-mysql" -a "$itype" != "ptp-nginx" -a "ictype" != "ptp-php" ]; then
-  long_die "I don't know how to make an image of that type ($itype)."
-fi
-
 # Create a mysql image.
 if [ "$itype" = "ptp-mysql" ]; then
   docker build -t ptp-mysql ${LONG_ETC}dockerfiles/ptp/mysql
+elif [ "$itype" = "ptp-nginx" ]; then
+  docker build -t ptp-nginx ${LONG_ETC}dockerfiles/ptp/nginx
+else
+  long_die "I don't know how to make an image of that type ($itype)."
 fi
 
