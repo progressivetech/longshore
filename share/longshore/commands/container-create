@@ -97,11 +97,12 @@ elif [ "$ctype" = "phpmyadmin" ]; then
   mkdir -p "$dir/src"
 
   # Create the server.list file with all db servers on this host
-  ls ${LONG_SRV}/databases/ > "${dir}/src/servers.list"
+  long_db_containers
+  echo "$long_db_containers" > "${dir}/src/servers.list"
 
   # Create the --link argument
   link=
-  for db in $(cat "${dir}/src/servers.list"); do
+  for db in $long_db_containers; do
     link="$link --link $db:$db"
   done
 

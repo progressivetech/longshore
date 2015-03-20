@@ -129,12 +129,18 @@ long_debug() {
 long_container_exists() {
   name="$1"
   [ -z "$name" ] && return 1
-  # docker output is not very machine friendly.
-  # This should match the name, followed by zero or more
-  # white spaces followed by the end of the line.
-  if docker ps -a | grep -v '^CONTAINER ID' | egrep $name'\s*$' > /dev/null; then
-    return 0
-  fi
+  # This command returns 1 if the container doesn't exist and 0 if it does.
+  docker inspect "$name" 2>/dev/null 1>/dev/null
+  return "$?"
+}
+
+# Check if a conatiner with the given name is running or not.
+# Return 0 if it is running and 1 if it isn't.
+long_container_running() {
+  name="$1"
+  [ -z "$name" ] && return 1
+  running=$(docker inspect -f {{.State.Running}} "$name")
+  [ "$running" = "true" ] && return 0
   return 1
 }
 
@@ -259,4 +265,9 @@ long_phpmyadmin_is_latest() {
 
   [ "$latest" = "$installed" ]  && return 0
   return 1
+}
+
+# This variable containing the names of all database containers
+long_db_containers() {
+  long_db_containers=(ls "${LONG_SRV}/databases/")
 }

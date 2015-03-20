@@ -1,0 +1,11 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0)
+Start the phpmyadmin container and all linked containers."
+
+long_check_args "$2" "$#" 0
+
+
+
+
+
