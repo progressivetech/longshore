@@ -1,0 +1,59 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) <url> <md5>
+Download the latest version of phpMyAdmin (if needed).
+
+Arguments:
+ <url> the URL of the latest version
+ <md5> the md5 hash for the lastest version"
+
+long_check_args "$2" "$#" 1
+
+dest="${LONG_SRV}/phpmyadmin/src"
+mkdir -p "$dest"
+
+LONG_LOG_LEVEL=info
+long_phpmyadmin_is_latest
+if [ "$?" = 0 ]; then
+  long_log "Already running latest version of phpmyadmin." "info"
+elif [ "$?" = 1 ]; then
+  # This means we need to upgrade.
+  long_log "Upgrading phpmyadmin." info
+  url="$2"
+  checksum="$3"
+  temp=$(mktemp -d)
+  cd "$temp"
+  if ! echo "$url" | egrep '.*\.zip$' >/dev/null; then
+    cd && rm -rf "$temp"
+    long_die "The passed in URL (%s) doesn't end in zip." 1 "$url"
+  fi
+  long_log "Downloading phpMyAdmin" "info"
+  if ! wget --quiet "$url"; then
+    cd && rm -rf "$temp"
+    long_die "Failed to download %s" 1 "$url"
+  fi
+  filename=$(basename "$url")
+  if [ ! -f "$filename" ]; then
+    cd && rm -rf "$temp"
+    long_die "I lost the file I was downloading."
+  fi
+  long_log "Checking checksum" "info"
+  if ! echo "$checksum  $filename" | md5sum -c > /dev/null; then
+    cd && rm -rf "$temp"
+    long_die "Failed md5 checksum"
+  fi
+  long_log "Unzipping" "info"
+  if ! unzip -q "${filename}"; then
+    cd && rm -rf "$temp"
+    long_die "Failed to unzip the download."
+  fi
+  cd phpMyAdmin*
+  long_log "Copying" "info"
+  rsync -a --exclude config.inc.php --exclude 'servers.list' --delete ./ "${dest}/"
+  cd && rm -rf "$temp"
+elif [ "$?" = 2 ]; then
+  long_log "Something went wrong checking the phpMyAdmin version." "error"
+else
+  long_log "Someting went wrong checking hte phpMyAdmin version - return code is %s" error "$?"
+fi
+

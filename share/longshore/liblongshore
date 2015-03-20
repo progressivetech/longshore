@@ -233,3 +233,30 @@ long_create_nginx_site_conf() {
     -e "s#LONG_CGI_HOST#$LONG_CGI_HOST#" \
     > "$target"
 }
+
+# Return 0 if it's the latest and 1 if it's not and 2 for an error.
+long_phpmyadmin_is_latest() {
+  # Check version installed
+  installed=
+  if [ -f "${LONG_SRV}/phpmyadmin/src/README" ]; then
+    installed=$(head "${LONG_SRV}/phpmyadmin/src/README" | grep '^Version' | cut -d\  -f2)
+  else
+    # It's not installed at all, that means not the latest.
+    return 1 
+  fi
+
+  [ -z "$installed" ] && return 2 
+
+  latest=
+  if [ -f "${LONG_SRV}/phpmyadmin/src/version_check.php" ]; then
+    latest=$(cd "${LONG_SRV}/phpmyadmin/src/" && php version_check.php | tr -d '{}"' | cut -d, -f1 | cut -d: -f2)
+  else
+    # Something is broken if we don't have this file
+    return 2 
+  fi
+
+  [ -z "$latest" ] && return 2 
+
+  [ "$latest" = "$installed" ]  && return 0
+  return 1
+}
