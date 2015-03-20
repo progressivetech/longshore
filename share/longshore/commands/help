@@ -1,5 +1,5 @@
 #!/bin/bash
 
-printf " The following commands are available.\n Add -h after a command for more info.\n"
+cmds=$(ls "${LONG_SHARE}/commands")
+long_log " The following commands are available.\n Add -h after a command for more info.\n\n%s" error "$cmds" 
 
-ls "${LONG_SHARE}commands"

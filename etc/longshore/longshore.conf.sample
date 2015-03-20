@@ -1,13 +1,13 @@
 # This is a bash file that should be sourced.
 
 # Path to share files
-LONG_SHARE=/srv/longshore/share/longshore/
+LONG_SHARE=/srv/longshore/share/longshore
 
 # Path to store variable data (standard debian would be /var/lib/longshore/)
-LONG_VAR=/srv/longshore/
+LONG_VAR=/srv/longshore
 
 # Path for user generated data (should be /srv/longshore/)
-LONG_SRV=/srv/longshore/
+LONG_SRV=/srv/longshore
 
 # FRONTENDS: frontend-kvm:host:number
 # the number is used in the phpmyAdmin URLs (e.g. p1.ourpowerbase.net)
@@ -16,6 +16,8 @@ LONG_LIVE_FRONTENDS="nicolas:ramona:1 juana:severo:2 olivera:victoria:3 chico:ga
 # The IP address to attach containers to on the host.
 LONG_IP=0.0.0.0
 LONG_DEBUG_EMAIL="jamie@progressivetech.org"
+LONG_DEFAULT_LOG_LEVEL=error
+
 LONG_NON_PRODUCTION_REGEXP="^(restore|clone|test|sandbox|demo|training[123]|robyn|josue|tomas|mark|alice|f|grits|bacon|spanish)"
 LONG_DEFAULT_PLATFORM=ourpowerbase-d7-c4.5
 LONG_DEFAULT_DOMAIN=animal

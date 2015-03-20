@@ -33,12 +33,17 @@ fi
 # Get the config file
 source "$config_file"
 
-# Get the bash library
-source ${LONG_SHARE}liblongshore
+# Set the LOG LEVEL - take what is passed in via the
+# environment as first choice, and default LOG LEVEL
+# as second choice (as set in config file)
+LONG_LOG_LEVEL=${LONG_LOG_LEVEL:-$LONG_DEFAULT_LOG_LEVEL}
 
-if [ ! -f "${LONG_SHARE}commands/${command}" ]; then
+# Get the bash library
+source ${LONG_SHARE}/liblongshore
+
+if [ ! -f "${LONG_SHARE}/commands/${command}" ]; then
   printf "That command (%s) doesn't exist.\n" "$command"
   command=help
 fi
 
-source "${LONG_SHARE}commands/${command}"
+source "${LONG_SHARE}/commands/${command}"

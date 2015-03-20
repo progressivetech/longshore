@@ -9,7 +9,9 @@ if [ "${1:0:1}" = '-' ]; then
 fi
 
 if [ "$1" = 'nginx' ]; then
-  set -- "$@" -g "daemon off;"
+  # Note: nginx will still create /var/log/nginx/error.log even thought
+  # it won't be used for errrors. See http://trac.nginx.org/nginx/ticket/147.
+  set -- "$@" -g "daemon off; error_log /dev/stderr;"
 fi
 
 exec "$@"

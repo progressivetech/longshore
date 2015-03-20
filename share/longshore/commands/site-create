@@ -18,8 +18,8 @@ platform="$4"
 [ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
 
 # Sanity check - make sure platform exists 
-if [ ! -d "${LONG_SRV}platforms/${platform}" ]; then
-  long_die "That platform doesn't seem to exist ($platform)."
+if [ ! -d "${LONG_SRV}/platforms/${platform}" ]; then
+  long_die "That platform doesn't seem to exist (%s)." "$platform"
 fi
 
 # If the database doesn't exist, confirm that we should create it.

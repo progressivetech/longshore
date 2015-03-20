@@ -24,10 +24,13 @@ else
   LONG_LIVE=n
 fi
 # One liner for printing message and dying
+# long_die $msg $exit_code $var $var
 function long_die() {
+  msg="$1"
   exit_code="$2"
+  shift 2
   [ -z "$exit_code" ] && exit_code=1
-  printf "%s\n" "$1"
+  long_log "$msg" error "$@"
   exit "$exit_code"
 }
 
@@ -52,7 +55,7 @@ function long_check_args() {
     long_usage  
   fi 
   if [ "$num_passed" -lt "$num_required" ] ; then
-    printf "Not enough arguments passed. Expecting at least %s, received %s.\n" "$num_required" "$num_passed"
+    long_log "Not enough arguments passed. Expecting at least %s, received %s.\n" error "$num_required" "$num_passed"
     long_usage
   fi
 }
@@ -149,3 +152,11 @@ long_pwgen() {
   password=$(hexdump -e '"%_p"' /dev/urandom | tr -d '[:punct:]\n' | head -c 25)
 }
 
+# Output logging info based on log level
+# long_log $msg $log_level $var $var
+long_log() {
+  msg="$1"
+  log_level="$2"
+  shift 2
+  printf "$msg\n" "$@"
+}

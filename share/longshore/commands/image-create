@@ -12,10 +12,10 @@ itype="$2"
 
 # Create a mysql image.
 if [ "$itype" = "ptp-mysql" ]; then
-  docker build -t ptp-mysql ${LONG_ETC}dockerfiles/ptp/mysql
+  docker build -t ptp-mysql ${LONG_ETC}/dockerfiles/ptp/mysql
 elif [ "$itype" = "ptp-nginx" ]; then
-  docker build -t ptp-nginx ${LONG_ETC}dockerfiles/ptp/nginx
+  docker build -t ptp-nginx ${LONG_ETC}/dockerfiles/ptp/nginx
 else
-  long_die "I don't know how to make an image of that type ($itype)."
+  long_die "I don't know how to make an image of that type (%s)." 1 "$itype"
 fi
 

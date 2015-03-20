@@ -28,7 +28,6 @@ RUN sed -i 's#listen = /var/run/php5-fpm.sock#listen = 9000#' /etc/php5/fpm/pool
 COPY ./docker-entrypoint.sh /entrypoint.sh
 COPY powerbase.ini /etc/php5/conf.d/powerbase.ini
 
-RUN chmod 744 /entrypoint.sh
 EXPOSE 9000
 
 ENTRYPOINT ["/entrypoint.sh"]

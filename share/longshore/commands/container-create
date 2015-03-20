@@ -14,8 +14,8 @@ ctype="$2"
 name="$3"
 
 if [ -z "$name" ]; then
-  if [ "$ctype" = "nginx" ]; then
-    name=nginx
+  if [ "$ctype" = "nginx" -o "$ctype" = "phpmyadmin" ]; then
+    name="$ctype"
   else
     long_die "Containers of this type need a name passed as second argument."
   fi
@@ -23,17 +23,17 @@ fi
 
 # Make sure the container doesn't already exist. 
 if long_container_exists "$name"; then
-  long_die "A container with that name exists." "1"
+  long_die "A container with that name exists (%s)." 1 "$name"
 fi
 
 # Sanity checking.
 if [ "$ctype" != "mysql" -a "$ctype" != "site" -a "$ctype" != "nginx" ]; then
-  long_die "I don't know how to make a container of that type ($ctype)."
+  long_die "I don't know how to make a container of that type (%s)." 1 "$ctype"
 fi
 
 # Create a mysql container.
 if [ "$ctype" = "mysql" ]; then
-  dir="${LONG_SRV}databases/${name}"
+  dir="${LONG_SRV}/databases/${name}"
 
   # Use our password generation utility which uses /dev/urandom.
   # long_pwgen will assign a new password to the variable $password.
@@ -69,19 +69,38 @@ if [ "$ctype" = "mysql" ]; then
     ptp-mysql:latest mysqld
 
 elif [ "$ctype" = "nginx" ]; then
-  dir="${LONG_SRV}nginx"
+  dir="${LONG_SRV}/nginx"
   # Make sure we have our base directories
   mkdir -p "$dir/x509"
   mkdir -p "$dir/sites-enabled"
   mkdir -p "$dir/logs"
 
   docker create --name "$name" \
-    -v "${dir}/x509":/etc/nginx/x509 \
+    -v "${dir}/x509:/etc/nginx/x509" \
     -v "${dir}/sites-enabled:/etc/nginx/sites-enabled" \
     -v "${dir}/logs:/var/log/nginx" \
+    -v "${LONG_SRV}/phpmyadmin/src:/var/www/phpmyadmin" \
+    -v "${LONG_SRV}/platforms:/var/www/html" \
+    -v "${LONG_SRV}/sites:/srv/sites" \
     -p "$LONG_IP:80:80" \
     -p "$LONG_IP:443:443" \
     ptp-nginx:latest nginx 
+elif [ "$ctype" = "phpmyadmin" ]; then
+  dir="${LONG_SRV}/phpmyadmin"
+  # Make sure we have our base directories
+  mkdir -p "$dir/src"
+
+  # Create the server.list file with all db servers on this host
+  ls ${LONG_SRV}/database/ > "${dir}/src/servers.list"
+
+  # Copy in the config.inc.php.sample file with blowfish secret
+  password=
+  long_pwgen
+  cat ${dir}/config.inc.php.sample | sed "s/BLOWFISHSECRET/$password/" \
+    > "${dir}/src/config.inc.php" 
+  docker create --name "$name" \
+    -v "${dir}/src:/var/www/phpmyadmin" \
+    -v "${LONG_SRV}/platforms:/var/www/html" \
+    ptp-php:latest phpmyadmin 
 
 fi
-
