@@ -1,5 +1,5 @@
 # Based on https://github.com/AsavarTzeth/docker-php5-fpm
-FROM debian:jessie
+FROM ptp-base:latest
 
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 
@@ -10,6 +10,7 @@ RUN apt-get update && \
     php5-curl \
     php5-gd \
     php5-mysql \
+    php5-mcrypt \
     php-apc \
     liboauth-php \
     fonts-linuxlibertine \

@@ -27,7 +27,7 @@ if long_container_exists "$name"; then
 fi
 
 # Sanity checking.
-if [ "$ctype" != "mysql" -a "$ctype" != "site" -a "$ctype" != "nginx" ]; then
+if [ "$ctype" != "mysql" -a "$ctype" != "site" -a "$ctype" != "nginx" -a "$ctype" != "phpmyadmin" ]; then
   long_die "I don't know how to make a container of that type (%s)." 1 "$ctype"
 fi
 
@@ -75,6 +75,11 @@ elif [ "$ctype" = "nginx" ]; then
   mkdir -p "$dir/sites-enabled"
   mkdir -p "$dir/logs"
 
+  link="--link phpmyadmin:phpmyadmin"
+  for site in $(ls "${LONG_SRV}/sites/"); do
+    link="$link --link $site:$site"
+  done
+  # Generate our link argument
   docker create --name "$name" \
     -v "${dir}/x509:/etc/nginx/x509" \
     -v "${dir}/sites-enabled:/etc/nginx/sites-enabled" \
@@ -84,6 +89,7 @@ elif [ "$ctype" = "nginx" ]; then
     -v "${LONG_SRV}/sites:/srv/sites" \
     -p "$LONG_IP:80:80" \
     -p "$LONG_IP:443:443" \
+    $link \
     ptp-nginx:latest nginx 
 elif [ "$ctype" = "phpmyadmin" ]; then
   dir="${LONG_SRV}/phpmyadmin"
@@ -91,7 +97,13 @@ elif [ "$ctype" = "phpmyadmin" ]; then
   mkdir -p "$dir/src"
 
   # Create the server.list file with all db servers on this host
-  ls ${LONG_SRV}/database/ > "${dir}/src/servers.list"
+  ls ${LONG_SRV}/databases/ > "${dir}/src/servers.list"
+
+  # Create the --link argument
+  link=
+  for db in $(cat "${dir}/src/servers.list"); do
+    link="$link --link $db:$db"
+  done
 
   # Copy in the config.inc.php.sample file with blowfish secret
   password=
@@ -101,6 +113,7 @@ elif [ "$ctype" = "phpmyadmin" ]; then
   docker create --name "$name" \
     -v "${dir}/src:/var/www/phpmyadmin" \
     -v "${LONG_SRV}/platforms:/var/www/html" \
-    ptp-php:latest phpmyadmin 
+    $link \
+    ptp-php:latest php5-fpm 
 
 fi
