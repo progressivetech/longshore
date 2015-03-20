@@ -154,9 +154,28 @@ long_pwgen() {
 
 # Output logging info based on log level
 # long_log $msg $log_level $var $var
+# log levels: info, error, critical
 long_log() {
   msg="$1"
   log_level="$2"
   shift 2
-  printf "$msg\n" "$@"
+  out=n
+  # Always output critical
+  if [ "$log_level" = "critical" ]; then
+    out=y
+  fi
+  # Output error if we are set to info or error
+  if [ "$log_level" = "error" -a "$LONG_LOG_LEVEL" = "info" ];  then
+    out=y
+  fi
+  if [ "$log_level" = "error" -a "$LONG_LOG_LEVEL" = "error" ];  then
+    out=y
+  fi
+  # Output info if we are set to info
+  if [ "$log_level" = "info" -a "$LONG_LOG_LEVEL" = "info" ];  then
+    out=y
+  fi
+  if [ "$out" = "y" ]; then
+    printf "$msg\n" "$@"
+  fi
 }
