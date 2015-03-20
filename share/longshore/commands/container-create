@@ -110,6 +110,11 @@ elif [ "$ctype" = "phpmyadmin" ]; then
   long_pwgen
   cat ${dir}/config.inc.php.sample | sed "s/BLOWFISHSECRET/$password/" \
     > "${dir}/src/config.inc.php" 
+
+  # Create nginx configuration
+  long_create_nginx_phpmyadmin_conf
+
+  # Docker
   docker create --name "$name" \
     -v "${dir}/src:/var/www/phpmyadmin" \
     -v "${LONG_SRV}/platforms:/var/www/html" \

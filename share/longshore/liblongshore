@@ -179,3 +179,57 @@ long_log() {
     printf "$msg\n" "$@"
   fi
 }
+
+# save the phpmyadmin nginx configuration file
+long_create_nginx_phpmyadmin_conf() {
+  template="${LONG_SHARE}/templates/nginx-php-site.conf"
+  target="${LONG_SRV}/nginx/sites-enabled/phpmyadmin.conf"
+  if [ "$LONG_HTTPS_ENABLED" = "n" ]; then
+    LONG_LISTEN_443=
+  else
+    LONG_LISTEN_443="listen 443"
+  fi
+  LONG_ACCESS_LOG=phpmyadmin.access.log
+  LONG_SITE_URL="$LONG_PHPMYADMIN_URL"
+  LONG_WEB_ROOT=/var/www/phpmyadmin
+  LONG_PHP_ROOT="$LONG_WEB_ROOT"
+  LONG_CGI_HOST=phpmyadmin
+  cat "$template" | \
+    sed \
+    -e "s#LONG_LISTEN_443#$LONG_LISTEN_443#" \
+    -e "s#LONG_ACCESS_LOG#$LONG_ACCESS_LOG#" \
+    -e "s#LONG_SITE_URL#$LONG_SITE_URL#" \
+    -e "s#LONG_WEB_ROOT#$LONG_WEB_ROOT#" \
+    -e "s#LONG_PHP_ROOT#$LONG_PHP_ROOT#" \
+    -e "s#LONG_CGI_HOST#$LONG_CGI_HOST#" \
+    > "$target"
+}
+
+# Save an nginx server configuration file
+long_create_nginx_site_conf() {
+  site="$1"
+  platform="$2"
+
+  template="${LONG_SHARE}/templates/nginx-php-site.conf"
+  target="${LONG_SRV}/nginx/sites-enabled/${site}.conf"
+  if [ "$LONG_HTTPS_ENABLED" = "n" ]; then
+    LONG_LISTEN_443=
+  else
+    LONG_LISTEN_443="listen 443"
+  fi
+  LONG_ACCESS_LOG="${site}.access.log"
+  LONG_SITE_URL="${site}.${LONG_DEFAULT_DOMAIN}"
+  LONG_WEB_ROOT="/var/www/html/${platform}"
+  LONG_PHP_ROOT="$LONG_WEB_ROOT"
+  LONG_CGI_HOST="$site"
+
+  cat "$template" | \
+    sed \
+    -e "s#LONG_LISTEN_443#$LONG_LISTEN_443#" \
+    -e "s#LONG_ACCESS_LOG#$LONG_ACCESS_LOG#" \
+    -e "s#LONG_SITE_URL#$LONG_SITE_URL#" \
+    -e "s#LONG_WEB_ROOT#$LONG_WEB_ROOT#" \
+    -e "s#LONG_PHP_ROOT#$LONG_PHP_ROOT#" \
+    -e "s#LONG_CGI_HOST#$LONG_CGI_HOST#" \
+    > "$target"
+}
