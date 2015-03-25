@@ -28,7 +28,8 @@ function long_usage() {
 }
 
 # Ensure the number of required arguments have been passed
-# and if not, run long_usage (which will exit).
+# and if not, run long_usage (which will exit). Also, parse
+# global arguments (like -f for force).
 function long_check_args() {
   # The sub command is one argument that we don't count, so subtract 1 from 
   # the number of arguments passed.
@@ -255,5 +256,38 @@ long_phpmyadmin_is_latest() {
 
 # This variable containing the names of all database containers
 long_db_containers() {
-  long_db_containers=(ls "${LONG_SRV}/services/databases/")
+  long_db_containers=$(ls "${LONG_SRV}/services/databases/")
+}
+
+# Create (if necessary) and start (if necessary) a given container
+long_container_up() {
+  type="$1"
+  name="$2"
+
+  # phpmyadmin and nginx will be called with just the type variable set.
+  # In these cases, we use the type as the name - since we only have one
+  # nginx container and one phpmyadmin container.
+  label="$name"
+  [ -z "$label" ] && label="$type"
+  if ! long_container_exists "$label"; then
+    long_log "Creating container (%s)" "info" "$label"
+    longshore container-create "$type" "$name"
+  fi
+  if ! long_container_running "$label"; then
+    long_log "Starting container (%s)" "info" "$label"
+    docker start "$label"
+  fi
+}
+
+# Stop (if necessary) and delete (if necessary) the named container
+long_container_destroy() {
+  name="$1"
+  if long_container_exists "$name"; then
+    if long_container_running "$name"; then
+      long_log "Stopping container (%s)" "info" "$name"
+      docker stop "$name" 
+    fi
+    long_log "Removing container (%s)" "info" "$name"
+    docker rm "$name" 
+  fi
 }

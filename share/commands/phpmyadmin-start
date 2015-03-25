@@ -1,11 +1,28 @@
 #!/bin/bash
 
 long_usage_message="usage: $(basename $0)
-Start the phpmyadmin container and all linked containers."
+Start the phpmyadmin container and all linked db containers."
 
 long_check_args "$2" "$#" 0
 
+# First ensure all database containers are running since we link to them.
+# Populate the long_db_containers variable.
+long_db_containers
 
+for db in $long_db_containers; do
+  # Create and start all db containers. No reason to force restart a database -
+  # since it doesn't link to anything. 
+  long_container_up mysql "$db"
+done
 
+# First check for LONG_FORCE and if it is present, destroy the current
+# pnpmyadmin and nginx containers.
 
+if [ "$LONG_FORCE" = "1" ]; then
+  long_container_destroy phpmyadmin 
+  long_container_destroy nginx 
+fi
 
+# Now start.
+long_container_up phpmyadmin
+long_container_up nginx
