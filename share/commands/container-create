@@ -33,7 +33,7 @@ fi
 
 # Create a mysql container.
 if [ "$ctype" = "mysql" ]; then
-  dir="${LONG_SRV}/databases/${name}"
+  dir="${LONG_SRV}/services/databases/${name}"
 
   # Use our password generation utility which uses /dev/urandom.
   # long_pwgen will assign a new password to the variable $password.
@@ -69,14 +69,14 @@ if [ "$ctype" = "mysql" ]; then
     ptp-mysql:latest mysqld
 
 elif [ "$ctype" = "nginx" ]; then
-  dir="${LONG_SRV}/nginx"
+  dir="${LONG_SRV}/services/nginx"
   # Make sure we have our base directories
   mkdir -p "$dir/x509"
   mkdir -p "$dir/sites-enabled"
   mkdir -p "$dir/logs"
 
   link="--link phpmyadmin:phpmyadmin"
-  for site in $(ls "${LONG_SRV}/sites/"); do
+  for site in $(ls "${LONG_SRV}/services/sites/"); do
     link="$link --link $site:$site"
   done
   # Generate our link argument
@@ -84,15 +84,15 @@ elif [ "$ctype" = "nginx" ]; then
     -v "${dir}/x509:/etc/nginx/x509" \
     -v "${dir}/sites-enabled:/etc/nginx/sites-enabled" \
     -v "${dir}/logs:/var/log/nginx" \
-    -v "${LONG_SRV}/phpmyadmin/src:/var/www/phpmyadmin" \
+    -v "${LONG_SRV}/services/phpmyadmin/src:/var/www/phpmyadmin" \
     -v "${LONG_SRV}/platforms:/var/www/html" \
-    -v "${LONG_SRV}/sites:/srv/sites" \
+    -v "${LONG_SRV}/services/sites:/srv/sites" \
     -p "$LONG_IP:80:80" \
     -p "$LONG_IP:443:443" \
     $link \
     ptp-nginx:latest nginx 
 elif [ "$ctype" = "phpmyadmin" ]; then
-  dir="${LONG_SRV}/phpmyadmin"
+  dir="${LONG_SRV}/services/phpmyadmin"
   # Make sure we have our base directories
   mkdir -p "$dir/src"
 

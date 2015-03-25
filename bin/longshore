@@ -19,7 +19,7 @@ done
 
 if [ "$config_file" = "" ]; then
   # Last chance...
-  location=$(dirname "$0")/../etc/longshore/longshore.conf
+  location=$(dirname "$0")/../etc/longshore.conf
   if [ -f "$location" ]; then
     config_file="$location"
   fi

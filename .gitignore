@@ -1,6 +1,3 @@
-databases
-nginx
 platforms
-sites
-phpmyadmin
-etc/longshore/longshore.conf
+services
+etc/longshore.conf

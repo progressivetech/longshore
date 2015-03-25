@@ -1,13 +1,16 @@
 # This is a bash file that should be sourced.
 
-# Path to share files
-LONG_SHARE=/srv/longshore/share/longshore
+# Path to share files (standard /usr/share/longshore)
+LONG_SHARE=/srv/longshore/share
 
-# Path to store variable data (standard debian would be /var/lib/longshore/)
+# Path to store variable data (standard /var/lib/longshore/)
 LONG_VAR=/srv/longshore
 
-# Path for user generated data (should be /srv/longshore/)
+# Path for user generated data (standard /srv/longshore/)
 LONG_SRV=/srv/longshore
+
+# Path to etc files (standard /etc/longshore)
+LONG_ETC=/srv/longshore/etc
 
 # FRONTENDS: frontend-kvm:host:number
 # the number is used in the phpmyAdmin URLs (e.g. p1.ourpowerbase.net)
@@ -36,3 +39,5 @@ LONG_HTTPS_ENABLED=n
 # phpmyadmin URL
 LONG_PHPMYADMIN_URL=p1.ourpowerbase.net
 
+# Whether or not this is a live server as opposed to a local dev instance
+LONG_LIVE=n

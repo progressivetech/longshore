@@ -9,20 +9,6 @@
 #   combine with LONG_DRUSH_ARGS=-y if you want to fully automate
 #   a script).
 
-# Use can change the value of LONG_BASE by setting it as an environment
-# variable. For proper standard fs would be just: /
-[ -z "$LONG_BASE" ] && LONG_BASE=/srv/longshore/
-
-# Pull in defaults
-source "$LONG_BASE/etc/longshore/longshore.conf"
-
-# Determine whether we are running on a live server or not.
-hostname=$(hostname)
-if echo "$LONG_LIVE_FRONTENDS" | grep ":$hostname:" >/dev/null; then
-  LONG_LIVE=y
-else
-  LONG_LIVE=n
-fi
 # One liner for printing message and dying
 # long_die $msg $exit_code $var $var
 function long_die() {
@@ -189,7 +175,7 @@ long_log() {
 # save the phpmyadmin nginx configuration file
 long_create_nginx_phpmyadmin_conf() {
   template="${LONG_SHARE}/templates/nginx-php-site.conf"
-  target="${LONG_SRV}/nginx/sites-enabled/phpmyadmin.conf"
+  target="${LONG_SRV}/services/nginx/sites-enabled/phpmyadmin.conf"
   if [ "$LONG_HTTPS_ENABLED" = "n" ]; then
     LONG_LISTEN_443=
   else
@@ -217,7 +203,7 @@ long_create_nginx_site_conf() {
   platform="$2"
 
   template="${LONG_SHARE}/templates/nginx-php-site.conf"
-  target="${LONG_SRV}/nginx/sites-enabled/${site}.conf"
+  target="${LONG_SRV}/services/nginx/sites-enabled/${site}.conf"
   if [ "$LONG_HTTPS_ENABLED" = "n" ]; then
     LONG_LISTEN_443=
   else
@@ -244,8 +230,8 @@ long_create_nginx_site_conf() {
 long_phpmyadmin_is_latest() {
   # Check version installed
   installed=
-  if [ -f "${LONG_SRV}/phpmyadmin/src/README" ]; then
-    installed=$(head "${LONG_SRV}/phpmyadmin/src/README" | grep '^Version' | cut -d\  -f2)
+  if [ -f "${LONG_SRV}/services/phpmyadmin/src/README" ]; then
+    installed=$(head "${LONG_SRV}/services/phpmyadmin/src/README" | grep '^Version' | cut -d\  -f2)
   else
     # It's not installed at all, that means not the latest.
     return 1 
@@ -254,8 +240,8 @@ long_phpmyadmin_is_latest() {
   [ -z "$installed" ] && return 2 
 
   latest=
-  if [ -f "${LONG_SRV}/phpmyadmin/src/version_check.php" ]; then
-    latest=$(cd "${LONG_SRV}/phpmyadmin/src/" && php version_check.php | tr -d '{}"' | cut -d, -f1 | cut -d: -f2)
+  if [ -f "${LONG_SRV}/services/phpmyadmin/src/version_check.php" ]; then
+    latest=$(cd "${LONG_SRV}/services/phpmyadmin/src/" && php version_check.php | tr -d '{}"' | cut -d, -f1 | cut -d: -f2)
   else
     # Something is broken if we don't have this file
     return 2 
@@ -269,5 +255,5 @@ long_phpmyadmin_is_latest() {
 
 # This variable containing the names of all database containers
 long_db_containers() {
-  long_db_containers=(ls "${LONG_SRV}/databases/")
+  long_db_containers=(ls "${LONG_SRV}/services/databases/")
 }
