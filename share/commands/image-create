@@ -11,7 +11,7 @@ long_check_args "$2" "$#" 1
 itype="$2"
 
 # First delete image if FORCE is used.
-if [ "$LONG_FORCE" ]; then
+if [ "$LONG_FORCE" = 1 ]; then
   long_image_delete "$itype"
 fi
 
