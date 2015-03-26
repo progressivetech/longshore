@@ -131,6 +131,13 @@ long_container_running() {
   return 1
 }
 
+# Check if an image with the given name exists.
+# Return 0 if it exists and 1 if it doesn't.
+long_image_exists() {
+
+
+
+}
 # Generate a my.cnf file with the given info
 long_generate_my_cnf() {
   dir="$1"
@@ -257,6 +264,40 @@ long_phpmyadmin_is_latest() {
 # This variable containing the names of all database containers
 long_db_containers() {
   long_db_containers=$(ls "${LONG_SRV}/services/databases/")
+}
+
+# Create if necessary the given image
+# first argument is tag, second is path to docker directory
+long_image_create() {
+  tag="$1"
+  path="$2"
+  if ! long_image_exists "$tag"; then
+    long_log "Creating image (%s)" "info" "$tag"
+    if [ "$tag" = "ptp-base" ]; then
+      # This is a special condition
+      long_image_create_base
+    else
+      docker build -t "$tag" "$path"
+    fi
+  fi
+}
+
+# Create the base image
+long_image_create_base() {
+  long_log "Creating base image" info
+  long_log "Running debootstrap" info
+  temp=$(mkdir -d)
+  debootstrap jessie "$temp"
+  long_log "Importing into docker" info
+  cd "$temp" && tar -c - . | docker import - ptp-base
+}
+# Delete, if necessary, the image
+long_image_delete() {
+  tag="$1"
+  if long_image_exists "$tag"; then
+    long_log "Deleting  image (%s)" "info" "$tag"
+    docker rmi "$tag"
+  fi
 }
 
 # Create (if necessary) and start (if necessary) a given container

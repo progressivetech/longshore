@@ -10,13 +10,20 @@ long_check_args "$2" "$#" 1
 
 itype="$2"
 
+# First delete image if FORCE is used.
+if [ "$LONG_FORCE" ]; then
+  long_image_delete "$itype"
+fi
+
 # Create a mysql image.
 if [ "$itype" = "ptp-mysql" ]; then
-  docker build -t ptp-mysql ${LONG_ETC}/dockerfiles/ptp/mysql
+  long_image_create ptp-mysql ${LONG_ETC}/dockerfiles/ptp/mysql
 elif [ "$itype" = "ptp-nginx" ]; then
-  docker build -t ptp-nginx ${LONG_ETC}/dockerfiles/ptp/nginx
+  long_image_create ptp-nginx ${LONG_ETC}/dockerfiles/ptp/nginx
 elif [ "$itype" = "ptp-php" ]; then
-  docker build -t ptp-php ${LONG_ETC}/dockerfiles/ptp/php
+  long_image_create  ptp-php ${LONG_ETC}/dockerfiles/ptp/php
+elif [ "$itype" = "ptp-base" ]; then
+  long_image_create ptp-base
 else
   long_die "I don't know how to make an image of that type (%s)." 1 "$itype"
 fi
