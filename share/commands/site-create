@@ -1,7 +1,7 @@
 #!/bin/bash
 
 long_usage_message="usage: $(basename $0) <site> [<db>] [<platform>]
-Create a site on a specific platform. 
+Create a site. This is a thin wrapper around container-create for sites. 
 
 Arguments
   <site> - The site you want to create, e.g. ptp 
@@ -17,22 +17,5 @@ platform="$4"
 [ -z "$db" ] && db="$LONG_DEFAULT_DB"
 [ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
 
-# Sanity check - make sure platform exists 
-if [ ! -d "${LONG_SRV}/platforms/${platform}" ]; then
-  long_die "That platform doesn't seem to exist (%s)." "$platform"
-fi
-
-# If the database doesn't exist, confirm that we should create it.
-if ! long_container_exists "$db"; then
-  long_prompt "Creating new database container ($db)."
-  if [ "$reply" = "n" ]; then
-    long_die "Not creating new database container. Exiting." "0"
-  fi
-
-  # Create new database container
-  longshore container-create mysql "$db"
-fi
-
-# Build out directories and variables.
-longshore container-create site "$site" "$platform"
+longshore container-create "$site" "$db" "$platform"
 

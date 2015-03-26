@@ -16,8 +16,6 @@ sudo=n
 sudoers_file=n
 longshore_user=n
 php_user=n
-nginx_user=n
-mysql_user=n
 
 install=
 if ! dpkg -l docker.io 2>/dev/null | grep ^ii >/dev/null; then
@@ -40,16 +38,8 @@ if ! getent passwd longshore > /dev/null; then
   users=longshore:5000
 fi
 
-if ! getent passwd longshore-nginx > /dev/null; then
-  users="$users longshore-nginx:5002"
-fi
-
 if ! getent passwd longshore-php > /dev/null; then
   users="$users longshore-php:5001"
-fi
-
-if getent passwd longshore-mysql > /dev/null; then
-  users="$users longshore-mysql:5003"
 fi
 
 if [ -n "$users" ]; then
@@ -96,7 +86,7 @@ fi
 if ! stat /srv/longshore/bin | grep "Uid" | grep longshore >/dev/null; then
   long_prompt "Chown'ing files"
   if [ "$reply" = "y" ]; then
-    chown -R longshore:longshore /srv/longshore/bin /srv/longshore/share /srv/longshore/etc /srv/longshore/platforms /srv/longshore/nginx
-    chown longshore:longshore /srv/longshore/databases /srv/longshore/databases/* /srv/longshore/sites /srv/longshore/sites/*
+    chown -R longshore:longshore /srv/longshore/bin /srv/longshore/share \
+      /srv/longshore/etc /srv/longshore/platforms 
   fi
 fi

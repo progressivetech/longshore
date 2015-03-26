@@ -1,17 +1,21 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) <type> [<name>]
+long_usage_message="usage: $(basename $0) <type> [<name>] [<db>] [<platform>]
 Create a container. 
 
 Arguments
   <type> - The container type you want to create (site, mysql, nginx) 
   <name> - The name to give the container. Optional for nginx, not for
-  site or db."
+  site or db.
+  <db> - For site containers, specify the database to link it to.
+  <platform> - For site containers, specify the platform to use."
 
 long_check_args "$2" "$#" 1
 
 ctype="$2"
 name="$3"
+db="$4"
+platform="$5"
 
 if [ -z "$name" ]; then
   if [ "$ctype" = "nginx" -o "$ctype" = "phpmyadmin" ]; then
@@ -21,14 +25,14 @@ if [ -z "$name" ]; then
   fi
 fi
 
-# Make sure the container doesn't already exist. 
-if long_container_exists "$name"; then
-  long_die "A container with that name exists (%s)." 1 "$name"
+# Stop and Delete the container if force is specified.
+if [ "$LONG_FORCE" = 1 ]; then
+  long_container_destroy "$name"
 fi
 
-# Sanity checking.
-if [ "$ctype" != "mysql" -a "$ctype" != "site" -a "$ctype" != "nginx" -a "$ctype" != "phpmyadmin" ]; then
-  long_die "I don't know how to make a container of that type (%s)." 1 "$ctype"
+# If the container already exists, then we are done. 
+if long_container_exists "$name"; then
+  return
 fi
 
 # Create a mysql container.
@@ -121,5 +125,56 @@ elif [ "$ctype" = "phpmyadmin" ]; then
     -v "${LONG_SRV}/platforms:/var/www/html" \
     $link \
     ptp-php:latest php5-fpm 
+elif [ "$ctype" = "site" ]; then
+  # Sanity check - make sure platform exists 
+  if [ ! -d "${LONG_SRV}/platforms/${platform}" ]; then
+    long_die "That platform doesn't seem to exist (%s)." "$platform"
+  fi
 
+  # Ensure that the database container exists. 
+  longshore container-create mysql "$db"
+
+  # Build out directories. Create the minimal amount of directories and
+  # let Drupal and CiviCRM create the rest.
+  dir="${LONG_SRV}/services/sites/$name"
+  creates="backup drupal drupal/custom-civicrm
+    drupal/custom-civicrm/extensions drupal/custom-civicrm/php
+    drupal/custom-civicrm/templates drupal/files
+    drupal/files/civicrm drupal/files/civicrm/ConfigAndLog
+    drupal/files/civicrm/custom drupal/files/civicrm/persit
+    drupal/files/civicrm/templates_c drupal/files/civicrm/upload
+    drupal/private drupal/modules drupal/themes drupal/libraries"
+  for create in $creates; do
+    mkdir -p "${dir}/$create"
+  done
+
+  # Certain directories should not be accessible by the web user, only 
+  # by the user running the PHP application.
+  # See https://civicrm.org/advisory/civi-sa-2014-001-risk-information-disclosure
+  not_web_accessible="drupal/files/civicrm/ConfigAndLog
+    drupal/files/civicrm/templates_c drupal/files/civicrm/upload"
+  # Prohibit web access by removing other access. Only the user and the
+  # group owners will be able to access the files. And only the owner will
+  # be able to write to them.
+  for foo in $not_web_accessible; do
+    # We only need to make this change at the top level - no need for
+    # recursive.
+    chmod o-rwx "${dir}/${foo}" 
+    chmod g-w "${dir}/${foo}" 
+  done
+
+  # One more directory should be readable by the web user, but the web
+  # user should not be able to get a directory listing. We can do that
+  # by removing execute privileges, but keeping read privileges.
+  chmod o-x "${dir}/drupal/files/civicrm/contribute"
+
+  # Now that the right modes are set, chown the files to the right users. 
+  web_writable="drupal/files drupal/private"
+  for foo in $web_writable; do
+    # Maintain group ownership by the longshore user so we can read the
+    # files from the host for convenience and trouble-shooting.
+    sudo chown -R longshore-php:longshore "${dir}/${foo}"
+  done
+else
+  long_die "I don't know how to make a container of that type (%s)." 1 "$ctype"
 fi
