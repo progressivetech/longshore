@@ -13,6 +13,7 @@ user=$(whoami)
 # Check what needs to be installed first.
 docker=n
 sudo=n
+nginx=n
 sudoers_file=n
 longshore_user=n
 php_user=n
@@ -26,6 +27,10 @@ fi
 
 if ! dpkg -l sudo 2>/dev/null | grep ^ii >/dev/null; then
   install="$install sudo"
+fi
+
+if ! dpkg -l nginx 2>/dev/null | grep ^ii >/dev/null; then
+  install="$install nginx"
 fi
 
 if [ -n "$install" ]; then
@@ -62,13 +67,13 @@ if ! groups longshore | grep docker >/dev/null; then
 	long_prompt "Adding longshore user to the docker group"
 	adduser longshore docker
 fi
-longshore_sudo='longshore ALL=NOPASSWD: /bin/chown -R 5001\:5001 /srv/longshore/sites/*/drupal/*, /bin/chown 5001\:5001 /srv/longshore/sites/*/drupal/*'
-longshore_sudo_file=/etc/sudoers.d/longshore
+longshore_sudo_file="${LONG_SHARE}/longshore.sudoers"
+longshore_sudo_file_target=/etc/sudoers.d/longshore
 
-if [ ! -f "$longshore_sudo_file" ]; then
+if [ ! -f "$longshore_sudo_file_target" ] || ! diff "$longshore_sudo_file" "$longshore_sudo_file_target" > /dev/null; then
   long_prompt "Granting longshore user sudo rights to chown files"
   if [ "$reply" = "y" ]; then
-    echo "$longshore_sudo" > "$longshore_sudo_file"
+    cp "$longshore_sudo_file" "$longshore_sudo_file_target"
   fi
 fi
 
@@ -89,4 +94,25 @@ if ! stat /srv/longshore/bin | grep "Uid" | grep longshore >/dev/null; then
     chown -R longshore:longshore /srv/longshore/bin /srv/longshore/share \
       /srv/longshore/etc /srv/longshore/platforms 
   fi
+fi
+
+# Ensure that longshore users owns /etc/nginx/sites-enabled so we can write
+# to it.
+if ! stat /etc/nginx/sites-enabled | grep "Uid" | grep longshore >/dev/null; then
+  long_prompt "Chown'ing nginx sites-enabled directory"
+  if [ "$reply" = "y" ]; then
+    chown longshore:longshore /etc/nginx/sites-enabled 
+  fi
+fi
+
+# Set phpmyadmin symlink for nginx to work properly on the host
+if [ ! -h /var/www/phpmyadmin ] || [[ $(readlink /var/www/phpmyadmin) != "${LONG_SRV}/services/phpmyadmin/src" ]]; then
+  long_prompt "Create phpmyadmin symlink"
+  if [ -h /var/www/phpmyadmin ]; then
+    rm -f /var/www/phpmyadmin;
+  fi
+  if [ -f /var/www/phpmyadmin ]; then
+    long_die "There seems to be a file or directory in /var/www/phpmyadmin that should be moved by hand."
+  fi
+  ln -s "${LONG_SRV}/services/phpmyadmin/src" /var/www/phpmyadmin
 fi

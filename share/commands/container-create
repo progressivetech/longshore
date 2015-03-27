@@ -4,8 +4,8 @@ long_usage_message="usage: $(basename $0) <type> [<name>] [<db>] [<platform>]
 Create a container. 
 
 Arguments
-  <type> - The container type you want to create (site, mysql, nginx) 
-  <name> - The name to give the container. Optional for nginx, not for
+  <type> - The container type you want to create (site, mysql, phpmyadmin) 
+  <name> - The name to give the container. Optional for phpmyadmin not for
   site or db.
   <db> - For site containers, specify the database to link it to.
   <platform> - For site containers, specify the platform to use."
@@ -18,7 +18,7 @@ db="$4"
 platform="$5"
 
 if [ -z "$name" ]; then
-  if [ "$ctype" = "nginx" -o "$ctype" = "phpmyadmin" ]; then
+  if [ "$ctype" = "phpmyadmin" ]; then
     name="$ctype"
   else
     long_die "Containers of this type need a name passed as second argument."
@@ -46,17 +46,8 @@ if [ "$ctype" = "mysql" ]; then
 
   # Get the port number. Each MySQL container is assigned a unique port
   # on the host.
-  if [ -f "$dir/my.cnf" ]; then
-    port=$(grep port "${dir}/my.cnf" | cut -d= -f2)
-  else
-    # If we don't already have a .my.cnf file, find the next available port.
-    last_port=$(grep port= databases/*/my.cnf 2>/dev/null | cut -d= -f2)
-    if [ -z "$last_port" ]; then
-      port="$LONG_MYSQL_START_PORT"
-    else
-      port=$(( $last_port + 1 ))
-    fi
-  fi
+  port=
+  long_get_mysql_port
 
   # Make sure our base directory and a mysql sub directory exists.
   # Our my.cnf file will go in ${dir}/my.cnf and be mounted in the host
@@ -71,30 +62,6 @@ if [ "$ctype" = "mysql" ]; then
     -e "LONG_LIVE=$LONG_LIVE" \
     -p "$LONG_IP:${port}:3306" \
     ptp-mysql:latest mysqld
-
-elif [ "$ctype" = "nginx" ]; then
-  dir="${LONG_SRV}/services/nginx"
-  # Make sure we have our base directories
-  mkdir -p "$dir/x509"
-  mkdir -p "$dir/sites-enabled"
-  mkdir -p "$dir/logs"
-
-  link="--link phpmyadmin:phpmyadmin"
-  for site in $(ls "${LONG_SRV}/services/sites/"); do
-    link="$link --link $site:$site"
-  done
-  # Generate our link argument
-  docker create --name "$name" \
-    -v "${dir}/x509:/etc/nginx/x509" \
-    -v "${dir}/sites-enabled:/etc/nginx/sites-enabled" \
-    -v "${dir}/logs:/var/log/nginx" \
-    -v "${LONG_SRV}/services/phpmyadmin/src:/var/www/phpmyadmin" \
-    -v "${LONG_SRV}/platforms:/var/www/html" \
-    -v "${LONG_SRV}/services/sites:/srv/sites" \
-    -p "$LONG_IP:80:80" \
-    -p "$LONG_IP:443:443" \
-    $link \
-    ptp-nginx:latest nginx 
 elif [ "$ctype" = "phpmyadmin" ]; then
   dir="${LONG_SRV}/services/phpmyadmin"
   # Make sure we have our base directories
@@ -110,6 +77,13 @@ elif [ "$ctype" = "phpmyadmin" ]; then
     link="$link --link $db:$db"
   done
 
+  # We have to publish the port to the host so nginx can communicate
+  # with it. Each PHP container has to have a unique port.
+  port=
+  long_get_php_port phpmyadmin
+
+  publish="-p 127.0.0.1:$port:9000"
+
   # Copy in the config.inc.php.sample file with blowfish secret
   password=
   long_pwgen
@@ -117,13 +91,14 @@ elif [ "$ctype" = "phpmyadmin" ]; then
     > "${dir}/src/config.inc.php" 
 
   # Create nginx configuration
-  long_create_nginx_phpmyadmin_conf
+  long_create_nginx_phpmyadmin_conf "$port"
 
   # Docker
-  docker create --name "$name" \
+  docker create --name phpmyadmin \
     -v "${dir}/src:/var/www/phpmyadmin" \
     -v "${LONG_SRV}/platforms:/var/www/html" \
     $link \
+    $publish \
     ptp-php:latest php5-fpm 
 elif [ "$ctype" = "site" ]; then
   # Sanity check - make sure platform exists 
@@ -175,6 +150,14 @@ elif [ "$ctype" = "site" ]; then
     # files from the host for convenience and trouble-shooting.
     sudo chown -R longshore-php:longshore "${dir}/${foo}"
   done
+
+  # We have to publish the port to the host so nginx can communicate
+  # with it. Each PHP container has to have a unique port.
+  port=
+  long_get_php_port "$name" 
+
+  publish="-p 127.0.0.1:$port:9000"
+
 else
   long_die "I don't know how to make a container of that type (%s)." 1 "$ctype"
 fi

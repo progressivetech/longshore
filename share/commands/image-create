@@ -4,7 +4,7 @@ long_usage_message="usage: $(basename $0) <type>
 Create an image. 
 
 Arguments
-  <type> - The image type you want to create (ptp-mysql, ptp-nginx, etc.)" 
+  <type> - The image type you want to create (ptp-mysql, etc.)" 
 
 long_check_args "$2" "$#" 1
 
@@ -18,8 +18,6 @@ fi
 # Create a mysql image.
 if [ "$itype" = "ptp-mysql" ]; then
   long_image_create ptp-mysql ${LONG_ETC}/dockerfiles/ptp/mysql
-elif [ "$itype" = "ptp-nginx" ]; then
-  long_image_create ptp-nginx ${LONG_ETC}/dockerfiles/ptp/nginx
 elif [ "$itype" = "ptp-php" ]; then
   long_image_create  ptp-php ${LONG_ETC}/dockerfiles/ptp/php
 elif [ "$itype" = "ptp-base" ]; then

@@ -16,13 +16,11 @@ for db in $long_db_containers; do
 done
 
 # First check for LONG_FORCE and if it is present, destroy the current
-# pnpmyadmin and nginx containers.
-
+# pnpmyadmin container.
 if [ "$LONG_FORCE" = "1" ]; then
   long_container_destroy phpmyadmin 
-  long_container_destroy nginx 
 fi
 
 # Now start.
 long_container_up phpmyadmin
-long_container_up nginx
+long_nginx_reload

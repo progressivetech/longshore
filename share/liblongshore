@@ -114,6 +114,11 @@ long_debug() {
 # Check if a conatiner with the given name exists or not.
 # Return 0 if it exists and 1 if it doesn't.
 long_container_exists() {
+  long_container_or_image_exists "$1"
+}
+
+# Inspect seems to work for both containers and images.
+long_container_or_image_exists() {
   name="$1"
   [ -z "$name" ] && return 1
   # This command returns 1 if the container doesn't exist and 0 if it does.
@@ -134,10 +139,9 @@ long_container_running() {
 # Check if an image with the given name exists.
 # Return 0 if it exists and 1 if it doesn't.
 long_image_exists() {
-
-
-
+  long_container_or_image_exists "$1"
 }
+
 # Generate a my.cnf file with the given info
 long_generate_my_cnf() {
   dir="$1"
@@ -182,8 +186,9 @@ long_log() {
 
 # save the phpmyadmin nginx configuration file
 long_create_nginx_phpmyadmin_conf() {
+  port="$1"
   template="${LONG_SHARE}/templates/nginx-php-site.conf"
-  target="${LONG_SRV}/services/nginx/sites-enabled/phpmyadmin.conf"
+  target="${LONG_NGINX_SITES_ENABLED}/phpmyadmin.conf"
   if [ "$LONG_HTTPS_ENABLED" = "n" ]; then
     LONG_LISTEN_443=
   else
@@ -191,9 +196,9 @@ long_create_nginx_phpmyadmin_conf() {
   fi
   LONG_ACCESS_LOG=phpmyadmin.access.log
   LONG_SITE_URL="$LONG_PHPMYADMIN_URL"
-  LONG_WEB_ROOT=/var/www/phpmyadmin
+  LONG_WEB_ROOT="/var/www/phpmyadmin"
   LONG_PHP_ROOT="$LONG_WEB_ROOT"
-  LONG_CGI_HOST=phpmyadmin
+  LONG_CGI_PORT="$port"
   cat "$template" | \
     sed \
     -e "s#LONG_LISTEN_443#$LONG_LISTEN_443#" \
@@ -201,7 +206,7 @@ long_create_nginx_phpmyadmin_conf() {
     -e "s#LONG_SITE_URL#$LONG_SITE_URL#" \
     -e "s#LONG_WEB_ROOT#$LONG_WEB_ROOT#" \
     -e "s#LONG_PHP_ROOT#$LONG_PHP_ROOT#" \
-    -e "s#LONG_CGI_HOST#$LONG_CGI_HOST#" \
+    -e "s#LONG_CGI_PORT#$LONG_CGI_PORT#" \
     > "$target"
 }
 
@@ -209,9 +214,10 @@ long_create_nginx_phpmyadmin_conf() {
 long_create_nginx_site_conf() {
   site="$1"
   platform="$2"
+  port="$3"
 
   template="${LONG_SHARE}/templates/nginx-php-site.conf"
-  target="${LONG_SRV}/services/nginx/sites-enabled/${site}.conf"
+  target="${LONG_NGINX_SITES_ENABLED}/${site}.conf"
   if [ "$LONG_HTTPS_ENABLED" = "n" ]; then
     LONG_LISTEN_443=
   else
@@ -221,7 +227,7 @@ long_create_nginx_site_conf() {
   LONG_SITE_URL="${site}.${LONG_DEFAULT_DOMAIN}"
   LONG_WEB_ROOT="/var/www/html/${platform}"
   LONG_PHP_ROOT="$LONG_WEB_ROOT"
-  LONG_CGI_HOST="$site"
+  LONG_CGI_PORT="$port"
 
   cat "$template" | \
     sed \
@@ -230,7 +236,7 @@ long_create_nginx_site_conf() {
     -e "s#LONG_SITE_URL#$LONG_SITE_URL#" \
     -e "s#LONG_WEB_ROOT#$LONG_WEB_ROOT#" \
     -e "s#LONG_PHP_ROOT#$LONG_PHP_ROOT#" \
-    -e "s#LONG_CGI_HOST#$LONG_CGI_HOST#" \
+    -e "s#LONG_CGI_PORT#$LONG_CGI_PORT#" \
     > "$target"
 }
 
@@ -272,7 +278,7 @@ long_image_create() {
   tag="$1"
   path="$2"
   if ! long_image_exists "$tag"; then
-    long_log "Creating image (%s)" "info" "$tag"
+    long_log "Creating image (%s)" info "$tag"
     if [ "$tag" = "ptp-base" ]; then
       # This is a special condition
       long_image_create_base
@@ -295,7 +301,7 @@ long_image_create_base() {
 long_image_delete() {
   tag="$1"
   if long_image_exists "$tag"; then
-    long_log "Deleting  image (%s)" "info" "$tag"
+    long_log "Deleting  image (%s)" info "$tag"
     docker rmi "$tag"
   fi
 }
@@ -305,17 +311,17 @@ long_container_up() {
   type="$1"
   name="$2"
 
-  # phpmyadmin and nginx will be called with just the type variable set.
+  # phpmyadmin will be called with just the type variable set.
   # In these cases, we use the type as the name - since we only have one
-  # nginx container and one phpmyadmin container.
+  # one phpmyadmin container.
   label="$name"
   [ -z "$label" ] && label="$type"
   if ! long_container_exists "$label"; then
-    long_log "Creating container (%s)" "info" "$label"
+    long_log "Creating container (%s)" info "$label"
     longshore container-create "$type" "$name"
   fi
   if ! long_container_running "$label"; then
-    long_log "Starting container (%s)" "info" "$label"
+    long_log "Starting container (%s)" info "$label"
     docker start "$label"
   fi
 }
@@ -325,10 +331,55 @@ long_container_destroy() {
   name="$1"
   if long_container_exists "$name"; then
     if long_container_running "$name"; then
-      long_log "Stopping container (%s)" "info" "$name"
+      long_log "Stopping container (%s)" info "$name"
       docker stop "$name" 
     fi
-    long_log "Removing container (%s)" "info" "$name"
+    long_log "Removing container (%s)" info "$name"
     docker rm "$name" 
+  fi
+}
+
+# Reload nginx to pickup new configurations
+long_nginx_reload() {
+  sudo /etc/init.d/nginx reload
+}
+
+# Get the port for this mysql container, or assign a new one.
+long_get_mysql_port() {
+  name="$1"
+  dir="${LONG_SRV}/services/databases/${name}"
+  if [ -f "$dir/my.cnf" ]; then
+    port=$(grep port "${dir}/my.cnf" | cut -d= -f2)
+  else
+    # If we don't already have a .my.cnf file, find the next available port.
+    last_port=$(grep port= "${LONG_SRV}/services/databases/*/my.cnf" 2>/dev/null | cut -d= -f2 | sort -n | tail -n 1)
+    if [ -z "$last_port" ]; then
+      port="$LONG_MYSQL_START_PORT"
+    else
+      port=$(( $last_port + 1 ))
+    fi
+  fi
+}
+
+# Get the port for this php container, or assign a new one.
+long_get_php_port() {
+  name="$1"
+  if [ "$name" = "phpmyadmin" ]; then
+    envdir="${LONG_SRV}/services/phpmyadmin/env"
+  else
+    envdir="${LONG_SRV}/services/sites/${name}/env"
+  fi
+  if [ -f "${envdir}/PORT" ]; then
+    port=$(cat "${envdir}/PORT")
+  else
+    # If we don't already have a PORT file, find the next available port.
+    last_port=$(cat "${LONG_SRV}/services/phpmyadmin/env/PORT" "${LONG_SRV}/services/*/env/PORT" 2>/dev/null | sort -n | tail -n1)
+    if [ -z "$last_port" ]; then
+      port="$LONG_PHP_START_PORT"
+    else
+      port=$(( $last_port + 1 ))
+    fi
+    mkdir -p "$envdir"
+    echo "$port" > "${envdir}/PORT"
   fi
 }
