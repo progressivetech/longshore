@@ -17,6 +17,7 @@ nginx=n
 sudoers_file=n
 longshore_user=n
 php_user=n
+openssl=n
 
 install=
 if ! dpkg -l docker.io 2>/dev/null | grep ^ii >/dev/null; then
@@ -31,6 +32,12 @@ fi
 
 if ! dpkg -l nginx 2>/dev/null | grep ^ii >/dev/null; then
   install="$install nginx"
+fi
+
+if [ -n "$LONG_TLS_KEY_PATH" ]; then
+  if ! dpkg -l openssl 2>/dev/null | grep ^ii >/dev/null; then
+    install="$install openssl"
+  fi
 fi
 
 if [ -n "$install" ]; then
@@ -108,11 +115,38 @@ fi
 # Set phpmyadmin symlink for nginx to work properly on the host
 if [ ! -h /var/www/phpmyadmin ] || [[ $(readlink /var/www/phpmyadmin) != "${LONG_SRV}/services/phpmyadmin/src" ]]; then
   long_prompt "Create phpmyadmin symlink"
-  if [ -h /var/www/phpmyadmin ]; then
-    rm -f /var/www/phpmyadmin;
+  if [ "$reply" = "y" ]; then
+    if [ -h /var/www/phpmyadmin ]; then
+      rm -f /var/www/phpmyadmin;
+    fi
+    if [ -f /var/www/phpmyadmin ]; then
+      long_die "There seems to be a file or directory in /var/www/phpmyadmin that should be moved by hand."
+    fi
+    ln -s "${LONG_SRV}/services/phpmyadmin/src" /var/www/phpmyadmin
   fi
-  if [ -f /var/www/phpmyadmin ]; then
-    long_die "There seems to be a file or directory in /var/www/phpmyadmin that should be moved by hand."
+fi
+
+# Setup tls if necessary
+if [ -n "$LONG_TLS_KEY_PATH" ]; then
+  if [ -z "$LONG_X509_CERT_PATH" -o -z "$LONG_DH_PARAM_PATH" -o -z \
+    "$LONG_NGINX_TLS_PATH" ]; then
+    long_die "If you want https support, you have define LONG_TLS_KEY_PATH, \
+      LONG_x509_CERT_PATH, LONG_DH_PARAM_PATH, and LONG_NGINX_TLS_PATH \
+      in longshore.conf"
   fi
-  ln -s "${LONG_SRV}/services/phpmyadmin/src" /var/www/phpmyadmin
+  if [ ! -f "$LONG_TLS_KEY_PATH" ]; then
+    long_die "Please manually copy the key file to %s" 1 "$LONG_TLS_KEY_PATH"
+  fi
+  if [ ! -f "$LONG_X509_CERT_PATH" ]; then
+    long_die "Please manually copy the crt file to %s" 1 "$LONG_X509_CERT_PATH"
+  fi
+  if [ ! -f "$LONG_DH_PARAM_PATH" ]; then
+    long_prompt "Create dhparams"
+    if [ "$reply" = "y" ]; then
+      openssl dhparam -out "$LONG_DH_PARAM_PATH" 4096
+    fi
+  fi
+  # Touch and fix ownership for tls.conf file
+  touch "$LONG_NGINX_TLS_PATH"
+  chown longshore:longshore "$LONG_NGINX_TLS_PATH"
 fi

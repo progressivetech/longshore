@@ -31,9 +31,6 @@ LONG_HTTPS_ENABLED=n
 # environment variable.
 LONG_DRUSH="/usr/bin/drush $LONG_DRUSH_ARGS"
 
-# When setting up web sites, should we enable https?
-LONG_HTTPS_ENABLED=n
-
 # phpmyadmin URL
 LONG_PHPMYADMIN_URL=p1.ourpowerbase.net
 
@@ -42,3 +39,11 @@ LONG_NGINX_SITES_ENABLED=/etc/nginx/sites-enabled
 
 # Whether or not this is a live server as opposed to a local dev instance
 LONG_LIVE=n
+
+# Path to tls related files  for nginx (optional)
+# If you comment out these variables, then https won't be enabled.
+# LONG_TLS_KEY_PATH=/etc/ssl/wildcard.ourpowerbase.net.key
+# LONG_X509_CERT_PATH=/etc/ssl/wildcard.ourpowerbase.net.crt
+# LONG_DH_PARAM_PATH=/etc/ssl/dhparam.pem
+# This path holds the generic nginx tls configuration.
+# LONG_NGINX_TLS_PATH=/etc/nginx/tls.conf

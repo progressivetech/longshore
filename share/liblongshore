@@ -184,29 +184,36 @@ long_log() {
   fi
 }
 
+# Save the generic tls configuration for all sites
+long_create_nginx_tls_conf() {
+  tls_template="${LONG_SHARE}/templates/nginx-tls.conf"
+  tls_target="$LONG_NGINX_TLS_PATH"
+  cat "$tls_template" | \
+    sed \
+    -e "s:LONG_TLS_KEY_PATH:$LONG_TLS_KEY_PATH:" \
+    -e "s:LONG_X509_CERT_PATH:$LONG_X509_CERT_PATH:" \
+    -e "s:LONG_DH_PARAM_PATH:$LONG_DH_PARAM_PATH:" \
+    > "$tls_target"
+}
+
 # save the phpmyadmin nginx configuration file
 long_create_nginx_phpmyadmin_conf() {
   port="$1"
-  template="${LONG_SHARE}/templates/nginx-php-site.conf"
+  template="${LONG_SHARE}/templates/nginx-phpmyadmin.conf"
   target="${LONG_NGINX_SITES_ENABLED}/phpmyadmin.conf"
-  if [ "$LONG_HTTPS_ENABLED" = "n" ]; then
-    LONG_LISTEN_443=
+  if [ -f "$LONG_NGINX_TLS_PATH" ]; then
+    LONG_INCLUDE_TLS="include $LONG_NGINX_TLS_PATH;"
+    long_create_nginx_tls_conf
   else
-    LONG_LISTEN_443="listen 443"
+    LONG_INCLUDE_TLS="# tls not enabled for this site."_
   fi
-  LONG_ACCESS_LOG=phpmyadmin.access.log
   LONG_SITE_URL="$LONG_PHPMYADMIN_URL"
-  LONG_WEB_ROOT="/var/www/phpmyadmin"
-  LONG_PHP_ROOT="$LONG_WEB_ROOT"
   LONG_CGI_PORT="$port"
   cat "$template" | \
     sed \
-    -e "s#LONG_LISTEN_443#$LONG_LISTEN_443#" \
-    -e "s#LONG_ACCESS_LOG#$LONG_ACCESS_LOG#" \
-    -e "s#LONG_SITE_URL#$LONG_SITE_URL#" \
-    -e "s#LONG_WEB_ROOT#$LONG_WEB_ROOT#" \
-    -e "s#LONG_PHP_ROOT#$LONG_PHP_ROOT#" \
-    -e "s#LONG_CGI_PORT#$LONG_CGI_PORT#" \
+    -e "s:LONG_INCLUDE_TLS:$LONG_INCLUDE_TLS:" \
+    -e "s:LONG_SITE_URL:$LONG_SITE_URL:" \
+    -e "s:LONG_CGI_PORT:$LONG_CGI_PORT:" \
     > "$target"
 }
 
@@ -216,12 +223,13 @@ long_create_nginx_site_conf() {
   platform="$2"
   port="$3"
 
-  template="${LONG_SHARE}/templates/nginx-php-site.conf"
+  template="${LONG_SHARE}/templates/nginx-site.conf"
   target="${LONG_NGINX_SITES_ENABLED}/${site}.conf"
-  if [ "$LONG_HTTPS_ENABLED" = "n" ]; then
-    LONG_LISTEN_443=
+  if [ -f "$LONG_NGINX_TLS_PATH" ]; then
+    LONG_INCLUDE_TLS="include $LONG_NGINX_TLS_PATH;"
+    long_create_nginx_tls_conf
   else
-    LONG_LISTEN_443="listen 443"
+    LONG_INCLUDE_TLS="# tls not enabled for this site."_
   fi
   LONG_ACCESS_LOG="${site}.access.log"
   LONG_SITE_URL="${site}.${LONG_DEFAULT_DOMAIN}"

@@ -71,6 +71,19 @@ elif [ "$ctype" = "phpmyadmin" ]; then
   long_db_containers
   echo "$long_db_containers" > "${dir}/src/servers.list"
 
+  # FIXME - This is temporary while we are supporting both longshore and 
+  # aegir. The phpmyadmin instance has to connect to the aegir servers 
+  # too.
+  for server in $(ls -d /var/aegir/platforms/*-ourpowerbase-d7-c4.5 | sed 's/-ourpowerbase-d7-c4\.5$//' | cut -d/ -f5); do
+    # On dev servers - master is used for localhost
+    if [ "$server" = "master" ]; then
+      continue
+    else
+      server="${server}.mayfirst.org"
+    fi
+    echo "$server" >> "${dir}/src/servers.list"
+  done
+
   # Create the --link argument
   link=
   for db in $long_db_containers; do
