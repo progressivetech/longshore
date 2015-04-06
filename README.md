@@ -23,6 +23,13 @@ It is a set of bash helper scripts providing a thin wrapper around docker comman
    Pin-Priority: 200
  
  * Install linux-image-3.16.0-0 AND initramfs-tools from wheezy-backports and
-   lxc-docker from jessie.
+   lxc-docker from jessie and lvm2 from wheezy.
 
- * Be sure that lvm2 is from wheezy.
+ * Reboot
+
+ * cd /srv && git clone git://git.progressivetech.org/provisioning/longshore.git
+
+ * cp /srv/longshore/etc/longshore.conf.sample /srv/longshore/etc/longshore.conf
+
+ * Edit /srv/longshore/etc/longshore.conf
+ * /srv/longshore/bin/longshore init

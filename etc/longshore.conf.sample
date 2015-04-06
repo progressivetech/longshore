@@ -42,7 +42,7 @@ LONG_LIVE=n
 
 # Path to tls related files  for nginx (optional)
 # If you comment out these variables, then https won't be enabled.
-# LONG_TLS_KEY_PATH=/etc/ssl/wildcard.ourpowerbase.net.key
+# LONG_TLS_KEY_PATH=/etc/ssl/private/wildcard.ourpowerbase.net.key
 # LONG_X509_CERT_PATH=/etc/ssl/wildcard.ourpowerbase.net.crt
 # LONG_DH_PARAM_PATH=/etc/ssl/dhparam.pem
 # This path holds the generic nginx tls configuration.
