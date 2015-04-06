@@ -62,7 +62,7 @@ if [ -n "$users" ]; then
       uid=$(echo "$user" | cut -d: -f2)
       groupadd "$username" -g "$uid"
       home=
-      if [ "$user" = "longshoare" ]; then
+      if [ "$username" = "longshoare" ]; then
         home="-m"
       fi
       useradd $home -u "$uid" -g "$uid" "$username"
