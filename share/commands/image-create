@@ -4,25 +4,32 @@ long_usage_message="usage: $(basename $0) <type>
 Create an image. 
 
 Arguments
-  <type> - The image type you want to create (ptp-mysql, etc.)" 
+  <type> - The image type you want to create (ptp-mysql, etc.) or 'all'
+    to create all images" 
 
 long_check_args "$2" "$#" 1
 
-itype="$2"
+itypes="$2"
 
-# First delete image if FORCE is used.
-if [ "$LONG_FORCE" = 1 ]; then
-  long_image_delete "$itype"
+if [ "$itypes" = "all" ]; then
+  itypes="ptp-base ptp-mysql ptp-php"
 fi
 
-# Create a mysql image.
-if [ "$itype" = "ptp-mysql" ]; then
-  long_image_create ptp-mysql ${LONG_ETC}/dockerfiles/ptp/mysql
-elif [ "$itype" = "ptp-php" ]; then
-  long_image_create  ptp-php ${LONG_ETC}/dockerfiles/ptp/php
-elif [ "$itype" = "ptp-base" ]; then
-  long_image_create ptp-base
-else
-  long_die "I don't know how to make an image of that type (%s)." 1 "$itype"
-fi
+for itype in $itypes; do
+  # First delete image if FORCE is used.
+  if [ "$LONG_FORCE" = 1 ]; then
+    long_image_delete "$itype"
+  fi
+
+  # Create a mysql image.
+  if [ "$itype" = "ptp-mysql" ]; then
+    long_image_create ptp-mysql ${LONG_ETC}/dockerfiles/ptp/mysql
+  elif [ "$itype" = "ptp-php" ]; then
+    long_image_create  ptp-php ${LONG_ETC}/dockerfiles/ptp/php
+  elif [ "$itype" = "ptp-base" ]; then
+    long_image_create ptp-base
+  else
+    long_die "I don't know how to make an image of that type (%s)." 1 "$itype"
+  fi
+done
 
