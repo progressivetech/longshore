@@ -100,9 +100,14 @@ if ! stat /srv/longshore/bin | grep "Uid" | grep longshore >/dev/null; then
   if [ "$reply" = "y" ]; then
     chown -R longshore:longshore /srv/longshore/bin /srv/longshore/share \
       /srv/longshore/etc /srv/longshore/.git /srv/longshore/README.md
-    # There is just one file that needs to stay owned by root for security
-    # reasons - since it is in the sudoers file.
-    chown root:root /srv/longshore/bin/longshore-create-base-image
+  fi
+fi
+
+# Ensure the file that needs to be run as sudo is installed and up-to-date
+if ! diff -q "${LONG_SHARE}/longshore-create-base-image" /usr/local/sbin/longshore-create-base-image >/dev/null; then
+  long_prompt "Updating longshore-create-base-image"
+  if [ "$reply" = "y" ]; then
+    cp "${LONG_SHARE}/longshore-create-base-image" /usr/local/sbin/longshore-create-base-image
   fi
 fi
 

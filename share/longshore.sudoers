@@ -1,1 +1,1 @@
-longshore ALL=NOPASSWD: /bin/chown -R longshore-php\:longshore /srv/longshore/services/sites/*/drupal/files, /bin/chown -R longshore-php\:longshore /srv/longshore/services/sites/*/drupal/private, /etc/init.d/nginx reload, /srv/longshore/bin/longshore-create-base-image
+longshore ALL=NOPASSWD: /bin/chown -R longshore-php\:longshore /srv/longshore/services/sites/*/drupal/files, /bin/chown -R longshore-php\:longshore /srv/longshore/services/sites/*/drupal/private, /etc/init.d/nginx reload, /usr/local/sbin/longshore-create-base-image
