@@ -120,6 +120,17 @@ if  [ ! -f "$target" ] || ! diff -q "$source" "$target" >/dev/null; then
   fi
 fi
 
+# Ensure that our tweak to nginx to allow longer server names is in place.
+source="${LONG_SHARE}/templates/server-names-hash-bucket-size.conf"
+target="/etc/nginx/conf.d/server-names-hash-bucket-size.conf"
+if  [ ! -f "$target" ] || ! diff -q "$source" "$target" >/dev/null; then
+  long_prompt "Updating server-names-hash-bucket-size.conf"
+  if [ "$reply" = "y" ]; then
+    cp "$source" "$target" 
+    chmod 644 "$target"
+  fi
+fi
+
 # Ensure that longshore users owns /etc/nginx/sites-enabled so we can write
 # to it.
 if ! stat /etc/nginx/sites-enabled | grep "Uid" | grep longshore >/dev/null; then
