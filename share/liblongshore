@@ -225,7 +225,6 @@ long_create_nginx_redirect() {
   LONG_SITE_URL="$2"
   template="${LONG_SHARE}/templates/nginx-redirect-https.conf"
   target="${LONG_NGINX_SITES_ENABLED}/${site}-redirect.conf"
-  LONG_SITE_URL="$1"
   cat "$template" | \
     sed \
     -e "s#LONG_SITE_URL#$LONG_SITE_URL#" \
