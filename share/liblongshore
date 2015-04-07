@@ -223,12 +223,12 @@ long_create_nginx_phpmyadmin_conf() {
 long_create_nginx_redirect() {
   site="$1"
   LONG_SITE_URL="$2"
-  template="${LONG_SHARE}/templates/nginx-redirect-https.conf"
-  target="${LONG_NGINX_SITES_ENABLED}/${site}-redirect.conf"
-  cat "$template" | \
+  redirect_template="${LONG_SHARE}/templates/nginx-redirect-https.conf"
+  redirect_target="${LONG_NGINX_SITES_ENABLED}/${site}-redirect.conf"
+  cat "$redirect_template" | \
     sed \
     -e "s#LONG_SITE_URL#$LONG_SITE_URL#" \
-    > "$target"
+    > "$redirect_target"
 }
 
 # Save an nginx server configuration file
