@@ -47,3 +47,14 @@ LONG_LIVE=n
 # LONG_DH_PARAM_PATH=/etc/ssl/dhparam.pem
 # This path holds the generic nginx tls configuration.
 # LONG_NGINX_TLS_PATH=/etc/nginx/tls.conf
+
+# Indicate the starting port that MySQL containers should listen on from 
+# the host. The first MySQL db will use this port. The next will use this
+# port + 1, etc.
+LONG_MYSQL_START_PORT=10000
+
+# Indicate the starting port that PHP containers should listen on from 
+# the host. The first PHP container will use this port. The next will use this
+# port + 1, etc.
+LONG_PHP_START_PORT=11000
+
