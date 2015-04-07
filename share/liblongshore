@@ -299,12 +299,9 @@ long_image_create() {
 # Create the base image
 long_image_create_base() {
   long_log "Creating base image" info
-  long_log "Running debootstrap" info
-  temp=$(mkdir -d)
-  debootstrap jessie "$temp"
-  long_log "Importing into docker" info
-  cd "$temp" && tar -c - . | docker import - ptp-base
+  sudo /srv/longshore/bin/longshore-create-base-image
 }
+
 # Delete, if necessary, the image
 long_image_delete() {
   tag="$1"

@@ -100,6 +100,9 @@ if ! stat /srv/longshore/bin | grep "Uid" | grep longshore >/dev/null; then
   if [ "$reply" = "y" ]; then
     chown -R longshore:longshore /srv/longshore/bin /srv/longshore/share \
       /srv/longshore/etc
+    # There is just one file that needs to stay owned by root for security
+    # reasons - since it is in the sudoers file.
+    chown root:root /srv/longshore/bin/longshore-create-base-image
   fi
 fi
 
