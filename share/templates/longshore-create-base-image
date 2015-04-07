@@ -2,7 +2,7 @@
 
 # Special script that must be run as root to create base image
 # Exit on error (-e)
-temp=$(mkdir -d)
+temp=$(mktemp -d)
 echo "Running debootstrap"
 debootstrap jessie "$temp"
 echo "Importing into docker"
