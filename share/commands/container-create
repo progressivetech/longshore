@@ -100,7 +100,7 @@ elif [ "$ctype" = "phpmyadmin" ]; then
   # Copy in the config.inc.php.sample file with blowfish secret
   password=
   long_pwgen
-  cat ${dir}/config.inc.php.sample | sed "s/BLOWFISHSECRET/$password/" \
+  cat ${LONG_SHARE}/templates/phpmyadmin.config.inc.php.sample | sed "s/BLOWFISHSECRET/$password/" \
     > "${dir}/src/config.inc.php" 
 
   # Create nginx configuration
