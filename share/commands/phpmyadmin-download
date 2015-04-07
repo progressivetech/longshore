@@ -9,7 +9,7 @@ Arguments:
 
 long_check_args "$2" "$#" 1
 
-dest="${LONG_SRV}/phpmyadmin/src"
+dest="${LONG_SRV}/services/phpmyadmin/src"
 mkdir -p "$dest"
 
 LONG_LOG_LEVEL=info
