@@ -61,11 +61,11 @@ if [ -n "$users" ]; then
       username=$(echo "$user" | cut -d: -f1)
       uid=$(echo "$user" | cut -d: -f2)
       groupadd "$username" -g "$uid"
-      home=
-      if [ "$username" = "longshoare" ]; then
-        home="-m"
+      if [ "$username" = "longshore" ]; then
+        adduser --disabled-password --gecos "Longshore User" "$username"
+      else
+        useradd -u "$uid" -g "$uid" "$username"
       fi
-      useradd $home -u "$uid" -g "$uid" "$username"
     done
   fi
 fi
