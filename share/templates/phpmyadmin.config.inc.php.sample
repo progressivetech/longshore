@@ -8,7 +8,9 @@ $i = 1;
 
 $pb_servers = pb_get_servers();
 while(list(,$pb_server) = each($pb_servers)) {
-    $cfg['Servers'][$i]['host'] = trim($pb_server);
+    $host = trim($pb_server);
+    if(empty($host)) continue;
+    $cfg['Servers'][$i]['host'] = $host;
     $cfg['Servers'][$i]['auth_type'] = 'cookie';
     $cfg['Servers'][$i]['ssl'] = TRUE;
     $cfg['Servers'][$i]['extension'] = 'mysqli';
