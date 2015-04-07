@@ -110,7 +110,8 @@ target="/usr/local/sbin/longshore-create-base-image"
 if  [ ! -f "$target" ] || ! diff -q "$source" "$target" >/dev/null; then
   long_prompt "Updating longshore-create-base-image"
   if [ "$reply" = "y" ]; then
-    cp "${LONG_SHARE}/longshore-create-base-image" /usr/local/sbin/longshore-create-base-image
+    cp "$source" "$target" 
+    chmod 755 "$target"
   fi
 fi
 
