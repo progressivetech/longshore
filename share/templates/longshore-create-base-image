@@ -6,7 +6,7 @@ temp=$(mktemp -d)
 echo "Running debootstrap"
 debootstrap jessie "$temp"
 echo "Importing into docker"
-cd "$temp" && tar -c - . | docker import - ptp-base
+cd "$temp" && tar -c . | docker import - ptp-base
 cd
 echo "Removing temp directory"
 rm -rf "$temp"
