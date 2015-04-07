@@ -74,7 +74,7 @@ if ! groups longshore | grep docker >/dev/null; then
 	long_prompt "Adding longshore user to the docker group"
 	adduser longshore docker
 fi
-longshore_sudo_file="${LONG_SHARE}/longshore.sudoers"
+longshore_sudo_file="${LONG_SHARE}/templates/longshore.sudoers"
 longshore_sudo_file_target=/etc/sudoers.d/longshore
 
 if [ ! -f "$longshore_sudo_file_target" ] || ! diff "$longshore_sudo_file" "$longshore_sudo_file_target" > /dev/null; then
@@ -105,7 +105,9 @@ if ! stat /srv/longshore/bin | grep "Uid" | grep longshore >/dev/null; then
 fi
 
 # Ensure the file that needs to be run as sudo is installed and up-to-date
-if ! diff -q "${LONG_SHARE}/longshore-create-base-image" /usr/local/sbin/longshore-create-base-image >/dev/null; then
+source="${LONG_SHARE}/templates/longshore-create-base-image" 
+target="/usr/local/sbin/longshore-create-base-image"
+if  [ ! -f "$target" ] || ! diff -q "$source" "$target" >/dev/null; then
   long_prompt "Updating longshore-create-base-image"
   if [ "$reply" = "y" ]; then
     cp "${LONG_SHARE}/longshore-create-base-image" /usr/local/sbin/longshore-create-base-image
