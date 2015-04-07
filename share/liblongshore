@@ -213,7 +213,7 @@ long_create_nginx_phpmyadmin_conf() {
   LONG_CGI_PORT="$port"
   cat "$template" | \
     sed \
-    -e "s:LONG_TLS_OR_NOT:$LONG_TLS_NOT:" \
+    -e "s:LONG_TLS_OR_NOT:$LONG_TLS_OR_NOT:" \
     -e "s:LONG_SITE_URL:$LONG_SITE_URL:" \
     -e "s:LONG_CGI_PORT:$LONG_CGI_PORT:" \
     > "$target"
@@ -256,7 +256,7 @@ long_create_nginx_site_conf() {
 
   cat "$template" | \
     sed \
-    -e "s#LONG_LISTEN_443#$LONG_LISTEN_443#" \
+    -e "s#LONG_TLS_OR_NOT#$LONG_TLS_OR_NOT#" \
     -e "s#LONG_ACCESS_LOG#$LONG_ACCESS_LOG#" \
     -e "s#LONG_SITE_URL#$LONG_SITE_URL#" \
     -e "s#LONG_WEB_ROOT#$LONG_WEB_ROOT#" \
