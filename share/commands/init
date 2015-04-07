@@ -100,6 +100,7 @@ if ! stat /srv/longshore/bin | grep "Uid" | grep longshore >/dev/null; then
   if [ "$reply" = "y" ]; then
     chown -R longshore:longshore /srv/longshore/bin /srv/longshore/share \
       /srv/longshore/etc /srv/longshore/.git /srv/longshore/README.md
+    chown longshore:longshore /srv/longshore
   fi
 fi
 
