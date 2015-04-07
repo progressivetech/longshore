@@ -58,3 +58,5 @@ LONG_MYSQL_START_PORT=10000
 # port + 1, etc.
 LONG_PHP_START_PORT=11000
 
+# The public IP address of the host computer
+LONG_IP_ADDR=

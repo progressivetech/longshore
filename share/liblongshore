@@ -191,6 +191,7 @@ long_create_nginx_tls_conf() {
   cat "$tls_template" | \
     sed \
     -e "s:LONG_TLS_KEY_PATH:$LONG_TLS_KEY_PATH:" \
+    -e "s#LONG_IP_ADDR#$LONG_IP_ADDR#" \
     -e "s:LONG_X509_CERT_PATH:$LONG_X509_CERT_PATH:" \
     -e "s:LONG_DH_PARAM_PATH:$LONG_DH_PARAM_PATH:" \
     > "$tls_target"
@@ -207,7 +208,7 @@ long_create_nginx_phpmyadmin_conf() {
     long_create_nginx_tls_conf
     long_create_nginx_redirect phpmyadmin "$LONG_SITE_URL"
   else
-    LONG_TLS_OR_NOT="listen 80"
+    LONG_TLS_OR_NOT="listen ${LONG_IP_ADDR}:80"
   fi
   LONG_CGI_PORT="$port"
   cat "$template" | \
@@ -228,6 +229,7 @@ long_create_nginx_redirect() {
   cat "$redirect_template" | \
     sed \
     -e "s#LONG_SITE_URL#$LONG_SITE_URL#" \
+    -e "s#LONG_IP_ADDR#$LONG_IP_ADDR#" \
     > "$redirect_target"
 }
 
@@ -245,7 +247,7 @@ long_create_nginx_site_conf() {
     long_create_nginx_tls_conf
     long_create_nginx_redirect "$site" "$LONG_SITE_URL"
   else
-    LONG_TLS_OR_NOT="listen 80"
+    LONG_TLS_OR_NOT="listen ${LONG_IP_ADDR}:80"
   fi
   LONG_ACCESS_LOG="${site}.access.log"
   LONG_WEB_ROOT="/var/www/html/${platform}"
