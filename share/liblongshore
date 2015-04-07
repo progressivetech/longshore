@@ -201,19 +201,34 @@ long_create_nginx_phpmyadmin_conf() {
   port="$1"
   template="${LONG_SHARE}/templates/nginx-phpmyadmin.conf"
   target="${LONG_NGINX_SITES_ENABLED}/phpmyadmin.conf"
-  if [ -f "$LONG_NGINX_TLS_PATH" ]; then
-    LONG_INCLUDE_TLS="include $LONG_NGINX_TLS_PATH;"
-    long_create_nginx_tls_conf
-  else
-    LONG_INCLUDE_TLS="# tls not enabled for this site."_
-  fi
   LONG_SITE_URL="$LONG_PHPMYADMIN_URL"
+  if [ -f "$LONG_NGINX_TLS_PATH" ]; then
+    LONG_TLS_OR_NOT="include $LONG_NGINX_TLS_PATH;"
+    long_create_nginx_tls_conf
+    long_create_nginx_redirect phpmyadmin "$LONG_SITE_URL"
+  else
+    LONG_TLS_OR_NOT="listen 80"
+  fi
   LONG_CGI_PORT="$port"
   cat "$template" | \
     sed \
-    -e "s:LONG_INCLUDE_TLS:$LONG_INCLUDE_TLS:" \
+    -e "s:LONG_TLS_OR_NOT:$LONG_TLS_NOT:" \
     -e "s:LONG_SITE_URL:$LONG_SITE_URL:" \
     -e "s:LONG_CGI_PORT:$LONG_CGI_PORT:" \
+    > "$target"
+}
+
+# Pass the short site name as first argument and the full
+# URL as the second.
+long_create_nginx_redirect() {
+  site="$1"
+  LONG_SITE_URL="$2"
+  template="${LONG_SHARE}/templates/nginx-redirect-https.conf"
+  target="${LONG_NGINX_SITES_ENABLED}/${site}-redirect.conf"
+  LONG_SITE_URL="$1"
+  cat "$template" | \
+    sed \
+    -e "s#LONG_SITE_URL#$LONG_SITE_URL#" \
     > "$target"
 }
 
@@ -225,14 +240,15 @@ long_create_nginx_site_conf() {
 
   template="${LONG_SHARE}/templates/nginx-site.conf"
   target="${LONG_NGINX_SITES_ENABLED}/${site}.conf"
+  LONG_SITE_URL="${site}.${LONG_DEFAULT_DOMAIN}"
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
-    LONG_INCLUDE_TLS="include $LONG_NGINX_TLS_PATH;"
+    LONG_TLS_OR_NOT="include $LONG_NGINX_TLS_PATH;"
     long_create_nginx_tls_conf
+    long_create_nginx_redirect "$site" "$LONG_SITE_URL"
   else
-    LONG_INCLUDE_TLS="# tls not enabled for this site."_
+    LONG_TLS_OR_NOT="listen 80"
   fi
   LONG_ACCESS_LOG="${site}.access.log"
-  LONG_SITE_URL="${site}.${LONG_DEFAULT_DOMAIN}"
   LONG_WEB_ROOT="/var/www/html/${platform}"
   LONG_PHP_ROOT="$LONG_WEB_ROOT"
   LONG_CGI_PORT="$port"
