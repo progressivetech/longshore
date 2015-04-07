@@ -129,6 +129,25 @@ if ! stat /etc/nginx/sites-enabled | grep "Uid" | grep longshore >/dev/null; the
   fi
 fi
 
+# Setup the data directories and properly chown them
+dirs="services services/phpmyadmin services/phpmyadmin/src services/phpmyadmin/env services/databases sites"
+makedirs=
+for dir in $dirs; do
+  if [ ! -d "${LONG_SRV}/${dir}" ]; then
+    makedirs="$makedirs $dir"
+  fi
+done
+    
+if [ -n "$makedirs" ]; then
+  long_prompt "Making $makedirs"
+  if [ "$reply" = "y" ]; then
+    for makedir in $makedirs; do
+      mkdir -p "${LONG_SRV}/${makedir}"
+      chown longshore:longshore "${LONG_SRV}/${makedir}"
+    done
+  fi
+fi
+
 # Set phpmyadmin symlink for nginx to work properly on the host
 if [ ! -h /var/www/phpmyadmin ] || [[ $(readlink /var/www/phpmyadmin) != "${LONG_SRV}/services/phpmyadmin/src" ]]; then
   long_prompt "Create phpmyadmin symlink"
