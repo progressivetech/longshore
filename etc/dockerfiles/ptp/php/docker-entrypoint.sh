@@ -11,9 +11,14 @@ fi
 if [ "$1" = 'php5-fpm' ]; then
   set -- "$@" --nodaemonize
 
-  # Set the symlink.
-  if [ -n "$PB_URL" ]; then
-    ln -s /var/www/ourpowerbase-d7-c4.5/sites/default "/var/www/ourpowerbase-d7-c4.5/sites/$PB_URL"
+  # Set the symlink if we are building a PB site. 
+  if [ -n "$PB_URL" ] && [ -n "$PB_PLATFORM" ]; then
+    source="/var/www/html/${PB_PLATFORM}/sites/default"
+    if [ ! -d "$source" ]; then
+      printf "Failed to find platform (%s)\n" "$source"
+      exit 1
+    fi
+    ln -s "$source" "/var/www/${PB_PLATFORM}/sites/$PB_URL"
   fi
 fi
 

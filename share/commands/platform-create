@@ -1,0 +1,124 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) <path>
+Build a new platform based on the given makefile.
+
+Arguments:
+ <path> path to a drush make file." 
+
+long_check_args "$2" "$#" 1
+
+base=${LONG_SRV}/platforms
+makefile_path="$2"
+
+if [ ! -f "$makefile_path" ]; then
+	long_die "Can't find makefile path: %s\n"  1 "$makefile_path"
+	exit
+fi
+
+[[ "${makefile_path:0:1}" != '/' ]] && long_die "Please use absolute path to makefile."
+
+makefile=$(basename "$makefile_path")
+source_platform_path="${base}/${makefile}"
+source_platform_path_temp=$(mktemp -d --tmpdir="$base")
+
+printf "Creating platform...\n"
+cd "$source_platform_path_temp"
+$LONG_DRUSH -y make "$makefile_path"
+
+# Do a sanity check. drush make will not leave any files in the target
+# if just one download failed.
+
+if [ ! -f "${source_platform_path_temp}/index.php" ]; then
+  long_die "Failed to make the site!"
+fi
+
+# hackish way to get symlink to wkhtmltopdf - which is needed if anyone
+# enables the print module
+ln -s /usr/bin/wkhtmltopdf "${source_platform_path_temp}/sites/all/libraries/"
+
+printf "Running GenCode.php...\n"
+
+target_path="${source_platform_path_temp}/sites/all/modules/civicrm/xml"
+
+[ ! -d "$target_path" ] && long_die "The xml directory on the platform doesn't exist."
+
+cd "$target_path"
+
+php GenCode.php > /dev/null
+
+delete="sites/all/modules/civicrm/bin/setup.sh
+sites/all/modules/civicrm/distmaker
+sites/all/modules/civicrm/.gitignore
+sites/all/modules/civicrm/header-afl.txt
+sites/all/modules/civicrm/header-agpl.txt
+sites/all/modules/civicrm/header.sql
+sites/all/modules/civicrm/header.tpl
+sites/all/modules/civicrm/header.txt
+sites/all/modules/civicrm/packages/amavisd-new
+sites/all/modules/civicrm/packages/git-footnote
+sites/all/modules/civicrm/packages/_ORIGINAL_
+sites/all/modules/civicrm/packages/PhpDocumentor
+sites/all/modules/civicrm/packages/PHPUnit
+sites/all/modules/civicrm/packages/SeleniumRC
+sites/all/modules/civicrm/packages/SymfonyComponents
+sites/all/modules/civicrm/sql/civicrm_arms_sample_data.sql
+sites/all/modules/civicrm/sql/GenerateData.php
+sites/all/modules/civicrm/sql/GenerateData.README
+sites/all/modules/civicrm/sql/GenerateGroups.php
+sites/all/modules/civicrm/sql/GenerateMailing.php
+sites/all/modules/civicrm/sql/GenerateReportData.php
+sites/all/modules/civicrm/sql/README.txt
+sites/all/modules/civicrm/sql/sample_data_pl.xml
+sites/all/modules/civicrm/sql/sample_data.xml
+sites/all/modules/civicrm/sql/test_data.mysql
+sites/all/modules/civicrm/sql/test_data_second_domain.mysql
+sites/all/modules/civicrm/sql/trigger.mysql
+sites/all/modules/civicrm/sql/upgrade_pcm.mysql
+sites/all/modules/civicrm/sql/webtest_data.mysql
+sites/all/modules/civicrm/sql/zipcodes.mysql
+sites/all/modules/civicrm/tests
+sites/all/modules/civicrm/tools
+sites/all/modules/civicrm/xml"
+
+
+cd "$source_platform_path_temp"
+for file in $delete; do
+  [ -e "$file" ] && rm -rf "$file"
+done
+
+# Do an atomic move over the existing platform (if it exists).
+if [ -d "$source_platform_path" ]; then
+ old_path=$(mktemp -d --tmpdir="$base")
+ mv "$source_platform_path" "$old_path" || long_die "Failed to move old platform out of the way."
+fi
+
+mv "$source_platform_path_temp" "$source_platform_path"
+
+if [ -d "$old_path" ]; then
+ rm -rf "$old_path"
+fi
+
+
+# If we have frontends to sync with (that are not us)
+host=$(hostname)
+frontends="$LONG_LIVE_FRONTENDS"
+if [[ $(echo "$frontends" | wc -w) -gt "1" ]]; then
+  long_prompt "rsync'ing platform to other frontends. "
+  if [ "$reply" == "y" ]; then
+    for frontend in $frontends; do
+      if [ "$frontend" != "$host" ]; then
+        long_log "rsync'ing to %s\n" "info" "$frontend"
+        rsync -a --delete "${source_platform_path}/" "aegir@${frontend}.mayfirst.org:${source_platform_path}/"
+        if [ "$?" != "0" ]; then
+          long_die "Failed to sync to %s" 1 "$frontend"
+        fi
+      fi
+    done
+  fi
+else
+  long_log "No frontends to rsync with." "info"
+fi
+
+
+

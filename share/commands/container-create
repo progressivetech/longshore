@@ -98,6 +98,8 @@ elif [ "$ctype" = "phpmyadmin" ]; then
   port=
   long_get_php_port phpmyadmin
 
+  # The phpmyadmin container has to be available via a local port since 
+  # nginx, which is running on localhost, has to communicate with it.
   publish="-p 127.0.0.1:$port:9000"
 
   # Copy in the config.inc.php.sample file with blowfish secret
@@ -112,7 +114,6 @@ elif [ "$ctype" = "phpmyadmin" ]; then
   # Docker
   docker create --name phpmyadmin \
     -v "${dir}/src:/var/www/phpmyadmin" \
-    -v "${LONG_SRV}/platforms:/var/www/html" \
     $link \
     $publish \
     ptp-php:latest php5-fpm 
@@ -173,11 +174,22 @@ elif [ "$ctype" = "site" ]; then
   # with it. Each PHP container has to have a unique port.
   port=
   long_get_php_port "$name" 
-
   publish="-p 127.0.0.1:$port:9000"
+
+  # Make sure we can communicate with the db container.
+  link="$link --link $db:$db"
+
+  # Docker
+  docker create --name "$name" \
+    -v "${LONG_SRV}/platforms:/var/www/html" \
+    -v "${dir}/drupal:/var/www/html/${platform}/sites/default" \
+    $link \
+    $publish \
+    ptp-php:latest php5-fpm 
 
 else
 
   long_die "I don't know how to make a container of that type (%s)." 1 "$ctype"
 
 fi
+
