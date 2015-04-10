@@ -37,6 +37,7 @@ fi
 
 # Create a mysql container.
 if [ "$ctype" = "mysql" ]; then
+
   dir="${LONG_SRV}/services/databases/${name}"
 
   # Use our password generation utility which uses /dev/urandom.
@@ -62,7 +63,9 @@ if [ "$ctype" = "mysql" ]; then
     -e "LONG_LIVE=$LONG_LIVE" \
     -p "$LONG_IP:${port}:3306" \
     ptp-mysql:latest mysqld
+
 elif [ "$ctype" = "phpmyadmin" ]; then
+
   dir="${LONG_SRV}/services/phpmyadmin"
   # Make sure we have our base directories
   mkdir -p "$dir/src"
@@ -113,7 +116,9 @@ elif [ "$ctype" = "phpmyadmin" ]; then
     $link \
     $publish \
     ptp-php:latest php5-fpm 
+
 elif [ "$ctype" = "site" ]; then
+
   # Sanity check - make sure platform exists 
   if [ ! -d "${LONG_SRV}/platforms/${platform}" ]; then
     long_die "That platform doesn't seem to exist (%s)." "$platform"
@@ -172,5 +177,7 @@ elif [ "$ctype" = "site" ]; then
   publish="-p 127.0.0.1:$port:9000"
 
 else
+
   long_die "I don't know how to make a container of that type (%s)." 1 "$ctype"
+
 fi
