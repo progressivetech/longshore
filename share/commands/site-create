@@ -17,5 +17,5 @@ platform="$4"
 [ -z "$db" ] && db="$LONG_DEFAULT_DB"
 [ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
 
-longshore container-create "$site" "$db" "$platform"
+long_create_container site "$site" "$db" "$platform"
 

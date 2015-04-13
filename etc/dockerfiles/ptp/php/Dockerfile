@@ -26,6 +26,10 @@ RUN usermod -u 5001 www-data
 # Listen on 127.0.0.1 
 RUN sed -i 's#listen = /var/run/php5-fpm.sock#listen = 9000#' /etc/php5/fpm/pool.d/www.conf
 
+# Create drush directory under the www-data's home directory so the create
+# command can mount our drush scripts.
+RUN mkdir /var/www/.drush
+
 COPY ./docker-entrypoint.sh /entrypoint.sh
 COPY powerbase.ini /etc/php5/conf.d/powerbase.ini
 

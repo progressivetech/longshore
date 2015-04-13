@@ -11,9 +11,9 @@
 
 # One liner for printing message and dying
 # long_die $msg $exit_code $var $var
-function long_die() {
-  msg="$1"
-  exit_code="$2"
+long_die() {
+  local msg="$1"
+  local exit_code="$2"
   shift 2
   [ -z "$exit_code" ] && exit_code=1
   long_log "$msg" error "$@"
@@ -21,8 +21,8 @@ function long_die() {
 }
 
 # Return defined $long_usage_message and die 
-function long_usage() {
-  exit_code="$1"
+long_usage() {
+  local exit_code="$1"
   [ -z "$exit_code" ] && exit_code=1
   long_die "$long_usage_message" "$exit_code"
 }
@@ -30,19 +30,20 @@ function long_usage() {
 # Ensure the number of required arguments have been passed
 # and if not, run long_usage (which will exit). Also, parse
 # global arguments (like -f for force).
-function long_check_args() {
+long_check_args() {
   # The sub command is one argument that we don't count, so subtract 1 from 
   # the number of arguments passed.
-  first_arg="$1"
-  num_passed=$(( $2 - 1 ))
-  num_required="$3"
+  local first_arg="$1"
+  local num_passed=$(( $2 - 1 ))
+  local num_required="$3"
   [ -z "$num_passed" ] && num_passed=0
   [ -z "$num_required" ] && num_required=0
   if [ "$first_arg" = "-h" ] || [ "$first_arg" = "--help" ]; then
     long_usage  
   fi 
   if [ "$num_passed" -lt "$num_required" ] ; then
-    long_log "Not enough arguments passed. Expecting at least %s, received %s.\n" error "$num_required" "$num_passed"
+    long_log "Not enough arguments passed. Expecting at least %s, received %s.\n" \
+      error "$num_required" "$num_passed"
     long_usage
   fi
 }
@@ -50,25 +51,25 @@ function long_check_args() {
 # Given a site, set the ssh variable to empty if it should 
 # be run locally or a working ssh command that connects to
 # the appropriate frontend.
-function long_set_ssh_command() {
-  site="$1"
-  host=$(hostname)
+long_set_ssh_command() {
+  local site="$1"
+  local host=$(hostname)
   frontend=$(ptp-get-frontend-for-site "$site")
-  ssh=
-  [ -n "$frontend" ] && [ "$host" != "$frontend" ] && ssh="ssh ${frontend}.mayfirst.org"
+  LONG_SSH=
+  [ -n "$frontend" ] && [ "$host" != "$frontend" ] && LONG_SSH="ssh ${frontend}.mayfirst.org"
 }
 
 # Given a site, check if we should connect to a remote aegir frontend to run
 # the given command that was called (in which case, make the connection and run
 # the command) or run it locally. This function should be called by scripts
 # that need to be run locally.
-function long_rerun_over_network() { 
-  site="$1"
+long_rerun_over_network() { 
+  local site="$1"
   long_set_ssh_command "$site"
   # Return 0 (aka success) to indicate that we did
   # run the command over ssh
-  if [ -n "$ssh" ]; then
-    $ssh "$0" "$site" "$2" "$3"
+  if [ -n "$LONG_SSH" ]; then
+    $LONG_SSH "$0" "$site" "$2" "$3"
     return 0
   fi
   # Return 1 (aka failure) to indicate that we didn't
@@ -81,11 +82,13 @@ function long_rerun_over_network() {
 # "Proceed? [Yn]" - set $reply variable to either y or n, properly
 # parsing case and the default.
 long_prompt() {
-  msg=$1
+  local prompt_msg=$1
   shift
-  printf "${msg}\n" "$@"
+  printf "${prompt_msg}\n" "$@"
   if [ "$LONG_YES" = "1" ]; then
     printf " Automatically proceeding without prompt.\n"
+    # reply is a global - exception to the rule of all capitals and 
+    # LONG prefix.
     reply=y
     return
   fi
@@ -99,14 +102,14 @@ long_prompt() {
 # Either output a message to standard error or send it by email
 # depending on whether we are running from a cron job or not
 long_debug() {
-  msg="$1"
-  subject="$2"
-  pid="$!"
-  if grep -q cron /proc/"$pid"/cmdline &> /dev/null; then
-    echo "$msg" | mail -s "$subj" "$LONG_DEBUG_EMAIL"
+  local debug_msg="$1"
+  local debug_subject="$2"
+  local deubg_pid="$!"
+  if grep -q cron /proc/"$debug_pid"/cmdline &> /dev/null; then
+    echo "$debug_msg" | mail -s "$debug_subj" "$LONG_DEBUG_EMAIL"
   else
-    echo "$subject" >&2
-    echo "$msg" >&2
+    echo "$debug_subject" >&2
+    echo "$deubg_msg" >&2
   fi
   exit 1
 }
@@ -119,7 +122,7 @@ long_container_exists() {
 
 # Inspect seems to work for both containers and images.
 long_container_or_image_exists() {
-  name="$1"
+  local name="$1"
   [ -z "$name" ] && return 1
   # This command returns 1 if the container doesn't exist and 0 if it does.
   docker inspect "$name" 2>/dev/null 1>/dev/null
@@ -129,10 +132,10 @@ long_container_or_image_exists() {
 # Check if a conatiner with the given name is running or not.
 # Return 0 if it is running and 1 if it isn't.
 long_container_running() {
-  name="$1"
+  local name="$1"
   [ -z "$name" ] && return 1
-  running=$(docker inspect -f {{.State.Running}} "$name")
-  [ "$running" = "true" ] && return 0
+  container_running=$(docker inspect -f {{.State.Running}} "$name")
+  [ "$container_running" = "true" ] && return 0
   return 1
 }
 
@@ -144,64 +147,66 @@ long_image_exists() {
 
 # Generate a my.cnf file with the given info
 long_generate_my_cnf() {
-  dir="$1"
-  password="$2"
-  port="$3"
-  printf "[client]\nuser=root\npassword=%s\nport=%s\nhost=127.0.0.1\n" "$password" "$port" > "$dir"/my.cnf
+  local dir="$1"
+  local password="$2"
+  local port="$3"
+  printf "[client]\nuser=root\npassword=%s\nport=%s\nhost=127.0.0.1\n" \
+    "$password" "$port" > \
+    "$dir"/my.cnf
 }
 
 # Generate a random password
 long_pwgen() {
   # Excluding characters that commonly cause problems. Sigh.
-  password=$(hexdump -e '"%_p"' /dev/urandom | tr -d '[:punct:]\n' | head -c 25)
+  LONG_PASSWORD=$(hexdump -e '"%_p"' /dev/urandom | tr -d '[:punct:]\n' | head -c 25)
 }
 
 # Output logging info based on log level
 # long_log $msg $log_level $var $var
 # log levels: info, error, critical
 long_log() {
-  msg="$1"
-  log_level="$2"
+  local log_msg="$1"
+  local log_level="$2"
   shift 2
-  out=n
+  local log_out=n
   # Always output critical
   if [ "$log_level" = "critical" ]; then
-    out=y
+    log_out=y
   fi
   # Output error if we are set to info or error
   if [ "$log_level" = "error" -a "$LONG_LOG_LEVEL" = "info" ];  then
-    out=y
+    log_out=y
   fi
   if [ "$log_level" = "error" -a "$LONG_LOG_LEVEL" = "error" ];  then
-    out=y
+    log_out=y
   fi
   # Output info if we are set to info
   if [ "$log_level" = "info" -a "$LONG_LOG_LEVEL" = "info" ];  then
-    out=y
+    log_out=y
   fi
-  if [ "$out" = "y" ]; then
-    printf "$msg\n" "$@"
+  if [ "$log_out" = "y" ]; then
+    printf "$log_msg\n" "$@"
   fi
 }
 
 # Save the generic tls configuration for all sites
 long_create_nginx_tls_conf() {
-  tls_template="${LONG_SHARE}/templates/nginx-tls.conf"
-  tls_target="$LONG_NGINX_TLS_PATH"
-  cat "$tls_template" | \
+  local template="${LONG_SHARE}/templates/nginx-tls.conf"
+  local target="$LONG_NGINX_TLS_PATH"
+  cat "$template" | \
     sed \
     -e "s:LONG_TLS_KEY_PATH:$LONG_TLS_KEY_PATH:" \
     -e "s#LONG_IP_ADDR#$LONG_IP_ADDR#" \
     -e "s:LONG_X509_CERT_PATH:$LONG_X509_CERT_PATH:" \
     -e "s:LONG_DH_PARAM_PATH:$LONG_DH_PARAM_PATH:" \
-    > "$tls_target"
+    > "$target"
 }
 
 # save the phpmyadmin nginx configuration file
 long_create_nginx_phpmyadmin_conf() {
-  port="$1"
-  template="${LONG_SHARE}/templates/nginx-phpmyadmin.conf"
-  target="${LONG_NGINX_SITES_ENABLED}/phpmyadmin.conf"
+  local port="$1"
+  local template="${LONG_SHARE}/templates/nginx-phpmyadmin.conf"
+  local target="${LONG_NGINX_SITES_ENABLED}/phpmyadmin.conf"
   LONG_SITE_URL="$LONG_PHPMYADMIN_URL"
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
     LONG_TLS_OR_NOT="include $LONG_NGINX_TLS_PATH;"
@@ -222,25 +227,25 @@ long_create_nginx_phpmyadmin_conf() {
 # Pass the short site name as first argument and the full
 # URL as the second.
 long_create_nginx_redirect() {
-  site="$1"
-  LONG_SITE_URL="$2"
-  redirect_template="${LONG_SHARE}/templates/nginx-redirect-https.conf"
-  redirect_target="${LONG_NGINX_SITES_ENABLED}/${site}-redirect.conf"
-  cat "$redirect_template" | \
+  local site="$1"
+  local site_url="$2"
+  local template="${LONG_SHARE}/templates/nginx-redirect-https.conf"
+  local target="${LONG_NGINX_SITES_ENABLED}/${site}-redirect.conf"
+  cat "$template" | \
     sed \
-    -e "s#LONG_SITE_URL#$LONG_SITE_URL#" \
+    -e "s#LONG_SITE_URL#$site_url#" \
     -e "s#LONG_IP_ADDR#$LONG_IP_ADDR#" \
-    > "$redirect_target"
+    > "$target"
 }
 
 # Save an nginx server configuration file
 long_create_nginx_site_conf() {
-  site="$1"
-  platform="$2"
-  port="$3"
+  local site="$1"
+  local platform="$2"
+  local port="$3"
 
-  template="${LONG_SHARE}/templates/nginx-site.conf"
-  target="${LONG_NGINX_SITES_ENABLED}/${site}.conf"
+  local template="${LONG_SHARE}/templates/nginx-site.conf"
+  local target="${LONG_NGINX_SITES_ENABLED}/${site}.conf"
   LONG_SITE_URL="${site}.${LONG_DEFAULT_DOMAIN}"
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
     LONG_TLS_OR_NOT="include $LONG_NGINX_TLS_PATH;"
@@ -268,7 +273,7 @@ long_create_nginx_site_conf() {
 # Return 0 if it's the latest and 1 if it's not and 2 for an error.
 long_phpmyadmin_is_latest() {
   # Check version installed
-  installed=
+  local installed=
   if [ -f "${LONG_SRV}/services/phpmyadmin/src/README" ]; then
     installed=$(head "${LONG_SRV}/services/phpmyadmin/src/README" | grep '^Version' | cut -d\  -f2)
   else
@@ -278,7 +283,7 @@ long_phpmyadmin_is_latest() {
 
   [ -z "$installed" ] && return 2 
 
-  latest=
+  local latest=
   if [ -f "${LONG_SRV}/services/phpmyadmin/src/version_check.php" ]; then
     latest=$(cd "${LONG_SRV}/services/phpmyadmin/src/" && php version_check.php | tr -d '{}"' | cut -d, -f1 | cut -d: -f2)
   else
@@ -294,21 +299,21 @@ long_phpmyadmin_is_latest() {
 
 # This variable containing the names of all database containers
 long_db_containers() {
-  long_db_containers=$(ls "${LONG_SRV}/services/databases/")
+  LONG_DB_CONTAINERS=$(ls "${LONG_SRV}/services/databases/")
 }
 
 # Create if necessary the given image
 # first argument is tag, second is path to docker directory
 long_image_create() {
-  tag="$1"
-  path="$2"
-  if ! long_image_exists "$tag"; then
-    long_log "Creating image (%s)" info "$tag"
-    if [ "$tag" = "ptp-base" ]; then
+  local image_tag="$1"
+  local image_path="$2"
+  if ! long_image_exists "$image_tag"; then
+    long_log "Creating image (%s)" info "$image_tag"
+    if [ "$image_tag" = "ptp-base" ]; then
       # This is a special condition
       long_image_create_base
     else
-      docker build -t "$tag" "$path"
+      docker build -t "$image_tag" "$image_path"
     fi
   fi
 }
@@ -321,7 +326,7 @@ long_image_create_base() {
 
 # Delete, if necessary, the image
 long_image_delete() {
-  tag="$1"
+  local tag="$1"
   if long_image_exists "$tag"; then
     long_log "Deleting  image (%s)" info "$tag"
     docker rmi "$tag"
@@ -330,18 +335,20 @@ long_image_delete() {
 
 # Create (if necessary) and start (if necessary) a given container
 long_container_up() {
-  type="$1"
-  name="$2"
+  local type="$1"
+  local name="$2"
+  local db="$3"
+  local platform="$4"
 
   # phpmyadmin will be called with just the type variable set.
   # In these cases, we use the type as the name - since we only have one
   # one phpmyadmin container.
-  label="$name"
+  local label="$name"
   [ -z "$label" ] && label="$type"
-  if ! long_container_exists "$label"; then
-    long_log "Creating container (%s)" info "$label"
-    longshore container-create "$type" "$name"
-  fi
+
+  # long_create_container will check if it exists first and respect MF_FORCE.
+  long_create_container "$type" "$name" "$db" "$platform"
+
   if ! long_container_running "$label"; then
     long_log "Starting container (%s)" info "$label"
     docker start "$label"
@@ -350,7 +357,7 @@ long_container_up() {
 
 # Stop (if necessary) and delete (if necessary) the named container
 long_container_destroy() {
-  name="$1"
+  local name="$1"
   if long_container_exists "$name"; then
     if long_container_running "$name"; then
       long_log "Stopping container (%s)" info "$name"
@@ -368,40 +375,363 @@ long_nginx_reload() {
 
 # Get the port for this mysql container, or assign a new one.
 long_get_mysql_port() {
-  name="$1"
-  dir="${LONG_SRV}/services/databases/${name}"
+  local name="$1"
+  local dir="${LONG_SRV}/services/databases/${name}"
+  local last_port=
   if [ -f "$dir/my.cnf" ]; then
-    port=$(grep port "${dir}/my.cnf" | cut -d= -f2)
+    LONG_PORT=$(grep port "${dir}/my.cnf" | cut -d= -f2)
   else
     # If we don't already have a .my.cnf file, find the next available port.
     last_port=$(grep port= "${LONG_SRV}/services/databases/*/my.cnf" 2>/dev/null | cut -d= -f2 | sort -n | tail -n 1)
     if [ -z "$last_port" ]; then
-      port="$LONG_MYSQL_START_PORT"
+      LONG_PORT="$LONG_MYSQL_START_PORT"
     else
-      port=$(( $last_port + 1 ))
+      LONG_PORT=$(( $last_port + 1 ))
     fi
   fi
 }
 
 # Get the port for this php container, or assign a new one.
 long_get_php_port() {
-  name="$1"
+  local name="$1"
+  local envdir=
+  local last_port=
   if [ "$name" = "phpmyadmin" ]; then
     envdir="${LONG_SRV}/services/phpmyadmin/env"
   else
     envdir="${LONG_SRV}/services/sites/${name}/env"
   fi
   if [ -f "${envdir}/PORT" ]; then
-    port=$(cat "${envdir}/PORT")
+    LONG_PORT=$(cat "${envdir}/PORT")
   else
     # If we don't already have a PORT file, find the next available port.
     last_port=$(cat "${LONG_SRV}/services/phpmyadmin/env/PORT" "${LONG_SRV}/services/*/env/PORT" 2>/dev/null | sort -n | tail -n1)
     if [ -z "$last_port" ]; then
-      port="$LONG_PHP_START_PORT"
+      LONG_PORT="$LONG_PHP_START_PORT"
     else
-      port=$(( $last_port + 1 ))
+      LONG_PORT=$(( $last_port + 1 ))
     fi
     mkdir -p "$envdir"
-    echo "$port" > "${envdir}/PORT"
+    echo "$LONG_PORT" > "${envdir}/PORT"
+  fi
+}
+
+# Take the passed in var and sanitize for sql statement
+long_sql_sanitize_var() {
+  LONG_SANE_VAR=$(echo "$1" | sed 's/[^0-9a-z]//g')
+}
+
+# Create a database and database user for the given site, db name
+# and password.
+long_create_db() {
+  local site="$1"
+  long_sql_sanitize_var "$site"
+  site="$LONG_SANE_VAR"
+  local dbname="$site"
+  local dbuser="$site"
+  local dbhost="$2"
+  
+  local temp=$(mktemp)
+
+  # Always ensure database exists. This is easy, idempotent.
+  echo "CREATE DATABASE IF NOT EXISTS \`$dbname\`;" > "$temp"
+
+  # Only ensure the user/password exists if we don't have a DBPASS env file.
+  # or that file is empty.
+  local db_pass_file="${LONG_SRV}/services/sites/${name}/env/DBPASS"
+  if [ ! -f "$db_pass_file" ] || [ ! -s "$db_pass_file" ]; then 
+    # Generate random password.
+    long_pwgen
+    echo "GRANT ALL ON \`$dbname\`.* TO '$dbuser'@'%' IDENTIFIED BY '$LONG_PASSWORD';" >> "$temp"
+    echo "$LONG_PASSWORD" > "$db_pass_file"
+  fi
+
+  long_log "Waiting 5 seconds to ensure database has started." info
+  sleep 5
+  long_execute_root_query "$dbhost" "$temp"
+  rm "$temp"
+}
+
+# Execute the queries in the passed in file on the given database
+long_execute_root_query() {
+  local db="$1"
+  local file="$2"
+
+  if [ ! -f "$file" ]; then
+    long_die "Can't find file with queries to execute."
+  fi
+
+  # Make sure the db container exists
+  long_container_exists "$db"
+
+  if [ "$?" != 0 ]; then
+    long_die "The database container doesn't exist (%s)" 1 "$db"
+  fi
+
+  long_container_running "$db"
+  if [ "$?" != 0 ]; then
+    long_die "The database container isn't running (%s)" 1 "$db"
+  fi
+
+  mycnf="${LONG_SRV}/services/databases/${db}/my.cnf"
+  if [ ! -f "$mycnf" ]; then
+    long_die "The my.cnf file doesn't exist for this database (%s)" 1 "$mycnf"
+  fi
+  
+  mysql --defaults-file="$mycnf" < "$file"
+}
+
+# Create a drupal settings.php file
+long_create_drupal_settings() {
+  local name="$1"
+  local pass="$2"
+  local db="$2"
+
+  local temp=$(mktemp "${LONG_SRV}/services/sites/${name}/drupal/.db.details.XXXXXXX")
+cat <<EOF > "$temp"
+<?php
+  \$dbname = '$name';
+  \$dbhost = '$db';
+  \$dbuser = '$dbname';
+  \$dbpass = '$pass';
+?>
+EOF
+  long_drush "$name" "php-script '$temp'" 
+  rm "$temp"
+}
+
+long_drush() {
+  name="$1"
+  docker exec -i -t "$name" "drush $2"
+}
+
+# Low lever mysql container creation. Call long_create_container instead
+# if possible.
+long_create_mysql_container() {
+  local name="$1"
+  local dir="${LONG_SRV}/services/databases/${name}"
+
+  # Use our password generation utility which uses /dev/urandom.
+  # long_pwgen will assign a new password to the variable $LONG_PASSWORD.
+  long_pwgen
+
+  # Get the port number. Each MySQL container is assigned a unique port
+  # on the host. This will generate a LONG_PORT variable.
+  long_get_mysql_port
+
+  # Make sure our base directory and a mysql sub directory exists.
+  # Our my.cnf file will go in ${dir}/my.cnf and be mounted in the host
+  # in /mnt/my.cnf and ${dir}/mysql will get mounted at /var/lib/mysql.
+  mkdir -p "${dir}/mysql"
+  mkdir -p "${dir}/logs"
+  long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_PORT"
+  docker create --name "$name" \
+    -v "${dir}/mysql":/var/lib/mysql \
+    -v "${dir}/my.cnf:/root/.my.cnf" \
+    -v "${dir}/logs:/var/log/mysql" \
+    -e "LONG_LIVE=$LONG_LIVE" \
+    -p "127.0.0.1:${LONG_PORT}:3306" \
+    ptp-mysql:latest mysqld
+}
+
+# Low leverl phpmyadmin container creation. Call long_create_container instead
+# if possible.
+long_create_phpmyadmin_container() {
+  local dir="${LONG_SRV}/services/phpmyadmin"
+  # Make sure we have our base directories
+  mkdir -p "$dir/src"
+
+  # Create the server.list file with all db servers on this host
+  long_db_containers
+  echo "$LONG_DB_CONTAINERS" > "${dir}/src/servers.list"
+
+  # FIXME - This is temporary while we are supporting both longshore and 
+  # aegir. The phpmyadmin instance has to connect to the aegir servers 
+  # too.
+  local server=
+  for server in $(ls -d /var/aegir/platforms/*-ourpowerbase-d7-c4.5 | sed 's/-ourpowerbase-d7-c4\.5$//' | cut -d/ -f5); do
+    # On dev servers - master is used for localhost
+    if [ "$server" = "master" ]; then
+      continue
+    else
+      server="${server}.mayfirst.org"
+    fi
+    echo "$server" >> "${dir}/src/servers.list"
+  done
+
+  # Create the --link argument
+  local link=
+  for link_db in $long_db_containers; do
+    link="$link --link $link_db:$link_db"
+  done
+
+  # We have to publish the port to the host so nginx can communicate
+  # with it. Each PHP container has to have a unique port.
+  long_get_php_port phpmyadmin
+
+  # The phpmyadmin container has to be available via a local port since 
+  # nginx, which is running on localhost, has to communicate with it.
+  publish="-p 127.0.0.1:$LONG_PORT:9000"
+
+  # Copy in the config.inc.php.sample file with blowfish secret
+  long_pwgen
+  cat ${LONG_SHARE}/templates/phpmyadmin.config.inc.php.sample | sed "s/BLOWFISHSECRET/$LONG_PASSWORD/" \
+    > "${dir}/src/config.inc.php" 
+
+  # Create nginx configuration
+  long_create_nginx_phpmyadmin_conf "$LONG_PORT"
+
+  # Docker
+  docker create --name phpmyadmin \
+    -v "${dir}/src:/var/www/phpmyadmin" \
+    $link \
+    $publish \
+    ptp-php:latest php5-fpm 
+}
+
+# Low leverl site container creation. Call long_create_container instead
+# if possible.
+long_create_site_container() {
+  local name="$1"
+  local db="$2"
+  local platform="$3"
+
+  # Sanity check - make sure platform exists 
+  if [ ! -d "${LONG_SRV}/platforms/${platform}" ]; then
+    long_die "That platform doesn't seem to exist (%s)." "$platform"
+  fi
+
+  # Ensure that the database container exists and is running. It has to
+  # be running so we can create the database and database username/password.
+  long_container_up mysql "$db"
+
+  # Build out directories. Create the minimal amount of directories and
+  # let Drupal and CiviCRM create the rest.
+  local dir="${LONG_SRV}/services/sites/$name"
+  local creates="backup drupal drupal/custom-civicrm
+    drupal/custom-civicrm/extensions drupal/custom-civicrm/php
+    drupal/custom-civicrm/templates drupal/files
+    drupal/files/civicrm drupal/files/civicrm/ConfigAndLog
+    drupal/files/civicrm/custom drupal/files/civicrm/persit
+    drupal/files/civicrm/templates_c drupal/files/civicrm/upload
+    drupal/files/civicrm/contribute drupal/private drupal/modules
+    drupal/themes drupal/libraries"
+  local create=
+  for create in $creates; do
+    mkdir -p "${dir}/${create}"
+  done
+
+  # Certain directories should not be accessible by the web user, only 
+  # by the user running the PHP application.
+  # See https://civicrm.org/advisory/civi-sa-2014-001-risk-information-disclosure
+  local not_web_accessible="drupal/files/civicrm/ConfigAndLog
+    drupal/files/civicrm/templates_c drupal/files/civicrm/upload"
+  # Prohibit web access by removing other access. Only the user and the
+  # group owners will be able to access the files. And only the owner will
+  # be able to write to them.
+  local foo=
+  for foo in $not_web_accessible; do
+    # We only need to make this change at the top level - no need for
+    # recursive.
+    mkdir -p "${dir}/${foo}"
+
+    # Only fix the directory if needed to avoid permission problems if the 
+    # directory has already been properly modified and has been chowned to
+    # longhsore-ptp - which means we won't be able to chmod if. If we get a
+    # permission problem - that is a bug - these directories should either
+    # be chmod'ed already OR owned by the longshore user.
+    local perms=$(stat -c "%a" "${dir}/${foo}")
+    if [ "$perms" != "750" ]; then
+      chmod o-rwx "${dir}/${foo}" 
+      chmod g-w "${dir}/${foo}" 
+    fi
+  done
+
+  # One more directory should be readable by the web user, but the web
+  # user should not be able to get a directory listing. We can do that
+  # by removing execute privileges, but keeping read privileges.
+  perms=$(stat -c "%a" ${dir}/drupal/files/civicrm/contribute)
+  if [ "$perms" != "754" ]; then
+    chmod o-x "${dir}/drupal/files/civicrm/contribute"
+  fi
+
+  # Now that the right modes are set, chown the files to the right users. 
+  local web_writable="drupal/files drupal/private"
+  for foo in $web_writable; do
+    # Maintain group ownership by the longshore user so we can read the
+    # files from the host for convenience and trouble-shooting.
+    sudo chown -R longshore-php:longshore "${dir}/${foo}"
+  done
+
+  # Ensure that the database exists and that we have a password set in
+  # our env/ directory.
+  #
+  # We are not going to do a proper drupal and civicrm installation 
+  # because that will take a long time and we may only want to create
+  # the container in order to import an existing database. So, just create
+  # the database and user and record the password.
+  #
+  # The actual installation, if needed, will happen in longshore site-setup
+  long_create_db "$name" "$db"
+
+  # We have to publish the port to the host so nginx can communicate
+  # with it. Each PHP container has to have a unique port.
+  long_get_php_port "$name" 
+  local publish="-p 127.0.0.1:$LONG_PORT:9000"
+
+  # Make sure we can communicate with the db container.
+  local link="$link --link $db:$db"
+
+  # Docker
+  docker create --name "$name" \
+    -v "${LONG_SRV}/platforms:/var/www/html" \
+    -v "${dir}/drupal:/var/www/html/${platform}/sites/default" \
+    -v "${LONG_SHARE}/drush:/var/www/.drush" \
+    $link \
+    $publish \
+    ptp-php:latest php5-fpm 
+}
+
+long_create_container() {
+  local type="$1"
+  local name="$2"
+  local db="$3"
+  local platform="$4"
+
+  if [ -z "$db" ]; then
+    db="$LONG_DEFAULT_DB"
+  fi
+
+  if [ -z "$name" ]; then
+    if [ "$type" = "phpmyadmin" ]; then
+      name="$type"
+    else
+      long_die "Containers of this type (%s) need a name passed as second argument." 1 "$type"
+    fi
+  fi
+
+  # Stop and Delete the container if force is specified.
+  if [ "$LONG_FORCE" = 1 ]; then
+    long_container_destroy "$name"
+  fi
+
+  # If the container already exists, then we are done. 
+  if long_container_exists "$name"; then
+    return
+  fi
+
+  # Create a mysql container.
+  if [ "$type" = "mysql" ]; then
+    long_create_mysql_container "$name"
+  elif [ "$type" = "phpmyadmin" ]; then
+    long_create_phpmyadmin_container 
+  elif [ "$type" = "site" ]; then
+    # Stop and Delete the db container if force is specified.
+    if [ "$LONG_FORCE" = 1 ]; then
+      long_container_destroy "$db"
+    fi
+    long_create_site_container "$site" "$db" "$platform" 
+  else
+    long_die "I don't know how to make a container of that type (%s)." 1 "$type"
   fi
 }
