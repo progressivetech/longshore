@@ -256,7 +256,7 @@ long_create_nginx_site_conf() {
   fi
   LONG_ACCESS_LOG="${site}.access.log"
   LONG_WEB_ROOT="/var/www/html/${platform}"
-  LONG_PHP_ROOT="$LONG_WEB_ROOT"
+  LONG_PHP_ROOT="/var/www/html"
   LONG_CGI_PORT="$port"
 
   cat "$template" | \
@@ -481,33 +481,51 @@ long_execute_root_query() {
   mysql --defaults-file="$mycnf" < "$file"
 }
 
+# Create a tmp directory to be used by the host longshore user to pass
+# info to the docker instance running the site.
+long_create_site_tmp_dir() {
+  local name="$1"
+  local tmp="${LONG_SRV}/services/sites/${name}/drupal/tmp"
+  [ ! -d "$tmp" ] && mkdir "$tmp"
+  sudo chgrp longshore-php "$tmp"
+  chmod 0750 "$tmp"
+}
+
 # Create a drupal settings.php file
 long_create_drupal_settings() {
-  local name="$1"
+  local site="$1"
   local db="$2"
 
-  local pass=$(cat "${LONG_SRV}/services/sites/${name}/env/DBPASS")
-  local dbtemp=$(mktemp "${LONG_SRV}/services/sites/${name}/drupal/private/.db.details.XXXXXXX")
-cat <<EOF > "$dbtemp"
-<?php
-  \$dbname = '$name';
-  \$dbhost = '$db';
-  \$dbuser = '$dbname';
-  \$dbpass = '$pass';
-?>
-EOF
-  local drushtemp=$(mktemp "${LONG_SRV}/services/sites/${name}/drupal/private/.drush.XXXXXXX")
-  echo drush lsd-create-settings --credentials=$dbtemp > "$drushtemp"
-  long_exec_as_www_data "$name" "$drushtemp"
-  rm "$dbtemp"
-  rm "$drushtemp"
+  local dir="${LONG_SRV}/services/sites/${site}"
+  local pass=$(cat "${dir}/env/DBPASS")
+
+  long_get_platform_for_site "$site"
+  local source="${LONG_SRV}/platforms/${LONG_PLATFORM}/sites/default/default.settings.php"
+  local target="${dir}/drupal/settings.php"
+
+  cp "$source" "$target"
+  printf "require_once('db.php');\n" >> "$target"
+
+  # Reset source and target to create the db.php file.
+  source="${LONG_SHARE}/templates/db.php"
+  target="${dir}/drupal/db.php"
+  cat "$source" | \
+    sed \
+    -e "s:LONG_DB_NAME:$site:" \
+    -e "s#LONG_DB_USER#$site#" \
+    -e "s#LONG_PASSWORD#$pass#" \
+    -e "s#LONG_DB_HOST#$db#" \
+    > "$target"
+  # Ensure proper permissions
+  chmod 0640 "$target"
+  sudo chgrp longshore-php "$target"
 }
 
 # Execute the given command in the given container as www-data. 
 long_exec_as_www_data() {
   local site="$1"
   local cmd="$2"
-  docker exec -i -t "$site" su -c "$cmd" www-data
+  docker exec -i -t "$site" su -l -c "$cmd" www-data
 }
 
 long_drush() {
@@ -694,9 +712,10 @@ long_create_site_container() {
 
   # Docker
   docker create --name "$name" \
-    -v "${LONG_SRV}/platforms:/var/www/html" \
-    -v "${dir}/drupal:/var/www/html/${platform}/sites/default" \
+    -v "${LONG_SRV}/platforms/${platform}:/var/www/html" \
+    -v "${dir}/drupal:/var/www/html/sites/default" \
     -v "${LONG_SHARE}/drush:/var/www/.drush" \
+    -e "PB_URL=${name}.${LONG_DEFAULT_DOMAIN}" \
     $link \
     $publish \
     ptp-php:latest php5-fpm 
@@ -708,9 +727,7 @@ long_create_container() {
   local db="$3"
   local platform="$4"
 
-  if [ -z "$db" ]; then
-    db="$LONG_DEFAULT_DB"
-  fi
+  
 
   if [ -z "$name" ]; then
     if [ "$type" = "phpmyadmin" ]; then
@@ -736,9 +753,11 @@ long_create_container() {
   elif [ "$type" = "phpmyadmin" ]; then
     long_create_phpmyadmin_container 
   elif [ "$type" = "site" ]; then
-    # Stop and Delete the db container if force is specified.
-    if [ "$LONG_FORCE" = 1 ]; then
-      long_container_destroy "$db"
+    if [ -z "$db" ]; then
+      db="$LONG_DEFAULT_DB"
+    fi
+    if [ -z "$platform" ]; then
+      platform="$LONG_DEFAULT_PLATFORM"
     fi
     long_create_site_container "$site" "$db" "$platform" 
   else
@@ -746,12 +765,18 @@ long_create_container() {
   fi
 }
 
+long_get_platform_for_site() {
+  local site="$1"
+  LONG_PLATFORM=$(basename $(docker inspect -f '{{.HostConfig.Binds}}' "$site" | cut -d: -f1 | tr -d '['))
+}
+
 long_get_db_for_site() {
   local site="$1"
-  LONG_DB=$(docker inspect -f {{.HostConfig.Links}} "$site"| cut -d: -f1 | tr -d '[/')
+  LONG_DB_HOST=$(docker inspect -f '{{.HostConfig.Links}}' "$site"| cut -d: -f1 | tr -d '[/')
 }
+
 long_setup_site() {
   local site="$1"
   long_get_db_for_site "$site"
-  long_create_drupal_settings "$site" "LONG_DB"
+  long_create_drupal_settings "$site" "$LONG_DB_HOST"
 }

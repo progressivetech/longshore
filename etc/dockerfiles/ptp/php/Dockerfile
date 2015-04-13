@@ -23,6 +23,7 @@ RUN apt-get update && \
 # User arbitrary high UID so we can more easily understand UIDs on the host
 RUN groupmod -g 5001 www-data
 RUN usermod -u 5001 www-data 
+RUN usermod -s /bin/bash www-data
 
 # Listen on 127.0.0.1 
 RUN sed -i 's#listen = /var/run/php5-fpm.sock#listen = 9000#' /etc/php5/fpm/pool.d/www.conf
