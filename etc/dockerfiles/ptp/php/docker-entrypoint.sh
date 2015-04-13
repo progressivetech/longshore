@@ -18,7 +18,7 @@ if [ "$1" = 'php5-fpm' ]; then
       printf "Failed to find platform (%s)\n" "$source"
       exit 1
     fi
-    ln -s "$source" "/var/www/${PB_PLATFORM}/sites/$PB_URL"
+    ln -s "$source" "/var/www/html/${PB_PLATFORM}/sites/$PB_URL"
   fi
 fi
 

@@ -93,6 +93,9 @@ if [ -d "$source_platform_path" ]; then
  mv "$source_platform_path" "$old_path" || long_die "Failed to move old platform out of the way."
 fi
 
+# The temp dir will not by readable by the nginx or php users.
+chmod 0755 "$source_platform_path_temp"
+
 mv "$source_platform_path_temp" "$source_platform_path"
 
 if [ -d "$old_path" ]; then

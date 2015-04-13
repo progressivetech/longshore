@@ -15,6 +15,7 @@ RUN apt-get update && \
     liboauth-php \
     fonts-linuxlibertine \
     wkhtmltopdf \
+    drush \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
@@ -28,7 +29,8 @@ RUN sed -i 's#listen = /var/run/php5-fpm.sock#listen = 9000#' /etc/php5/fpm/pool
 
 # Create drush directory under the www-data's home directory so the create
 # command can mount our drush scripts.
-RUN mkdir /var/www/.drush
+RUN mkdir -p /var/www/.drush
+RUN mkdir /var/www/html
 
 COPY ./docker-entrypoint.sh /entrypoint.sh
 COPY powerbase.ini /etc/php5/conf.d/powerbase.ini

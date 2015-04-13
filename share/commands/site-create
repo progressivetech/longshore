@@ -18,4 +18,5 @@ platform="$4"
 [ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
 
 long_create_container site "$site" "$db" "$platform"
+long_nginx_reload
 

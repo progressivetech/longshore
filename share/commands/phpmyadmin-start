@@ -10,17 +10,10 @@ long_check_args "$2" "$#" 0
 long_db_containers
 
 for db in $long_db_containers; do
-  # Create and start all db containers. No reason to force restart a database -
-  # since it doesn't link to anything. 
+  # Create and start all db containers. 
   long_container_up mysql "$db"
 done
 
-# First check for LONG_FORCE and if it is present, destroy the current
-# pnpmyadmin container.
-if [ "$LONG_FORCE" = "1" ]; then
-  long_container_destroy phpmyadmin 
-fi
-
-# Now start.
+# Start.
 long_container_up phpmyadmin
 long_nginx_reload
