@@ -16,6 +16,7 @@ RUN apt-get update && \
     fonts-linuxlibertine \
     wkhtmltopdf \
     drush \
+    mysql-client \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 

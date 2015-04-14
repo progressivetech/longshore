@@ -150,9 +150,17 @@ long_generate_my_cnf() {
   local dir="$1"
   local password="$2"
   local port="$3"
-  printf "[client]\nuser=root\npassword=%s\nport=%s\nhost=127.0.0.1\n" \
-    "$password" "$port" > \
+  local user="$4"
+
+  [ -z "$user" ] && user=root
+  printf "[client]\nuser=%s\npassword=%s\nport=%s\nhost=127.0.0.1\n" \
+    "$user" "$password" "$port" > \
     "$dir"/my.cnf
+
+  # If this is a site my.cnf file, add the database name.
+  if [ "$user" != "root" ]; then
+    printf "[mysql]\ndatabase=%s\n" "$user" >> "$dir"/my.cnf
+  fi
 }
 
 # Generate a random password
@@ -213,7 +221,7 @@ long_create_nginx_phpmyadmin_conf() {
     long_create_nginx_tls_conf
     long_create_nginx_redirect phpmyadmin "$LONG_SITE_URL"
   else
-    LONG_TLS_OR_NOT="listen ${LONG_IP_ADDR}:80"
+    LONG_TLS_OR_NOT="listen ${LONG_IP_ADDR}:80;"
   fi
   LONG_CGI_PORT="$port"
   cat "$template" | \
@@ -252,7 +260,7 @@ long_create_nginx_site_conf() {
     long_create_nginx_tls_conf
     long_create_nginx_redirect "$site" "$LONG_SITE_URL"
   else
-    LONG_TLS_OR_NOT="listen ${LONG_IP_ADDR}:80"
+    LONG_TLS_OR_NOT="listen ${LONG_IP_ADDR}:80;"
   fi
   LONG_ACCESS_LOG="${site}.access.log"
   LONG_WEB_ROOT="/var/www/html/${platform}"
@@ -351,6 +359,11 @@ long_container_up() {
 
   if ! long_container_running "$label"; then
     long_log "Starting container (%s)" info "$label"
+    if [ "$type" = "site" ]; then
+      # Ensure db container is running first.
+      long_get_db_for_site "$name"
+      long_container_up mysql "$LONG_DB_HOST"
+    fi
     docker start "$label"
   fi
 }
@@ -379,14 +392,14 @@ long_get_mysql_port() {
   local dir="${LONG_SRV}/services/databases/${name}"
   local last_port=
   if [ -f "$dir/my.cnf" ]; then
-    LONG_PORT=$(grep port "${dir}/my.cnf" | cut -d= -f2)
+    LONG_DB_PORT=$(grep port "${dir}/my.cnf" | cut -d= -f2)
   else
     # If we don't already have a .my.cnf file, find the next available port.
     last_port=$(grep port= "${LONG_SRV}/services/databases/*/my.cnf" 2>/dev/null | cut -d= -f2 | sort -n | tail -n 1)
     if [ -z "$last_port" ]; then
-      LONG_PORT="$LONG_MYSQL_START_PORT"
+      LONG_DB_PORT="$LONG_MYSQL_START_PORT"
     else
-      LONG_PORT=$(( $last_port + 1 ))
+      LONG_DB_PORT=$(( $last_port + 1 ))
     fi
   fi
 }
@@ -402,17 +415,17 @@ long_get_php_port() {
     envdir="${LONG_SRV}/services/sites/${name}/env"
   fi
   if [ -f "${envdir}/PORT" ]; then
-    LONG_PORT=$(cat "${envdir}/PORT")
+    LONG_PHP_PORT=$(cat "${envdir}/PORT")
   else
     # If we don't already have a PORT file, find the next available port.
     last_port=$(cat "${LONG_SRV}/services/phpmyadmin/env/PORT" "${LONG_SRV}/services/*/env/PORT" 2>/dev/null | sort -n | tail -n1)
     if [ -z "$last_port" ]; then
-      LONG_PORT="$LONG_PHP_START_PORT"
+      LONG_PHP_PORT="$LONG_PHP_START_PORT"
     else
-      LONG_PORT=$(( $last_port + 1 ))
+      LONG_PHP_PORT=$(( $last_port + 1 ))
     fi
     mkdir -p "$envdir"
-    echo "$LONG_PORT" > "${envdir}/PORT"
+    echo "$LONG_PHP_PORT" > "${envdir}/PORT"
   fi
 }
 
@@ -436,14 +449,18 @@ long_create_db() {
   # Always ensure database exists. This is easy, idempotent.
   echo "CREATE DATABASE IF NOT EXISTS \`$dbname\`;" > "$temp"
 
-  # Only ensure the user/password exists if we don't have a DBPASS env file.
-  # or that file is empty.
-  local db_pass_file="${LONG_SRV}/services/sites/${name}/env/DBPASS"
-  if [ ! -f "$db_pass_file" ] || [ ! -s "$db_pass_file" ]; then 
+  # Only ensure the user/password exists if we don't have a my.cnf file.
+  local dir="${LONG_SRV}/services/sites/${name}"
+  local mycnf_file="${dir}/my.cnf"
+  if [ ! -f "$mycnf_file" ]; then 
     # Generate random password.
+    long_log "Generating database password." info
     long_pwgen
     echo "GRANT ALL ON \`$dbname\`.* TO '$dbuser'@'%' IDENTIFIED BY '$LONG_PASSWORD';" >> "$temp"
-    echo "$LONG_PASSWORD" > "$db_pass_file"
+
+    # Get the LONG_DB_PORT for this database host.
+    long_get_mysql_port "$dbhost"
+    long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT" "$site"
   fi
 
   long_log "Waiting 5 seconds to ensure database has started." info
@@ -452,7 +469,44 @@ long_create_db() {
   rm "$temp"
 }
 
-# Execute the queries in the passed in file on the given database
+# Execute the queries in the passed in file on the given database as the
+# site's non-privileged user.
+long_execute_site_query() {
+  local site="$1"
+  local file="$2"
+
+  if [ ! -f "$file" ]; then
+    long_die "Can't find file with queries to execute."
+  fi
+
+  long_get_db_for_site "$site"
+
+  # Make sure the db container exists
+  long_container_exists "$LONG_DB_HOST"
+
+  if [ "$?" != 0 ]; then
+    long_die "The database container doesn't exist (%s)" 1 "$LONG_DB_HOST"
+  fi
+
+  long_container_running "$LONG_DB_HOST"
+  if [ "$?" != 0 ]; then
+    long_die "The database container isn't running (%s)" 1 "$LONG_DB_HOST"
+  fi
+
+  mycnf="${LONG_SRV}/services/databases/${site}/my.cnf"
+  if [ ! -f "$mycnf" ]; then
+    long_die "The my.cnf file doesn't exist for this site (%s)" 1 "$mycnf"
+  fi
+  
+  if file -b "$file" | grep "^gzip" >/dev/null; then
+    gunzip -c "$file" | mysql --defaults-file="$mycnf"
+  else
+    mysql --defaults-file="$mycnf" < "$file"
+  fi
+}
+
+# Execute the queries in the passed in file on the given database as the
+# db root user.
 long_execute_root_query() {
   local db="$1"
   local file="$2"
@@ -485,38 +539,66 @@ long_execute_root_query() {
 # info to the docker instance running the site.
 long_create_site_tmp_dir() {
   local name="$1"
-  local tmp="${LONG_SRV}/services/sites/${name}/drupal/tmp"
-  [ ! -d "$tmp" ] && mkdir "$tmp"
-  sudo chgrp longshore-php "$tmp"
-  chmod 0750 "$tmp"
+  LONG_SITE_TMP="${LONG_SRV}/services/sites/${name}/drupal/tmp"
+  [ ! -d "$LONG_SITE_TMP" ] && LONG_SITE_TMP "$tmp"
+  sudo chgrp longshore-php "$LONG_SITE_TMP"
+  chmod 0750 "$LONG_SITE_TMP"
 }
 
-# Create a drupal settings.php file
+# Create a drupal settings.php file.
 long_create_drupal_settings() {
   local site="$1"
   local db="$2"
 
   local dir="${LONG_SRV}/services/sites/${site}"
-  local pass=$(cat "${dir}/env/DBPASS")
-
+  local pass=$(grep password "${dir}/my.cnf" | cut -d= -f2)
   long_get_platform_for_site "$site"
   local source="${LONG_SRV}/platforms/${LONG_PLATFORM}/sites/default/default.settings.php"
   local target="${dir}/drupal/settings.php"
 
+  # Copy the template into place.
   cp "$source" "$target"
-  printf "require_once('db.php');\n" >> "$target"
 
-  # Reset source and target to create the db.php file.
+  # And then append the database configuration.
   source="${LONG_SHARE}/templates/db.php"
-  target="${dir}/drupal/db.php"
   cat "$source" | \
     sed \
     -e "s:LONG_DB_NAME:$site:" \
     -e "s#LONG_DB_USER#$site#" \
     -e "s#LONG_PASSWORD#$pass#" \
     -e "s#LONG_DB_HOST#$db#" \
-    > "$target"
+    >> "$target"
   # Ensure proper permissions
+  chmod 0640 "$target"
+  sudo chgrp longshore-php "$target"
+}
+
+# Create civicrm settings file.
+long_create_civicrm_settings() {
+  local site="$1"
+  # Ensure a tmp directory exists
+  long_create_site_tmp_dir "$site"
+
+  local protocol=
+  if [ -f "$LONG_NGINX_TLS_PATH" ]; then
+    protocol='https://'
+  else
+    protocol='http://'
+  fi
+
+  local file=$(mktemp "${LONG_SITE_TMP}/drupal.XXXXXXX");
+  chmod 755 "$file"
+  printf "#!/bin/bash\n" > "$file"
+  printf 'cd /var/www/html/sites/default && ' >> "$file"
+  printf "drush lsd-settings --base_url='${protocol}${site}.${LONG_DEFAULT_DOMAIN}'\n" >> "$file"
+
+  # Modify file path to work within the container.
+  local cfile="/var/www/html/sites/default/tmp/$(basename $file)"
+  long_exec_as_www_data "$site" "$cfile"
+  rm "$file"
+
+  # Ensure proper permissions
+  local target="${LONG_SRV}/services/sites/${site}/drupal/civicrm.settings.php"
   chmod 0640 "$target"
   sudo chgrp longshore-php "$target"
 }
@@ -544,21 +626,21 @@ long_create_mysql_container() {
   long_pwgen
 
   # Get the port number. Each MySQL container is assigned a unique port
-  # on the host. This will generate a LONG_PORT variable.
-  long_get_mysql_port
+  # on the host. This will generate a LONG_DB_PORT variable.
+  long_get_mysql_port "$name"
 
   # Make sure our base directory and a mysql sub directory exists.
   # Our my.cnf file will go in ${dir}/my.cnf and be mounted in the host
   # in /mnt/my.cnf and ${dir}/mysql will get mounted at /var/lib/mysql.
   mkdir -p "${dir}/mysql"
   mkdir -p "${dir}/logs"
-  long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_PORT"
+  long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT"
   docker create --name "$name" \
     -v "${dir}/mysql":/var/lib/mysql \
     -v "${dir}/my.cnf:/root/.my.cnf" \
     -v "${dir}/logs:/var/log/mysql" \
     -e "LONG_LIVE=$LONG_LIVE" \
-    -p "127.0.0.1:${LONG_PORT}:3306" \
+    -p "127.0.0.1:${LONG_DB_PORT}:3306" \
     ptp-mysql:latest mysqld
 }
 
@@ -599,7 +681,7 @@ long_create_phpmyadmin_container() {
 
   # The phpmyadmin container has to be available via a local port since 
   # nginx, which is running on localhost, has to communicate with it.
-  publish="-p 127.0.0.1:$LONG_PORT:9000"
+  publish="-p 127.0.0.1:$LONG_PHP_PORT:9000"
 
   # Copy in the config.inc.php.sample file with blowfish secret
   long_pwgen
@@ -607,7 +689,7 @@ long_create_phpmyadmin_container() {
     > "${dir}/src/config.inc.php" 
 
   # Create nginx configuration
-  long_create_nginx_phpmyadmin_conf "$LONG_PORT"
+  long_create_nginx_phpmyadmin_conf "$LONG_PHP_PORT"
 
   # Docker
   docker create --name phpmyadmin \
@@ -691,6 +773,18 @@ long_create_site_container() {
     sudo chown -R longshore-php:longshore "${dir}/${foo}"
   done
 
+  # Give the longshore-php user group ownership over the drupal directory
+  # so we can easily flip on and off group write/read access when
+  # installing drupal and civicrm.
+  sudo chgrp longshore-php "${dir}/drupal"
+
+  # We have to publish the port to the host so nginx can communicate
+  # with it. Each PHP container has to have a unique port.
+  long_get_php_port "$name" 
+
+  # Create nginx configuration
+  long_create_nginx_site_conf "$site" "$platform" "$LONG_PHP_PORT"
+
   # Ensure that the database exists and that we have a password set in
   # our env/ directory.
   #
@@ -702,10 +796,8 @@ long_create_site_container() {
   # The actual installation, if needed, will happen in longshore site-setup
   long_create_db "$name" "$db"
 
-  # We have to publish the port to the host so nginx can communicate
-  # with it. Each PHP container has to have a unique port.
-  long_get_php_port "$name" 
-  local publish="-p 127.0.0.1:$LONG_PORT:9000"
+  
+  local publish="-p 127.0.0.1:$LONG_PHP_PORT:9000"
 
   # Make sure we can communicate with the db container.
   local link="$link --link $db:$db"
@@ -726,8 +818,6 @@ long_create_container() {
   local name="$2"
   local db="$3"
   local platform="$4"
-
-  
 
   if [ -z "$name" ]; then
     if [ "$type" = "phpmyadmin" ]; then
@@ -767,6 +857,10 @@ long_create_container() {
 
 long_get_platform_for_site() {
   local site="$1"
+  # .HostConfig.Binds shows which volumes are mounted from the host. The
+  # first one listed should always be the platform. It will return the 
+  # full path to the platform - so we use basename to reduce it to just
+  # the platform name.
   LONG_PLATFORM=$(basename $(docker inspect -f '{{.HostConfig.Binds}}' "$site" | cut -d: -f1 | tr -d '['))
 }
 
@@ -775,8 +869,138 @@ long_get_db_for_site() {
   LONG_DB_HOST=$(docker inspect -f '{{.HostConfig.Links}}' "$site"| cut -d: -f1 | tr -d '[/')
 }
 
+# Install drupal from scratch.
+long_install_drupal() {
+  local site="$1"
+  local dir="${LONG_SRV}/services/sites/${site}"
+
+  long_get_platform_for_site "$site"
+  # Copy default settings file into place.
+  local default_settings_source="${LONG_SRV}/platforms/${LONG_PLATFORM}/sites/default/default.settings.php"
+  cp "$default_settings_source" "${dir}/drupal/"
+
+  # Grant the longshore-php group write access to the container can
+  # create the settings.php file (the longshore-php user should already
+  # have group ownership over the directroy from site-create).
+  chmod 775 "${dir}/drupal"
+
+  long_create_site_tmp_dir "$site"
+  local install_file=$(mktemp "${LONG_SITE_TMP}/install.XXXXXXX.php");
+  local drush_file=$(mktemp "${LONG_SITE_TMP}/drush.XXXXXXX");
+
+  local password=$(grep password "${dir}/my.cnf" | cut -d= -f2)
+
+  # We need to know the dbhost for the installation to work.
+  long_get_db_for_site "$site"
+
+  # Creating a php file to be executed in the container. This approach
+  # avoids sending passwords via the command line.
+cat << EOF > "$install_file"
+  <?php
+  drush_set_option('account-pass', '$password');
+  drush_set_option('account-name', 'admin');
+  drush_set_option('site-name', '$site');
+  drush_set_option('site-mail', 'info@progressivetech.org');
+  drush_set_option('account-mail', 'info@progressivetech.org');
+  drush_set_option('db-url', 'mysql://${site}:${password}@${LONG_DB_HOST}/${site}');
+  drush_core_pre_site_install();
+  drush_core_site_install(NULL);
+EOF
+
+  # Ensure that the www-data user can read it.
+  chmod 644 "$install_file"
+
+  # Translate file path to work in container.
+  c_install_file="/var/www/html/sites/default/tmp/$(basename $install_file)"
+  c_drush_file="/var/www/html/sites/default/tmp/$(basename $drush_file)"
+
+  # Create the file to be executed.
+  printf "#!/bin/bash\n" > "$drush_file"
+  printf 'cd /var/www/html/sites/default && ' >> "$drush_file"
+  printf "drush -y php-script '$c_install_file'\n" >> "$drush_file"
+  
+  chmod 0755 "$drush_file"
+
+  long_exec_as_www_data "$site" "$c_drush_file"
+
+  # Cleanup
+  rm "$install_file"
+  rm "$drush_file"
+
+  chmod 755 "${dir}/drupal"
+}
+
+# Assuming we have a functional drupal, install CiviCRM
+long_install_civicrm() {
+  local site="$1"
+
+  long_create_site_tmp_dir "$site"
+  local drush_file=$(mktemp "${LONG_SITE_TMP}/drush.XXXXXXX");
+
+  # Create the file to be executed.
+  printf "#!/bin/bash\n" > "$drush_file"
+  printf 'cd /var/www/html/sites/default && ' >> "$drush_file"
+  printf "drush -y civicrm-install --lang=en\n" >> "$drush_file"
+
+  chmod 755 "$drush_file"
+
+  # Translate file path to work in container.
+  c_drush_file="/var/www/html/sites/default/tmp/$(basename $drush_file)"
+
+  long_exec_as_www_data "$site" "$c_drush_file"
+
+  # Cleanup
+  rm "$drush_file"
+}
+
+long_import_backup() {
+  local site="$1"
+  local path="${LONG_SRV}/services/sites/${site}/backup/${site}.sql.gz"
+  long_execute_site_query "$site" "$path"
+}
+
+# Once the site is created, this function ensures that there is a 
+# functional Drupal and CiviCRM database and installation.
 long_setup_site() {
   local site="$1"
-  long_get_db_for_site "$site"
-  long_create_drupal_settings "$site" "$LONG_DB_HOST"
+
+  if ! long_container_running "$site"; then
+    long_die "The container is not running. Please start it first." 
+  fi
+
+  # Check for settings.php. If it exists, we assume drupal is properly 
+  # installed. If it doesn't exist, we either import from backup or do a
+  # fresh instal.
+  local dir="${LONG_SRV}/services/sites/${site}"
+  local drupal="${dir}/drupal"
+  local drupal_settings="${drupal}/settings.php"
+
+  if [ ! -f "$drupal_settings" ]; then
+    long_log "No drupal settings.php file is present." info
+    # Make sure we have a password - that should be set by the site-create command.
+    if [ ! -s "${dir}/my.cnf" ]; then
+      long_die "No settings.php file and no my.cnf - I can't setup the site."
+    fi
+
+    # Check for a database backup.
+    if [ ! -s "${dir}/backup/${site}.sql.gz" ]; then
+      # There is no database to restore. We need to do a standard Drupal
+      # installation.
+      long_log "No backup database. Installing Drupal." info
+      long_install_drupal "$site"
+      long_log "Installing CiviCRM." info
+      long_install_civicrm "$site"
+    else
+      # We have a backup file. That means we only need to create a drupal
+      # settings.php file and import the database. 
+      long_log "Importing database from backup." info
+      long_get_db_for_site "$site"
+      long_create_drupal_settings "$site" "$LONG_DB_HOST"
+      long_import_backup "$site"
+
+      # Note: You can install the civicrm settings file into the database
+      # is imported or drush has bootstrap problems.
+      long_create_civicrm_settings "$site"
+    fi
+  fi
 }

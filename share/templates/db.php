@@ -1,4 +1,5 @@
-<?php
+
+// Database settings added from share/templates/db.php.
 $databases = array (
   'default' =>
   array (
