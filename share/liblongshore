@@ -957,7 +957,7 @@ EOF
   # Create the file to be executed.
   printf "#!/bin/bash\n" > "$drush_file"
   printf 'cd /var/www/html/sites/default && ' >> "$drush_file"
-  printf "drush -y php-script '$c_install_file'\n" >> "$drush_file"
+  printf "drush -q -y php-script '$c_install_file'\n" >> "$drush_file"
   
   chmod 0755 "$drush_file"
 
@@ -967,22 +967,35 @@ EOF
   rm "$install_file"
   rm "$drush_file"
 
+  # Reset permissions. 
+  # Regain ownership of the settings.php file.
+  sudo chown longshore "${dir}/drupal/settings.php"
+
+  # And restrict access.
+  chmod 0640 "${dir}/drupal/settings.php"
+
+  # Also re-restrict group access to the enclosing directory.
   chmod 755 "${dir}/drupal"
 }
 
 # Assuming we have a functional drupal, install CiviCRM
 long_install_civicrm() {
   local site="$1"
+  local dir="${LONG_SRV}/services/sites/${site}"
+
+  # Grant the longshore-php group write access to the container can
+  # create the settings.php file (the longshore-php user should already
+  # have group ownership over the directroy from site-create).
+  chmod 775 "${dir}/drupal"
 
   long_create_site_tmp_dir "$site"
   local drush_file=$(mktemp "${LONG_SITE_TMP}/drush.XXXXXXX");
 
-  cp "${LONG_SRV}/platforms/ourpowerbase-d7-c4.5/sites/all/modules/civicrm/drupal/drush/civicrm.drush.inc" \
-    "${LONG_SHARE}/drush/"
-  # Create the file to be executed.
+  # Create the file to be executed. We can't simply run drush -y civicrm-install
+  # because civicrm module is not yet enabled, so we use a helper command in lsd.
   printf "#!/bin/bash\n" > "$drush_file"
   printf 'cd /var/www/html/sites/default && ' >> "$drush_file"
-  printf "drush -y civicrm-install --lang=en\n" >> "$drush_file"
+  printf "drush -q -y lsd-civicrm-install\n" >> "$drush_file"
 
   chmod 755 "$drush_file"
 
@@ -993,6 +1006,16 @@ long_install_civicrm() {
 
   # Cleanup
   rm "$drush_file"
+
+  # Reset permissions. 
+  # Regain ownership of the settings.php file.
+  sudo chown longshore "${dir}/drupal/civicrm.settings.php"
+
+  # And restrict access.
+  chmod 0640 "${dir}/drupal/civicrm.settings.php"
+
+  # Also re-restrict group access to the enclosing directory.
+  chmod 755 "${dir}/drupal"
 }
 
 long_import_backup() {

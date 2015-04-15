@@ -44,6 +44,7 @@ EOSQL
 
   # Make sure we have been properly initialized
   if [ ! -d "/var/lib/mysql/mysql" ]; then
+    printf "Initializing on a new system."
     mysql_install_db
   fi
 fi
