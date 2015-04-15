@@ -635,6 +635,12 @@ long_create_mysql_container() {
   mkdir -p "${dir}/mysql"
   mkdir -p "${dir}/logs"
   long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT"
+
+  # Bail if the container already exists. 
+  if long_container_exists "$name"; then
+    return
+  fi
+
   docker create --name "$name" \
     -v "${dir}/mysql":/var/lib/mysql \
     -v "${dir}/my.cnf:/root/.my.cnf" \
@@ -691,6 +697,11 @@ long_create_phpmyadmin_container() {
   # Create nginx configuration
   long_create_nginx_phpmyadmin_conf "$LONG_PHP_PORT"
 
+  # Bail if the container already exists. 
+  if long_container_exists phpmyadmin; then
+    return
+  fi
+
   # Docker
   docker create --name phpmyadmin \
     -v "${dir}/src:/var/www/phpmyadmin" \
@@ -706,13 +717,24 @@ long_create_site_container() {
   local db="$2"
   local platform="$3"
 
-  # Sanity check - make sure platform exists 
+  # Sanity check - make sure platform exists.
   if [ ! -d "${LONG_SRV}/platforms/${platform}" ]; then
     long_die "That platform doesn't seem to exist (%s)." "$platform"
   fi
 
   # Ensure that the database container exists and is running. It has to
-  # be running so we can create the database and database username/password.
+  # be running, not just created, so we can create the database and database
+  # username/password.
+  #
+  # Normally, we would simply call long_container_up - however, that 
+  # function in turn calls long_container_create - which will try to 
+  # create the mysql container while respecting the LONG_FORCE setting
+  # intended for the site. We don't want to force re-ceate the database
+  # container everytime we force re-create the site container.
+  #
+  # To avoid that problem, we first call the container create mysql helper 
+  # function directly which will return if the container already exists.
+  long_create_mysql_container "$db"
   long_container_up mysql "$db"
 
   # Build out directories. Create the minimal amount of directories and
@@ -785,32 +807,42 @@ long_create_site_container() {
   # Create nginx configuration
   long_create_nginx_site_conf "$site" "$platform" "$LONG_PHP_PORT"
 
-  # Ensure that the database exists and that we have a password set in
-  # our env/ directory.
+  # Ensure that the database exists and that we have a my.cnf file.
   #
   # We are not going to do a proper drupal and civicrm installation 
   # because that will take a long time and we may only want to create
   # the container in order to import an existing database. So, just create
-  # the database and user and record the password.
+  # the database and user and record the password in my.cnf.
   #
   # The actual installation, if needed, will happen in longshore site-setup
   long_create_db "$name" "$db"
-
   
+  # Ensure the container is accessible on localhost so nginx can reach it.
   local publish="-p 127.0.0.1:$LONG_PHP_PORT:9000"
 
   # Make sure we can communicate with the db container.
   local link="$link --link $db:$db"
 
+  # We need to add an /etc/hosts entry for the host so that esmtp-run 
+  # can relay email via the host (it's configured in the container in
+  # /etc/esmtprc).
+  local ip=$(ip addr show dev docker0 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
+
+  # Bail if the container already exists. 
+  if long_container_exists "$name"; then
+    return
+  fi
+
   # Docker
   docker create --name "$name" \
+    --add-host "dockerhost:$ip" \
     -v "${LONG_SRV}/platforms/${platform}:/var/www/html" \
     -v "${dir}/drupal:/var/www/html/sites/default" \
     -v "${LONG_SHARE}/drush:/var/www/.drush" \
     -e "PB_URL=${name}.${LONG_DEFAULT_DOMAIN}" \
     $link \
     $publish \
-    ptp-php:latest php5-fpm 
+    ptp-powerbase:latest php5-fpm 
 }
 
 long_create_container() {
@@ -827,15 +859,23 @@ long_create_container() {
     fi
   fi
 
-  # Stop and Delete the container if force is specified.
+  # Delete the container if force is specified.
   if [ "$LONG_FORCE" = 1 ]; then
-    long_container_destroy "$name"
+    # If the container is running, that is an error. This command won't
+    # start a container after creating it, so we shouldn't stop a container
+    # either.
+    if long_container_running "$name"; then
+      long_die "The container %s is running. Please stop it first."
+    fi
+    docker rm "$name"
   fi
 
-  # If the container already exists, then we are done. 
-  if long_container_exists "$name"; then
-    return
-  fi
+  # NOTE: These functions not only create the docker containers, but also
+  # do a number of indempotent prepration steps. These steps should be
+  # taken even if the container already exists, so we wait on the check to see
+  # if the container exists until the last docker create statement in each
+  # specific container_create function.
+  
 
   # Create a mysql container.
   if [ "$type" = "mysql" ]; then
@@ -937,6 +977,8 @@ long_install_civicrm() {
   long_create_site_tmp_dir "$site"
   local drush_file=$(mktemp "${LONG_SITE_TMP}/drush.XXXXXXX");
 
+  cp "${LONG_SRV}/platforms/ourpowerbase-d7-c4.5/sites/all/modules/civicrm/drupal/drush/civicrm.drush.inc" \
+    "${LONG_SHARE}/drush/"
   # Create the file to be executed.
   printf "#!/bin/bash\n" > "$drush_file"
   printf 'cd /var/www/html/sites/default && ' >> "$drush_file"
@@ -964,6 +1006,8 @@ long_import_backup() {
 long_setup_site() {
   local site="$1"
 
+  long_install_civicrm "$site"
+  return
   if ! long_container_running "$site"; then
     long_die "The container is not running. Please start it first." 
   fi

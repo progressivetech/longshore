@@ -1,0 +1,37 @@
+# Based on https://github.com/AsavarTzeth/docker-php5-fpm
+FROM ptp-php:latest
+
+MAINTAINER Jamie McClelland <jamie@progressivetech.org>
+
+# Install packages only needed by powerbase.
+RUN apt-get update && \
+    export DEBIAN_FRONTEND=noninteractive && \ 
+    apt-get install -y \
+    --no-install-recommends \
+    php5-curl \
+    php5-gd \
+    liboauth-php \
+    fonts-linuxlibertine \
+    wkhtmltopdf \
+    drush \
+    mysql-client \
+    esmtp-run \
+    xvfb && \
+    rm -rf /var/lib/apt/lists/*
+
+# RUN wget https://downloads.sourceforge.net/project/wkhtmltopdf/0.12.2.1/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb
+# User arbitrary high UID so we can more easily understand UIDs on the host
+RUN groupmod -g 5001 www-data
+RUN usermod -u 5001 www-data 
+RUN usermod -s /bin/bash www-data
+
+# Create drush directory under the www-data's home directory so the create
+# command can mount our drush scripts.
+RUN mkdir -p /var/www/.drush
+RUN mkdir /var/www/html
+
+# Copy our custom PHP settings for powerbase.
+COPY powerbase.ini /etc/php5/conf.d/powerbase.ini
+
+# Copy over our esmtprc file to configure handling email.
+COPY esmtprc /etc/esmtprc
