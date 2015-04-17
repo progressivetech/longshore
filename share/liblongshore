@@ -744,7 +744,7 @@ long_create_site_container() {
     drupal/custom-civicrm/extensions drupal/custom-civicrm/php
     drupal/custom-civicrm/templates drupal/files
     drupal/files/civicrm drupal/files/civicrm/ConfigAndLog
-    drupal/files/civicrm/custom drupal/files/civicrm/persit
+    drupal/files/civicrm/custom drupal/files/civicrm/persist
     drupal/files/civicrm/templates_c drupal/files/civicrm/upload
     drupal/files/civicrm/contribute drupal/private drupal/modules
     drupal/themes drupal/libraries"
@@ -757,7 +757,8 @@ long_create_site_container() {
   # by the user running the PHP application.
   # See https://civicrm.org/advisory/civi-sa-2014-001-risk-information-disclosure
   local not_web_accessible="drupal/files/civicrm/ConfigAndLog
-    drupal/files/civicrm/templates_c drupal/files/civicrm/upload"
+    drupal/files/civicrm/templates_c drupal/files/civicrm/upload
+    drupal/files/civicrm/custom"
   # Prohibit web access by removing other access. Only the user and the
   # group owners will be able to access the files. And only the owner will
   # be able to write to them.
