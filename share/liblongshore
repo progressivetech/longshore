@@ -620,21 +620,24 @@ long_drush() {
 long_create_mysql_container() {
   local name="$1"
   local dir="${LONG_SRV}/services/databases/${name}"
-
-  # Use our password generation utility which uses /dev/urandom.
-  # long_pwgen will assign a new password to the variable $LONG_PASSWORD.
-  long_pwgen
-
-  # Get the port number. Each MySQL container is assigned a unique port
-  # on the host. This will generate a LONG_DB_PORT variable.
-  long_get_mysql_port "$name"
-
   # Make sure our base directory and a mysql sub directory exists.
   # Our my.cnf file will go in ${dir}/my.cnf and be mounted in the host
   # in /mnt/my.cnf and ${dir}/mysql will get mounted at /var/lib/mysql.
   mkdir -p "${dir}/mysql"
   mkdir -p "${dir}/logs"
-  long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT"
+
+  # Get the port number. Each MySQL container is assigned a unique port
+  # on the host. This will generate a LONG_DB_PORT variable.
+  long_get_mysql_port "$name"
+
+  # Check for existence of my.cnf file and create if necessary.
+  if [ ! -f "${dir}/my.cnf" ]; then
+    # Use our password generation utility which uses /dev/urandom.
+    # long_pwgen will assign a new password to the variable $LONG_PASSWORD.
+    long_pwgen
+
+    long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT"
+  fi
 
   # Bail if the container already exists. 
   if long_container_exists "$name"; then
@@ -902,12 +905,15 @@ long_get_platform_for_site() {
   # first one listed should always be the platform. It will return the 
   # full path to the platform - so we use basename to reduce it to just
   # the platform name.
-  LONG_PLATFORM=$(basename $(docker inspect -f '{{.HostConfig.Binds}}' "$site" | cut -d: -f1 | tr -d '['))
+  LONG_PLATFORM=$(basename $(docker inspect -f '{{.HostConfig.Binds}}' "$site" | egrep -o "/srv/longshore/platforms/ourpowerbase-[a-z0-9.-]*"))
 }
 
 long_get_db_for_site() {
   local site="$1"
   LONG_DB_HOST=$(docker inspect -f '{{.HostConfig.Links}}' "$site"| cut -d: -f1 | tr -d '[/')
+  if [ -z "$LONG_DB_HOST" ] || [ "$LONG_DB_HOST" = "<no value>" ]; then
+    long_die "This site (%s) has no database configured. You should probably re-create it." 1 "$site"
+  fi
 }
 
 # Install drupal from scratch.
@@ -1030,8 +1036,6 @@ long_import_backup() {
 long_setup_site() {
   local site="$1"
 
-  long_install_civicrm "$site"
-  return
   if ! long_container_running "$site"; then
     long_die "The container is not running. Please start it first." 
   fi

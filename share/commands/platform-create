@@ -87,21 +87,24 @@ for file in $delete; do
   [ -e "$file" ] && rm -rf "$file"
 done
 
-# Do an atomic move over the existing platform (if it exists).
-if [ -d "$source_platform_path" ]; then
- old_path=$(mktemp -d --tmpdir="$base")
- mv "$source_platform_path" "$old_path" || long_die "Failed to move old platform out of the way."
-fi
-
-# The temp dir will not by readable by the nginx or php users.
+# mktemp will restrict read access - we need to ensure www-data on the
+# container can read it.
 chmod 0755 "$source_platform_path_temp"
-
-mv "$source_platform_path_temp" "$source_platform_path"
-
-if [ -d "$old_path" ]; then
- rm -rf "$old_path"
+# If the platform doesn't already exist - move it into place and we are done. 
+if [ ! -d "$source_platform_path" ]; then
+  # The temp dir will not by readable by the nginx or php users.
+  mv "$source_platform_path_temp" "$source_platform_path"
+else
+  # It would be nice to do an atomic move, however, if the platform is being used
+  # by a running container, we can't just move it out of the way. So, we have to
+  # rsync and deal with the possibility that there may be a weird error while the
+  # sync'ing is happened. I learned about the proper rsync arguments by reading 
+  # the output of `aubrsync -h`.
+  rsync -aHSx --devices --specials --delete-before "${source_platform_path_temp}/" "${source_platform_path}/" 
 fi
 
+# Clean up.
+rm -rf "$source_platform_path_temp"
 
 # If we have frontends to sync with (that are not us)
 host=$(hostname)

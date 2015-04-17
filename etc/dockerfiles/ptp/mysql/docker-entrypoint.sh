@@ -33,11 +33,12 @@ EOSQL
   # servers we may have far less RAM available so we adjust this
   # down to the default.
   if [ "$LONG_LIVE" = "n" ]; then
-    printf "Not running on dev system\n"
+    printf "Not running on live system\n"
     sed -i "s/innodb_buffer_pool_size =/; innodb_buffer_pool_size =/" /etc/mysql/conf.d/ptp.cnf
   else
     printf "Running on live system\n"
   fi
+
   touch /var/log/mysql/mysql-slow.log
   chown mysql:mysql /var/log/mysql/mysql-slow.log
   chown mysql:mysql /var/lib/mysql
