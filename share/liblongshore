@@ -275,6 +275,7 @@ long_create_nginx_site_conf() {
     -e "s#LONG_WEB_ROOT#$LONG_WEB_ROOT#" \
     -e "s#LONG_PHP_ROOT#$LONG_PHP_ROOT#" \
     -e "s#LONG_CGI_PORT#$LONG_CGI_PORT#" \
+    -e "s#LONG_SITE#$site#" \
     > "$target"
 }
 
@@ -535,14 +536,10 @@ long_execute_root_query() {
   mysql --defaults-file="$mycnf" < "$file"
 }
 
-# Create a tmp directory to be used by the host longshore user to pass
-# info to the docker instance running the site.
-long_create_site_tmp_dir() {
+# Initialize the LONG_SITE_TMP variable. 
+long_init_site_tmp_var() {
   local name="$1"
-  LONG_SITE_TMP="${LONG_SRV}/services/sites/${name}/drupal/tmp"
-  [ ! -d "$LONG_SITE_TMP" ] && LONG_SITE_TMP "$tmp"
-  sudo chgrp longshore-php "$LONG_SITE_TMP"
-  chmod 0750 "$LONG_SITE_TMP"
+  LONG_SITE_TMP="${LONG_SRV}/services/sites/${name}/drupal/private/temp"
 }
 
 # Create a drupal settings.php file.
@@ -573,29 +570,24 @@ long_create_drupal_settings() {
   sudo chgrp longshore-php "$target"
 }
 
-# Create civicrm settings file.
-long_create_civicrm_settings() {
-  local site="$1"
-  # Ensure a tmp directory exists
-  long_create_site_tmp_dir "$site"
-
-  local protocol=
+# Give a site, set a variable for the base_url
+long_get_base_url_for_site() {
+  site="$1"
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
     protocol='https://'
   else
     protocol='http://'
   fi
 
-  local file=$(mktemp "${LONG_SITE_TMP}/drupal.XXXXXXX");
-  chmod 755 "$file"
-  printf "#!/bin/bash\n" > "$file"
-  printf 'cd /var/www/html/sites/default && ' >> "$file"
-  printf "drush lsd-settings --base_url='${protocol}${site}.${LONG_DEFAULT_DOMAIN}'\n" >> "$file"
+  LONG_BASE_URL="${protocol}${site}.${LONG_DEFAULT_DOMAIN}"
+}
 
-  # Modify file path to work within the container.
-  local cfile="/var/www/html/sites/default/tmp/$(basename $file)"
-  long_exec_as_www_data "$site" "$cfile"
-  rm "$file"
+# Create civicrm settings file.
+long_create_civicrm_settings() {
+  local site="$1"
+
+  long_get_base_url_for_site "$site"
+  long_exec_drush_cmd "$site" "lsd-settings --base_url='$LONG_BASE_URL'"
 
   # Ensure proper permissions
   local target="${LONG_SRV}/services/sites/${site}/drupal/civicrm.settings.php"
@@ -603,10 +595,32 @@ long_create_civicrm_settings() {
   sudo chgrp longshore-php "$target"
 }
 
+# Execute the given drush command in the given container as the www-data user.
+long_exec_drush_cmd() {
+  site="$1"
+  cmd="$2"
+
+  local file=$(mktemp "${LONG_SITE_TMP}/drupal.XXXXXXX");
+  chmod 755 "$file"
+  printf "#!/bin/bash\n" > "$file"
+  printf 'cd /var/www/html/sites/default && ' >> "$file"
+  printf "drush $2\n" >> "$file"
+
+  long_exec_in_container "$site" "$file"
+  rm "$file"
+}
+
 # Execute the given command in the given container as www-data. 
-long_exec_as_www_data() {
+long_exec_in_container() {
   local site="$1"
   local cmd="$2"
+
+  # If the file to execute is in $LONG_SITE_TMP, then we need to translate
+  # the path to where it will exist in the site container.
+  local dir=$(dirname "$cmd")
+  if [ "$dir" = "$LONG_SITE_TMP" ]; then
+    cmd="/var/www/html/sites/default/private/temp/$(basename $cmd)"
+  fi
   docker exec -i -t "$site" su -l -c "$cmd" www-data
 }
 
@@ -749,8 +763,8 @@ long_create_site_container() {
     drupal/files/civicrm drupal/files/civicrm/ConfigAndLog
     drupal/files/civicrm/custom drupal/files/civicrm/persist
     drupal/files/civicrm/templates_c drupal/files/civicrm/upload
-    drupal/files/civicrm/contribute drupal/private drupal/modules
-    drupal/themes drupal/libraries"
+    drupal/files/civicrm/contribute drupal/private drupal/private/temp
+    drupal/modules drupal/themes drupal/libraries"
   local create=
   for create in $creates; do
     mkdir -p "${dir}/${create}"
@@ -761,10 +775,11 @@ long_create_site_container() {
   # See https://civicrm.org/advisory/civi-sa-2014-001-risk-information-disclosure
   local not_web_accessible="drupal/files/civicrm/ConfigAndLog
     drupal/files/civicrm/templates_c drupal/files/civicrm/upload
-    drupal/files/civicrm/custom"
+    drupal/files/civicrm/custom drupal/private"
   # Prohibit web access by removing other access. Only the user and the
   # group owners will be able to access the files. And only the owner will
   # be able to write to them.
+  local perms=
   local foo=
   for foo in $not_web_accessible; do
     # We only need to make this change at the top level - no need for
@@ -776,7 +791,7 @@ long_create_site_container() {
     # longhsore-ptp - which means we won't be able to chmod if. If we get a
     # permission problem - that is a bug - these directories should either
     # be chmod'ed already OR owned by the longshore user.
-    local perms=$(stat -c "%a" "${dir}/${foo}")
+    perms=$(stat -c "%a" "${dir}/${foo}")
     if [ "$perms" != "750" ]; then
       chmod o-rwx "${dir}/${foo}" 
       chmod g-w "${dir}/${foo}" 
@@ -789,6 +804,14 @@ long_create_site_container() {
   perms=$(stat -c "%a" ${dir}/drupal/files/civicrm/contribute)
   if [ "$perms" != "754" ]; then
     chmod o-x "${dir}/drupal/files/civicrm/contribute"
+  fi
+
+  # One exception: private/temp should be writable by the group (longshore)
+  # so that the host can create temporary files to be deleted after being
+  # executed in the container. See the long_exec_in_container function.
+  perms=$(stat -c "%a" ${dir}/drupal/private/temp)
+  if [ "$perms" != "775" ]; then
+    chmod 0775 "${dir}/drupal/private/temp"
   fi
 
   # Now that the right modes are set, chown the files to the right users. 
@@ -922,26 +945,23 @@ long_install_drupal() {
   local dir="${LONG_SRV}/services/sites/${site}"
 
   long_get_platform_for_site "$site"
+
   # Copy default settings file into place.
   local default_settings_source="${LONG_SRV}/platforms/${LONG_PLATFORM}/sites/default/default.settings.php"
   cp "$default_settings_source" "${dir}/drupal/"
 
-  # Grant the longshore-php group write access to the container can
+  # Grant the longshore-php group write access to the container to it can
   # create the settings.php file (the longshore-php user should already
   # have group ownership over the directroy from site-create).
   chmod 775 "${dir}/drupal"
 
-  long_create_site_tmp_dir "$site"
-  local install_file=$(mktemp "${LONG_SITE_TMP}/install.XXXXXXX.php");
-  local drush_file=$(mktemp "${LONG_SITE_TMP}/drush.XXXXXXX");
-
+  # Retrieve the password and db host.
   local password=$(grep password "${dir}/my.cnf" | cut -d= -f2)
-
-  # We need to know the dbhost for the installation to work.
   long_get_db_for_site "$site"
 
   # Creating a php file to be executed in the container. This approach
   # avoids sending passwords via the command line.
+  local install_file=$(mktemp "${LONG_SITE_TMP}/install.XXXXXXX.php");
 cat << EOF > "$install_file"
   <?php
   drush_set_option('account-pass', '$password');
@@ -958,21 +978,12 @@ EOF
   chmod 644 "$install_file"
 
   # Translate file path to work in container.
-  c_install_file="/var/www/html/sites/default/tmp/$(basename $install_file)"
-  c_drush_file="/var/www/html/sites/default/tmp/$(basename $drush_file)"
+  c_install_file="/var/www/html/sites/default/private/temp/$(basename $install_file)"
 
-  # Create the file to be executed.
-  printf "#!/bin/bash\n" > "$drush_file"
-  printf 'cd /var/www/html/sites/default && ' >> "$drush_file"
-  printf "drush -q -y php-script '$c_install_file'\n" >> "$drush_file"
-  
-  chmod 0755 "$drush_file"
-
-  long_exec_as_www_data "$site" "$c_drush_file"
+  long_exec_drush_cmd "$site" "-q -y php-script '$c_install_file'"
 
   # Cleanup
   rm "$install_file"
-  rm "$drush_file"
 
   # Reset permissions. 
   # Regain ownership of the settings.php file.
@@ -995,24 +1006,11 @@ long_install_civicrm() {
   # have group ownership over the directroy from site-create).
   chmod 775 "${dir}/drupal"
 
-  long_create_site_tmp_dir "$site"
-  local drush_file=$(mktemp "${LONG_SITE_TMP}/drush.XXXXXXX");
-
   # Create the file to be executed. We can't simply run drush -y civicrm-install
-  # because civicrm module is not yet enabled, so we use a helper command in lsd.
-  printf "#!/bin/bash\n" > "$drush_file"
-  printf 'cd /var/www/html/sites/default && ' >> "$drush_file"
-  printf "drush -q -y lsd-civicrm-install\n" >> "$drush_file"
-
-  chmod 755 "$drush_file"
-
-  # Translate file path to work in container.
-  c_drush_file="/var/www/html/sites/default/tmp/$(basename $drush_file)"
-
-  long_exec_as_www_data "$site" "$c_drush_file"
-
-  # Cleanup
-  rm "$drush_file"
+  # because civicrm module is not yet enabled which means civicrm.drush.inc commands
+  # are not available to us, so we use a helper command in lsd.
+  long_get_base_url_for_site "$site"
+  long_exec_drush_cmd "$site" "-q -y lsd-civicrm-install --base_url='$LONG_BASE_URL'"
 
   # Reset permissions. 
   # Regain ownership of the settings.php file.
@@ -1039,12 +1037,16 @@ long_setup_site() {
   if ! long_container_running "$site"; then
     long_die "The container is not running. Please start it first." 
   fi
+  
+  # Populate the $LONG_SITE_TMP_VAR variable which is used to execute
+  # commands in the container.
+  long_init_site_tmp_var "$site"
 
-  # Check for settings.php. If it exists, we assume drupal is properly 
-  # installed. If it doesn't exist, we either import from backup or do a
-  # fresh instal.
-  local dir="${LONG_SRV}/services/sites/${site}"
-  local drupal="${dir}/drupal"
+  # Check for settings.php. If it exists, we assume drupal is properly
+  # installed. NOTE: if you delete an existing settings.php file you will cause
+  # the database to be re-created. If it doesn't exist, we either import from
+  # backup or do a fresh instal.
+  local dir="${LONG_SRV}/services/sites/${site}" local drupal="${dir}/drupal"
   local drupal_settings="${drupal}/settings.php"
 
   if [ ! -f "$drupal_settings" ]; then
@@ -1059,6 +1061,11 @@ long_setup_site() {
       # There is no database to restore. We need to do a standard Drupal
       # installation.
       long_log "No backup database. Installing Drupal." info
+      long_prompt "Installing Drupal/CiviCRM from scratch. Any existing DB will be destroyed"
+      if [ "$reply" != "y" ]; then
+        long_log "Not continuing, as directed."
+        return
+      fi
       long_install_drupal "$site"
       long_log "Installing CiviCRM." info
       long_install_civicrm "$site"
@@ -1066,6 +1073,11 @@ long_setup_site() {
       # We have a backup file. That means we only need to create a drupal
       # settings.php file and import the database. 
       long_log "Importing database from backup." info
+      long_prompt "Importing database, any existing DB will be destroyed"
+      if [ "$reply" != "y" ]; then
+        long_log "Not continuing, as directed."
+        return
+      fi
       long_get_db_for_site "$site"
       long_create_drupal_settings "$site" "$LONG_DB_HOST"
       long_import_backup "$site"
@@ -1075,4 +1087,46 @@ long_setup_site() {
       long_create_civicrm_settings "$site"
     fi
   fi
+  long_set_paths "$site"
+}
+
+# Ensure all basic drupal and civicrm paths and urls are set 
+long_set_paths() {
+  local site="$1"
+  long_exec_drush_cmd "$site" "lsd-set-paths"
+}
+
+# Delete a site container and all related containers and data
+long_destroy_site() {
+  site="$1"
+  
+  # Remove the nginx file first so the site is no longer accessible.
+  long_log "Disabling nginx configuration." info
+  rm -f "${LONG_NGINX_SITES_ENABLED}/${site}.conf"
+  long_nginx_reload
+
+  if long_container_running "$site"; then
+    long_log "Stopping container." info
+    docker stop "$site"
+  fi
+
+  # Kill the database.
+  long_get_db_for_site "$site"
+  temp=$(mktemp)
+  echo "DROP DATABASE IF EXISTS \`$site\`" > "$temp"
+  long_log "Dropping database (%s) on host (%s)." info "$site" "$LONG_DB_HOST"
+  long_execute_root_query "$LONG_DB_HOST" "$temp"  
+  rm "$temp"
+
+  long_log "Deleting container" info
+  if long_container_exists "$site"; then
+    docker rm "$site"
+  fi
+
+  # Delete the data directory.
+  long_log "Removing data directory" info
+  # Some files and directories may be owned by longshore-php, so reclaim
+  # onwership first.
+  sudo chown -R longshore "${LONG_SRV}/services/sites/${site}"
+  rm -rf "${LONG_SRV}/services/sites/${site}"
 }

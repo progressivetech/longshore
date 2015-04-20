@@ -25,6 +25,9 @@ function lsd_drush_command() {
       'base_url' => 'Base URL for the site, including the protocol'
     ),
   );
+  $items['lsd-set-paths'] = array(
+    'description' => 'Ensure all Drupal and CiviCRM paths and URLs are set correctly.',
+  );
   return $items;
 }
 
@@ -62,6 +65,87 @@ function drush_lsd_civicrm_settings() {
 
   _civicrm_generate_settings_file($db_spec['username'], $db_spec['password'],
     $db_spec['host'], $db_spec['database'], $db_spec['modPath']);
+}
+
+/**
+ * Implementation of command lsd-set-paths.
+ *
+ * Ensure all basic drupal and civicrm paths and urls are set 
+ */
+function drush_lsd_set_paths() {
+  // First, drupal paths. 
+  $settings = array(
+    'file_public_path' => 'sites/default/files',
+    'file_private_path' => 'sites/default/private',
+    'file_temporary_path' => 'sites/default/private/temp'
+  );
+  while(list($k, $v) = each($settings)) {
+    if(variable_get($k, NULL) != $v) {
+      variable_set($k, $v);
+    }
+  }
+
+  // Now CiviCRM.
+  _civicrm_init();
+
+  // All sites have the same settings.
+  $abs_root_path = 'var/www/html';
+  $rel_site_path ='sites/default'; 
+  $rel_civicrm_files_path = "${rel_site_path}/files/civicrm";
+  $abs_site_path = $abs_root_path . '/' . $rel_site_path;
+
+  $keys = array(
+    'imageUploadURL' => array(
+      'value' => "${rel_civicrm_files_path}/persist/contribute/",
+      'group_name' => 'URL Preferences',
+    ),
+    'userFrameworkResourceURL' => array(
+      'value' => CIVICRM_UF_BASEURL . '/sites/all/modules/civicrm',
+      'group_name' => 'URL Preferences',
+    ),
+    'uploadDir' => array(
+      'value' => "${rel_civicrm_files_path}/upload",
+      'group_name' => 'Directory Preferences',
+    ),
+    'customPHPPathDir' => array(
+      'value' => "${abs_site_path}/custom-civicrm/php",
+      'group_name' => 'Directory Preferences',
+    ),
+    'extensionsDir' => array(
+      'value' => "${abs_root_path}/sites/all/extensions",
+      'group_name' => 'Directory Preferences',
+    ),
+    'extensionsURL' => array(
+      'value' => "sites/all/extensions",
+      'group_name' => 'Directory Preferences',
+    ),
+    'customTemplateDir' => array(
+      'value' => "${abs_site_path}/custom-civicrm/templates",
+      'group_name' => 'Directory Preferences',
+    ),
+  );
+
+  while(list($k,$v) = each($keys)) {
+    // Check if it exists and needs changing.
+    $sql = 'SELECT id, value FROM civicrm_setting WHERE name = %1 AND group_name = %2';
+    $params = array(
+      1 => array($k, 'String'), 2 => array($v['group_name'], 'String')
+    );
+    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+    $dao->fetch();
+    if(!$dao->id) {
+      // Setting doesn't exist, create it.
+      CRM_Core_BAO_Setting::setItem($v['value'], $v['group_name'], $k);
+    }
+    elseif($dao->value != $v['value']) {
+      // Setting is set incorrectly, fix it.
+      $sql = "UPDATE civicrm_setting SET value = %0 WHERE id = %1";
+      $params = array(
+        0 => array($v['value'], 'String'),
+        1 => array($dao->id, 'Integer')
+      );
+    }
+  }
 }
 
 /**

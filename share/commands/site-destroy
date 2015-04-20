@@ -1,0 +1,19 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-destroy <site>
+Destroy a site. Completely, including all data. 
+
+Arguments
+  <site> - The site you want to destroy, e.g. ptp"
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+long_prompt "You are about to delete all data related to the site '%s'." "$site"
+if [ "$reply" = "y" ]; then
+  long_destroy_site "$site"
+else
+  long_log "Site not deleted." info
+fi
+
