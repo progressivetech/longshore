@@ -419,7 +419,7 @@ long_get_php_port() {
     LONG_PHP_PORT=$(cat "${envdir}/PORT")
   else
     # If we don't already have a PORT file, find the next available port.
-    last_port=$(cat "${LONG_SRV}/services/phpmyadmin/env/PORT" "${LONG_SRV}/services/*/env/PORT" 2>/dev/null | sort -n | tail -n1)
+    last_port=$(cat "${LONG_SRV}/services/phpmyadmin/env/PORT" "${LONG_SRV}"/services/sites/*/env/PORT 2>/dev/null | sort -n | tail -n1)
     if [ -z "$last_port" ]; then
       LONG_PHP_PORT="$LONG_PHP_START_PORT"
     else
@@ -494,7 +494,7 @@ long_execute_site_query() {
     long_die "The database container isn't running (%s)" 1 "$LONG_DB_HOST"
   fi
 
-  mycnf="${LONG_SRV}/services/databases/${site}/my.cnf"
+  mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
   if [ ! -f "$mycnf" ]; then
     long_die "The my.cnf file doesn't exist for this site (%s)" 1 "$mycnf"
   fi
@@ -586,13 +586,22 @@ long_get_base_url_for_site() {
 long_create_civicrm_settings() {
   local site="$1"
 
+  # Grant the longshore-php group write access to the container default dir so
+  # it can create the civicrm.settings.php file (the longshore-php user should
+  # already have group ownership over the directroy from site-create).
+  chmod 775 "${dir}/drupal"
+
   long_get_base_url_for_site "$site"
-  long_exec_drush_cmd "$site" "lsd-settings --base_url='$LONG_BASE_URL'"
+  long_exec_drush_cmd "$site" "lsd-civicrm-settings --base_url='$LONG_BASE_URL'"
 
   # Ensure proper permissions
   local target="${LONG_SRV}/services/sites/${site}/drupal/civicrm.settings.php"
   chmod 0640 "$target"
-  sudo chgrp longshore-php "$target"
+
+  sudo chown longshore "$target"
+
+  # Remove write access.
+  chmod 755 "${dir}/drupal"
 }
 
 # Execute the given drush command in the given container as the www-data user.
@@ -834,6 +843,12 @@ long_create_site_container() {
   # Create nginx configuration
   long_create_nginx_site_conf "$site" "$platform" "$LONG_PHP_PORT"
 
+  # Bail if the container already exists. All remaining items in this
+  # function are only needed if the site has never been created.
+  if long_container_exists "$name"; then
+    return
+  fi
+
   # Ensure that the database exists and that we have a my.cnf file.
   #
   # We are not going to do a proper drupal and civicrm installation 
@@ -854,12 +869,7 @@ long_create_site_container() {
   # can relay email via the host (it's configured in the container in
   # /etc/esmtprc).
   local ip=$(ip addr show dev docker0 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
-
-  # Bail if the container already exists. 
-  if long_container_exists "$name"; then
-    return
-  fi
-
+  
   # Docker
   docker create --name "$name" \
     --add-host "dockerhost:$ip" \
@@ -1046,8 +1056,10 @@ long_setup_site() {
   # installed. NOTE: if you delete an existing settings.php file you will cause
   # the database to be re-created. If it doesn't exist, we either import from
   # backup or do a fresh instal.
-  local dir="${LONG_SRV}/services/sites/${site}" local drupal="${dir}/drupal"
+  local dir="${LONG_SRV}/services/sites/${site}"
+  local drupal="${dir}/drupal"
   local drupal_settings="${drupal}/settings.php"
+  local civicrm_settings="${drupal}/civicrm.settings.php"
 
   if [ ! -f "$drupal_settings" ]; then
     long_log "No drupal settings.php file is present." info
@@ -1081,11 +1093,13 @@ long_setup_site() {
       long_get_db_for_site "$site"
       long_create_drupal_settings "$site" "$LONG_DB_HOST"
       long_import_backup "$site"
-
-      # Note: You can install the civicrm settings file into the database
-      # is imported or drush has bootstrap problems.
-      long_create_civicrm_settings "$site"
     fi
+  fi
+  if [ ! -f "$civicrm_settings" ]; then
+    # At this point, we expect to have a working Drupal installation.
+    # The only reason there might not be a civicrm file is if we imported
+    # our database.
+    long_create_civicrm_settings "$site"
   fi
   long_set_paths "$site"
 }
@@ -1127,6 +1141,7 @@ long_destroy_site() {
   long_log "Removing data directory" info
   # Some files and directories may be owned by longshore-php, so reclaim
   # onwership first.
-  sudo chown -R longshore "${LONG_SRV}/services/sites/${site}"
+  sudo chown -R longshore "${LONG_SRV}/services/sites/${site}/drupal/files"
+  sudo chown -R longshore "${LONG_SRV}/services/sites/${site}/drupal/private"
   rm -rf "${LONG_SRV}/services/sites/${site}"
 }

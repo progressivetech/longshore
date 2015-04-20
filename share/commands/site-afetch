@@ -1,0 +1,53 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) afetch <site>
+Copy all data from the local aegir directories. You have to run
+the old ptp-dev-import script first. This is a temporary helper
+that should be removed once we transfer off of aegir.
+
+Arguments
+  <site> - The site to fetch the data for."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+# Copy over modules and themes
+source_base=/var/aegir/platforms/master-ourpowerbase-d7-c4.5/sites/${site}.${LONG_DEFAULT_DOMAIN}
+target_base=${LONG_SRV}/services/sites/${site}/drupal
+
+if [ ! -d "$source_base" ]; then
+  long_die "Can't find base directory (%s)." 1 "$source_base"
+fi
+
+rsync -a "${source_base}/modules/" "${target_base}/modules/"
+rsync -a "${source_base}/themes/" "${target_base}/themes/"
+rsync -a "${source_base}/custom-civicrm/php/" "${target_base}/custom-civicrm/php/"
+rsync -a "${source_base}/custom-civicrm/templates/" "${target_base}/custom-civicrm/templates/"
+
+# Now get files.
+# First we have to chown so we can rsync
+sudo chown -R longshore "${target_base}/files"
+sudo chown -R longshore "${target_base}/private"
+
+rsync -a --exclude '*/files/js/*' --exclude '*/files/css/*' --exclude '*/files/civicrm/templates_c/*' --exclude '*/files/civicrm/ConfigAndLog/*' "${source_base}/files/" "${target_base}/files/"
+rsync -a "${source_base}/private/" "${target_base}/private/"
+
+sudo chown -R longshore-php:longshore "${target_base}/files"
+sudo chown -R longshore-php:longshore "${target_base}/private"
+
+# Now bring over the database
+sql_source_file="/var/aegir/data/${site}.sql"
+if [ ! -f "$sql_source_file" ]; then
+  long_die "Can't find sql file (%s)." 1 "$sql_source_file"
+fi
+
+sql_dest_dir=${LONG_SRV}/services/sites/${site}/backup/
+sql_dest_file="${sql_dest_dir}/${site}.sql.gz"
+
+if [ "$sql_source_file" -nt "$sql_dest_file" ]; then
+  cp "$sql_source_file" "$sql_dest_file"
+  cd "$sql_dest_dir" && gzip "${site}.sql"
+else
+  long_log "Destination sql file is newer than source file, not copying." info
+fi

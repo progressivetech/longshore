@@ -124,7 +124,6 @@ function drush_lsd_set_paths() {
       'group_name' => 'Directory Preferences',
     ),
   );
-
   while(list($k,$v) = each($keys)) {
     // Check if it exists and needs changing.
     $sql = 'SELECT id, value FROM civicrm_setting WHERE name = %1 AND group_name = %2';
@@ -144,6 +143,7 @@ function drush_lsd_set_paths() {
         0 => array($v['value'], 'String'),
         1 => array($dao->id, 'Integer')
       );
+      CRM_Core_DAO::executeQuery($sql, $params);
     }
   }
 }
