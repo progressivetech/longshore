@@ -12,7 +12,6 @@ long_check_args "$2" "$#" 1
 
 site="$2"
 
-# Copy over modules and themes
 source_base=/var/aegir/platforms/master-ourpowerbase-d7-c4.5/sites/${site}.${LONG_DEFAULT_DOMAIN}
 target_base=${LONG_SRV}/services/sites/${site}/drupal
 
@@ -20,21 +19,47 @@ if [ ! -d "$source_base" ]; then
   long_die "Can't find base directory (%s)." 1 "$source_base"
 fi
 
-rsync -a "${source_base}/modules/" "${target_base}/modules/"
-rsync -a "${source_base}/themes/" "${target_base}/themes/"
-rsync -a "${source_base}/custom-civicrm/php/" "${target_base}/custom-civicrm/php/"
-rsync -a "${source_base}/custom-civicrm/templates/" "${target_base}/custom-civicrm/templates/"
+# Build out the directory structure
+long_create_site_directories "$site"
+
+# Copy over modules and themes
+
+# We don't want to bring over owner/perms to facilitate setting perms
+# properly in the site-create stage.
+
+long_log "Sync'ing code and templates" info
+
+rsync -a --no-owner --no-perms --delete \
+  "${source_base}/modules/" "${target_base}/modules/"
+rsync -a --no-owner --no-perms --delete \
+  "${source_base}/themes/" "${target_base}/themes/"
+rsync -a --no-owner --no-perms --delete \
+  "${source_base}/custom-civicrm/php/" "${target_base}/custom-civicrm/php/"
+rsync -a --no-owner --no-perms --delete \
+  "${source_base}/custom-civicrm/templates/" "${target_base}/custom-civicrm/templates/"
 
 # Now get files.
-# First we have to chown so we can rsync
+
+# First we have to chown so we can rsync. After building out the directories,
+# these directories will be owned by longshore-php, not longshore.
 sudo chown -R longshore "${target_base}/files"
 sudo chown -R longshore "${target_base}/private"
 
-rsync -a --exclude '*/files/js/*' --exclude '*/files/css/*' --exclude '*/files/civicrm/templates_c/*' --exclude '*/files/civicrm/ConfigAndLog/*' "${source_base}/files/" "${target_base}/files/"
-rsync -a "${source_base}/private/" "${target_base}/private/"
+# Rsync
 
-sudo chown -R longshore-php:longshore "${target_base}/files"
-sudo chown -R longshore-php:longshore "${target_base}/private"
+# Clear the js, css and template caches
+rm -rf "${target_base}"/files/js/*
+rm -rf "${target_base}"/files/css/*
+rm -rf "${target_base}"/files/civicrm/templates_c/*
+
+long_log "Sync'ing files" info
+
+rsync -a --no-owner --no-perms --delete --exclude 'js/*' \
+  --exclude 'css/*' --exclude 'civicrm/templates_c/*' \
+  --exclude 'civicrm/ConfigAndLog/*' \
+  "${source_base}/files/" "${target_base}/files/"
+rsync -a --no-owner --no-perms --delete \
+  "${source_base}/private/" "${target_base}/private/"
 
 # Now bring over the database
 sql_source_file="/var/aegir/data/${site}.sql"
@@ -46,6 +71,7 @@ sql_dest_dir=${LONG_SRV}/services/sites/${site}/backup/
 sql_dest_file="${sql_dest_dir}/${site}.sql.gz"
 
 if [ "$sql_source_file" -nt "$sql_dest_file" ]; then
+  long_long "Copying sql file." info
   cp "$sql_source_file" "$sql_dest_file"
   cd "$sql_dest_dir" && gzip "${site}.sql"
 else

@@ -89,7 +89,7 @@ function drush_lsd_set_paths() {
   _civicrm_init();
 
   // All sites have the same settings.
-  $abs_root_path = 'var/www/html';
+  $abs_root_path = '/var/www/html';
   $rel_site_path ='sites/default'; 
   $rel_civicrm_files_path = "${rel_site_path}/files/civicrm";
   $abs_site_path = $abs_root_path . '/' . $rel_site_path;
@@ -117,13 +117,15 @@ function drush_lsd_set_paths() {
     ),
     'extensionsURL' => array(
       'value' => "sites/all/extensions",
-      'group_name' => 'Directory Preferences',
+      'group_name' => 'URL Preferences',
     ),
     'customTemplateDir' => array(
       'value' => "${abs_site_path}/custom-civicrm/templates",
       'group_name' => 'Directory Preferences',
     ),
   );
+  // We only need to refresh the cache if we reset an extensions setting.
+  $freshen_extensions_cache = FALSE;
   while(list($k,$v) = each($keys)) {
     // Check if it exists and needs changing.
     $sql = 'SELECT id, value FROM civicrm_setting WHERE name = %1 AND group_name = %2';
@@ -132,19 +134,29 @@ function drush_lsd_set_paths() {
     );
     $dao = CRM_Core_DAO::executeQuery($sql, $params);
     $dao->fetch();
+
     if(!$dao->id) {
       // Setting doesn't exist, create it.
       CRM_Core_BAO_Setting::setItem($v['value'], $v['group_name'], $k);
+      if(preg_match("/^extensions/", $k)) {
+        $freshen_extensions_cache = TRUE;
+      }
     }
-    elseif($dao->value != $v['value']) {
+    elseif($dao->value != serialize($v['value'])) {
       // Setting is set incorrectly, fix it.
       $sql = "UPDATE civicrm_setting SET value = %0 WHERE id = %1";
       $params = array(
-        0 => array($v['value'], 'String'),
+        0 => array(serialize($v['value']), 'String'),
         1 => array($dao->id, 'Integer')
       );
       CRM_Core_DAO::executeQuery($sql, $params);
+      if(preg_match("/^extensions/", $k)) {
+        $freshen_extensions_cache = TRUE;
+      }
     }
+  }
+  if ($freshen_extensions_cache) {
+    CRM_Core_PseudoConstant::getModuleExtensions(TRUE);
   }
 }
 

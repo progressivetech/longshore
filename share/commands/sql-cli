@@ -1,0 +1,12 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) sql-cli <site>
+Long into the site's database with the site level database permissions.
+
+Arguments
+  <site> - The site database to login to."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+long_enter_site_database "$site"

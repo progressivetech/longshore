@@ -596,9 +596,8 @@ long_create_civicrm_settings() {
 
   # Ensure proper permissions
   local target="${LONG_SRV}/services/sites/${site}/drupal/civicrm.settings.php"
-  chmod 0640 "$target"
-
   sudo chown longshore "$target"
+  chmod 0640 "$target"
 
   # Remove write access.
   chmod 755 "${dir}/drupal"
@@ -736,7 +735,107 @@ long_create_phpmyadmin_container() {
     ptp-php:latest php5-fpm 
 }
 
-# Low leverl site container creation. Call long_create_container instead
+# Build out the required directories and permissions
+# for a given site.
+long_create_site_directories() {
+  local name="$1"
+  local perms=
+  local dir="${LONG_SRV}/services/sites/$name"
+
+  # These are the main directories that should be readable the the web. 
+  local creates="
+    backup
+    drupal
+    drupal/custom-civicrm
+    drupal/custom-civicrm/php
+    drupal/custom-civicrm/templates
+    drupal/files
+    drupal/files/css
+    drupal/files/js
+    drupal/files/civicrm
+    drupal/files/civicrm/persist
+    drupal/modules
+    drupal/themes
+    drupal/libraries"
+  local create=
+  for create in $creates; do
+    mkdir -p "${dir}/${create}"
+    perms=$(stat -c "%A" "${dir}/${create}")
+    if [ "$perms" != "drwxr-xr-x" ]; then
+      chmod 0755 "${dir}/${create}"
+      # Aegir makes some of these directories group sticky. We don't
+      # need that anymore.
+      chmod g-s "${dir}/${create}"
+    fi
+  done
+
+  # Certain directories should not be accessible by the web user, only 
+  # by the user running the PHP application.
+  # See https://civicrm.org/advisory/civi-sa-2014-001-risk-information-disclosure
+  # The private/extensions/{tmp,cache} are there *only* to handle the 
+  # extensions tmp and cache directories. Extensions are in
+  # sites/all/extensions and tmp and cache is symlinked here.
+  local not_web_accessible="
+    drupal/files/civicrm/ConfigAndLog
+    drupal/files/civicrm/templates_c
+    drupal/files/civicrm/upload
+    drupal/files/civicrm/custom
+    drupal/private
+    drupal/private/extensions
+    drupal/private/extensions/tmp
+    drupal/private/extensions/cache"
+  # Prohibit web access by removing other access. Only the user and the
+  # group owners will be able to access the files. And only the owner will
+  # be able to write to them.
+  for create in $not_web_accessible; do
+    # We only need to make this change at the top level - no need for
+    # recursive.
+    mkdir -p "${dir}/${create}"
+    perms=$(stat -c "%A" "${dir}/${create}")
+    if [ "$perms" != "drwxr-x---" ]; then
+      chmod 0750 "${dir}/${create}" 
+      # Aegir makes some of these directories group sticky. We don't
+      # need that anymore.
+      chmod g-s "${dir}/${create}"
+
+    fi
+  done
+
+  # One more directory should be readable by the web user, but the web
+  # user should not be able to get a directory listing. We can do that
+  # by removing execute privileges, but keeping read privileges.
+  mkdir -p "${dir}/drupal/files/civicrm/contribute"
+  perms=$(stat -c "%A" "${dir}/drupal/files/civicrm/contribute")
+  if [ "$perms" != "drwxr-xr--" ]; then
+    chmod o-x "${dir}/drupal/files/civicrm/contribute"
+    chmod g-s "${dir}/drupal/files/civicrm/contribute"
+  fi
+
+  # One exception: private/temp should be writable by the group (longshore)
+  # so that the host can create temporary files to be deleted after being
+  # executed in the container. See the long_exec_in_container function.
+  mkdir -p "${dir}/drupal/private/temp"
+  perms=$(stat -c "%A" "${dir}/drupal/private/temp")
+  if [ "$perms" != "drwxrwxr-x" ]; then
+    chmod 0775 "${dir}/drupal/private/temp"
+    chmod g-s "${dir}/drupal/files/civicrm/contribute"
+  fi
+
+  # Now that the right modes are set, chown the files to the right users. 
+  local web_writable="drupal/files drupal/private"
+  for foo in $web_writable; do
+    # Maintain group ownership by the longshore user so we can read the
+    # files from the host for convenience and trouble-shooting.
+    sudo chown -R longshore-php:longshore "${dir}/${foo}"
+  done
+
+  # Give the longshore-php user group ownership over the drupal directory
+  # so we can easily flip on and off group write/read access when
+  # installing drupal and civicrm.
+  sudo chgrp longshore-php "${dir}/drupal"
+}
+
+# Low lever site container creation. Call long_create_container instead
 # if possible.
 long_create_site_container() {
   local name="$1"
@@ -763,78 +862,8 @@ long_create_site_container() {
   long_create_mysql_container "$db"
   long_container_up mysql "$db"
 
-  # Build out directories. Create the minimal amount of directories and
-  # let Drupal and CiviCRM create the rest.
-  local dir="${LONG_SRV}/services/sites/$name"
-  local creates="backup drupal drupal/custom-civicrm
-    drupal/custom-civicrm/extensions drupal/custom-civicrm/php
-    drupal/custom-civicrm/templates drupal/files
-    drupal/files/civicrm drupal/files/civicrm/ConfigAndLog
-    drupal/files/civicrm/custom drupal/files/civicrm/persist
-    drupal/files/civicrm/templates_c drupal/files/civicrm/upload
-    drupal/files/civicrm/contribute drupal/private drupal/private/temp
-    drupal/modules drupal/themes drupal/libraries"
-  local create=
-  for create in $creates; do
-    mkdir -p "${dir}/${create}"
-  done
-
-  # Certain directories should not be accessible by the web user, only 
-  # by the user running the PHP application.
-  # See https://civicrm.org/advisory/civi-sa-2014-001-risk-information-disclosure
-  local not_web_accessible="drupal/files/civicrm/ConfigAndLog
-    drupal/files/civicrm/templates_c drupal/files/civicrm/upload
-    drupal/files/civicrm/custom drupal/private"
-  # Prohibit web access by removing other access. Only the user and the
-  # group owners will be able to access the files. And only the owner will
-  # be able to write to them.
-  local perms=
-  local foo=
-  for foo in $not_web_accessible; do
-    # We only need to make this change at the top level - no need for
-    # recursive.
-    mkdir -p "${dir}/${foo}"
-
-    # Only fix the directory if needed to avoid permission problems if the 
-    # directory has already been properly modified and has been chowned to
-    # longhsore-ptp - which means we won't be able to chmod if. If we get a
-    # permission problem - that is a bug - these directories should either
-    # be chmod'ed already OR owned by the longshore user.
-    perms=$(stat -c "%a" "${dir}/${foo}")
-    if [ "$perms" != "750" ]; then
-      chmod o-rwx "${dir}/${foo}" 
-      chmod g-w "${dir}/${foo}" 
-    fi
-  done
-
-  # One more directory should be readable by the web user, but the web
-  # user should not be able to get a directory listing. We can do that
-  # by removing execute privileges, but keeping read privileges.
-  perms=$(stat -c "%a" ${dir}/drupal/files/civicrm/contribute)
-  if [ "$perms" != "754" ]; then
-    chmod o-x "${dir}/drupal/files/civicrm/contribute"
-  fi
-
-  # One exception: private/temp should be writable by the group (longshore)
-  # so that the host can create temporary files to be deleted after being
-  # executed in the container. See the long_exec_in_container function.
-  perms=$(stat -c "%a" ${dir}/drupal/private/temp)
-  if [ "$perms" != "775" ]; then
-    chmod 0775 "${dir}/drupal/private/temp"
-  fi
-
-  # Now that the right modes are set, chown the files to the right users. 
-  local web_writable="drupal/files drupal/private"
-  for foo in $web_writable; do
-    # Maintain group ownership by the longshore user so we can read the
-    # files from the host for convenience and trouble-shooting.
-    sudo chown -R longshore-php:longshore "${dir}/${foo}"
-  done
-
-  # Give the longshore-php user group ownership over the drupal directory
-  # so we can easily flip on and off group write/read access when
-  # installing drupal and civicrm.
-  sudo chgrp longshore-php "${dir}/drupal"
+  # Build out directories. 
+  long_create_site_directories "$name"
 
   # We have to publish the port to the host so nginx can communicate
   # with it. Each PHP container has to have a unique port.
@@ -1144,4 +1173,14 @@ long_destroy_site() {
   sudo chown -R longshore "${LONG_SRV}/services/sites/${site}/drupal/files"
   sudo chown -R longshore "${LONG_SRV}/services/sites/${site}/drupal/private"
   rm -rf "${LONG_SRV}/services/sites/${site}"
+}
+
+# Access the given site's database via mysql cli
+long_enter_site_database() {
+  local site="$1"
+  local mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
+  if [ ! -f "$mycnf" ]; then
+    long_die "Can't find site my.cnf file (%s)" 1 "$mycnf"
+  fi
+  mysql --defaults-file="$mycnf"
 }
