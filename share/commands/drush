@@ -8,7 +8,7 @@ Arguments
   <command> - The drush command to execute, together with all arguments.
   e.g. drush 'cache-clear all'"
 
-long_check_args "$2" "$#" 1
+long_check_args "$2" "$#" 2
 
 site="$2"
 cmd="$3"

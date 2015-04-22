@@ -1,0 +1,21 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-info <site>
+Print all details about this site, including password.
+
+Arguments
+  <site> - The site on which to report."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
+
+if [ ! -f "$mycnf" ]; then
+  long_die "Can't find a my.cnf file for the given site."
+fi
+
+pass=$(grep password= "$mycnf" | cut -d= -f2)
+
+printf "Site: %s\nPassword: %s\nPHPMyAdmin URL: %s\nHost: %s\n" \
+  "$site" "$pass" "$LONG_PHPMYADMIN_URL" "$(hostname)"

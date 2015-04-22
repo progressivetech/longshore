@@ -44,9 +44,6 @@ function ptp_drush_command() {
         '--frontend' => 'Name of frontend',
       ),
     );
-  $items['ptp-update-extensions'] = 
-    array('description' => "Do database updates for all extensions."
-  );
   $items['ptp-configure'] =
     array('description' => "Ensure all PTP general settings are properly configured."
   );
@@ -61,11 +58,13 @@ function ptp_drush_command() {
  **/
 function drush_ptp_update_site_stats() {
   _civicrm_init();
-  require_once('api/api.php');
-  if(!ptp_is_running_on_ptp()) {
+
+  $sub = ptp_get_subdomain();
+  if($sub != 'ptp') {
     drush_log("Please run against ptp.ourpowerbase.net only.", 'error');
     return;
   }  
+
   $site = drush_get_option('site', NULL);
   $guest = drush_get_option('guest', NULL);
   $host = drush_get_option('host', NULL);
@@ -164,28 +163,27 @@ function drush_ptp_update_site_stats() {
 }
 
 /**
- * Implementation of command ptp-setup
+ * Implementation of command ptp-configure
  *
- * Run all functions that should execute when a site is setup. All 
+ * Run all functions that should execute when a site is configured. All 
  * functions should be indempotent and relatively efficient when 
  * run multiple times.
  */
 function drush_ptp_configure() {
+  _civicrm_init();
+
+  // NOTE: configuring IMAP is handled separately since it needs to
+  // manage IMAP passwords. See long_site_configure_imap bash function.
+
+  // These functions are running everytime site-configure is run.
   ptp_insert_contacts();
   ptp_set_outbound_mail_settings();
-}
+  ptp_set_admin_password();
+  ptp_create_help_menu();
 
-/**
- * Some commands should only be run against ptp.ourpowerbase.net.
- * This function returns TRUE if we are running against ptp
- * and false otherwsie
- **/
-function ptp_is_running_on_ptp() {
-  $site_alias_info = drush_get_context('alias');
-  if(substr($site_alias_info['uri'], 0, 4)  == 'ptp.') {
-    return TRUE;
-  }
-  return FALSE;
+  // FIXME: I think these two should be moved to pbd.
+  ptp_configure_wkhtmltopdf();
+  ptp_set_max_file_size();
 }
 
 /**
@@ -195,11 +193,12 @@ function ptp_is_running_on_ptp() {
  * linked to Drupal uid 1 linked to an organizational record for PTP. 
  **/
 function ptp_insert_contacts() {
-  _civicrm_init();
-
   try {
     $ind_contact_id = ptp_insert_ind_contact();
     $org_contact_id = ptp_insert_org_contact();
+    if(!$ind_contact_id || !$org_contact_id) {
+      return FALSE;
+    }
     ptp_insert_relationship($ind_contact_id, $org_contact_id);
   }
 
@@ -216,7 +215,8 @@ function ptp_insert_contacts() {
 function ptp_insert_ind_contact() {
   // Ensure that the drupal user with uid 1 is properly set.
   $target_super_user_email = 'support@progressivetech.org';
-  $super_user = user_load(1);
+  $super_user_uid = 1;
+  $super_user = user_load($super_user_uid);
   if($super_user->mail != $target_super_user_email) {
     // ensure no user already exists with the same email address
     $uid = db_select('users','u')
@@ -237,6 +237,14 @@ function ptp_insert_ind_contact() {
   }
 
   // Now update the corresponding CiviCRM contact.
+  
+  // Ensure there *is* a corresponding CiviCRM contact. Normally it is
+  // created the first time the user logs in. However, if we just installed
+  // the site, it might not be there.  synchronizeUFMatch ensures both 
+  // the Contact is created and the UFMatch record is there.
+  CRM_Core_BAO_UFMatch::synchronizeUFMatch($super_user, $super_user_uid,
+    $target_super_user_email, 'Drupal');
+
   $params = array('uf_id' => 1 );
   $results = civicrm_api3('UFMatch', 'get', $params);
   $uf_match = array_pop($results['values']);
@@ -338,6 +346,10 @@ function ptp_insert_org_contact() {
     $org = array_pop($results['values']);
     drush_log(dt("Inserted PTP organization"));
   } 
+  if(empty($org['contact_id'])) {
+    drush_log(dt("Failed to obtain organization contact id."), 'error');
+    return FALSE;
+  }
   return $org['contact_id'];
 }
 
@@ -441,7 +453,6 @@ function ptp_update_contact($search_params, $first_name, $last_name, $email) {
  * Set outbounc email settings.
  */
 function ptp_set_outbound_mail_settings() {
-  _civicrm_init();
   // Set the outbound email settings
   drush_log(dt("Setting outbound mail settings."));
   // For training sites, redirect to the database.
@@ -509,4 +520,157 @@ function ptp_configure_imap_user($user, $pass, $host) {
   $mailSettings->localpart = $user . '+';
   
   $mailSettings->save();
+}
+
+/**
+ * Ensure the admin Drupal user's password is the same as db password.
+ */
+function ptp_set_admin_password() {
+  // Get the currently set database password.
+  $pass = $GLOBALS['databases']['default']['default']['password'];
+
+  // Get the hashed password in the database.
+  $sql = "SELECT pass FROM {users} WHERE uid = 1";
+  $db_hashed_pass = db_query($sql)->fetch()->pass;
+
+  // Hash what the password should be.
+  require_once('includes/password.inc');
+  $hashed_pass = _password_crypt('sha512', $pass, $db_hashed_pass);
+
+  // Compare...
+  if($hashed_pass != $db_hashed_pass) {
+    drush_log(dt("Updating Drupal admin password."));
+    // Update
+    db_update('users')
+      ->fields(array(
+        'pass' => $hashed_pass
+      ))
+      ->condition('uid', 1, '=')
+      ->execute();
+  }
+  else {
+    drush_log(dt("Drupal admin password already up-to-date."));
+  }
+}
+
+/**
+ * Setup special Help menu.
+ *
+ * PTP wants special items in the help menu to direct users to our help
+ * resources.
+ */
+function ptp_create_help_menu() {
+  // There are existing Civi menu items, and a bunch of random variations
+  // that we've created in the past. To ensure we have a consistent help
+  // menu, we first delete everything in the help menu, then rebuild it. 
+
+  // Get list of menus
+  $menus = CRM_Core_BAO_Navigation::getNavigationList();
+
+  // Remove &nbsp; from the value names so we can more
+  // reliably know if we've added them.
+  array_walk($menus, 'ptp_strip_nbsp');
+
+  // Ensure that the parent Help menu is there and get the id
+  if(!in_array('Help',$menus)) {
+    $params = array(
+      'label' => 'Help',
+      'url' => '',
+      'permission' => array(
+        0 => 'access CiviCRM',
+      ),
+      'permission_operator' => 'AND',
+       'is_active' => 1,
+       'parent_id' => '',
+    ); 
+    // Rebuild array
+    CRM_Core_BAO_Navigation::add($params);
+    $menus = CRM_Core_BAO_Navigation::getNavigationList();
+    array_walk($menus, 'ptp_strip_nbsp');
+  }
+
+  // Get the id of the help menu
+  $keys = array_keys($menus, 'Help');
+  if(count($keys) != 1) {
+    // Hm... if they have more than one Help menu, then I'm not sure
+    // what to do
+    drush_log("More than one help menu... not trying to build PTP help menus.", 'error');
+    print_r($keys);
+    return FALSE;
+  }
+  $help_id = array_pop($keys);
+
+  // Delete all menus with this parent
+  $domainID  = CRM_Core_Config::domainID( );
+  $sql = "DELETE FROM civicrm_navigation WHERE parent_id = %1";
+  $params = array(
+    1 => array( $help_id, 'Integer'),
+  );
+  CRM_Core_DAO::executeQuery( $sql, $params );
+  
+  // Build out the submenus now.
+  $submenus = array(
+    'For Support, click this link, email support@progressivetech.org or call 512-782-8478' =>
+      'https://ptp.ourpowerbase.net/help',
+    'Upcoming Trainings' =>
+      'https://ptp.ourpowerbase.net/civicrm/event/ical?reset=1&list=1&html=1',
+    'CiviCRM - The Book' =>
+      'http://book.civicrm.org/user/',
+    'CiviCRM Community Forums' => 
+      'http://forum.civicrm.org',
+    'PowerBase FAQs' =>
+      'http://network.progressivetech.org/knowledge-base-topics/powerbase',
+    'Video Tutorials' =>
+      'https://www.youtube.com/user/PowerOnPTP/playlists',
+    'Change my password' =>
+      'user',
+    'About' =>
+      'http://ourpowerbase.net/about/',
+  );
+  while(list($label, $url) = each($submenus)) {
+    $params = array(
+      'label' => $label,
+      'url' => $url,
+      'permission' => array(
+        0 => 'access CiviCRM',
+      ),
+      'permission_operator' => 'AND',
+       'is_active' => 1,
+       'parent_id' => $help_id,
+    );
+    CRM_Core_BAO_Navigation::add($params);
+  } 
+}
+
+/**
+ * Remove the string &nbsp; from the passed in value.
+ *
+ * Designed to be used in array_walk function.
+ */ 
+function ptp_strip_nbsp(&$value, $key) {
+  $value = str_replace('&nbsp;', '', $value);
+}
+
+/**
+ * Configure CiviCRM to use wkhtmltopdf.
+ *
+ * Using DomPDF to generate PDF's (the default in CiviCRM) is painfully slow.
+ * Use wkthmltopdf instead. We invoke via xvfb-run to avoid an X Server error
+ * that wkhtmltopdf will otherwise generate.
+ **/
+function ptp_configure_wkhtmltopdf() {
+  require_once "CRM/Core/BAO/ConfigSetting.php";
+  $config['wkhtmltopdfPath'] = '/usr/bin/xvfb-run -- wkhtmltopdf';
+  CRM_Core_BAO_ConfigSetting::add($config);
+}
+
+/**
+ * Set max file upload site.
+ *
+ * Ensure our max file size (for uploads) stays at a reasonable size
+ */
+function ptp_set_max_file_size() {
+  // The number is in MB. Our php.ini file should allow up to 30MB.
+  $config["maxFileSize"] = 20; 
+  CRM_Core_BAO_ConfigSetting::add($config);
 }
