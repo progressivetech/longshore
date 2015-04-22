@@ -608,9 +608,11 @@ long_exec_drush_cmd() {
   site="$1"
   cmd="$2"
 
+  long_init_site_tmp_var "$site"
   local file=$(mktemp "${LONG_SITE_TMP}/drupal.XXXXXXX");
   chmod 755 "$file"
   printf "#!/bin/bash\n" > "$file"
+  printf "export LONG_LIVE=$LONG_LIVE\n" >> "$file"
   printf 'cd /var/www/html/sites/default && ' >> "$file"
   printf "drush $2\n" >> "$file"
 
@@ -1068,8 +1070,8 @@ long_import_backup() {
   long_execute_site_query "$site" "$path"
 }
 
-# Once the site is created, this function ensures that there is a 
-# functional Drupal and CiviCRM database and installation.
+# Once the site is created, this function ensures that both Drupal and
+# CiviCRM are minimally functional.
 long_setup_site() {
   local site="$1"
 
@@ -1080,6 +1082,92 @@ long_setup_site() {
   # Populate the $LONG_SITE_TMP_VAR variable which is used to execute
   # commands in the container.
   long_init_site_tmp_var "$site"
+
+  # Ensure database and settings files are properly installed.
+  long_install_site "$site"
+
+  # Ensure all basic drupal and civicrm paths and urls are set. 
+  long_exec_drush_cmd "$site" "lsd-set-paths"
+}
+
+# Once the site is setup, ensure that it is configured in the PTP/PowerBase
+# way.
+long_configure_site() {
+  local site="$1"
+
+  # Populate the $LONG_SITE_TMP_VAR variable which is used to execute
+  # commands in the container.
+  long_init_site_tmp_var "$site"
+
+  # Set PTP configurations. 
+  long_exec_drush_cmd "$site" "ptp-configure"
+
+  long_configure_imap "$site"
+}
+
+# Ensure there are the required IMAP users installed on the IMAP server
+# and the site is configured properly to connect to the server.
+long_configure_imap() {
+  local site="$1"
+
+  # We have to create a user with -activities appended to it, and the total
+  # length can't exceed 32 characters, so limit usernames to the first
+  # 21 characters (-activities is 11, 21 + 11 = 32).
+  local imap_base_user=$(echo ${site:0:21})
+  local user=
+
+  for user in ${imap_base_user}-activities ${imap_base_user}-returns; do
+    long_log "Checking IMAP user '%s'" info "$user"
+    # Check if user already exists on the host.
+    if ! $LONG_MANAGE_IMAP_USER_CMD exists "$user"; then
+      long_log "IMAP user '%s' doesn't exist, adding." info "$user"
+      # Create the user
+      $LONG_MANAGE_IMAP_USER_CMD add "$user"
+      # Set the password.
+      pass=$($LONG_MANAGE_IMAP_USER_CMD passwd "$user" 2>/dev/null)
+      if [ -z "$pass" ]; then
+        long_die "Failed to get password for IMAP user '%s'" 1 "$user"
+      fi
+      # Configure user and password in CiviCRM, ensuring we don't pass
+      # the password exposed via the command line.
+      long_configure_civicrm_imap_user "$site" "$user" "$pass"
+    else
+      long_log "IMAP user '%s' exists, doing nothing." info "$user"
+    fi
+  done
+}
+
+# Configure the given IMAP user and password in CiviCRM without passing
+# password via the command line.
+long_configure_civicrm_imap_user() {
+  local site="$1"
+  local user="$2"
+  local pass="$3"
+
+  # Creating a php file to be executed in the container. This approach
+  # avoids sending passwords via the command line.
+  local imap_file=$(mktemp "${LONG_SITE_TMP}/imap.XXXXXXX.php");
+cat << EOF > "$imap_file"
+  <?php
+  ptp_configure_imap_user($user, $pass, $LONG_IMAP_HOST);
+EOF
+
+  # Ensure that the www-data user can read it.
+  chmod 644 "$imap_file"
+
+  # Translate file path to work in container.
+  c_imap_file="/var/www/html/sites/default/private/temp/$(basename $imap_file)"
+  long_exec_drush_cmd "$site" "-q -y php-script '$c_imap_file'"
+
+  # Cleanup
+  rm "$imap_file"
+
+}
+
+# Ensure we have a Drupal and CiviCRM database installed and the settings.php
+# files properly setup.
+long_install_site() {
+  local site="$1"
 
   # Check for settings.php. If it exists, we assume drupal is properly
   # installed. NOTE: if you delete an existing settings.php file you will cause
@@ -1130,13 +1218,6 @@ long_setup_site() {
     # our database.
     long_create_civicrm_settings "$site"
   fi
-  long_set_paths "$site"
-}
-
-# Ensure all basic drupal and civicrm paths and urls are set 
-long_set_paths() {
-  local site="$1"
-  long_exec_drush_cmd "$site" "lsd-set-paths"
 }
 
 # Delete a site container and all related containers and data
@@ -1173,6 +1254,10 @@ long_destroy_site() {
   sudo chown -R longshore "${LONG_SRV}/services/sites/${site}/drupal/files"
   sudo chown -R longshore "${LONG_SRV}/services/sites/${site}/drupal/private"
   rm -rf "${LONG_SRV}/services/sites/${site}"
+
+  # Kill the IMAP user on the remote or local host.
+  $LONG_MANAGE_IMAP_USER_CMD delete "${user}-activities" 2>/dev/null)
+  $LONG_MANAGE_IMAP_USER_CMD delete "${user}-returns" 2>/dev/null)
 }
 
 # Access the given site's database via mysql cli

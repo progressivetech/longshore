@@ -1,0 +1,15 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) drush <site> <command>
+Run the specified drush command in the context of the specified site.
+
+Arguments
+  <site> - The site database to login to.
+  <command> - The drush command to execute, together with all arguments.
+  e.g. drush 'cache-clear all'"
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+cmd="$3"
+long_exec_drush_cmd "$site" "$cmd"

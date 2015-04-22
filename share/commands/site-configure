@@ -1,0 +1,13 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-configure <site>
+Configure the site to be a PowerBase site. Enable all modules, themes,
+and extensions. Configure all settings.
+
+Arguments
+  <site> - The site to configure."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+long_configure_site "$site"

@@ -60,3 +60,17 @@ LONG_PHP_START_PORT=11000
 
 # The public IP address of the host computer
 LONG_IP_ADDR=
+
+# The command used to manage IMAP user accounts. Set to /bin/true to
+# disable configuring IMAP users. Or set to: sudo /usr/local/sbin/opb-manage-user
+# to set it up locally (be sure to add sudo privs for the longshore user)
+# or set to "ssh longshore@augusto.mayfirst.org sudo /usr/local/sbin/opb-manage-user"
+# to enable remote execution on a remote server (be sure to configure ssh
+# access on the remote server).
+LONG_MANAGE_IMAP_USER_CMD=/bin/true
+
+# The host to configure CiviCRM to connect to when checking IMAP commands.
+# If LONG_MANAGE_IMAP_USER_CMD is set to /bin/true then this variable
+# will never be used. Otherwise, it will be used MailSettings "server"
+# in CiviCRM.
+LONG_IMAP_HOST=civicrm.ourpowerbase.net
