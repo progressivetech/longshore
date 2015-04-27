@@ -859,7 +859,7 @@ long_create_site_container() {
 
   # Sanity check - make sure platform exists.
   if [ ! -d "${LONG_SRV}/platforms/${platform}" ]; then
-    long_die "That platform doesn't seem to exist (%s)." "$platform"
+    long_die "That platform doesn't seem to exist (%s)." 1 "$platform"
   fi
 
   # Ensure that the database container exists and is running. It has to
