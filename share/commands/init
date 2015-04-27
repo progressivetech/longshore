@@ -23,7 +23,7 @@ openssl=n
 install=
 if ! dpkg -l docker.io 2>/dev/null | grep ^ii >/dev/null; then
   if ! dpkg -l lxc-docker 2>/dev/null | grep ^ii >/dev/null; then
-    install=docker
+    install=docker.io
   fi
 fi
 
@@ -64,11 +64,11 @@ if [ -n "$users" ]; then
   if [ "$reply" = "y" ]; then
     for user in $users; do
       username=$(echo "$user" | cut -d: -f1)
-      uid=$(echo "$user" | cut -d: -f2)
-      groupadd "$username" -g "$uid"
       if [ "$username" = "longshore" ]; then
         adduser --disabled-password --gecos "Longshore User" "$username"
       else
+        uid=$(echo "$user" | cut -d: -f2)
+        getent group "$username" > /dev/null || groupadd "$username" -g "$uid"
         useradd -u "$uid" -g "$uid" "$username"
       fi
     done
