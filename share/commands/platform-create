@@ -11,6 +11,8 @@ long_check_args "$2" "$#" 1
 base=${LONG_SRV}/platforms
 makefile_path="$2"
 
+mkdir -p "$base"
+
 if [ ! -f "$makefile_path" ]; then
 	long_die "Can't find makefile path: %s\n"  1 "$makefile_path"
 	exit
