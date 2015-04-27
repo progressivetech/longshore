@@ -19,6 +19,7 @@ sudoers_file=n
 longshore_user=n
 php_user=n
 openssl=n
+drush=n
 
 install=
 if ! dpkg -l docker.io 2>/dev/null | grep ^ii >/dev/null; then
@@ -37,6 +38,10 @@ fi
 
 if ! dpkg -l debootstrap 2>/dev/null | grep ^ii >/dev/null; then
   install="$install debootstrap"
+fi
+
+if ! dpkg -l drush 2>/dev/null | grep ^ii >/dev/null; then
+  install="$install drush"
 fi
 
 if [ -n "$LONG_TLS_KEY_PATH" ]; then
