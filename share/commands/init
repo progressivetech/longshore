@@ -180,7 +180,7 @@ if [ ! -h /var/www/html ] || [[ $(readlink /var/www/html) != "${LONG_SRV}/platfo
     if [ -h /var/www/html ]; then
       rm -f /var/www/html;
     fi
-    if [ -f /var/www/html ]; then
+    if [ -f /var/www/html -o -d /var/www/html ]; then
       long_die "There seems to be a file or directory in /var/www/phpmyadmin that should be moved by hand."
     fi
     ln -s "${LONG_SRV}/platforms" /var/www/html
