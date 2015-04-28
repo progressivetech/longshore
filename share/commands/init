@@ -10,17 +10,6 @@ user=$(whoami)
 
 [ ! -e /srv/longshore/bin/longshore ] && long_die "You must have longshore installed in /srv/longshore/bin/longshore"
 
-# Check what needs to be installed first.
-docker=n
-sudo=n
-nginx=n
-debootstrap=n
-sudoers_file=n
-longshore_user=n
-php_user=n
-openssl=n
-drush=n
-
 install=
 if ! dpkg -l docker.io 2>/dev/null | grep ^ii >/dev/null; then
   if ! dpkg -l lxc-docker 2>/dev/null | grep ^ii >/dev/null; then
@@ -44,6 +33,9 @@ if ! dpkg -l drush 2>/dev/null | grep ^ii >/dev/null; then
   install="$install drush"
 fi
 
+if ! dpkg -l mysql-client 2>/dev/null | grep ^ii >/dev/null; then
+  install="$install mysql-client"
+fi
 if [ -n "$LONG_TLS_KEY_PATH" ]; then
   if ! dpkg -l openssl 2>/dev/null | grep ^ii >/dev/null; then
     install="$install openssl"
