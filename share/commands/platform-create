@@ -13,6 +13,12 @@ makefile_path="$2"
 
 mkdir -p "$base"
 
+# Drush make expects absolute path to make file
+first=$(echo "${makefile_path:0:1}")
+if [ "$first" != "/" ] && [ "$first" != "~" ]; then
+  makefile_path="$(pwd)/$makefile_path"
+fi
+
 if [ ! -f "$makefile_path" ]; then
 	long_die "Can't find makefile path: %s\n"  1 "$makefile_path"
 	exit
