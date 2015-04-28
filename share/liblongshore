@@ -887,12 +887,6 @@ long_create_site_container() {
   # Create nginx configuration
   long_create_nginx_site_conf "$site" "$platform" "$LONG_PHP_PORT"
 
-  # Bail if the container already exists. All remaining items in this
-  # function are only needed if the site has never been created.
-  if long_container_exists "$name"; then
-    return
-  fi
-
   # Ensure that the database exists and that we have a my.cnf file.
   #
   # We are not going to do a proper drupal and civicrm installation 
@@ -902,7 +896,12 @@ long_create_site_container() {
   #
   # The actual installation, if needed, will happen in longshore site-setup
   long_create_db "$name" "$db"
-  
+
+  # Bail if the container already exists. All remaining items in this
+  # function are only needed if the site has never been created.
+  if long_container_exists "$name"; then
+    return
+  fi 
   # Ensure the container is accessible on localhost so nginx can reach it.
   local publish="-p 127.0.0.1:$LONG_PHP_PORT:9000"
 
