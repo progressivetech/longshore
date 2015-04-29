@@ -174,16 +174,16 @@ if [ ! -h /var/www/phpmyadmin ] || [[ $(readlink /var/www/phpmyadmin) != "${LONG
 fi
 
 # Set platforms symlink for nginx to work properly on the host
-if [ ! -h /var/www/html ] || [[ $(readlink /var/www/html) != "${LONG_SRV}/platforms" ]]; then
+if [ ! -h /var/www/powerbase ] || [[ $(readlink /var/www/powerbase) != "${LONG_SRV}/platforms" ]]; then
   long_prompt "Create nginx platforms symlink"
   if [ "$reply" = "y" ]; then
-    if [ -h /var/www/html ]; then
-      rm -f /var/www/html;
+    if [ -h /var/www/powerbase ]; then
+      rm -f /var/www/powerbase;
     fi
-    if [ -f /var/www/html ]; then
-      long_die "There seems to be a file or directory in /var/www/phpmyadmin that should be moved by hand."
+    if [ -f /var/www/powerbase ]; then
+      long_die "There seems to be a file or directory in /var/www that should be moved by hand."
     fi
-    ln -s "${LONG_SRV}/platforms" /var/www/html
+    ln -s "${LONG_SRV}/platforms" /var/www/powerbase
   fi
 fi
 # Setup tls if necessary
