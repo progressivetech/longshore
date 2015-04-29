@@ -128,12 +128,20 @@ if  [ ! -f "$target" ] || ! diff -q "$source" "$target" >/dev/null; then
   fi
 fi
 
-# Ensure that longshore users owns /etc/nginx/sites-enabled so we can write
-# to it.
-if ! stat /etc/nginx/sites-enabled | grep "Uid" | grep longshore >/dev/null; then
-  long_prompt "Chown'ing nginx sites-enabled directory"
+# Ensure that docker group owns /etc/nginx/sites-enabled and it is writable 
+# so any docker enabled user can write to it..
+group_owner=$(stat -c '%G' /etc/nginx/sites-enabled)
+mode=$(stat -c '%A' /etc/nginx/sites-enabled)
+if [ "$group_owner" != "docker" ]; then
+  long_prompt "Chgrp'ing nginx sites-enabled directory to docker group."
   if [ "$reply" = "y" ]; then
-    chown longshore:longshore /etc/nginx/sites-enabled 
+    chown root:docker /etc/nginx/sites-enabled 
+  fi
+fi
+if [ "$mode" != "drwxrwxr-x" ]; then
+  long_prompt "Chmod'ing nginx sites-enabled directory to be group writable."
+  if [ "$reply" = "y" ]; then
+    chmod 0775 /etc/nginx/sites-enabled 
   fi
 fi
 
