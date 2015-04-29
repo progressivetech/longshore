@@ -263,8 +263,8 @@ long_create_nginx_site_conf() {
     LONG_TLS_OR_NOT="listen ${LONG_IP_ADDR}:80;"
   fi
   LONG_ACCESS_LOG="${site}.access.log"
-  LONG_WEB_ROOT="/var/www/html/${platform}"
-  LONG_PHP_ROOT="/var/www/html"
+  LONG_WEB_ROOT="/var/www/powerbase/${platform}"
+  LONG_PHP_ROOT="/var/www/powerbase"
   LONG_CGI_PORT="$port"
 
   cat "$template" | \
@@ -630,7 +630,7 @@ long_exec_drush_cmd() {
   chmod 755 "$file"
   printf "#!/bin/bash\n" > "$file"
   printf "export LONG_LIVE=$LONG_LIVE\n" >> "$file"
-  printf 'cd /var/www/html/sites/default && ' >> "$file"
+  printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
   printf "drush $2\n" >> "$file"
   long_exec_in_container "$site" "$file"
   rm "$file"
@@ -645,7 +645,7 @@ long_exec_in_container() {
   # the path to where it will exist in the site container.
   local dir=$(dirname "$cmd")
   if [ "$dir" = "$LONG_SITE_TMP" ]; then
-    cmd="/var/www/html/sites/default/private/temp/$(basename $cmd)"
+    cmd="/var/www/powerbase/sites/default/private/temp/$(basename $cmd)"
   fi
   docker exec -i -t "$site" su -l -c "$cmd" www-data
 }
@@ -916,8 +916,8 @@ long_create_site_container() {
   # Docker
   docker create --name "$name" \
     --add-host "dockerhost:$ip" \
-    -v "${LONG_SRV}/platforms/${platform}:/var/www/html" \
-    -v "${dir}/drupal:/var/www/html/sites/default" \
+    -v "${LONG_SRV}/platforms/${platform}:/var/www/powerbase" \
+    -v "${dir}/drupal:/var/www/powerbase/sites/default" \
     -v "${LONG_SHARE}/drush:/var/www/.drush" \
     -e "PB_URL=${name}.${LONG_DEFAULT_DOMAIN}" \
     $link \
@@ -1032,7 +1032,7 @@ EOF
   chmod 644 "$install_file"
 
   # Translate file path to work in container.
-  c_install_file="/var/www/html/sites/default/private/temp/$(basename $install_file)"
+  c_install_file="/var/www/powerbase/sites/default/private/temp/$(basename $install_file)"
 
   long_exec_drush_cmd "$site" "-q -y php-script '$c_install_file'"
 
@@ -1171,7 +1171,7 @@ EOF
   chmod 644 "$imap_file"
 
   # Translate file path to work in container.
-  c_imap_file="/var/www/html/sites/default/private/temp/$(basename $imap_file)"
+  c_imap_file="/var/www/powerbase/sites/default/private/temp/$(basename $imap_file)"
   long_exec_drush_cmd "$site" "-q -y php-script '$c_imap_file'"
 
   # Cleanup

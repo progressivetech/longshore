@@ -28,7 +28,9 @@ RUN usermod -s /bin/bash www-data
 # Create drush directory under the www-data's home directory so the create
 # command can mount our drush scripts.
 RUN mkdir -p /var/www/.drush
-RUN mkdir /var/www/html
+
+# Create the powerbase directory to mount the platform.
+RUN mkdir /var/www/powerbase
 
 # Copy our custom PHP settings for powerbase.
 COPY powerbase.ini /etc/php5/conf.d/powerbase.ini

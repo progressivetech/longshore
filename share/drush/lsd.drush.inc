@@ -102,7 +102,7 @@ function drush_lsd_set_paths() {
   _civicrm_init();
 
   // All sites have the same settings.
-  $abs_root_path = '/var/www/html';
+  $abs_root_path = '/var/www/powerbase';
   $rel_site_path ='sites/default'; 
   $rel_civicrm_files_path = "${rel_site_path}/files/civicrm";
   $abs_site_path = $abs_root_path . '/' . $rel_site_path;
@@ -182,7 +182,7 @@ function drush_lsd_set_paths() {
 function lsd_install_prep() {
 
   // drush won't include this because the module is not installed yet.
-  require_once('/var/www/html/sites/all/modules/civicrm/drupal/drush/civicrm.drush.inc');
+  require_once('/var/www/powerbase/sites/all/modules/civicrm/drupal/drush/civicrm.drush.inc');
 
   // We are using the same db credentials as Drupal - so we first have to
   // retrieve those values via the db_spec.
