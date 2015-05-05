@@ -16,6 +16,7 @@ RUN apt-get update && \
     drush \
     mysql-client \
     esmtp-run \
+    vim-tiny \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
