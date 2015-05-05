@@ -1084,7 +1084,7 @@ long_import_backup() {
 }
 
 # Once the site is created, this function ensures that both Drupal and
-# CiviCRM are minimally functional.
+# CiviCRM are minimally functional and email delivery is ready to go.
 long_setup_site() {
   local site="$1"
 
@@ -1101,6 +1101,16 @@ long_setup_site() {
 
   # Ensure all basic drupal and civicrm paths and urls are set. 
   long_exec_drush_cmd "$site" "lsd-set-paths"
+
+  # Ensure the esmtprc is properly configured to forward email to the
+  # right host (the dockerhost on live sites, e.g. dockerhost:25, which is
+  # configured by default) and the dockerhost:2525 on dev sites, which expects
+  # the dev host to be running the mail container.
+  if [ "$LONG_LIVE" = "n" ]; then
+    docker exec -i -t "$site" /bin/sed -i 's/^hostname=dockerhost:25$/hostname=dockerhost:2525/' \
+      /etc/esmtprc
+  fi
+
 }
 
 # Once the site is setup, ensure that it is configured in the PTP/PowerBase
