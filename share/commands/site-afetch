@@ -12,11 +12,25 @@ long_check_args "$2" "$#" 1
 
 site="$2"
 
-source_base=/var/aegir/platforms/master-ourpowerbase-d7-c4.5/sites/${site}.${LONG_DEFAULT_DOMAIN}
+long_log "Getting remote path and server" info
+user=aegir
+default_frontend=nicolas
+
+live_info=$(ssh ${user}@${default_frontend}.mayfirst.org "ptp-get-frontend-for-site '$site' && ptp-get-path '$site'")
+frontend=$(echo "$live_info" | head -n1)
+path=$(echo "$live_info" | tail -n -1)
+
+if [ -z "$frontend" -o -z "$path" ]; then
+  long_die "Can't find front end or path" 
+fi
+
+source_base="${user}@${frontend}.mayfirst.org:$path"
 target_base=${LONG_SRV}/services/sites/${site}/drupal
 
-if [ ! -d "$source_base" ]; then
-  long_die "Can't find base directory (%s)." 1 "$source_base"
+long_prompt "\nSource: %s\ntarget: %s\n" "$source_base" "$target_base"
+
+if [ "$reply" != "y" ]; then
+  long_die "Not continuing."
 fi
 
 # Build out the directory structure
@@ -61,19 +75,5 @@ rsync -a --no-owner --no-perms --delete --exclude 'js/*' \
 rsync -a --no-owner --no-perms --delete \
   "${source_base}/private/" "${target_base}/private/"
 
-# Now bring over the database
-sql_source_file="/var/aegir/data/${site}.sql"
-if [ ! -f "$sql_source_file" ]; then
-  long_die "Can't find sql file (%s)." 1 "$sql_source_file"
-fi
+long_download_aegir_db "$site" "$frontend"
 
-sql_dest_dir=${LONG_SRV}/services/sites/${site}/backup/
-sql_dest_file="${sql_dest_dir}/${site}.sql.gz"
-
-if [ "$sql_source_file" -nt "$sql_dest_file" ]; then
-  long_long "Copying sql file." info
-  cp "$sql_source_file" "$sql_dest_file"
-  cd "$sql_dest_dir" && gzip "${site}.sql"
-else
-  long_log "Destination sql file is newer than source file, not copying." info
-fi

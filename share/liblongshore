@@ -1293,3 +1293,39 @@ long_enter_site_database() {
   fi
   mysql --defaults-file="$mycnf"
 }
+
+# Download the database from a live aegir site. Once we get off aegir this should be
+# removed.
+long_download_aegir_db() {
+  local site="$1"
+  local frontend="$2"
+  local live_frontend_login="aegir@${frontend}.mayfirst.org"
+  local fqdn="${site}.ourpowerbase.net"
+  local temp=$(mktemp -u)
+  local local_sql_dump="${LONG_SRV}/services/sites/${site}/backup/${site}.sql.gz"
+  dump_method=
+  while [ "$dump_method" != "x" ] && [ "$dump_method" != "d" ]; do
+    read -p "Dump live db (d) or extract from this morning's backup (x)? [Xd] "
+    if [ -z "$REPLY" ] || [ "$REPLY" = "X" ] || [ "$REPLY" = "x" ]; then
+      dump_method=x
+    elif [ "$REPLY" = "d" ]; then
+      dump_method=d
+    fi
+  done
+  if [ "$dump_method" = "d" ]; then
+    ssh "$live_frontend_login" "ionice -c2 -n7 $drush '@$fqdn' sql-dump > '$temp'"
+  else
+    path="/var/aegir/backups/${fqdn}.daily.tar.gz"
+    long_log "Extracting database on %s" "$live_frontend_login"
+    ssh "$live_frontend_login" "ionice -c2 -n7 tar --extract --to-stdout --file '$path' ./database.sql > '$temp'"
+  fi
+
+  long_log "gzip'ing dump" info
+  ssh "$live_frontend_login" "gzip '$temp'"
+
+  long_log "Copying sql dump to %s" info "${local_sql_dump}"
+  scp "$live_frontend_login":"${temp}.gz" "${local_sql_dump}"
+
+  long_log "Removing dump from live server" info
+  ssh "$live_frontend_login" "rm '${temp}.gz'"
+}
