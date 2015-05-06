@@ -1,0 +1,13 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-list [<frontend>]
+List all sites.
+
+Arguments
+  <frontend> - Optionally, limit to the given frontend."
+
+long_check_args "$2" "$#" 0
+
+long_set_sites "$1"
+
+echo "$LONG_SITES"
