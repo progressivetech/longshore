@@ -12,68 +12,6 @@ long_check_args "$2" "$#" 1
 
 site="$2"
 
-long_log "Getting remote path and server" info
-user=aegir
-default_frontend=nicolas
+long_fetch_site "$site"
 
-live_info=$(ssh ${user}@${default_frontend}.mayfirst.org "ptp-get-frontend-for-site '$site' && ptp-get-path '$site'")
-frontend=$(echo "$live_info" | head -n1)
-path=$(echo "$live_info" | tail -n -1)
-
-if [ -z "$frontend" -o -z "$path" ]; then
-  long_die "Can't find front end or path" 
-fi
-
-source_base="${user}@${frontend}.mayfirst.org:$path"
-target_base=${LONG_SRV}/services/sites/${site}/drupal
-
-long_prompt "\nSource: %s\ntarget: %s\n" "$source_base" "$target_base"
-
-if [ "$reply" != "y" ]; then
-  long_die "Not continuing."
-fi
-
-# Build out the directory structure
-long_create_site_directories "$site"
-
-# Copy over modules and themes
-
-# We don't want to bring over owner/perms to facilitate setting perms
-# properly in the site-create stage.
-
-long_log "Sync'ing code and templates" info
-
-rsync -a --no-owner --no-perms --delete \
-  "${source_base}/modules/" "${target_base}/modules/"
-rsync -a --no-owner --no-perms --delete \
-  "${source_base}/themes/" "${target_base}/themes/"
-rsync -a --no-owner --no-perms --delete \
-  "${source_base}/custom-civicrm/php/" "${target_base}/custom-civicrm/php/"
-rsync -a --no-owner --no-perms --delete \
-  "${source_base}/custom-civicrm/templates/" "${target_base}/custom-civicrm/templates/"
-
-# Now get files.
-
-# First we have to chown so we can rsync. After building out the directories,
-# these directories will be owned by longshore-php, not longshore.
-sudo chown -R longshore "${target_base}/files"
-sudo chown -R longshore "${target_base}/private"
-
-# Rsync
-
-# Clear the js, css and template caches
-rm -rf "${target_base}"/files/js/*
-rm -rf "${target_base}"/files/css/*
-rm -rf "${target_base}"/files/civicrm/templates_c/*
-
-long_log "Sync'ing files" info
-
-rsync -a --no-owner --no-perms --delete --exclude 'js/*' \
-  --exclude 'css/*' --exclude 'civicrm/templates_c/*' \
-  --exclude 'civicrm/ConfigAndLog/*' \
-  "${source_base}/files/" "${target_base}/files/"
-rsync -a --no-owner --no-perms --delete \
-  "${source_base}/private/" "${target_base}/private/"
-
-long_download_aegir_db "$site" "$frontend"
 
