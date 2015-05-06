@@ -1313,22 +1313,10 @@ long_download_aegir_db() {
   local fqdn="${site}.ourpowerbase.net"
   local temp=$(mktemp -u)
   local local_sql_dump="${LONG_SRV}/services/sites/${site}/backup/${site}.sql.gz"
-  dump_method=
-  while [ "$dump_method" != "x" ] && [ "$dump_method" != "d" ]; do
-    read -p "Dump live db (d) or extract from this morning's backup (x)? [Xd] "
-    if [ -z "$REPLY" ] || [ "$REPLY" = "X" ] || [ "$REPLY" = "x" ]; then
-      dump_method=x
-    elif [ "$REPLY" = "d" ]; then
-      dump_method=d
-    fi
-  done
-  if [ "$dump_method" = "d" ]; then
-    ssh "$live_frontend_login" "ionice -c2 -n7 $drush '@$fqdn' sql-dump > '$temp'"
-  else
-    path="/var/aegir/backups/${fqdn}.daily.tar.gz"
-    long_log "Extracting database on %s" "$live_frontend_login"
-    ssh "$live_frontend_login" "ionice -c2 -n7 tar --extract --to-stdout --file '$path' ./database.sql > '$temp'"
-  fi
+  
+  path="/var/aegir/backups/${fqdn}.daily.tar.gz"
+  long_log "Extracting database on %s" "$live_frontend_login"
+  ssh "$live_frontend_login" "ionice -c2 -n7 tar --extract --to-stdout --file '$path' ./database.sql > '$temp'"
 
   long_log "gzip'ing dump" info
   ssh "$live_frontend_login" "gzip '$temp'"
