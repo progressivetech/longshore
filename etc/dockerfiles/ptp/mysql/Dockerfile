@@ -1,4 +1,4 @@
-FROM ptp-base:latest
+FROM my-jessie:latest
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 RUN apt-get update && \
   export DEBIAN_FRONTEND=noninteractive && \

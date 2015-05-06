@@ -1,5 +1,5 @@
 # Based on https://github.com/AsavarTzeth/docker-php5-fpm
-FROM ptp-base:latest
+FROM my-jessie:latest
 
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 
