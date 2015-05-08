@@ -516,11 +516,14 @@ long_execute_site_query() {
     long_die "The my.cnf file doesn't exist for this site (%s)" 1 "$mycnf"
   fi
   
+  # We should be able to handle gzip or non-gzipped files.
+  cmd=cat
   if file -b "$file" | grep "^gzip" >/dev/null; then
-    gunzip -c "$file" | mysql --defaults-file="$mycnf"
-  else
-    mysql --defaults-file="$mycnf" < "$file"
+    cmd="gunzip -c"
   fi
+  # Strip definer statements since we are running as a non-privileged user
+  # to avoid "You need SUPER privileges" for this operation..
+  $cmd "$file" | sed 's#/\*!5001[37] DEFINER=[^*]*\*/# #g' | mysql --defaults-file="$mycnf"
 }
 
 # Execute the queries in the passed in file on the given database as the

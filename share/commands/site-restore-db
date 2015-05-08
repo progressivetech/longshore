@@ -1,0 +1,19 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-restore-db <site>
+Replace existing database with the one in the backup directory. 
+
+Arguments
+  <site> - The site you want to restore, e.g. ptp"
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+long_prompt "You are about to delete and replace the database for '%s'." "$site"
+if [ "$reply" = "y" ]; then
+  long_import_backup "$site"
+else
+  long_log "Database not restored." info
+fi
+
