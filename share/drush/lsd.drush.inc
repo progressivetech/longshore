@@ -15,8 +15,6 @@
  *    configuration options in place.
  */
 
-// FIXME do we need to reset the extensions cache?
-// CRM_Core_PseudoConstant::getModuleExtensions(TRUE);
 //
 /**
  * Implements hook_drush_command().
@@ -172,6 +170,8 @@ function drush_lsd_set_paths() {
     }
   }
   if ($freshen_extensions_cache) {
+    // FIXME - this doesn't do that same thing as clicking the Refresh button
+    // on the extensions page.
     CRM_Core_PseudoConstant::getModuleExtensions(TRUE);
   }
 }

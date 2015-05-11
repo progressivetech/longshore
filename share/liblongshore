@@ -464,24 +464,25 @@ long_create_db() {
     long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT" "$site"
   fi
 
-  while ! long_up_more_than_ten_seconds "$dbhost"; do
-    long_log "Waiting 5 seconds to ensure database has started." info
-    sleep 5
+  while ! long_up_long_enough "$dbhost" 30; do
+    long_log "Waiting 10 more seconds to ensure database has started." info
+    sleep 10 
   done
   long_execute_root_query "$dbhost" "$temp"
   rm "$temp"
 }
 
-# Return 0 if the given site has been up more than 10 seconds. Otherwise 1.
-# Useful for determining whether we can expect MySQL to be ready to receive
-# a sql query.
-long_up_more_than_ten_seconds() {
+# Return 0 if the given site has been up more than the specified number of
+# seconds. Otherwise 1.  Useful for determining whether we can expect MySQL to
+# be ready to receive a sql query.
+long_up_long_enough() {
   local site="$1"
+  local seconds="$2"
   local site_up_iso=$(docker inspect -f {{.State.StartedAt}} "$site")
   local now_ts=$(date '+%s')
   local site_up_ts=$(date --utc --date "$site_up_iso" '+%s')
   local diff=$(( $now_ts - $site_up_ts ))
-  if [ "$diff" -gt 10 ]; then
+  if [ "$diff" -gt "$seconds" ]; then
     return 0
   fi
   return 1
@@ -1159,8 +1160,6 @@ long_configure_imap() {
       # Configure user and password in CiviCRM, ensuring we don't pass
       # the password exposed via the command line.
       long_configure_civicrm_imap_user "$site" "$user" "$pass"
-    else
-      long_log "IMAP user '%s' exists, doing nothing." info "$user"
     fi
   done
 }
