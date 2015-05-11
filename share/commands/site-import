@@ -1,0 +1,23 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-import <site> [<path>]
+Replace existing database with the one in the backup directory or the one
+specified as the second argument. 
+
+Arguments
+  <site> - The site you want to import the db over, e.g. ptp
+  <path> - Optionally, provide an alternate path to the database to import."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+long_container_exists "$site" || long_die "The site '%s' doesn't exist." 1 "$site"
+if [ "$reply" = "y" ]; then
+  # If tables exist in the database, the user will be prompted before continuing
+  # by the long_drop_tables function.
+  long_import_backup "$site" "$path"
+else
+  long_log "Database not restored." info
+fi
+

@@ -1083,8 +1083,46 @@ long_install_civicrm() {
 
 long_import_backup() {
   local site="$1"
-  local path="${LONG_SRV}/services/sites/${site}/backup/${site}.sql.gz"
+  local path="$2"
+
+  if [ -z "$path" ]; then
+    path="${LONG_SRV}/services/sites/${site}/backup/${site}.sql.gz"
+  fi
   long_execute_site_query "$site" "$path"
+}
+
+# Drop all tables in a database. Useful when importing a backup over an existing
+# database to ensure no stale temp tables or other tables are left around
+long_drop_tables() {
+  local site="$1"
+
+  get_tables_temp=$(mktemp)
+  drop_tables_temp=$(mktemp)
+  echo "SHOW TABLES;" > "$get_tables_temp"
+  # The drupal blocked_ips table is needed for the drush command sql-query to
+  # function properly.
+  for table in $(long_execute_site_query "$site" "$get_tables_temp" \
+    | grep -v ^Tables_in | grep -v ^blocked_ips); do
+    printf "$table\n"
+    entity=TABLE
+    if echo "$table" | grep ^civicrm_view > /dev/null; then
+      entity=VIEW
+    fi
+    printf "SET FOREIGN_KEY_CHECKS=0; DROP %s %s;\n" "$entity" "$table" >> "$drop_tables_temp"
+  done
+  # Only run if we have a drop file that is more than 0 bytes (i.e. 
+  # don't run if there are no tables in the database)
+  if [ -s "$drop_tables_temp" ]; then
+    long_prompt "Deleting all the tables listed above"
+    if [ "$reply" = "y" ]; then
+      long_log "Deleting the tables" info
+      long_execute_site_query "$site" "$drop_tables_temp"
+    else
+      long_log "Not deleting the tables" info
+    fi
+  fi
+  rm "$get_tables_temp"
+  rm "$drop_tables_temp"
 }
 
 # Once the site is created, this function ensures that both Drupal and
