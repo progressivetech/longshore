@@ -14,6 +14,7 @@ RUN apt-get update && \
     fonts-linuxlibertine \
     wkhtmltopdf \
     drush \
+    wget \
     mysql-client \
     esmtp-run \
     vim-tiny \
