@@ -21,7 +21,13 @@ RUN apt-get update && \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
-# RUN wget https://downloads.sourceforge.net/project/wkhtmltopdf/0.12.2.1/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb
+# FIXME - this address seems to get redirected to http
+RUN wget https://downloads.sourceforge.net/project/wkhtmltopdf/0.12.2.1/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb -O /tmp/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb
+
+# Install over the package we installed via apt. We install via apt so
+# we are sure to have the dependencies.
+RUN dpkg -i /tmp/wkhtmltox-0.12.2.1_linux-jessie-amd64.deb 
+
 # User arbitrary high UID so we can more easily understand UIDs on the host
 RUN groupmod -g 5001 www-data
 RUN usermod -u 5001 www-data 
