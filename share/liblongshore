@@ -689,6 +689,7 @@ long_create_mysql_container() {
     -v "${dir}/logs:/var/log/mysql" \
     -e "LONG_LIVE=$LONG_LIVE" \
     -p "127.0.0.1:${LONG_DB_PORT}:3306" \
+    $LONG_MEMORY_LIMIT \
     ptp-mysql:latest mysqld
 }
 
@@ -749,6 +750,7 @@ long_create_phpmyadmin_container() {
     -v "${dir}/src:/var/www/phpmyadmin" \
     $link \
     $publish \
+    $LONG_MEMORY_LIMIT \
     ptp-php:latest php5-fpm 
 }
 
@@ -924,6 +926,7 @@ long_create_site_container() {
     -v "${dir}/drupal:/var/www/powerbase/sites/default" \
     -v "${LONG_SHARE}/drush:/var/www/.drush" \
     -e "PB_URL=${name}.${LONG_DEFAULT_DOMAIN}" \
+    $LONG_MEMORY_LIMIT \
     $link \
     $publish \
     ptp-powerbase:latest php5-fpm 
