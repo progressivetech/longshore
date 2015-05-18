@@ -617,7 +617,7 @@ function ptp_create_help_menu() {
     'CiviCRM - The Book' =>
       'http://book.civicrm.org/user/',
     'CiviCRM Community Forums' => 
-      'http://forum.civicrm.org',
+      'https://civicrm.stackexchange.com/',
     'PowerBase FAQs' =>
       'http://network.progressivetech.org/knowledge-base-topics/powerbase',
     'Video Tutorials' =>
