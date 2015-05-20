@@ -170,7 +170,7 @@ function drush_lsd_set_paths() {
     }
   }
   if ($freshen_extensions_cache) {
-    CRM_Extension_System::singleton()->getManager()->refresh();
+    lsd_extensions_freshen();
   }
 }
 
@@ -245,4 +245,15 @@ function drush_lsd_extensions_update() {
     drush_log("Failed to run database updates on extensions.", 'error');
     drush_log($out, 'error');
   }
+}
+
+/**
+ * Reset the extensions cache.
+ *
+ * This step is necessary when moving sites if the path to the extensions
+ * has changed.
+ */
+function lsd_extensions_freshen() {
+  _civicrm_init();
+  CRM_Extension_System::singleton()->getManager()->refresh();
 }
