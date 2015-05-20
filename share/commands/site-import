@@ -13,11 +13,8 @@ long_check_args "$2" "$#" 1
 site="$2"
 
 long_container_exists "$site" || long_die "The site '%s' doesn't exist." 1 "$site"
-if [ "$reply" = "y" ]; then
-  # If tables exist in the database, the user will be prompted before continuing
-  # by the long_drop_tables function.
-  long_import_backup "$site" "$path"
-else
-  long_log "Database not restored." info
-fi
+# If tables exist in the database, the user will be prompted before continuing
+# by the long_drop_tables function.
+long_drop_tables "$site"
+long_import_backup "$site" "$path"
 
