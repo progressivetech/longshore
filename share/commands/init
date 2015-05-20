@@ -242,7 +242,7 @@ fi
 if ! grep '~/.config/bash_completion.d/' "$bash_profile_path" > /dev/null; then
    long_prompt "Ensure bash completion is enabled."
   if [ "$reply" = "y" ]; then
-    echo 'for file in $(find ~/.config/bash_completion.d/ -type e); do' >> "$bash_profile_path"
+    echo 'for file in $(find ~/.config/bash_completion.d/ -type f -o -type l); do' >> "$bash_profile_path"
     echo '  source "$file"' >> "$bash_profile_path"
     echo 'done' >> "$bash_profile_path"
   fi
