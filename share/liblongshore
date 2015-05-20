@@ -1449,21 +1449,21 @@ long_set_sites() {
 long_create_dns() {
   local site="$1"
   local api_login=pb-api-user
-  local api_password=$(cat "$red_api_password_path")
   local url="https://members.mayfirst.org/cp/api.php"
   local fqdn="${site}.${LONG_DOMAIN}"
   local hosting_order_id=1000002
   local service_id=9
   local dns_ttl=600
-  local red_api_password_path = "~/.red-api-password"
+  local red_api_password_path="~/.red-api-password"
+  local api_password=$([ -s "$red_api_password" ] && cat "$red_api_password_path")
 
   # Sanity checking.
-  [ "$LONG_LIVE" != "y" ]; then
+  if [ "$LONG_LIVE" != "y" ]; then
     # Don't die, this isn't a fatal error.
     long_log "Not setting DNS in dev instance." info
     return
   fi
-  [ ! -s "$red_api_password_path" ] && long_die "Please put your red api password in %s." 1 "$red_api_password_path"
+  [ -z "$api_password" ] && long_die "Please put your red api password in %s." 1 "$red_api_password_path"
   [ -z "$LONG_IP_ADDR" ] && long_die "The host IP address is not set in longshore.conf"
 
   
