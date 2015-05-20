@@ -11,6 +11,7 @@ Arguments
 long_check_args "$2" "$#" 1
 
 site="$2"
+path="$3"
 
 long_container_exists "$site" || long_die "The site '%s' doesn't exist." 1 "$site"
 # If tables exist in the database, the user will be prompted before continuing
