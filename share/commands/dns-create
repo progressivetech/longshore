@@ -1,0 +1,14 @@
+#!/bin/bash
+
+ptp_usage_message="usage: $(basename $0) dns-create <site>
+Create a DNS A record for the given site. 
+
+Arguments
+  <site> - The site you want to create the IP address for, e.g. ptp"
+
+long_check_args "$1" "$#" 1
+
+site="$1"
+
+long_create_dns "$site"
+

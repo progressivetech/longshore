@@ -1445,3 +1445,40 @@ long_set_sites() {
   # frontend is not yet implemented...
   LONG_SITES=$(ls "${LONG_SRV}/services/sites")
 }
+
+long_create_dns() {
+  local site="$1"
+  local api_login=pb-api-user
+  local api_password=$(cat "$red_api_password_path")
+  local url="https://members.mayfirst.org/cp/api.php"
+  local fqdn="${site}.${LONG_DOMAIN}"
+  local hosting_order_id=1000002
+  local service_id=9
+  local dns_ttl=600
+  local red_api_password_path = "~/.red-api-password"
+
+  # Sanity checking.
+  [ "$LONG_LIVE" != "y" ]; then
+    # Don't die, this isn't a fatal error.
+    long_log "Not setting DNS in dev instance." info
+    return
+  fi
+  [ ! -s "$red_api_password_path" ] && long_die "Please put your red api password in %s." 1 "$red_api_password_path"
+  [ -z "$LONG_IP_ADDR" ] && long_die "The host IP address is not set in longshore.conf"
+
+  
+  post="action=insert&output=text&object=item&set:service_id=${service_id}&set:hosting_order_id=${hosting_order_id}&set:dns_fqdn=${fqdn}&set:dns_type=a&set:dns_ttl=${dns_ttl}&set:dns_ip=${LONG_IP_ADDR}&user_name=$api_login&user_pass=$api_password&output_format=text"
+
+  out=$(wget -q --post-data="$post" -O- "$url")
+
+  if [ "$?" -ne "0" ]; then
+    long_die "Failed to use wget when setting the DNS entry."
+  fi
+
+  echo "$out" | grep '"is_error":0' > /dev/null
+
+  if [ "$?" -ne "0" ]; then
+    echo "$out"
+    long_die "Failed to create DNS record."
+  fi
+}

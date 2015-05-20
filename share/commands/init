@@ -33,6 +33,10 @@ if ! dpkg -l drush 2>/dev/null | grep ^ii >/dev/null; then
   install="$install drush"
 fi
 
+if ! dpkg -l wget 2>/dev/null | grep ^ii >/dev/null; then
+  install="$install wget"
+fi
+
 if ! dpkg -l mysql-client 2>/dev/null | grep ^ii >/dev/null; then
   install="$install mysql-client"
 fi
