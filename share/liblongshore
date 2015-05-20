@@ -1122,6 +1122,8 @@ long_drop_tables() {
       long_execute_site_query "$site" "$drop_tables_temp"
     else
       long_log "Not deleting the tables" info
+      # die here to avoid importing a sql file
+      long_die "Dying. Bye."
     fi
   fi
   rm "$get_tables_temp"
