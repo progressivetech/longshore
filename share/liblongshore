@@ -1465,7 +1465,7 @@ long_create_dns() {
   fi
   exists=$(dig +short @a.ns.mayfirst.org "$fqdn")
   if [ -n "$exists" ]; then
-    long_log "The DNS has already been created." info
+    long_log "The DNS has already been created, it is %s." info "$exists"
     return
   fi
   [ -z "$api_password" ] && long_die "Please put your red api password in %s." 1 "$red_api_password_path"
