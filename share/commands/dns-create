@@ -6,7 +6,7 @@ Create a DNS A record for the given site.
 Arguments
   <site> - The site you want to create the IP address for, e.g. ptp"
 
-long_check_args "$1" "$#" 1
+long_check_args "$1" "$#" 2
 
 site="$1"
 
