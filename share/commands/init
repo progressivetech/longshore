@@ -37,6 +37,10 @@ if ! dpkg -l wget 2>/dev/null | grep ^ii >/dev/null; then
   install="$install wget"
 fi
 
+if ! dpkg -l dnsutils 2>/dev/null | grep ^ii >/dev/null; then
+  install="$install dnsutils"
+fi
+
 if ! dpkg -l mysql-client 2>/dev/null | grep ^ii >/dev/null; then
   install="$install mysql-client"
 fi
