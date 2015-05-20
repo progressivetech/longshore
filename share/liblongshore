@@ -1454,7 +1454,7 @@ long_create_dns() {
   local hosting_order_id=1000002
   local service_id=9
   local dns_ttl=600
-  local red_api_password_path="~/.red-api-password"
+  local red_api_password_path=~/.red-api-password
   local api_password=$([ -s "$red_api_password" ] && cat "$red_api_password_path")
 
   # Sanity checking.
