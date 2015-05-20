@@ -20,6 +20,7 @@ platform="$4"
 
 long_create_container site "$site" "$db" "$platform"
 docker start "$site"
+long_dns_create "$site"
 long_setup_site "$site"
 long_configure_site "$site"
 long_nginx_reload
