@@ -1463,6 +1463,11 @@ long_create_dns() {
     long_log "Not setting DNS in dev instance." info
     return
   fi
+  exists=$(dig +short @a.ns.mayfirst.org "$fqdn")
+  if [ -n "$exists" ]; then
+    long_log "The DNS has already been created." info
+    return
+  fi
   [ -z "$api_password" ] && long_die "Please put your red api password in %s." 1 "$red_api_password_path"
   [ -z "$LONG_IP_ADDR" ] && long_die "The host IP address is not set in longshore.conf"
 
