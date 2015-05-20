@@ -1116,7 +1116,7 @@ long_drop_tables() {
   # Only run if we have a drop file that is more than 0 bytes (i.e. 
   # don't run if there are no tables in the database)
   if [ -s "$drop_tables_temp" ]; then
-    long_prompt "Deleting all the tables listed above"
+    long_prompt "Deleting all the tables listed above in the site '%s'" info "$site"
     if [ "$reply" = "y" ]; then
       long_log "Deleting the tables" info
       long_execute_site_query "$site" "$drop_tables_temp"
