@@ -8,7 +8,7 @@ Arguments
 
 long_check_args "$2" "$#" 1
 
-site="$1"
+site="$2"
 
 long_create_dns "$site"
 

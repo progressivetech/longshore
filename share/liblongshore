@@ -1450,7 +1450,7 @@ long_create_dns() {
   local site="$1"
   local api_login=pb-api-user
   local url="https://members.mayfirst.org/cp/api.php"
-  local fqdn="${site}.${LONG_DOMAIN}"
+  local fqdn="${site}.${LONG_DEFAULT_DOMAIN}"
   local hosting_order_id=1000002
   local service_id=9
   local dns_ttl=600
