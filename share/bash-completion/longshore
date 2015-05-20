@@ -7,6 +7,10 @@ _longshore_complete() {
   sites=$(ls /srv/longshore/services/sites 2>/dev/null)
   if [ "$prev" = "longshore" ]; then
     opts="$commands"
+  elif [ "$prev" = "platform-create" ]; then
+    # Standard completion (filename-completion)
+    COMPREPLY=() 
+    return
   elif [[ "$commands" = *$prev* ]]; then
     opts="$sites"
   fi
@@ -16,4 +20,4 @@ _longshore_complete() {
   return 0
 }
 
-complete -F _longshore_complete longshore
+complete -o default -F _longshore_complete longshore
