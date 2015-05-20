@@ -12,7 +12,7 @@ _longshore_complete() {
     COMPREPLY=() 
     return
   elif [ "$prev" = "image-create" ]; then
-    opts="my-jessie ptp-mysql ptp-ph ptp-powerbase"
+    opts="my-jessie ptp-mysql ptp-php ptp-powerbase all"
   elif [[ "$commands" = *$prev* ]]; then
     opts="$sites"
   fi
