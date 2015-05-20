@@ -1465,7 +1465,7 @@ long_create_dns() {
   fi
   exists=$(dig +short @a.ns.mayfirst.org "$fqdn")
   if [ "$?" != 0 ]; then
-    long_die "Error checking dns. Output: %s" 1 "$exists"
+    long_die "Error checking dns (%s). Output: %s" 1 "$fqdn" "$exists"
   fi
   if [ -n "$exists" ]; then
     long_log "The DNS has already been created, it is %s." info "$exists"
