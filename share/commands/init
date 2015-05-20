@@ -234,6 +234,5 @@ if [ ! -d "$bash_completion_path" ] || [ ! -f "${bash_completion_path}/longshore
     fi
     ln -s "${LONG_SHARE}/bash-completion/longshore" "${bash_completion_path}/longshore"
     chown --no-dereference longshore:longshore "${bash_completion_path}/longshore"
-    long_log "Please run: source ${bash_completion_path}/longshore for tab completion to work." info
   fi
 fi
