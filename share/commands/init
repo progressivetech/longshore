@@ -90,12 +90,13 @@ if [ ! -f "$longshore_sudo_file_target" ] || ! diff "$longshore_sudo_file" "$lon
   fi
 fi
 
-touch /home/longshore/.profile
-if ! grep 'PATH="/srv/longshore/bin' /home/longshore/.bashrc > /dev/null; then
+bashrc_path=~longshore/.bashrc
+touch "$bashrc_path"
+if ! grep 'PATH="/srv/longshore/bin' "$bashrc_path" > /dev/null; then
   long_prompt "Adding /srv/longshore/bin to PATH"
   if [ "$reply" = "y" ]; then
-    echo 'PATH="/srv/longshore/bin:$PATH"' > /home/longshore/.bashrc
-    chown longshore:longshore /home/longshore/.bashrc
+    echo 'PATH="/srv/longshore/bin:$PATH"' > "$bashrc_path"
+    chown longshore:longshore "$bashrc_path"
   fi
 fi
 
@@ -235,4 +236,11 @@ if [ ! -d "$bash_completion_path" ] || [ ! -f "${bash_completion_path}/longshore
     ln -s "${LONG_SHARE}/bash-completion/longshore" "${bash_completion_path}/longshore"
     chown --no-dereference longshore:longshore "${bash_completion_path}/longshore"
   fi
+fi
+
+# Ensure auto-complete is enabled in ~/.bashrc
+if ! grep '~/.config/bash_completion.d/' "$bashrc_path" > /dev/null; then
+  echo 'for file in $(find ~/.config/bash_completion.d/ -type f); do' >> "$bashrc_path"
+  echo '  source "$file"' >> "$bashrc_path"
+  echo 'done' >> "$bashrc_path"
 fi
