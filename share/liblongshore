@@ -318,7 +318,7 @@ long_image_create() {
   local image_path="$2"
   if ! long_image_exists "$image_tag"; then
     long_log "Creating image (%s)" info "$image_tag"
-    if [ "$image_tag" = "ptp-base" ]; then
+    if [ "$image_tag" = "my-jessie" ]; then
       # This is a special condition
       long_image_create_base
     else

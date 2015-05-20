@@ -12,7 +12,7 @@ long_check_args "$2" "$#" 1
 itypes="$2"
 
 if [ "$itypes" = "all" ]; then
-  itypes="ptp-base ptp-mysql ptp-php ptp-powerbase"
+  itypes="my-jessie ptp-mysql ptp-php ptp-powerbase"
 fi
 
 for itype in $itypes; do
@@ -28,8 +28,8 @@ for itype in $itypes; do
     long_image_create  ptp-php ${LONG_ETC}/dockerfiles/ptp/php
   elif [ "$itype" = "ptp-powerbase" ]; then
     long_image_create  ptp-powerbase ${LONG_ETC}/dockerfiles/ptp/powerbase
-  elif [ "$itype" = "ptp-base" ]; then
-    long_image_create ptp-base
+  elif [ "$itype" = "my-jessie" ]; then
+    long_image_create my-jessie 
   else
     long_die "I don't know how to make an image of that type (%s)." 1 "$itype"
   fi
