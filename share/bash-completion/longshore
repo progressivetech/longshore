@@ -1,0 +1,19 @@
+_longshore_complete() {
+  local cur opts
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  prev="${COMP_WORDS[COMP_CWORD-1]}"
+  commands="$(ls /srv/longshore/share/commands)"
+  sites=$(ls /srv/longshore/services/sites 2>/dev/null)
+  if [ "$prev" = "longshore" ]; then
+    opts="$commands"
+  elif [[ "$commands" = *$prev* ]]; then
+    opts="$sites"
+  fi
+    
+  #echo "cur: $cur and prev: $prev"
+  COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+  return 0
+}
+
+complete -F _longshore_complete longshore
