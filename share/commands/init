@@ -240,7 +240,10 @@ fi
 
 # Ensure auto-complete is enabled in ~/.bashrc
 if ! grep '~/.config/bash_completion.d/' "$bashrc_path" > /dev/null; then
-  echo 'for file in $(find ~/.config/bash_completion.d/ -type f); do' >> "$bashrc_path"
-  echo '  source "$file"' >> "$bashrc_path"
-  echo 'done' >> "$bashrc_path"
+   long_prompt "Ensure bash completion is enabled."
+  if [ "$reply" = "y" ]; then
+    echo 'for file in $(find ~/.config/bash_completion.d/ -type f); do' >> "$bashrc_path"
+    echo '  source "$file"' >> "$bashrc_path"
+    echo 'done' >> "$bashrc_path"
+  fi
 fi
