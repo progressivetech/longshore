@@ -15,14 +15,6 @@ RUN /etc/init.d/mysql stop
 # when we start.
 RUN rm -rf /var/lib/mysql/*
 
-# Make the mysql user the same UID as the longshore user
-# on the host so we can delete databases from the host
-# without needing root.
-RUN usermod -u 5000 mysql 
-RUN groupmod -g 5000 mysql 
-
-RUN chown -R mysql:mysql /var/run/mysqld
-
 # Ensure networking will work.
 RUN sed -i "s/^bind-address/#bind-address/g" /etc/mysql/my.cnf
 

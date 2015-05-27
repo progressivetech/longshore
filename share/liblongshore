@@ -365,7 +365,7 @@ long_container_up() {
       long_get_db_for_site "$name"
       long_container_up mysql "$LONG_DB_HOST"
     fi
-    docker start "$label"
+    docker start "$label" || long_die "Failed to start the container %s" 1 "$label"
   fi
 }
 
@@ -617,7 +617,7 @@ long_create_civicrm_settings() {
 
   # Ensure proper permissions
   local target="${LONG_SRV}/services/sites/${site}/drupal/civicrm.settings.php"
-  sudo chown longshore "$target"
+  sudo chown "$LONG_HOST_USER" "$target"
   chmod 0640 "$target"
 
   # Remove write access.
@@ -688,6 +688,7 @@ long_create_mysql_container() {
     -v "${dir}/my.cnf:/root/.my.cnf" \
     -v "${dir}/logs:/var/log/mysql" \
     -e "LONG_LIVE=$LONG_LIVE" \
+    -e "MYSQL_UID=$UID" \
     -p "127.0.0.1:${LONG_DB_PORT}:3306" \
     $LONG_MEMORY_LIMIT \
     ptp-mysql:latest mysqld
@@ -830,7 +831,7 @@ long_create_site_directories() {
     chmod g-s "${dir}/drupal/files/civicrm/contribute"
   fi
 
-  # One exception: private/temp should be writable by the group (longshore)
+  # One exception: private/temp should be writable by the group ($LONG_HOST_USER)
   # so that the host can create temporary files to be deleted after being
   # executed in the container. See the long_exec_in_container function.
   mkdir -p "${dir}/drupal/private/temp"
@@ -843,9 +844,9 @@ long_create_site_directories() {
   # Now that the right modes are set, chown the files to the right users. 
   local web_writable="drupal/files drupal/private"
   for foo in $web_writable; do
-    # Maintain group ownership by the longshore user so we can read the
+    # Maintain group ownership by the $LONG_HOST_USER user so we can read the
     # files from the host for convenience and trouble-shooting.
-    sudo chown -R longshore-php:longshore "${dir}/${foo}"
+    sudo chown -R longshore-php:"$LONG_HOST_USER" "${dir}/${foo}"
   done
 
   # Give the longshore-php user group ownership over the drupal directory
@@ -1048,7 +1049,7 @@ EOF
 
   # Reset permissions. 
   # Regain ownership of the settings.php file.
-  sudo chown longshore "${dir}/drupal/settings.php"
+  sudo chown "$LONG_HOST_USER" "${dir}/drupal/settings.php"
 
   # And restrict access.
   chmod 0640 "${dir}/drupal/settings.php"
@@ -1075,7 +1076,7 @@ long_install_civicrm() {
 
   # Reset permissions. 
   # Regain ownership of the settings.php file.
-  sudo chown longshore "${dir}/drupal/civicrm.settings.php"
+  sudo chown "$LONG_HOST_USER" "${dir}/drupal/civicrm.settings.php"
 
   # And restrict access.
   chmod 0640 "${dir}/drupal/civicrm.settings.php"
@@ -1329,8 +1330,8 @@ long_destroy_site() {
   if [ -d "${LONG_SRV}/services/sites/${site}" ]; then
     # Some files and directories may be owned by longshore-php, so reclaim
     # onwership first.
-    sudo chown -R longshore "${LONG_SRV}/services/sites/${site}/drupal/files"
-    sudo chown -R longshore "${LONG_SRV}/services/sites/${site}/drupal/private"
+    sudo chown -R "$LONG_HOST_USER" "${LONG_SRV}/services/sites/${site}/drupal/files"
+    sudo chown -R "$LONG_HOST_USER" "${LONG_SRV}/services/sites/${site}/drupal/private"
     rm -rf "${LONG_SRV}/services/sites/${site}"
   fi
 
@@ -1418,9 +1419,9 @@ long_fetch_site() {
   # Now get files.
 
   # First we have to chown so we can rsync. After building out the directories,
-  # these directories will be owned by longshore-php, not longshore.
-  sudo chown -R longshore "${target_base}/files"
-  sudo chown -R longshore "${target_base}/private"
+  # these directories will be owned by longshore-php, not $LONG_HOST_USER.
+  sudo chown -R "$LONG_HOST_USER" "${target_base}/files"
+  sudo chown -R "$LONG_HOST_USER" "${target_base}/private"
 
   # Rsync
 

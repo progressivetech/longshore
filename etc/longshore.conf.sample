@@ -78,3 +78,8 @@ LONG_IMAP_HOST=civicrm.ourpowerbase.net
 # If the host supports it, you can set a default memory limit for each
 # container (you have to edit /etc/default/grub and add GRUB_CMDLINE_LINUX="cgroup_enable=memory"
 LONG_MEMORY_LIMIT="-m 8GB"
+
+# Set the name of the local user on the host. We have to ensure this user
+# has proper permissions.
+LONG_HOST_USER=longshore
+

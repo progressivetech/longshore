@@ -5,6 +5,17 @@ sql_init_file=/tmp/temp.sql
 mycnf=/root/.my.cnf
 
 if [ "$1" = 'mysqld' ]; then
+  if [ -n "$MYSQL_UID" ]; then
+    # Ensure the mysql user has the same UID as the one passed in. If not,
+    # change it. We make this change so that the user on the host can delete
+    # mysql folders from the host if needed.
+    current_uid=$(getent passwd mysql | cut -d: -f3)
+    if [ "$current_uid" != "$MYSQL_UID" ]; then
+      printf "Updating UID of mysql user from %s to %s.\n" "$current_uid" "$MYSQL_UID"
+      usermod -u "$MYSQL_UID" mysql
+    fi
+  fi
+
   if [ -f "$mycnf" ]; then
     # Initialize root password if /root/.my.cnf is available.
     password=$(grep password "$mycnf" | cut -d= -f2)
@@ -42,6 +53,7 @@ EOSQL
   touch /var/log/mysql/mysql-slow.log
   chown mysql:mysql /var/log/mysql/mysql-slow.log
   chown mysql:mysql /var/lib/mysql
+  chown -R mysql:mysql /var/run/mysqld
 
   # Make sure we have been properly initialized
   if [ ! -d "/var/lib/mysql/mysql" ]; then

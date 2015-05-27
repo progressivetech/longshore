@@ -10,6 +10,8 @@ user=$(whoami)
 
 [ ! -e /srv/longshore/bin/longshore ] && long_die "You must have longshore installed in /srv/longshore/bin/longshore"
 
+[ -z "$LONG_HOST_USER" ] && long_die "You must have LONG_HOST_USER set in longshore.conf"
+
 install=
 if ! dpkg -l docker.io 2>/dev/null | grep ^ii >/dev/null; then
   if ! dpkg -l lxc-docker 2>/dev/null | grep ^ii >/dev/null; then
@@ -56,8 +58,8 @@ if [ -n "$install" ]; then
 fi
 
 users=
-if ! getent passwd longshore > /dev/null; then
-  users=longshore:5000
+if ! getent passwd "$LONG_HOST_USER" > /dev/null; then
+  users="$LONG_HOST_USER:5000"
 fi
 
 if ! getent passwd longshore-php > /dev/null; then
@@ -69,7 +71,7 @@ if [ -n "$users" ]; then
   if [ "$reply" = "y" ]; then
     for user in $users; do
       username=$(echo "$user" | cut -d: -f1)
-      if [ "$username" = "longshore" ]; then
+      if [ "$username" = "$LONG_HOST_USER" ]; then
         adduser --disabled-password --gecos "Longshore User" "$username"
       else
         uid=$(echo "$user" | cut -d: -f2)
@@ -80,38 +82,31 @@ if [ -n "$users" ]; then
   fi
 fi
 
-if ! groups longshore | grep docker >/dev/null; then
-	long_prompt "Adding longshore user to the docker group"
-	adduser longshore docker
+if ! groups "$LONG_HOST_USER" | grep docker >/dev/null; then
+	long_prompt "Adding longshore host user to the docker group"
+	adduser "$LONG_HOST_USER" docker
 fi
-longshore_sudo_file="${LONG_SHARE}/templates/longshore.sudoers"
+longshore_sudo_file=$(mktemp)
+cat "${LONG_SHARE}/templates/longshore.sudoers" | \
+  sed "s/LONG_HOST_USER/$LONG_HOST_USER/" > \
+  "$longshore_sudo_file"
 longshore_sudo_file_target=/etc/sudoers.d/longshore
 
 if [ ! -f "$longshore_sudo_file_target" ] || ! diff "$longshore_sudo_file" "$longshore_sudo_file_target" > /dev/null; then
-  long_prompt "Granting longshore user sudo rights to chown files"
+  long_prompt "Granting longshore host user sudo rights to chown files"
   if [ "$reply" = "y" ]; then
     cp "$longshore_sudo_file" "$longshore_sudo_file_target"
   fi
 fi
 
-bash_profile_path=~longshore/.profile
-touch "$bash_profile_path"
-if ! grep 'PATH="/srv/longshore/bin' "$bash_profile_path" > /dev/null; then
-  long_prompt "Adding /srv/longshore/bin to PATH"
-  if [ "$reply" = "y" ]; then
-    echo 'PATH="/srv/longshore/bin:$PATH"' > "$bash_profile_path"
-    chown longshore:longshore "$bash_profile_path"
-  fi
-fi
-
 # If this is the first time we have run - we may have checked out these files
 # as root so we should chown them.
-if ! stat /srv/longshore/bin | grep "Uid" | grep longshore >/dev/null; then
+if ! stat /srv/longshore/bin | grep "Uid" | grep "$LONG_HOST_USER" >/dev/null; then
   long_prompt "Chown'ing files"
   if [ "$reply" = "y" ]; then
-    chown -R longshore:longshore /srv/longshore/bin /srv/longshore/share \
+    chown -R "${LONG_HOST_USER}:${LONG_HOST_USER}" /srv/longshore/bin /srv/longshore/share \
       /srv/longshore/etc /srv/longshore/.git /srv/longshore/README.md
-    chown longshore:longshore /srv/longshore
+    chown "${LONG_HOST_USER}:${LONG_HOST_USER}" /srv/longshore
   fi
 fi
 
@@ -168,7 +163,7 @@ if [ -n "$makedirs" ]; then
   if [ "$reply" = "y" ]; then
     for makedir in $makedirs; do
       mkdir -p "${LONG_SRV}/${makedir}"
-      chown longshore:longshore "${LONG_SRV}/${makedir}"
+      chown "${LONG_HOST_USER}:${LONG_HOST_USER}" "${LONG_SRV}/${makedir}"
     done
   fi
 fi
@@ -222,32 +217,22 @@ if [ -n "$LONG_TLS_KEY_PATH" ]; then
   fi
   # Touch and fix ownership for tls.conf file
   touch "$LONG_NGINX_TLS_PATH"
-  chown longshore:longshore "$LONG_NGINX_TLS_PATH"
+  chown "${LONG_HOST_USER}:${LONG_HOST_USER}" "$LONG_NGINX_TLS_PATH"
 fi
 
 # Set autocomplete if necessary
-longshore_config_path=~longshore/.config
+longshore_config_path=~"$LONG_HOST_USER"/.config
 bash_completion_path="${longshore_config_path}/bash_completion.d"
 if [ ! -d "$bash_completion_path" ] || [ ! -f "${bash_completion_path}/longshore" ]; then
   long_prompt "Create bash_completion file for longshore."
   if [ "$reply" = "y" ]; then
     if [ ! -d "$longshore_config_path" ]; then
-      mkdir -p "$longshore_config_path" && chown longshore:longshore "$longshore_config_path"
+      mkdir -p "$longshore_config_path" && chown "${LONG_HOST_USER}:${LONG_HOST_USER}" "$longshore_config_path"
     fi
     if [ ! -d "$bash_completion_path" ]; then
-      mkdir -p "$bash_completion_path" && chown longshore:longshore "$bash_completion_path"
+      mkdir -p "$bash_completion_path" && chown "${LONG_HOST_USER}:${LONG_HOST_USER}" "$bash_completion_path"
     fi
     ln -s "${LONG_SHARE}/bash-completion/longshore" "${bash_completion_path}/longshore"
-    chown --no-dereference longshore:longshore "${bash_completion_path}/longshore"
-  fi
-fi
-
-# Ensure auto-complete is enabled in ~/.profile
-if ! grep '~/.config/bash_completion.d/' "$bash_profile_path" > /dev/null; then
-   long_prompt "Ensure bash completion is enabled."
-  if [ "$reply" = "y" ]; then
-    echo 'for file in $(find ~/.config/bash_completion.d/ -type f -o -type l); do' >> "$bash_profile_path"
-    echo '  source "$file"' >> "$bash_profile_path"
-    echo 'done' >> "$bash_profile_path"
+    chown --no-dereference "${LONG_HOST_USER}:${LONG_HOST_USER}" "${bash_completion_path}/longshore"
   fi
 fi
