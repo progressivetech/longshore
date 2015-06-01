@@ -88,7 +88,7 @@ if ! groups "$LONG_HOST_USER" | grep docker >/dev/null; then
 fi
 longshore_sudo_file=$(mktemp)
 cat "${LONG_SHARE}/templates/longshore.sudoers" | \
-  sed "s/LONG_HOST_USER/$LONG_HOST_USER/" > \
+  sed "s/LONG_HOST_USER/$LONG_HOST_USER/g" > \
   "$longshore_sudo_file"
 longshore_sudo_file_target=/etc/sudoers.d/longshore
 
@@ -221,7 +221,7 @@ if [ -n "$LONG_TLS_KEY_PATH" ]; then
 fi
 
 # Set autocomplete if necessary
-longshore_config_path=~"$LONG_HOST_USER"/.config
+longshore_config_path="/home/${LONG_HOST_USER}"/.config
 bash_completion_path="${longshore_config_path}/bash_completion.d"
 if [ ! -d "$bash_completion_path" ] || [ ! -f "${bash_completion_path}/longshore" ]; then
   long_prompt "Create bash_completion file for longshore."
