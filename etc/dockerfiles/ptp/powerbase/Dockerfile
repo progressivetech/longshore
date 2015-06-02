@@ -19,6 +19,7 @@ RUN apt-get update && \
     mysql-client \
     esmtp-run \
     vim-tiny \
+    ca-certificates \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
