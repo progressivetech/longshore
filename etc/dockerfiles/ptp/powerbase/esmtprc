@@ -1,8 +1,7 @@
 # Config file for ESMTP sendmail
 
 # The SMTP host and service (port)
-# Note: dockerhost should be defined in /etc/hosts
-hostname=dockerhost:25
+hostname=bulk.ourpowerbase.net:25
 
 # Whether to use Starttls
 starttls=disabled

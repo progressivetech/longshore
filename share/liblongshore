@@ -1155,7 +1155,7 @@ long_setup_site() {
   # configured by default) and the dockerhost:2525 on dev sites, which expects
   # the dev host to be running the mail container.
   if [ "$LONG_LIVE" = "n" ]; then
-    docker exec -i -t "$site" /bin/sed -i 's/^hostname=dockerhost:25$/hostname=dockerhost:2525/' \
+    docker exec -i -t "$site" /bin/sed -i 's/^hostname=bulk.ourpowerbase.net:25$/hostname=dockerhost:2525/' \
       /etc/esmtprc
   fi
 
