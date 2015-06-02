@@ -4,7 +4,7 @@
 # Exit on error (-e)
 temp=$(mktemp -d)
 echo "Running debootstrap"
-debootstrap --variant=minbase jessie "$temp" http://mirror.cc.columbia.edu/debian
+debootstrap --variant=minbase jessie "$temp" http://http.us.debian.org/debian/ 
 echo "Importing into docker"
 cd "$temp" && tar -c . | docker import - my-jessie 
 cd
