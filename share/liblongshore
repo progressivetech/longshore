@@ -104,8 +104,7 @@ long_prompt() {
 long_debug() {
   local debug_msg="$1"
   local debug_subject="$2"
-  local deubg_pid="$!"
-  if grep -q cron /proc/"$debug_pid"/cmdline &> /dev/null; then
+  if [ -z "$PS1" ]; then
     echo "$debug_msg" | mail -s "$debug_subj" "$LONG_DEBUG_EMAIL"
   else
     echo "$debug_subject" >&2
@@ -175,6 +174,9 @@ long_pwgen() {
 long_log() {
   local log_msg="$1"
   local log_level="$2"
+  if [ -z "$log_level" ]; then
+    log_level=info
+  fi
   shift 2
   local log_out=n
   # Always output critical
@@ -195,6 +197,8 @@ long_log() {
   if [ "$log_out" = "y" ]; then
     printf "$log_msg\n" "$@"
   fi
+  # Always log to syslog
+  printf "$log_msg" "$@" | logger -t longshore
 }
 
 # Save the generic tls configuration for all sites
@@ -1485,4 +1489,20 @@ long_create_dns() {
     echo "$out"
     long_die "Failed to create DNS record."
   fi
+}
+
+# Dump the database for the given site. By default, use the sites backup
+# directory, or specify an alternate location. The backup will be
+# compressed.
+long_dump_database() {
+  local site="$1"
+  local dest="$2"
+
+  if [ -z "$dest" ]; then
+    dest="${LONG_SRV}/services/sites/${site}/backup/${site}.sql.gz"
+  fi
+  mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
+
+  # All databases are named after the site name.
+  mysqldump --defaults-file="$mycnf" "$site" | gzip --to-stdout > "$dest"
 }

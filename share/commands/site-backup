@@ -1,0 +1,87 @@
+#!/bin/bash
+
+ptp_usage_message="usage: $(basename $0) site-backup [<site>] [<name>]
+Create a backup given site or all sites that this frontend manages.
+
+Arguments
+  <site> - Optionally pass the site if you only want that site backed up.
+  <name> - Optionally pass the base name you would like the backup file
+  to use. Defaults to 'daily' to produce <site>.daily.tar.gz."
+
+long_check_args "$2" "$#" 0
+
+# This scripts is designed to be run by a daily cron job.  It makes a backup
+# called site.daily.tar.gz. In addition, One the first of every month it makes
+# a timestamped backup designed to stay around for 1 year.  After a year, we
+# should have 12 backups of each database.  Backups older than one year are
+# deleted
+
+backup_dir="${LONG_SRV}/backups"
+[ ! -d "$backup_dir" ] && mkdir "$backup_dir"
+
+# delete all backups older than one year
+for file in $(find "${backup_dir}/" -mtime +365); do
+  long_log "Deleting %s because it is more than a year old." info "$file"
+  rm "$file"
+done
+
+# Run for all local aegir sites
+hostname=$(hostname)
+
+if [ -n "$2" ]; then
+  sites="$2"
+else
+  long_set_sites "$hostname"
+  sites="$LONG_SITES"
+fi
+
+if [ -n "$3" ]; then
+  base_name="$3"
+  base_test=$(echo "$base_name" | tr -d "[:punct:]")
+  if [ "$base_name" != "$base_test" ]; then
+    long_die "Please don't use punctuation in base name."
+  fi
+else
+  base_name=daily
+fi
+
+day=$(date +%d)
+date=$(date +%Y%m%d)
+
+for site in $sites; do
+  long_log "Starting backup of %s." info "$site"
+  # Clear caches to reduce database backup size.
+  long_exec_drush_cmd "$site" "cc all"
+
+  long_log "Dumping the database."
+  long_dump_database "$site"
+
+  # Create temp file to store backup. We won't move it into place until
+  # we know it was successful to avoid overwriting a good backup with a
+  # bad backup.
+  target=$(mktemp -t XXXXXXXXX.tar.gz)
+  source_dir="${LONG_SRV}/services/sites/"
+  long_log "Backing up %s to %s." info "$site" "$target"
+  out=$(tar -czf "$target" --directory "$source_dir" \
+    --exclude "${site}/drupal/files/civicrm/templates_c/*" \
+    --exclude "${site}/drupal/files/css/*" \
+    --exclude "${site}/drupal/files/js/*" \
+    "$site" \
+    2>&1)
+  if [ "$?" -eq "0" ]; then
+    long_log "Back up of %s successful." info "$site"
+    # If backup was successful... move into the backups directory.
+    daily_path="$backup_dir/${site}.${base_name}.tar.gz"
+    long_log "Moving %s to %s." info "$target" "$daily_path"
+    mv "$target" "$daily_path"
+    if [ "$day" == "01" ]; then
+      monthly_path="$backup_dir/${site}.$date.tar.gz"
+      long_log "Creating monthly backup of %s to %s" "$site" "$monthly_path"
+      cp "$daily_path" "$monthly_path"
+    fi
+  else
+    [ -f "$target" ] && rm "$target"
+    long_log "tar command failed for %s (%s)" error "$site" "$out"
+    long_debug "$out" "aegir backup failure: $site"
+  fi
+done
