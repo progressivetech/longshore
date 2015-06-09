@@ -1467,14 +1467,19 @@ long_create_dns() {
   if [ "$?" != 0 ]; then
     long_die "Error checking dns (%s). Output: %s" 1 "$fqdn" "$exists"
   fi
-  if [ -n "$exists" ]; then
-    long_log "The DNS has already been created, it is %s." info "$exists"
-    return
-  fi
+  
   [ -z "$api_password" ] && long_die "Please put your red api password in %s." 1 "$red_api_password_path"
   [ -z "$LONG_IP_ADDR" ] && long_die "The host IP address is not set in longshore.conf"
 
-  
+  if [ -n "$exists" ]; then
+    if [ "$exists" = "$LONG_IP_ADDR" ]; then
+      long_log "The DNS has already been created and has the same value (%s)." info "$exists"
+      return
+    else
+      long_log "Updating IP address from %s to %s." info "$exits" "$LONG_IP_ADDR"
+    fi
+  fi
+
   post="action=insert&output=text&object=item&set:service_id=${service_id}&set:hosting_order_id=${hosting_order_id}&set:dns_fqdn=${fqdn}&set:dns_type=a&set:dns_ttl=${dns_ttl}&set:dns_ip=${LONG_IP_ADDR}&user_name=$api_login&user_pass=$api_password&output_format=text"
 
   out=$(wget -q --post-data="$post" -O- "$url")
