@@ -1446,6 +1446,7 @@ long_set_sites() {
   LONG_SITES=$(ls "${LONG_SRV}/services/sites")
 }
 
+# Either create or update a DNS record.
 long_create_dns() {
   local site="$1"
   local api_login=pb-api-user
@@ -1472,28 +1473,28 @@ long_create_dns() {
   [ -z "$LONG_IP_ADDR" ] && long_die "The host IP address is not set in longshore.conf"
 
   if [ -n "$exists" ]; then
-    if [ "$exists" = "$LONG_IP_ADDR" ]; then
+    # if [ "$exists" = "$LONG_IP_ADDR" ]; then
+    if [ 1 = 2 ]; then
       long_log "The DNS has already been created and has the same value (%s)." info "$exists"
-      return
+      # return
     else
-      long_log "Updating IP address from %s to %s." info "$exits" "$LONG_IP_ADDR"
+      long_log "Updating IP address from %s to %s." info "$exists" "$LONG_IP_ADDR"
 
       # First, get the item id.
-      item_id=$(wget -q "--post-data=action=select&object=item&where:dns_fqdn=${site}&user_name=${api_login}&where:service_id=${service_id}&where:hosting_order_id=${hosting_order_id}&user_pass=${api_password}&output_format=text" -O- "$url" | egrep -o '"item_id":[0-9]+' | cut -d: -f2)
+      item_id=$(wget -q "--post-data=action=select&object=item&where:dns_fqdn=${site}.ourpowerbase.net&user_name=${api_login}&where:service_id=${service_id}&where:hosting_order_id=${hosting_order_id}&user_pass=${api_password}&output_format=text" -O- "$url" | egrep -o '"item_id":[0-9]+' | cut -d: -f2)
 
       if [ -z "$item_id" ]; then 
         long_die "Failed to get existing item_id."
         return
       else
-        echo "Item id is $item_id"
+        post="action=update&output=text&object=item&where:item_id=${item_id}&where:service_id=${service_id}&where:hosting_order_id=${hosting_order_id}&set:dns_ip=${LONG_IP_ADDR}&user_name=$api_login&user_pass=$api_password&output_format=text"
       fi
     fi
+  else
+    post="action=insert&output=text&object=item&set:service_id=${service_id}&set:hosting_order_id=${hosting_order_id}&set:dns_fqdn=${fqdn}&set:dns_type=a&set:dns_ttl=${dns_ttl}&set:dns_ip=${LONG_IP_ADDR}&user_name=$api_login&user_pass=$api_password&output_format=text"
   fi
 
-  post="action=insert&output=text&object=item&set:service_id=${service_id}&set:hosting_order_id=${hosting_order_id}&set:dns_fqdn=${fqdn}&set:dns_type=a&set:dns_ttl=${dns_ttl}&set:dns_ip=${LONG_IP_ADDR}&user_name=$api_login&user_pass=$api_password&output_format=text"
-
   out=$(wget -q --post-data="$post" -O- "$url")
-
   if [ "$?" -ne "0" ]; then
     long_die "Failed to use wget when setting the DNS entry."
   fi
