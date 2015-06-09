@@ -369,19 +369,6 @@ long_container_up() {
   fi
 }
 
-# Stop (if necessary) and delete (if necessary) the named container
-long_container_destroy() {
-  local name="$1"
-  if long_container_exists "$name"; then
-    if long_container_running "$name"; then
-      long_log "Stopping container (%s)" info "$name"
-      docker stop "$name" 
-    fi
-    long_log "Removing container (%s)" info "$name"
-    docker rm "$name" 
-  fi
-}
-
 # Reload nginx to pickup new configurations
 long_nginx_reload() {
   sudo /etc/init.d/nginx reload
@@ -1310,9 +1297,15 @@ long_destroy_site() {
 
   # Kill the database.
   long_get_db_for_site "$site"
-
   # If no database is configured, this is not an error, just continue.
   if [ -n "$LONG_DB_HOST" ] && [ "$LONG_DB_HOST" != "<no value>" ]; then
+
+    # Ensure the db container is running so we can drop the database.
+    long_container_up mysql "$LONG_DB_HOST"
+    while ! long_up_long_enough "$LONG_DB_HOST" 30; do
+      long_log "Waiting 10 more seconds to ensure database has started." info
+      sleep 10 
+    done
     temp=$(mktemp)
     echo "DROP DATABASE IF EXISTS \`$site\`" > "$temp"
     long_log "Dropping database (%s) on host (%s)." info "$site" "$LONG_DB_HOST"
