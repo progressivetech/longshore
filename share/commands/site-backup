@@ -50,6 +50,14 @@ date=$(date +%Y%m%d)
 
 for site in $sites; do
   long_log "Starting backup of %s." info "$site"
+
+  # If the site is not running, don't backup (otherwise we might end up
+  # with an empty database, if the database container is not running.
+  if ! long_container_running "$site"; then
+    long_log "Not backing up %s because it is not running." info "$site"
+    continue
+  fi
+
   # Clear caches to reduce database backup size.
   long_exec_drush_cmd "$site" "cc all"
 

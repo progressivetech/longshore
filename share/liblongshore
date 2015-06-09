@@ -1497,12 +1497,23 @@ long_create_dns() {
 long_dump_database() {
   local site="$1"
   local dest="$2"
+  local temp=$(mktemp)
+  local out
 
   if [ -z "$dest" ]; then
     dest="${LONG_SRV}/services/sites/${site}/backup/${site}.sql.gz"
   fi
   mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
 
-  # All databases are named after the site name.
-  mysqldump --defaults-file="$mycnf" "$site" | gzip --to-stdout > "$dest"
+  # All databases are named after the site name. Set pipefail so if 
+  # mysqldump fails but gzip succeeds we get an error message.
+  out=$(set -o pipefail && mysqldump --defaults-file="$mycnf" "$site" | gzip --to-stdout > "$temp")
+  
+  # Only move into place if it was successful.
+  if [ "$?" = 0 ]; then
+    mv "$temp" "$dest"
+  else
+    rm "$temp"
+    long_log "Failed to dump database for site %s. Error:" error "$site"
+  fi
 }
