@@ -1,0 +1,56 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-convert <site> [<db>] [<platform>]
+Setup new site based on an aegir backup file. You have to first put the
+site in maintenance mode and then backup it up via aegir.
+
+Arguments
+  <site> - The site to fetch the data for.
+  <db> - The db container to use.
+  <platform> - The platform to use."
+
+long_check_args "$2" "$#" 2
+
+site="$2"
+backup="$3"
+db="$4"
+platform="$5"
+
+[ -z "$db" ] && db="$LONG_DEFAULT_DB"
+[ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
+
+[ ! -f "$backup" ] && long_die "Backup file doesn't exist."
+
+temp=$(mktemp -d)
+cd "$temp"
+long_log "Unpacking backup file." info
+tar -xzf "$backup"
+
+long_log "Making basic directory structure." info
+
+site_dir="${LONG_SRV}/services/sites/${site}"
+mkdir -p "${site_dir}/drupal"
+mkdir "${site_dir}/backup"
+
+long_log "Putting database dump in place." info
+cat ./database.sql | gzip --to-stdout > "${site_dir}/backup/${site}.sql.gz"
+
+long_log "Removing extensions directory." info
+rm -rf custom-civicrm/extensions
+
+long_log "Putting directories in place." info
+mv custom-civicrm themes modules files private "${site_dir}/drupal/"
+
+long_log "Removing temp directory"
+rm -rf "$temp"
+
+long_log "Provisioning site via longshore"
+long_create_container site "$site" "$db" "$platform"
+docker start "$site"
+long_create_dns "$site"
+long_setup_site "$site"
+long_configure_site "$site"
+long_nginx_reload
+
+
+
