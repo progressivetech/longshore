@@ -25,7 +25,7 @@ for file in $(find "${backup_dir}/" -mtime +365); do
   rm "$file"
 done
 
-# Run for all local aegir sites
+# Run for all local sites
 hostname=$(hostname)
 
 if [ -n "$2" ]; then
@@ -90,6 +90,6 @@ for site in $sites; do
   else
     [ -f "$target" ] && rm "$target"
     long_log "tar command failed for %s (%s)" error "$site" "$out"
-    long_debug "$out" "aegir backup failure: $site"
+    long_debug "$out" "backup failure: $site"
   fi
 done
