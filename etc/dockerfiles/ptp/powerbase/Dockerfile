@@ -20,6 +20,7 @@ RUN apt-get update && \
     esmtp-run \
     vim-tiny \
     ca-certificates \
+    iputils-ping \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
