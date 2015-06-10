@@ -1,0 +1,34 @@
+#!/bin/bash
+
+ptp_usage_message="usage: $(basename $0) site-cron [<site>]
+Runs both the drupal and CiviCRM cron job on the specified site or all
+sites on this frontend of site is ommitted.
+
+Arguments
+  <site> - Optionally pass the site if you only want to run cron on that site."
+
+long_check_args "$2" "$#" 0
+
+# This scripts is designed to be run by a cron job that runs every 10 minutes.
+
+
+# Run for all local sites
+hostname=$(hostname)
+
+if [ -n "$2" ]; then
+  sites="$2"
+else
+  long_set_sites "$hostname"
+  sites="$LONG_SITES"
+fi
+
+for site in $sites; do
+  # If the site is not running we can't run cron.
+  if ! long_container_running "$site"; then
+    long_log "Not executing cron for %s because it is not running." info "$site"
+    continue
+  fi
+
+  long_exec_drush_cmd "$site" "core-cron"
+  long_exec_drush_cmd "$site" "-u 1 -r /var/www/powerbase civicrm-api job.execute auth=0 -y"
+done

@@ -620,13 +620,19 @@ long_exec_drush_cmd() {
   site="$1"
   cmd="$2"
 
+  # Set drush quiet setting. Default is not to be quiet.
+  quiet=
+  if [ "$LONG_LOG_LEVEL" = "error" ]; then
+    # Make drush more quiet.
+    quiet=-q
+  fi
   long_init_site_tmp_var "$site"
   local file=$(mktemp "${LONG_SITE_TMP}/drupal.XXXXXXX");
   chmod 755 "$file"
   printf "#!/bin/bash\n" > "$file"
   printf "export LONG_LIVE=$LONG_LIVE\n" >> "$file"
   printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
-  printf "drush $2\n" >> "$file"
+  printf "drush $quiet $2\n" >> "$file"
   long_exec_in_container "$site" "$file"
   rm "$file"
 }
