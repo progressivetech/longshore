@@ -811,17 +811,7 @@ long_create_site_directories() {
 
     fi
   done
-
-  # One more directory should be readable by the web user, but the web
-  # user should not be able to get a directory listing. We can do that
-  # by removing execute privileges, but keeping read privileges.
-  mkdir -p "${dir}/drupal/files/civicrm/contribute"
-  perms=$(stat -c "%A" "${dir}/drupal/files/civicrm/contribute")
-  if [ "$perms" != "drwxr-xr--" ]; then
-    chmod o-x "${dir}/drupal/files/civicrm/contribute"
-    chmod g-s "${dir}/drupal/files/civicrm/contribute"
-  fi
-
+  
   # One exception: private/temp should be writable by the group ($LONG_HOST_USER)
   # so that the host can create temporary files to be deleted after being
   # executed in the container. See the long_exec_in_container function.
