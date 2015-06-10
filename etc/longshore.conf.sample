@@ -83,3 +83,10 @@ LONG_MEMORY_LIMIT="-m 8GB"
 # has proper permissions.
 LONG_HOST_USER=longshore
 
+# Set the value that error reporting should be set to. Usually either 
+# E_ERROR on production or E_ALL on dev.
+LONG_ERROR_REPORTING=E_ERROR
+
+# Set our Yahoo api key values
+LONG_YAHOO_BOSS_API_KEY="dj0yJmk9dVRNaXlBU29aMXpBJmQ9WVdrOWJUWXlRVGwwTXpBbWNHbzlNVGcxTURZNU1URTJNZy0tJnM9Y29uc3VtZXJzZWNyZXQmeD01YQ--"
+LONG_BOSS_API_SECRET="ffe72110aa125d653c411e64c647486d4156a72a"

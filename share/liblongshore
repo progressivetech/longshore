@@ -609,6 +609,7 @@ long_create_civicrm_settings() {
   # Ensure proper permissions
   local target="${LONG_SRV}/services/sites/${site}/drupal/civicrm.settings.php"
   sudo chown "$LONG_HOST_USER" "$target"
+  sudo chgrp longshore-php "$target"
   chmod 0640 "$target"
 
   # Remove write access.
@@ -1159,6 +1160,33 @@ long_configure_site() {
 
   # Set PTP configurations. 
   long_exec_drush_cmd "$site" "ptp-configure"
+
+  # Ensure CIVICRM_MAIL_SMARTY is configured so we can use smarty in our
+  # mail templates.
+  local drupal="${LONG_SRV}/services/sites/${site}/drupal"
+  local civicrm_settings="${drupal}/civicrm.settings.php"
+  if ! grep "CIVICRM_MAIL_SMARTY', 1" "$civicrm_settings" > /dev/null; then
+    sed -i "s/'CIVICRM_MAIL_SMARTY', 0/'CIVICRM_MAIL_SMARTY', 1/" "$civicrm_settings"
+    # Ensure we preserve the proper permissions.
+    sudo chgrp longshore-php "$civicrm_settings"
+    chmod 0640 "$civicrm_settings"
+  fi
+
+  # Now ensure we are including our local.settings.php file in settings.php
+  local drupal_settings="${drupal}/settings.php"
+  if ! grep local.settings.php "$drupal_settings" > /dev/null; then
+    cat "${LONG_SHARE}/templates/include.local.settings.php" >> "$drupal_settings"
+  fi
+
+  # Populate the local.settings.php
+  local local_settings="${drupal}/local.settings.php"
+  if [ ! -f "$local_settings" ]; then
+    cat "${LONG_SHARE}/templates/local.settings.php" | sed \
+      -e "s/LONG_ERROR_REPORTING/$LONG_ERROR_REPORTING/" \
+      -e "s/LONG_YAHOO_BOSS_API_KEY/$LONG_YAHOO_BOSS_API_KEY/" \
+      -e "s/LONG_YAHOO_BOSS_API_SECRET/$LONG_YAHOO_BOSS_API_SECRET/" \
+      > "${drupal}/local.settings.php"
+  fi
 
   long_configure_imap "$site"
 
