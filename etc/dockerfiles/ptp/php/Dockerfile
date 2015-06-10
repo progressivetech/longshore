@@ -16,6 +16,9 @@ RUN apt-get update && \
 # Listen on 127.0.0.1 
 RUN sed -i 's#listen = /var/run/php5-fpm.sock#listen = 9000#' /etc/php5/fpm/pool.d/www.conf
 
+# Log errors to stderr so we get them with docker logs.
+RUN sed -i 's#error_log = /var/log/php5-fpm.log#error_log = /dev/stderr#' /etc/php5/fpm/pool.d/www.conf
+
 COPY ./docker-entrypoint.sh /entrypoint.sh
 
 EXPOSE 9000
