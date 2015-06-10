@@ -21,8 +21,6 @@ platform="$5"
 
 [ ! -f "$backup" ] && long_die "Backup file doesn't exist."
 
-long_log "Changing DNS record."
-long_create_dns "$site"
 
 long_log "Unpacking backup file." info
 temp=$(mktemp -d)
@@ -63,5 +61,7 @@ long_nginx_reload
 # Lastly, ensure we are not in maintenance mode any more.
 long_exec_drush_cmd "$site" "vset maintenance_mode 0"
 
+long_log "Changing DNS record."
+long_create_dns "$site"
 
 
