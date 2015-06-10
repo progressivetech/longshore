@@ -51,6 +51,13 @@ cd "${LONG_SRV}"
 # potentially huge directory left around in tmp.
 rm -rf "$temp"
 
+# Before we create the container, we have to ensure that all the files in
+# private and files are world readable and executeable. long_create_container
+# will ensure that the proper permissions are set, but it expects all files to
+# be world-readable and that's not necessarily the case when coming from aegir.
+chmod -R o+xr "${site_dir}/drupal/file"
+chmod -R o+xr "${site_dir}/drupal/private"
+
 long_log "Provisioning site via longshore"
 long_create_container site "$site" "$db" "$platform"
 docker start "$site"
