@@ -42,6 +42,12 @@ long_log "Putting directories in place." info
 mv custom-civicrm themes modules files private "${site_dir}/drupal/"
 
 long_log "Removing temp directory"
+
+# Change directories before deleting the temp dir to avoid "getcwd()" errors.
+cd "${LONG_SRV}"
+
+# Delete now - we may have an error later and we don't want this 
+# potentially huge directory left around in tmp.
 rm -rf "$temp"
 
 long_log "Provisioning site via longshore"
