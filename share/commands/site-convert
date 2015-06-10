@@ -52,5 +52,8 @@ long_setup_site "$site"
 long_configure_site "$site"
 long_nginx_reload
 
+# Lastly, ensure we are not in maintenance mode any more.
+long_exec_drush_cmd "$site" "vset maintenance_mode 0"
+
 
 
