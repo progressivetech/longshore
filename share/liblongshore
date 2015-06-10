@@ -649,7 +649,7 @@ long_exec_in_container() {
   if [ "$dir" = "$LONG_SITE_TMP" ]; then
     cmd="/var/www/powerbase/sites/default/private/temp/$(basename $cmd)"
   fi
-  docker exec -i -t "$site" su -l -c "$cmd" www-data
+  docker exec "$site" su -l -c "$cmd" www-data
 }
 
 # Low lever mysql container creation. Call long_create_container instead
@@ -1143,7 +1143,7 @@ long_setup_site() {
   # configured by default) and the dockerhost:2525 on dev sites, which expects
   # the dev host to be running the mail container.
   if [ "$LONG_LIVE" = "n" ]; then
-    docker exec -i -t "$site" /bin/sed -i 's/^hostname=bulk.ourpowerbase.net:25$/hostname=dockerhost:2525/' \
+    docker exec "$site" /bin/sed -i 's/^hostname=bulk.ourpowerbase.net:25$/hostname=dockerhost:2525/' \
       /etc/esmtprc
   fi
 
