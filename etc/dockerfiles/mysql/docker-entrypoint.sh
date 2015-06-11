@@ -11,8 +11,9 @@ if [ "$1" = 'mysqld' ]; then
     # mysql folders from the host if needed.
     current_uid=$(getent passwd mysql | cut -d: -f3)
     if [ "$current_uid" != "$MYSQL_UID" ]; then
-      printf "Updating UID of mysql user from %s to %s.\n" "$current_uid" "$MYSQL_UID"
+      printf "Updating UID AND GID of mysql user from %s to %s.\n" "$current_uid" "$MYSQL_UID"
       usermod -u "$MYSQL_UID" mysql
+      groupmod -g "$MYSQL_UID" mysql
     fi
   fi
 
