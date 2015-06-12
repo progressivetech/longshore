@@ -246,6 +246,9 @@ fi
 if ! crontab -u "$LONG_HOST_USER" -l | grep site-cron > /dev/null; then
   printf "FYI, site-cron cron job is not set.\n"
 fi
+if ! crontab -u "$LONG_HOST_USER" -l | grep sibling-backup > /dev/null; then
+  printf "FYI, sibling-backup cron job is not set.\n"
+fi
 if ! grep "worker_processes auto;" /etc/nginx/nginx.conf > /dev/null; then
   printf "FYI, 'worker_processes auto;' is not set in /etc/nginx/nginx.conf.\n"
 fi
