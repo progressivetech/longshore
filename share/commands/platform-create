@@ -159,7 +159,7 @@ if [[ $(echo "$siblings" | wc -w) -gt "1" ]] && [ "$sync" = "y" ]; then
       else
         # Now finish the process on the remote sibling
         long_log "Running platform-create on remote sibling."
-        ssh longshore@${sibling}.mayfirst.org /srv/longshore/bin/longshore \
+        ssh -t longshore@${sibling}.mayfirst.org /srv/longshore/bin/longshore \
           platform-create "$makefile_path" "$source_platform_path_temp"
       fi
     done
