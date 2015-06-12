@@ -23,11 +23,11 @@ for itype in $itypes; do
 
   # Create a mysql image.
   if [ "$itype" = "ptp-mysql" ]; then
-    long_image_create ptp-mysql ${LONG_ETC}/dockerfiles/ptp/mysql
+    long_image_create ptp-mysql ${LONG_ETC}/dockerfiles/mysql
   elif [ "$itype" = "ptp-php" ]; then
-    long_image_create  ptp-php ${LONG_ETC}/dockerfiles/ptp/php
+    long_image_create  ptp-php ${LONG_ETC}/dockerfiles/php
   elif [ "$itype" = "ptp-powerbase" ]; then
-    long_image_create  ptp-powerbase ${LONG_ETC}/dockerfiles/ptp/powerbase
+    long_image_create  ptp-powerbase ${LONG_ETC}/dockerfiles/powerbase
   elif [ "$itype" = "my-jessie" ]; then
     long_image_create my-jessie 
   else
