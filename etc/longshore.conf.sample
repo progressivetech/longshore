@@ -12,9 +12,9 @@ LONG_SRV=/srv/longshore
 # Path to etc files (standard /etc/longshore)
 LONG_ETC=/srv/longshore/etc
 
-# FRONTENDS: frontend-kvm:host:number
-# the number is used in the phpmyAdmin URLs (e.g. p1.ourpowerbase.net)
-LONG_LIVE_FRONTENDS="nicolas:ramona:1 juana:severo:2 olivera:victoria:3 chico:gabriela:4"
+# SIBLINGS list any sibling servers  
+#LONG_SIBLINGS="nicolas juana olivera chico"
+LONG_SIBLINGS=""
 
 LONG_DEBUG_EMAIL="jamie@progressivetech.org"
 LONG_DEFAULT_LOG_LEVEL=error

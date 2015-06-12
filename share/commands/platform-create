@@ -1,15 +1,38 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) <path>
-Build a new platform based on the given makefile.
+long_usage_message="usage: $(basename $0) platform-create <make-file-path> [<built-platform-path>]
+Build a new platform based on the given makefile and copy it into place.
+Optionally, copy the built platform to other servers.
 
 Arguments:
- <path> path to a drush make file." 
+ <make-file-path> path to a drush make file.
+ <built-platform-path> - optionally pass the path of an already built platform
+   in which case we won't drush make it from scratch, we will use the 
+   already built one. NOTE: you must still pass the make-file-path even 
+   if it's not being used so we can determine the path of the platform.
+   Also NOTE: the built-platform-path will be deleted when we finish.
+   It should be a temporary directory. This option is used when copying
+   a built platform to other servers." 
 
 long_check_args "$2" "$#" 1
 
 base=${LONG_SRV}/platforms
 makefile_path="$2"
+source_platform_path_temp="$3"
+
+# By default, we should prompt the user to sync the platform to other servers.
+sync=y
+
+if [ -n "$source_platform_path_temp" ]; then
+  # If we are passing a build platform path, do some sanity checking.
+  [ -d "$source_platform_path_temp" ] || long_die "Can't find build-platform-path."
+  [ -f "${source_platform_path_temp}/index.php" ] || long_die "The source-platform-path doesn't seem valid."
+
+  # The typical use case when we are passing a build platform path is that
+  # we are in the process of being sync'ed from another server. So, don't
+  # bother prompting to sync on this run.
+  sync=n
+fi
 
 mkdir -p "$base"
 
@@ -26,78 +49,82 @@ fi
 
 makefile=$(basename "$makefile_path")
 source_platform_path="${base}/${makefile}"
-source_platform_path_temp=$(mktemp -d --tmpdir="$base")
 
-long_log "Creating platform." info
-cd "$source_platform_path_temp"
-$LONG_DRUSH -q -y make "$makefile_path"
+# If we don't already have a built platform path, then build one.
+if [ -z "$source_platform_path_temp" ]; then
+  source_platform_path_temp=$(mktemp -d --tmpdir="$base")
 
-# Do a sanity check. drush make will not leave any files in the target
-# if just one download failed.
+  long_log "Creating platform." info
+  cd "$source_platform_path_temp"
+  $LONG_DRUSH -q -y make "$makefile_path"
 
-if [ ! -f "${source_platform_path_temp}/index.php" ]; then
-  long_die "Failed to make the site!"
+  # Do a sanity check. drush make will not leave any files in the target
+  # if just one download failed.
+
+  if [ ! -f "${source_platform_path_temp}/index.php" ]; then
+    long_die "Failed to make the site!"
+  fi
+
+  # Hackish way to get symlink to wkhtmltopdf - which is needed if anyone
+  # enables the print module
+  ln -s /usr/bin/wkhtmltopdf "${source_platform_path_temp}/sites/all/libraries/"
+
+  # The CiviCRM extensions directory is in sites/all/extensions, which is
+  # sensible. However, CiviCRM will want to create a tmp and cache directory
+  # in that directory to keep information about the extensions for the given
+  # site. The php user can't write to this directory, so we create a symlink
+  # to the default sites directory where the PHP user can write.
+  ln -s ../../../default/private/extensions/tmp  \
+    "${source_platform_path_temp}/sites/all/extensions/tmp"
+  ln -s ../../../default/private/extensions/cache  \
+    "${source_platform_path_temp}/sites/all/extensions/cache"
+
+  long_log "Running GenCode.php..." info
+  target_path="${source_platform_path_temp}/sites/all/modules/civicrm/xml"
+  [ ! -d "$target_path" ] && long_die "The xml directory on the platform doesn't exist."
+  cd "$target_path"
+  php GenCode.php > /dev/null
+
+  delete="sites/all/modules/civicrm/bin/setup.sh
+  sites/all/modules/civicrm/distmaker
+  sites/all/modules/civicrm/.gitignore
+  sites/all/modules/civicrm/header-afl.txt
+  sites/all/modules/civicrm/header-agpl.txt
+  sites/all/modules/civicrm/header.sql
+  sites/all/modules/civicrm/header.tpl
+  sites/all/modules/civicrm/header.txt
+  sites/all/modules/civicrm/packages/amavisd-new
+  sites/all/modules/civicrm/packages/git-footnote
+  sites/all/modules/civicrm/packages/_ORIGINAL_
+  sites/all/modules/civicrm/packages/PhpDocumentor
+  sites/all/modules/civicrm/packages/PHPUnit
+  sites/all/modules/civicrm/packages/SeleniumRC
+  sites/all/modules/civicrm/packages/SymfonyComponents
+  sites/all/modules/civicrm/sql/civicrm_arms_sample_data.sql
+  sites/all/modules/civicrm/sql/GenerateData.php
+  sites/all/modules/civicrm/sql/GenerateData.README
+  sites/all/modules/civicrm/sql/GenerateGroups.php
+  sites/all/modules/civicrm/sql/GenerateMailing.php
+  sites/all/modules/civicrm/sql/GenerateReportData.php
+  sites/all/modules/civicrm/sql/README.txt
+  sites/all/modules/civicrm/sql/sample_data_pl.xml
+  sites/all/modules/civicrm/sql/sample_data.xml
+  sites/all/modules/civicrm/sql/test_data.mysql
+  sites/all/modules/civicrm/sql/test_data_second_domain.mysql
+  sites/all/modules/civicrm/sql/trigger.mysql
+  sites/all/modules/civicrm/sql/upgrade_pcm.mysql
+  sites/all/modules/civicrm/sql/webtest_data.mysql
+  sites/all/modules/civicrm/sql/zipcodes.mysql
+  sites/all/modules/civicrm/tests
+  sites/all/modules/civicrm/tools
+  sites/all/modules/civicrm/xml"
+
+  long_log "Deleting un-needed source files." info
+  cd "$source_platform_path_temp"
+  for file in $delete; do
+    [ -e "$file" ] && rm -rf "$file"
+  done
 fi
-
-# Hackish way to get symlink to wkhtmltopdf - which is needed if anyone
-# enables the print module
-ln -s /usr/bin/wkhtmltopdf "${source_platform_path_temp}/sites/all/libraries/"
-
-# The CiviCRM extensions directory is in sites/all/extensions, which is
-# sensible. However, CiviCRM will want to create a tmp and cache directory
-# in that directory to keep information about the extensions for the given
-# site. The php user can't write to this directory, so we create a symlink
-# to the default sites directory where the PHP user can write.
-ln -s ../../../default/private/extensions/tmp  \
-  "${source_platform_path_temp}/sites/all/extensions/tmp"
-ln -s ../../../default/private/extensions/cache  \
-  "${source_platform_path_temp}/sites/all/extensions/cache"
-
-long_log "Running GenCode.php..." info
-target_path="${source_platform_path_temp}/sites/all/modules/civicrm/xml"
-[ ! -d "$target_path" ] && long_die "The xml directory on the platform doesn't exist."
-cd "$target_path"
-php GenCode.php > /dev/null
-
-delete="sites/all/modules/civicrm/bin/setup.sh
-sites/all/modules/civicrm/distmaker
-sites/all/modules/civicrm/.gitignore
-sites/all/modules/civicrm/header-afl.txt
-sites/all/modules/civicrm/header-agpl.txt
-sites/all/modules/civicrm/header.sql
-sites/all/modules/civicrm/header.tpl
-sites/all/modules/civicrm/header.txt
-sites/all/modules/civicrm/packages/amavisd-new
-sites/all/modules/civicrm/packages/git-footnote
-sites/all/modules/civicrm/packages/_ORIGINAL_
-sites/all/modules/civicrm/packages/PhpDocumentor
-sites/all/modules/civicrm/packages/PHPUnit
-sites/all/modules/civicrm/packages/SeleniumRC
-sites/all/modules/civicrm/packages/SymfonyComponents
-sites/all/modules/civicrm/sql/civicrm_arms_sample_data.sql
-sites/all/modules/civicrm/sql/GenerateData.php
-sites/all/modules/civicrm/sql/GenerateData.README
-sites/all/modules/civicrm/sql/GenerateGroups.php
-sites/all/modules/civicrm/sql/GenerateMailing.php
-sites/all/modules/civicrm/sql/GenerateReportData.php
-sites/all/modules/civicrm/sql/README.txt
-sites/all/modules/civicrm/sql/sample_data_pl.xml
-sites/all/modules/civicrm/sql/sample_data.xml
-sites/all/modules/civicrm/sql/test_data.mysql
-sites/all/modules/civicrm/sql/test_data_second_domain.mysql
-sites/all/modules/civicrm/sql/trigger.mysql
-sites/all/modules/civicrm/sql/upgrade_pcm.mysql
-sites/all/modules/civicrm/sql/webtest_data.mysql
-sites/all/modules/civicrm/sql/zipcodes.mysql
-sites/all/modules/civicrm/tests
-sites/all/modules/civicrm/tools
-sites/all/modules/civicrm/xml"
-
-long_log "Deleting un-needed source files." info
-cd "$source_platform_path_temp"
-for file in $delete; do
-  [ -e "$file" ] && rm -rf "$file"
-done
 
 long_log "Moving platform into place." info
 # mktemp will restrict read access - we need to ensure www-data on the
@@ -118,26 +145,28 @@ else
     "${source_platform_path}/" 
 fi
 
-# Clean up.
-rm -rf "$source_platform_path_temp"
-
-# If we have frontends to sync with (that are not us)
-host=$(hostname)
-frontends="$LONG_LIVE_FRONTENDS"
-if [[ $(echo "$frontends" | wc -w) -gt "1" ]]; then
-  long_prompt "rsync'ing platform to other frontends. "
+# If we have other servers to copy to 
+siblings="$LONG_SIBLING"
+if [[ $(echo "$siblings" | wc -w) -gt "1" ]]; then
+  long_prompt "rsync'ing platform to other sibling."
   if [ "$reply" == "y" ]; then
-    for frontend in $frontends; do
-      if [ "$frontend" != "$host" ]; then
-        long_log "rsync'ing to %s\n" "info" "$frontend"
-        rsync -a --delete "${source_platform_path}/" "aegir@${frontend}.mayfirst.org:${source_platform_path}/"
-        if [ "$?" != "0" ]; then
-          long_die "Failed to sync to %s" 1 "$frontend"
-        fi
+    for sibling in $siblings; do
+      long_log "rsync'ing to %s\n" "info" "$sibling"
+      rsync -a "${source_platform_path_tmp}" \
+        "longshore@${sibling}.mayfirst.org:${source_platform_path_tmp}"
+      if [ "$?" != "0" ]; then
+        long_log "Failed to sync to %s" error "$frontend"
+      else
+        # Now finish the process on the remote sibling
+        ssh longshore@${sibling}.mayfirst.org /srv/longshore/bin/longshore \
+          platform-create "$2" "$source_platform_path_tmp"
       fi
     done
   fi
 else
-  long_log "No frontends to rsync with." "info"
+  long_log "No siblings to rsync with." "info"
 fi
+
+# Clean up.
+rm -rf "$source_platform_path_temp"
 
