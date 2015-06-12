@@ -5,7 +5,7 @@ Sync backups from this sibling to the other siblings."
 
 long_check_args "$2" "$#" 0
 host=$(hostname)
-backups_path="/srv/longshore/backups-ptp/${host}"
+backups_path="/srv/longshore/ptp-backups/${host}"
 
 for sibling in $LONG_SIBLINGS; do
   # Skip chico - because we don't send backups to chico to save on
