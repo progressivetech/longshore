@@ -1,0 +1,25 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) sibling-backup
+Sync backups from this sibling to the other siblings."
+
+long_check_args "$2" "$#" 0
+host=$(hostname)
+backups_path="/srv/longshore/backups-ptp/${host}"
+
+for sibling in $LONG_SIBLINGS; do
+  # Skip chico - because we don't send backups to chico to save on
+  # bandwidth costs for chico.
+  [ "$sibling" = "chico" ] && continue
+
+  # For chico, we only send our backups to victoria
+  # to save on bandwidth.
+  bwlimit=
+  if [ "$host" = "chico" ]; then
+    [ "$sibling" != "victoria" ] && continue
+    # Also set a bandwidth limit
+    bwlimit="--bwlimit=200"
+  fi
+  rsync -a $bwlimit --delete --exclude '*lost+found' "${backups_path}/" ${sibling}.mayfirst.org:"${backups_path}/"
+done
+
