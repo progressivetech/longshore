@@ -236,3 +236,16 @@ if [ ! -d "$bash_completion_path" ] || [ ! -f "${bash_completion_path}/longshore
     chown --no-dereference "${LONG_HOST_USER}:${LONG_HOST_USER}" "${bash_completion_path}/longshore"
   fi
 fi
+
+# Check for some settings that should be set manually.
+
+# Ensure cron job is set.
+if ! crontab -u "$LONG_HOST_USER" -l | grep site-backup > /dev/null; then
+  printf "FYI, site-backup cron job is not set.\n"
+fi
+if ! crontab -u "$LONG_HOST_USER" -l | grep site-cron > /dev/null; then
+  printf "FYI, site-cron cron job is not set.\n"
+fi
+if ! grep "worker_processes auto;" /etc/nginx/nginx.conf > /dev/null; then
+  printf "FYI, 'worker_processes auto;' is not set in /etc/nginx/nginx.conf.\n"
+fi
