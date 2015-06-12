@@ -1,7 +1,7 @@
 #!/bin/bash
 
-ptp_usage_message="usage: $(basename $0) dns-create <site>
-Create a DNS A record for the given site. 
+ptp_usage_message="usage: $(basename $0) site-dns <site>
+Create or update a DNS A record for the given site. 
 
 Arguments
   <site> - The site you want to create the IP address for, e.g. ptp"

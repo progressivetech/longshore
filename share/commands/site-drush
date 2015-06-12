@@ -1,6 +1,6 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) drush <site> <command>
+long_usage_message="usage: $(basename $0) site-drush <site> <command>
 Run the specified drush command in the context of the specified site.
 
 Arguments

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) sql-cli <site>
+long_usage_message="usage: $(basename $0) site-sqlc <site>
 Long into the site's database with the site level database permissions.
 
 Arguments
