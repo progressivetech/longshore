@@ -148,18 +148,18 @@ fi
 # If we have other servers to copy to 
 siblings="$LONG_SIBLINGS"
 if [[ $(echo "$siblings" | wc -w) -gt "1" ]]; then
-  long_prompt "rsync'ing platform to other sibling."
+  long_prompt "rsync'ing platform to other siblings."
   if [ "$reply" == "y" ]; then
     for sibling in $siblings; do
       long_log "rsync'ing to %s\n" "info" "$sibling"
-      rsync -a "${source_platform_path_tmp}" \
-        "longshore@${sibling}.mayfirst.org:${source_platform_path_tmp}"
+      rsync -a "${source_platform_path_temp}" \
+        "longshore@${sibling}.mayfirst.org:${source_platform_path_temp}"
       if [ "$?" != "0" ]; then
         long_log "Failed to sync to %s" error "$frontend"
       else
         # Now finish the process on the remote sibling
         ssh longshore@${sibling}.mayfirst.org /srv/longshore/bin/longshore \
-          platform-create "$2" "$source_platform_path_tmp"
+          platform-create "$makefile_path" "$source_platform_path_temp"
       fi
     done
   fi
