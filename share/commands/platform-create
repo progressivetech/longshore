@@ -146,7 +146,7 @@ else
 fi
 
 # If we have other servers to copy to 
-siblings="$LONG_SIBLING"
+siblings="$LONG_SIBLINGS"
 if [[ $(echo "$siblings" | wc -w) -gt "1" ]]; then
   long_prompt "rsync'ing platform to other sibling."
   if [ "$reply" == "y" ]; then
