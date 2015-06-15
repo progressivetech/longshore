@@ -838,7 +838,6 @@ long_create_site_directories() {
   perms=$(stat -c "%A" "${dir}/drupal/private/temp")
   if [ "$perms" != "drwxrwxr-x" ]; then
     chmod 0775 "${dir}/drupal/private/temp"
-    chmod g-s "${dir}/drupal/files/civicrm/contribute"
   fi
 
   # Now that the right modes are set, chown the files to the right users. 
