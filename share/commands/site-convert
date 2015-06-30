@@ -1,11 +1,12 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-convert <site> [<db>] [<platform>]
+long_usage_message="usage: $(basename $0) site-convert <site> <backup-file> [<db>] [<platform>]
 Setup new site based on an aegir backup file. You have to first put the
 site in maintenance mode and then backup it up via aegir.
 
 Arguments
   <site> - The site to fetch the data for.
+  <backup-file> - The aegir backup file to pull from.
   <db> - The db container to use.
   <platform> - The platform to use."
 
