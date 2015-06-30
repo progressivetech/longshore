@@ -32,7 +32,7 @@ long_log "Making basic directory structure." info
 
 site_dir="${LONG_SRV}/services/sites/${site}"
 mkdir -p "${site_dir}/drupal"
-mkdir "${site_dir}/backup"
+mkdir -p "${site_dir}/backup"
 
 long_log "Putting database dump in place." info
 cat ./database.sql | gzip --to-stdout > "${site_dir}/backup/${site}.sql.gz"
@@ -41,7 +41,16 @@ long_log "Removing extensions directory." info
 rm -rf custom-civicrm/extensions
 
 long_log "Putting directories in place." info
-mv custom-civicrm themes modules files private "${site_dir}/drupal/"
+# In case we are running twice, remove the target destination to avoid 
+# errors. We assume the backup is the desired source and anything in 
+# the target is left over from a failed attempt.
+for foo in custom-civicrm themes modules files private; do
+  if [ -d "${site_dir}/drupal/$foo" ]; then
+    long_log "Deleting existing directory (%s)" info "$foo" 
+    rm -rf "${site_dir}/drupal/$foo";
+  fi
+  mv "$foo" "${site_dir}/drupal/"
+done
 
 long_log "Removing temp directory"
 
