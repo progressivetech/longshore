@@ -470,6 +470,17 @@ long_up_long_enough() {
   local site="$1"
   local seconds="$2"
   local site_up_iso=$(docker inspect -f {{.State.StartedAt}} "$site")
+
+  # We have to account for a changing time/date format in docker (see
+  # https://stackoverflow.com/questions/20979320/convert-iso8601-date-to-epoch-format-unix-timestamp)
+  # Version 1.6.2 produces 2015-06-15T18:28:23.399450961Z, which can be passed
+  # to `date` and can be parsed with strtotime. However, version 1.7 (and
+  # presumably versions after that) pass 2015-06-30 11:57:08.70183993 +0000 UTC
+  # which can't be parsed with strtotime.  So, grep for a space and if we find
+  # one, then we have to strip the timezone spec off - which works because when
+  # converting, we pass --utc to say this is a UTC time we are passing in,
+  # which makes the timezone redundant anyway.
+  site_up_iso=$(echo "$site_up_iso" | sed 's/ +0000 UTC//')
   local now_ts=$(date '+%s')
   local site_up_ts=$(date --utc --date "$site_up_iso" '+%s')
   local diff=$(( $now_ts - $site_up_ts ))
