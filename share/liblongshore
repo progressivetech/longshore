@@ -1379,8 +1379,8 @@ long_destroy_site() {
   fi
 
   # Kill the IMAP user on the remote or local host.
-  $LONG_MANAGE_IMAP_USER_CMD delete "${user}-activities" 2>/dev/null
-  $LONG_MANAGE_IMAP_USER_CMD delete "${user}-returns" 2>/dev/null
+  $LONG_MANAGE_IMAP_USER_CMD delete "${site}-activities" 2>/dev/null
+  $LONG_MANAGE_IMAP_USER_CMD delete "${site}-returns" 2>/dev/null
 }
 
 # Access the given site's database via mysql cli
