@@ -47,6 +47,9 @@ long_log "Putting directories in place." info
 for foo in custom-civicrm themes modules files private; do
   if [ -d "${site_dir}/drupal/$foo" ]; then
     long_log "Deleting existing directory (%s)" info "$foo" 
+    if [ "$foo" = "private" -o "$foo" = "files" ]; then
+      sudo chown -R "$LONG_HOST_USER" "${site_dir}/drupal/$foo"
+    fi
     rm -rf "${site_dir}/drupal/$foo";
   fi
   mv "$foo" "${site_dir}/drupal/"
