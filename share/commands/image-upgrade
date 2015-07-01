@@ -1,0 +1,49 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) image-upgrade <type>
+Check all images for upgrades. If there are upgrades, run the
+upgrade, commit the changes and log.
+
+Arguments
+  <type> - The image type you want to upgrade (ptp-mysql, etc.) or 'all'
+    to create all images" 
+
+long_check_args "$2" "$#" 1
+
+itypes="$2"
+
+if [ "$itypes" = "all" ]; then
+  # There seems to be no point in upgrading my-jessie, since those changes
+  # aren't propagated to the containers it is built on... however, it also
+  # doesn't hurt so I'm keeping it.
+  itypes="my-jessie ptp-mysql ptp-php ptp-powerbase"
+fi
+
+state_dir="${LONG_VAR}/state"
+mkdir -p "$state_dir"
+
+for itype in $itypes; do
+  long_log "Checking for upgrade in %s image." info "$itype"
+  packages=$(docker run --name upgrade "$itype" bash -c 'apt-get -qq update && apt-get -qq -s dist-upgrade' | awk '/^Inst/ { print $2 }')
+  # Output to /dev/null to avoid docker printing the name of container
+  # we just deleted.
+  docker rm upgrade > /dev/null
+  if [ -n "$packages" ]; then
+    # Run the upgrade.
+    long_log "Found packages needing to be upgraded in %s image; upgrading." info "$itype"
+    docker run --name upgrade "$itype" bash -c 'apt-get -qq update && apt-get -qq -y dist-upgrade' > /dev/null
+    # Commit changes
+    docker commit upgrade "$itype":latest
+    docker rm upgrade >/dev/null
+    machine_time=$(date +%s)
+    human_time=$(date --iso-8601=minutes)
+    printf "%s\t%s\n" "$machine_time" "$human_time" > "${state_dir}/$itype"
+  fi
+done
+
+# Remove left over images.
+long_log "Removing dangling images." info
+danglers=$(docker images -q --filter "dangling=true")
+if [ -n "$danglers" ]; then
+  docker rmi "$danglers"
+fi
