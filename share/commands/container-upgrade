@@ -1,0 +1,61 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) container-upgrade [<name>] [<action>]
+Check if container needs to be upgraded and either: report it's upgrade status;
+print packages that would be upgraded; or stops, removes and re-creates the
+container so it gets the updates.
+
+Arguments
+  <name> - The container name you want to upgrade or 'all' to update all containers.
+   All is the default.
+  <action> - Whether to 'check', 'print', or 'run' upgradex. check is the default." 
+
+long_check_args "$2" "$#" 0
+
+containers="$2"
+action="$3"
+
+if [ -z "$containers" -o "$containers" = "all" ]; then
+  containers=$(ls "${LONG_SRV}/services/databases/"; ls "${LONG_SRV}/services/sites")
+fi
+
+if [ -z "$action" ]; then
+  action=check
+fi
+
+if [ "$action" != "check" -a "$action" != "run" -a "$action" != "print" ]; then
+  long_die "Action should be either check, run, or print." 
+fi
+
+for container in $containers; do
+  ! long_container_exists "$container" && continue
+  if [ "$action" = "check" ]; then
+    if long_needs_upgrade "$container"; then
+      long_log "%s: needs upgrade.\n" info "$container"
+    else
+      long_log "%s: does not need upgrade.\n" info "$container"
+    fi
+  elif [ "$action" = "print" ]; then
+    if ! long_container_running "$container"; then
+      packages="Container not running"
+    elif long_needs_upgrade "$container"; then
+      packages=$(long_print_upgradable_packages "$container")
+    else
+      packages="No new packages since base image was last updated."
+    fi
+    long_log "%s: %s\n" info "$container" "$packages"
+  elif [ "$action" = "run" ]; then
+    long_prompt "Stopping, removing and re-creating containers needing upgrades."
+    if [ "$reply" = "y" ]; then
+      if ! long_container_running "$container"; then
+        long_log "%s: Not running, skipped" info "$container"
+      elif ! long_needs_upgrade "$container"; then
+        long_log "%s: Upgrade not needed\n" info "$container"
+     else
+        long_recreate_container "$container"
+      fi
+    else
+      long_log "Not continuing." info
+    fi
+  fi
+done

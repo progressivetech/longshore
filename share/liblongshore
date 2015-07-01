@@ -987,7 +987,7 @@ long_create_container() {
     if [ -z "$platform" ]; then
       platform="$LONG_DEFAULT_PLATFORM"
     fi
-    long_create_site_container "$site" "$db" "$platform" 
+    long_create_site_container "$name" "$db" "$platform" 
   else
     long_die "I don't know how to make a container of that type (%s)." 1 "$type"
   fi
@@ -1578,4 +1578,88 @@ long_dump_database() {
     rm "$temp"
     long_log "Failed to dump database for site %s. Error:" error "$site"
   fi
+}
+
+# Check if a container needs an upgrade.
+long_needs_upgrade() {
+  local container="$1"
+
+  # Figure out when the container was created
+  local container_created=$(docker inspect -f {{.Created}} "$container")
+
+  # Figure out when the image was created.
+  local image=$(docker inspect -f {{.Config.Image}} "$container")
+  local image_created=$(docker inspect -f {{.Created}} "$image")
+
+  # Depending on the version of Docker, we have to strip off time zone
+  # handling so date's strtotime function can work properly
+  container_created=$(echo "$container_created" | sed 's/ +0000 UTC//')
+  image_created=$(echo "$image_created" | sed 's/ +0000 UTC//')
+
+  # Now convert to timestamp so we can properly compare
+  container_created=$(date --utc --date "$container_created" '+%s')
+  image_created=$(date --utc --date "$image_created" '+%s')
+
+  # Check if the image is newer than the container, that means we have
+  # an upgrade to run.
+  if [ "$container_created" -le "$image_created" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+# Print out the packages that need to be upgraded.
+long_print_upgradable_packages() {
+  local container="$1"
+  packages=$(docker exec "$container" bash -c 'apt-get -qq update && apt-get -qq -s dist-upgrade' | awk '/^Inst/ { print $2 }' | tr '\n' ' ')
+  printf "$packages"
+}
+
+# Stop, delete and re-create the given container. This is the proper way
+# to "upgrade" a container.
+long_recreate_container() {
+  local container="$1"
+
+  if ! long_needs_upgrade "$container"; then
+    long_log "The container %s doesn't need an upgrade." info "$container"
+    continue
+  fi
+
+  # Get the image so we know what kind of container we are dealing with.
+  local image=$(docker inspect -f {{.Config.Image}} "$container" | cut -d: -f1)
+
+  if [ "$image" != "ptp-php" -a "$image" != "ptp-mysql" -a "$image" != "ptp-powerbase" ]; then
+    long_log "I don't know how to handle a container made from the image %s" error "$image"
+    continue
+  fi
+
+  if long_container_running "$container"; then
+    long_log "Stopping container %s" info "$container"
+    docker stop "$container"
+  fi
+
+  # Before we remove the container, we need to get the database host and
+  # platform so we can properly re-create.
+  if [ "$image" = "ptp-powerbase" ]; then
+    long_get_db_for_site "$container"
+    long_get_platform_for_site "$container"
+    if [ -z "$LONG_DB_HOST" -o -z "$LONG_PLATFORM" -o "$LONG_DB_HOST" = "<no value>" ]; then
+      # Die before we actually delete this container.
+      long_die "Failed to get database host or platform for %s container." 1 "$container"
+    fi
+  fi
+
+  long_log "Removing container %s" info "$container"
+  docker rm "$container"
+
+  long_log "Recreating container (image: %s) %s" info "$image" "$container"
+  if [ "$image" = "ptp-powerbase" ]; then
+    local type=site
+  elif [ "$image" = "ptp-mysql" ]; then
+    local type=mysql
+  elif [ "$image" = "ptp-php" ]; then
+    local type=phpmyadmin
+  fi
+  long_container_up "$type" "$container" "$LONG_DB_HOST" "$LONG_PLATFORM"
 }
