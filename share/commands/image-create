@@ -1,6 +1,6 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) <type>
+long_usage_message="usage: $(basename $0) image-create <type>
 Create an image. 
 
 Arguments
