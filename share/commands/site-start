@@ -6,7 +6,7 @@ Start the given site container and all linked db containers.
 Arguments
   <site> - The site to start. If left out, start all containers"
 
-long_check_args "$2" "$#" 1
+long_check_args "$2" "$#" 0
 
 sites="$2"
 
