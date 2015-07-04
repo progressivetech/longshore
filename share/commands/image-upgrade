@@ -19,9 +19,6 @@ if [ "$itypes" = "all" ]; then
   itypes="my-jessie ptp-mysql ptp-php ptp-powerbase"
 fi
 
-state_dir="${LONG_VAR}/state"
-mkdir -p "$state_dir"
-
 for itype in $itypes; do
   long_log "Checking for upgrade in %s image." info "$itype"
   packages=$(docker run --name upgrade "$itype" bash -c 'apt-get -qq update && apt-get -qq -s dist-upgrade' | awk '/^Inst/ { print $2 }')
@@ -37,7 +34,6 @@ for itype in $itypes; do
     docker rm upgrade >/dev/null
     machine_time=$(date +%s)
     human_time=$(date --iso-8601=minutes)
-    printf "%s\t%s\n" "$machine_time" "$human_time" > "${state_dir}/$itype"
   fi
 done
 
