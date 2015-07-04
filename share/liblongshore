@@ -1486,9 +1486,6 @@ long_fetch_site() {
 }
 
 long_set_sites() {
-  local frontend="$1"
-
-  # frontend is not yet implemented...
   LONG_SITES=$(ls "${LONG_SRV}/services/sites")
 }
 
