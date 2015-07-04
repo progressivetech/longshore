@@ -387,7 +387,7 @@ long_get_mysql_port() {
     LONG_DB_PORT=$(grep port "${dir}/my.cnf" | cut -d= -f2)
   else
     # If we don't already have a .my.cnf file, find the next available port.
-    last_port=$(grep port= "${LONG_SRV}/services/databases/*/my.cnf" 2>/dev/null | cut -d= -f2 | sort -n | tail -n 1)
+    last_port=$(grep port= "${LONG_SRV}"/services/databases/*/my.cnf 2>/dev/null | cut -d= -f2 | sort -n | tail -n 1)
     if [ -z "$last_port" ]; then
       LONG_DB_PORT="$LONG_MYSQL_START_PORT"
     else
