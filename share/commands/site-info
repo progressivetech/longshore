@@ -12,10 +12,19 @@ site="$2"
 mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
 
 if [ ! -f "$mycnf" ]; then
+  # Check siblings
+  for sibling in $LONG_SIBLINGS; do
+    if ssh ${sibling}.mayfirst.org "test -f '$mycnf'"; then
+      ssh ${sibling}.mayfirst.org /srv/longshore/bin/longshore site-info "$site"
+      exit
+    fi
+  done
   long_die "Can't find a my.cnf file for the given site."
 fi
 
 pass=$(grep password= "$mycnf" | cut -d= -f2)
 
-printf "Site: %s\nPassword: %s\nPHPMyAdmin URL: %s\nHost: %s\n" \
-  "$site" "$pass" "$LONG_PHPMYADMIN_URL" "$(hostname)"
+long_get_db_for_site "$site"
+
+printf "Site: %s\nPassword: %s\nDB: %s\nPHPMyAdmin URL: %s\nHost: %s\n" \
+  "$site" "$pass"  "$LONG_DB_HOST" "$LONG_PHPMYADMIN_URL" "$(hostname)"
