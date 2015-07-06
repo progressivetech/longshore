@@ -1750,7 +1750,6 @@ long_check_git_setup() {
   fi
   local site_git="${drupal_dir}/.git"
   if [ ! -d "$site_git" ]; then
-    long_log "The .git dir doesn't exist in drupal directory (%s)." info "$site_git"
     return 1
   fi
 
