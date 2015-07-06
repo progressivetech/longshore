@@ -82,7 +82,7 @@ for site in $sites; do
     --exclude "${site}/drupal/files/js/*" \
     "$site" \
     2>&1)
-  if [ "$?" -eq "0" && -z "$out" ]; then
+  if [ "$?" -eq "0" -a -z "$out" ]; then
     # --ignore-failed-read will allow us to continue even if a file disapears
     # during backup ("file changed as we read it") or if a file is un-readable
     # due to permission problems (which should be fixed, but we don't want it
