@@ -1741,7 +1741,7 @@ long_recreate_container() {
 # and 1 if it's not, and 2 if the site doesn't exist.
 long_check_git_setup() {
   local site="$1"
-  local dir="${LONG_SRV}/services/sites/$site"
+  local dir="${LONG_SRV}/services/sites/${site}"
   local drupal_dir="${dir}/drupal"
 
   if [ ! -d "$dir" ]; then
@@ -1803,7 +1803,7 @@ long_gitify_site() {
     long_die "Please set name.email for git: git config --global user.name 'Your name'"
   fi
 
-  long_check_git_setup
+  long_check_git_setup "$site"
 
   if [ "$?" = "0" ]; then
     # The repository is already setup properly. 
