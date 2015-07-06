@@ -1770,9 +1770,13 @@ long_check_git_setup() {
 # See if git repo is clean. Return 0 if it is clean, 1 if there are un-committed
 # changes
 long_check_git_clean() {
-
-
-
+  local site="$1"
+  local dir="${LONG_SRV}/services/sites/${site}/drupal"
+  out=$(git status -s)
+  if [ -z "$out" ]; then
+    return 0
+  fi
+  return 1
 }
 
 # Save site data in a git repo if it doesn't exist and return 0 if the
