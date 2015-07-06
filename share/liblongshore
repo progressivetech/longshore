@@ -1763,7 +1763,6 @@ long_check_git_setup() {
       return 1
     fi
   fi
-
   return 0
 }
 
@@ -1792,7 +1791,20 @@ long_gitify_site() {
     long_log "Can't find the site directory (%s)." error "$dir"
     return 2
   fi
+
+  # Ensure our git identity is set.
+  local email_out=$(git config --global user.email)
+  local name_out=$(git config --global name.email)
+
+  if [ -z "$email_out" ]; then
+    long_die "Please set user.email for git: git config --global user.email 'you@example.net'"
+  fi
+  if [ -z "$name_out" ]; then
+    long_die "Please set name.email for git: git config --global name.email 'Your name'"
+  fi
+
   long_check_git_setup
+
 
   if [ "$?" = "0" ]; then
     # The repository is already setup properly. 
