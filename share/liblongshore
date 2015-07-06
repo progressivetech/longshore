@@ -1794,13 +1794,13 @@ long_gitify_site() {
 
   # Ensure our git identity is set.
   local email_out=$(git config --global user.email)
-  local name_out=$(git config --global name.email)
+  local name_out=$(git config --global user.name)
 
   if [ -z "$email_out" ]; then
     long_die "Please set user.email for git: git config --global user.email 'you@example.net'"
   fi
   if [ -z "$name_out" ]; then
-    long_die "Please set name.email for git: git config --global name.email 'Your name'"
+    long_die "Please set name.email for git: git config --global user.name 'Your name'"
   fi
 
   long_check_git_setup
