@@ -1786,6 +1786,7 @@ long_gitify_site() {
   local site="$1"
   local dir="${LONG_SRV}/services/sites/$site"
   local drupal_dir="${dir}/drupal"
+  local git_dir="${dir}/git"
 
   if [ ! -d "$dir" ]; then
     long_log "Can't find the site directory (%s)." error "$dir"
@@ -1801,10 +1802,10 @@ long_gitify_site() {
 
   # First make the bare repo, if we are live instance.
   if [ "$LONG_LIVE" = "y" ]; then
-    mkdir "$bare_git"
-    cd "$bare_git"
+    mkdir "$git_dir"
+    cd "$git_dir"
     git init --quiet --bare
-    local post_update="${bare_git}/hooks/post-update"
+    local post_update="${git_dir}/hooks/post-update"
     printf "#!/bin/bash\ncd %s unset GIT_DIR\ngit pull --quiet bear master\n" \
       "$drupal_dir" > "$post_update"
     chmod 755 "$post_update"
@@ -1815,7 +1816,7 @@ long_gitify_site() {
   git init --quiet
   if [ "$LONG_LIVE" = "y" ]; then
     # Initialize from scratch
-    git remote add bear "$bare_git" 
+    git remote add bear "$git_dir" 
 
     files=$(find custom-civicrm libraries modules themes -type f)
     if [ -z "$files" ]; then
