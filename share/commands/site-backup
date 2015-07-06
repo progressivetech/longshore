@@ -62,6 +62,11 @@ for site in $sites; do
   long_exec_drush_cmd "$site" "cc all"
 
   long_log "Dumping the database."
+
+  # Note: If the database dump fails, the file won't be moved into place (see
+  # long_dump_database), so we don't run the risk of overwriting a good
+  # database dump with a bad one.  For that reason, we continue with the
+  # backup, without checking the exit code of the db dump.
   long_dump_database "$site"
 
   # Create temp file to store backup. We won't move it into place until
@@ -71,14 +76,37 @@ for site in $sites; do
   source_dir="${LONG_SRV}/services/sites/"
   long_log "Backing up %s to %s." info "$site" "$target"
   out=$(tar -czf "$target" --directory "$source_dir" \
+    --ignore-failed-read \
     --exclude "${site}/drupal/files/civicrm/templates_c/*" \
     --exclude "${site}/drupal/files/css/*" \
     --exclude "${site}/drupal/files/js/*" \
     "$site" \
     2>&1)
-  if [ "$?" -eq "0" ]; then
+  if [ "$?" -eq "0" && -z "$out" ]; then
+    # --ignore-failed-read will allow us to continue even if a file disapears
+    # during backup ("file changed as we read it") or if a file is un-readable
+    # due to permission problems (which should be fixed, but we don't want it
+    # to stop the rest of the backup from happening). Because we are using
+    # --ignore-failed-read, we will continue with a zero-exit code, but the
+    # output should have an error. 
+    # 
+    # If the backup is fully successful we should have a zero exit code and no
+    # output.
     long_log "Back up of %s successful." info "$site"
-    # If backup was successful... move into the backups directory.
+  fi
+  if [ "$?" -eq "0" ]; then
+    # Either we were successful, or we were successful but had a read error.
+    if [ -n "$out" ]; then
+      # This means we have a read error, but otherwise the backup was
+      # successful.
+      long_log "Sucessful backup, but read error: %s (%s)" error "$site" "$out"
+      long_debug "$out" "Successful backup, but read error: $site"
+    fi
+    # If backup was successful, regardless of possible read errors... move into
+    # the backups directory, over writing the previous nights backup. We run a small
+    # risk of overwriting a good backup, but I expect that all read errors will be
+    # about a handful of temporary files. We don't want to abort the entire backup
+    # because a few files were un-readable.
     daily_path="$backup_dir/${site}.${base_name}.tar.gz"
     long_log "Moving %s to %s." info "$target" "$daily_path"
     mv "$target" "$daily_path"
@@ -88,6 +116,8 @@ for site in $sites; do
       cp "$daily_path" "$monthly_path"
     fi
   else
+    # If we have a more serious failure, don't overwrite a previous good
+    # backup with a bad one.
     [ -f "$target" ] && rm "$target"
     long_log "tar command failed for %s (%s)" error "$site" "$out"
     long_debug "$out" "backup failure: $site"
