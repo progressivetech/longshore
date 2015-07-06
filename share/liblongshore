@@ -1771,6 +1771,7 @@ long_check_git_setup() {
 long_check_git_clean() {
   local site="$1"
   local dir="${LONG_SRV}/services/sites/${site}/drupal"
+  cd "$dir"
   out=$(git status -s)
   if [ -z "$out" ]; then
     return 0
