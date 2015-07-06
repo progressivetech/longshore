@@ -1660,3 +1660,54 @@ long_recreate_container() {
   fi
   long_container_up "$type" "$container" "$LONG_DB_HOST" "$LONG_PLATFORM"
 }
+
+# Save site data in a git repo
+long_gitify_site() {
+  local site="$1"
+  local dir="${LONG_SRV}/services/sites/$site"
+  local drupal_dir="${dir}/drupal"
+
+  if [ ! -d "$dir" ]; then
+    long_log "Can't find the site directory (%s)." error "$dir"
+    return
+  fi
+  # Don't run if existing git dir exists.
+  local site_git="${drupal_dir}/.git"
+  if [ -d "$site_git" ]; then
+    long_log ".git dir exists in drupal directory already." info 
+    return
+  fi
+  # Don't run if bare repo exists already - this should be fixed by hand.
+  local bare_git="${dir}/git" 
+  if [ -d "$bare_git" ]; then
+    long_log "Bare repo already exists. You should fix this by hand." error
+  fi
+
+  # First make the bare repo.
+  mkdir "$bare_git"
+  cd "$bare_git"
+  git init --quiet --bare
+  local post_update="${bare_git}/hooks/post-update"
+  printf "#!/bin/bash
+cd %s 
+unset GIT_DIR
+git pull --quiet bear master\n" "$drupal_dir" > "$post_update"
+  chmod 755 "$post_update"
+
+  # Now make the site git repo
+  cd "$drupal_dir"
+  git init --quiet
+  git remote add bear "$bare_git" 
+
+  files=$(find custom-civicrm libraries modules themes -type f)
+  if [ -z "$files" ]; then
+    printf "Site specific modules go here\n" > modules/README
+    printf "Site specific themes go here\n" > themes/README
+    printf "Site specific Civi templates and php code go here\n" > custom-civicrm/README
+  fi
+
+  printf "civicrm.settings.php\ndefault.settings.php\nfiles\nprivate\nsettings.php\n.gitignore\nlocal.settings.php" > "${drupal_dir}/.gitignore"
+  git add custom-civicrm libraries modules themes
+  git commit --quiet -m "initial commit"
+  git push --quiet bear master
+}

@@ -1,0 +1,23 @@
+#!/bin/bash
+
+ptp_usage_message="usage: $(basename $0) site-gitify [<site>]
+Configure the given site with a git repo that can be pushed to.
+
+Arguments
+  <site> - Optionally pass the site if you only want to gitify that site."
+
+long_check_args "$2" "$#" 0
+
+# Run for all local sites
+hostname=$(hostname)
+
+if [ -n "$2" ]; then
+  sites="$2"
+else
+  long_set_sites "$hostname"
+  sites="$LONG_SITES"
+fi
+
+for site in $sites; do
+  long_gitify_site "$site" 
+done
