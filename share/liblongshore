@@ -1750,7 +1750,7 @@ long_check_git_setup() {
   fi
   local site_git="${drupal_dir}/.git"
   if [ ! -d "$site_git" ]; then
-    long_log ".git dir doesn't exist in drupal directory." info 
+    long_log "The .git dir doesn't exist in drupal directory." info 
     return 1
   fi
 
@@ -1759,7 +1759,7 @@ long_check_git_setup() {
   if [ "$LONG_LIVE" = "y" ]; then
     local bare_git="${dir}/git" 
     if [ ! -d "$bare_git" ]; then
-      long_log "Bare repo doesn't exists." info 
+      long_log "Bare repo doesn't exist." info 
       return 1
     fi
   fi
@@ -1805,7 +1805,6 @@ long_gitify_site() {
 
   long_check_git_setup
 
-
   if [ "$?" = "0" ]; then
     # The repository is already setup properly. 
     long_check_git_clean
@@ -1818,7 +1817,7 @@ long_gitify_site() {
     cd "$git_dir"
     git init --quiet --bare
     local post_update="${git_dir}/hooks/post-update"
-    printf "#!/bin/bash\ncd %s unset GIT_DIR\ngit pull --quiet bear master\n" \
+    printf "#!/bin/bash\ncd %s\nunset GIT_DIR\ngit pull --quiet bear master\n" \
       "$drupal_dir" > "$post_update"
     chmod 755 "$post_update"
   fi
