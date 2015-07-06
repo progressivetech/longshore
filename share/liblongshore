@@ -780,21 +780,32 @@ long_create_site_directories() {
     sudo=
   fi
 
+  mkdir -p "${dir}"
   # These are the main directories that should be readable the the web. 
   local creates="
     backup
     drupal
-    drupal/custom-civicrm
-    drupal/custom-civicrm/php
-    drupal/custom-civicrm/templates
     drupal/files
     drupal/files/css
     drupal/files/js
     drupal/files/civicrm
-    drupal/files/civicrm/persist
-    drupal/modules
-    drupal/themes
-    drupal/libraries"
+    drupal/files/civicrm/persist"
+
+  # If this is a dev instance, we don't make a modules, themes, custom-civicrm
+  # and libraries directories because we pull that in via git. If it's live we
+  # do.
+  if [ "$LONG_LIVE" = "y" ]; then
+    creates="$creates
+      drupal/modules
+      drupal/themes
+      drupal/libraries
+      drupal/custom-civicrm
+      drupal/custom-civicrm/php
+      drupal/custom-civicrm/templates"
+  else
+    # It is a dev instance, so git pull instead of adding these files.
+    long_gitify_site "$site"
+  fi
   local create=
   for create in $creates; do
     mkdir -p "${dir}/${create}"
@@ -1420,6 +1431,71 @@ long_download_aegir_db() {
 long_fetch_site() {
   local site="$1"
   long_log "Getting remote path and server" info
+  local user=longshore
+  local default_host=olivera
+  local path="/srv/longshore/services/sites/${site}"
+
+  local host=$(ssh ${user}@${default_host}.mayfirst.org "longshore site-info '$site'" | grep ^Host: | cut -d: -f2)
+
+  if [ -z "$host" ]; then
+    long_die "Can't find host" 
+  fi
+
+  local source_base="${user}@${host}.mayfirst.org:${path}"
+  local source_git="${source_base}/git"
+  local source_drupal="${source_base}/drupal"
+  local target_base=${LONG_SRV}/services/sites/${site}/drupal
+
+  long_prompt "\nSource: %s\ntarget: %s\n" "$source_base" "$target_base"
+
+  if [ "$reply" != "y" ]; then
+    long_die "Not continuing."
+  fi
+
+  # Make sure source git repo is clean and warn if it isn't.
+  ssh ${user}@${default_host}.mayfirst.org "longshore site-gitify '$site'"
+
+  if [ "$?" -ne "0" ]; then
+    long_log "Doesn't seem like the source git repo is clean for %." error "$site"
+    return
+  fi
+
+  # Build out the directory structure. This will gitify the local repo
+  # if necessary.
+  long_create_site_directories "$site"
+
+  # git pull to get most recent code. 
+  cd "$target_base"
+  git pull live master
+
+  # Now get files.
+
+  # First we have to chown so we can rsync. After building out the directories,
+  # these directories will be owned by longshore-php, not $LONG_HOST_USER.
+  sudo chown -R "$LONG_HOST_USER" "${target_base}/files"
+  sudo chown -R "$LONG_HOST_USER" "${target_base}/private"
+
+  # Clear the js, css and template caches
+  rm -rf "${target_base}"/files/js/*
+  rm -rf "${target_base}"/files/css/*
+  rm -rf "${target_base}"/files/civicrm/templates_c/*
+
+  long_log "Sync'ing files" info
+
+  rsync -a --no-owner --no-perms --delete --exclude 'js/*' \
+    --exclude 'css/*' --exclude 'civicrm/templates_c/*' \
+    --exclude 'civicrm/ConfigAndLog/*' \
+    "${source_base}/files/" "${target_base}/files/"
+  rsync -a --no-owner --no-perms --delete \
+    "${source_base}/private/" "${target_base}/private/"
+
+  # Lastly get the database.
+  scp "${source_base}/backup/${site}.sql.gz" "${dir}/backup/"
+}
+
+long_afetch_site() {
+  local site="$1"
+  long_log "Getting remote path and server" info
   local user=aegir
   local default_frontend=nicolas
 
@@ -1661,7 +1737,47 @@ long_recreate_container() {
   long_container_up "$type" "$container" "$LONG_DB_HOST" "$LONG_PLATFORM"
 }
 
-# Save site data in a git repo
+# Check if site has git repo setup properly. Return 0 if it's setup properly
+# and 1 if it's not, and 2 if the site doesn't exist.
+long_check_git_setup() {
+  local site="$1"
+  local dir="${LONG_SRV}/services/sites/$site"
+  local drupal_dir="${dir}/drupal"
+
+  if [ ! -d "$dir" ]; then
+    long_log "Can't find the site directory (%s)." error "$dir"
+    return 2
+  fi
+  local site_git="${drupal_dir}/.git"
+  if [ -d "$site_git" ]; then
+    long_log ".git dir exists in drupal directory already." info 
+    return 1
+  fi
+
+  # If this is a live instance, make sure the bare repo exists. If it's a
+  # dev instance, we don't need a bare repo.
+  if [ "$LONG_LIVE" = "y" ]; then
+    local bare_git="${dir}/git" 
+    if [ -d "$bare_git" ]; then
+      long_log "Bare repo already exists. You should fix this by hand." info 
+      return 1
+    fi
+  fi
+
+  return 0
+}
+
+# See if git repo is clean. Return 0 if it is clean, 1 if there are un-committed
+# changes
+long_check_git_clean() {
+
+
+
+}
+
+# Save site data in a git repo if it doesn't exist and return 0 if the
+# git repo is clean or 1 if there are files/changes to commit, or 2 
+# if the site doesn't exist.
 long_gitify_site() {
   local site="$1"
   local dir="${LONG_SRV}/services/sites/$site"
@@ -1669,45 +1785,55 @@ long_gitify_site() {
 
   if [ ! -d "$dir" ]; then
     long_log "Can't find the site directory (%s)." error "$dir"
-    return
+    return 2
   fi
-  # Don't run if existing git dir exists.
-  local site_git="${drupal_dir}/.git"
-  if [ -d "$site_git" ]; then
-    long_log ".git dir exists in drupal directory already." info 
-    return
-  fi
-  # Don't run if bare repo exists already - this should be fixed by hand.
-  local bare_git="${dir}/git" 
-  if [ -d "$bare_git" ]; then
-    long_log "Bare repo already exists. You should fix this by hand." error
+  long_check_git_setup
+
+  if [ "$?" = "0" ]; then
+    # The repository is already setup properly. 
+    long_check_git_clean
+    return "$?"
   fi
 
-  # First make the bare repo.
-  mkdir "$bare_git"
-  cd "$bare_git"
-  git init --quiet --bare
-  local post_update="${bare_git}/hooks/post-update"
-  printf "#!/bin/bash
-cd %s 
-unset GIT_DIR
-git pull --quiet bear master\n" "$drupal_dir" > "$post_update"
-  chmod 755 "$post_update"
+  # First make the bare repo, if we are live instance.
+  if [ "$LONG_LIVE" = "y" ]; then
+    mkdir "$bare_git"
+    cd "$bare_git"
+    git init --quiet --bare
+    local post_update="${bare_git}/hooks/post-update"
+    printf "#!/bin/bash\ncd %s unset GIT_DIR\ngit pull --quiet bear master\n" \
+      "$drupal_dir" > "$post_update"
+    chmod 755 "$post_update"
+  fi
 
   # Now make the site git repo
   cd "$drupal_dir"
   git init --quiet
-  git remote add bear "$bare_git" 
+  if [ "$LONG_LIVE" = "y" ]; then
+    # Initialize from scratch
+    git remote add bear "$bare_git" 
 
-  files=$(find custom-civicrm libraries modules themes -type f)
-  if [ -z "$files" ]; then
-    printf "Site specific modules go here\n" > modules/README
-    printf "Site specific themes go here\n" > themes/README
-    printf "Site specific Civi templates and php code go here\n" > custom-civicrm/README
+    files=$(find custom-civicrm libraries modules themes -type f)
+    if [ -z "$files" ]; then
+      printf "Site specific modules go here\n" > modules/README
+      printf "Site specific themes go here\n" > themes/README
+      printf "Site specific Civi templates and php code go here\n" > custom-civicrm/README
+    fi
+
+    printf "civicrm.settings.php\ndefault.settings.php\nfiles\nprivate\nsettings.php\n.gitignore\nlocal.settings.php" \
+      > "${drupal_dir}/.gitignore"
+    git add custom-civicrm libraries modules themes
+    git commit --quiet -m "initial commit"
+    git push --quiet bear master
+  else
+    # Dev instance, add remote and pull 
+    local user=longshore
+    local default_host=olivera
+    local host=$(ssh ${user}@${default_host}.mayfirst.org "longshore site-info '$site'" | grep ^Host: | cut -d: -f2)
+    git remote add live "${user}@${host}.mayfirst.org:${dir}/git"
+    git pull live master
   fi
 
-  printf "civicrm.settings.php\ndefault.settings.php\nfiles\nprivate\nsettings.php\n.gitignore\nlocal.settings.php" > "${drupal_dir}/.gitignore"
-  git add custom-civicrm libraries modules themes
-  git commit --quiet -m "initial commit"
-  git push --quiet bear master
+  # Since it's a new repo, it should be clean.
+  return 0
 }

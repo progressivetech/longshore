@@ -12,6 +12,6 @@ long_check_args "$2" "$#" 1
 
 site="$2"
 
-long_fetch_site "$site"
+long_afetch_site "$site"
 
 
