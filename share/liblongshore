@@ -780,7 +780,6 @@ long_create_site_directories() {
     sudo=
   fi
 
-  mkdir -p "${dir}"
   # These are the main directories that should be readable the the web. 
   local creates="
     backup
@@ -804,6 +803,7 @@ long_create_site_directories() {
       drupal/custom-civicrm/templates"
   else
     # It is a dev instance, so git pull instead of adding these files.
+    mkdir -p "${dir}/drupal"
     long_gitify_site "$site"
   fi
   local create=
@@ -1435,7 +1435,8 @@ long_fetch_site() {
   local default_host=olivera
   local path="/srv/longshore/services/sites/${site}"
 
-  local host=$(ssh ${user}@${default_host}.mayfirst.org "longshore site-info '$site'" | grep ^Host: | cut -d: -f2)
+  long_log "Get host for site (%s)" info "$site"
+  local host=$(ssh ${user}@${default_host}.mayfirst.org "/srv/longshore/bin/longshore site-info '$site'" | grep ^Host: | cut -d: -f2 | tr -d ' ')
 
   if [ -z "$host" ]; then
     long_die "Can't find host" 
@@ -1444,19 +1445,23 @@ long_fetch_site() {
   local source_base="${user}@${host}.mayfirst.org:${path}"
   local source_git="${source_base}/git"
   local source_drupal="${source_base}/drupal"
-  local target_base=${LONG_SRV}/services/sites/${site}/drupal
+  local target_base=${LONG_SRV}/services/sites/${site}
 
   long_prompt "\nSource: %s\ntarget: %s\n" "$source_base" "$target_base"
+
+  # Append drupal for convenience.
+  target_drupal="${target_base}/drupal"
 
   if [ "$reply" != "y" ]; then
     long_die "Not continuing."
   fi
 
   # Make sure source git repo is clean and warn if it isn't.
-  ssh ${user}@${default_host}.mayfirst.org "longshore site-gitify '$site'"
+  long_log "Check if remote site (%s) git repo is clean." info "$site"
+  local out=$(ssh "${user}@${host}.mayfirst.org" "/srv/longshore/bin/longshore site-gitify '$site'")
 
-  if [ "$?" -ne "0" ]; then
-    long_log "Doesn't seem like the source git repo is clean for %." error "$site"
+  if [ -n "$out" ]; then
+    long_log "Doesn't seem like the source git repo is clean for %s.\n%s" error "$site" "$out"
     return
   fi
 
@@ -1465,32 +1470,32 @@ long_fetch_site() {
   long_create_site_directories "$site"
 
   # git pull to get most recent code. 
-  cd "$target_base"
+  cd "$target_drupal"
   git pull live master
 
   # Now get files.
 
   # First we have to chown so we can rsync. After building out the directories,
   # these directories will be owned by longshore-php, not $LONG_HOST_USER.
-  sudo chown -R "$LONG_HOST_USER" "${target_base}/files"
-  sudo chown -R "$LONG_HOST_USER" "${target_base}/private"
+  sudo chown -R "$LONG_HOST_USER" "${target_drupal}/files"
+  sudo chown -R "$LONG_HOST_USER" "${target_drupal}/private"
 
   # Clear the js, css and template caches
-  rm -rf "${target_base}"/files/js/*
-  rm -rf "${target_base}"/files/css/*
-  rm -rf "${target_base}"/files/civicrm/templates_c/*
+  rm -rf "${target_drupal}"/files/js/*
+  rm -rf "${target_drupal}"/files/css/*
+  rm -rf "${target_drupal}"/files/civicrm/templates_c/*
 
   long_log "Sync'ing files" info
 
   rsync -a --no-owner --no-perms --delete --exclude 'js/*' \
     --exclude 'css/*' --exclude 'civicrm/templates_c/*' \
     --exclude 'civicrm/ConfigAndLog/*' \
-    "${source_base}/files/" "${target_base}/files/"
+    "${source_drupal}/files/" "${target_drupal}/files/"
   rsync -a --no-owner --no-perms --delete \
-    "${source_base}/private/" "${target_base}/private/"
+    "${source_drupal}/private/" "${target_drupal}/private/"
 
   # Lastly get the database.
-  scp "${source_base}/backup/${site}.sql.gz" "${dir}/backup/"
+  scp "${source_base}/backup/${site}.sql.gz" "${target_base}/backup/"
 }
 
 long_afetch_site() {
@@ -1775,7 +1780,7 @@ long_check_git_clean() {
   if [ -z "$out" ]; then
     return 0
   fi
-  long_log "Git status is not clean: %s" info "$out"
+  long_log "Git status is not clean for dir %s: %s" info "$dir" "$out"
   return 1
 }
 
@@ -1846,7 +1851,8 @@ long_gitify_site() {
     # Dev instance, add remote and pull 
     local user=longshore
     local default_host=olivera
-    local host=$(ssh ${user}@${default_host}.mayfirst.org "longshore site-info '$site'" | grep ^Host: | cut -d: -f2)
+    long_log "Get host for site (%s)" info "$site"
+    local host=$(ssh ${user}@${default_host}.mayfirst.org "/srv/longshore/bin/longshore site-info '$site'" | grep ^Host: | cut -d: -f2 | tr -d ' ')
     git remote add live "${user}@${host}.mayfirst.org:${dir}/git"
     git pull live master
   fi
