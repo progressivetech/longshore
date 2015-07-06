@@ -1,0 +1,34 @@
+#!/bin/bash
+
+ptp_usage_message="usage: $(basename $0) site-cmd [<site>]
+Run the specified command, as the www-data user, on the specified site or on
+all sites on this host if <site> is ommitted. This command will not have any
+user-interaction but can take arguments. Try site-enter instead if you want an
+interactive shell.
+
+Arguments
+  <site> - Optionally pass the site if you only want to run the command on that site."
+
+long_check_args "$2" "$#" 0
+
+# Run for all local sites
+hostname=$(hostname)
+
+if [ -n "$2" ]; then
+  sites="$2"
+else
+  long_set_sites "$hostname"
+  sites="$LONG_SITES"
+fi
+
+for site in $sites; do
+  # If the site is not running we can't run a command.
+  if ! long_container_running "$site"; then
+    long_log "Not executing command for %s because it is not running." info "$site"
+    continue
+  fi
+
+  # Shift off the sub-command and site name and pass all other arguments through
+  shift 2
+  long_exec_in_container "$site" "$@"
+done
