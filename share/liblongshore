@@ -1749,8 +1749,8 @@ long_check_git_setup() {
     return 2
   fi
   local site_git="${drupal_dir}/.git"
-  if [ -d "$site_git" ]; then
-    long_log ".git dir exists in drupal directory already." info 
+  if [ ! -d "$site_git" ]; then
+    long_log ".git dir doesn't exist in drupal directory." info 
     return 1
   fi
 
@@ -1758,8 +1758,8 @@ long_check_git_setup() {
   # dev instance, we don't need a bare repo.
   if [ "$LONG_LIVE" = "y" ]; then
     local bare_git="${dir}/git" 
-    if [ -d "$bare_git" ]; then
-      long_log "Bare repo already exists. You should fix this by hand." info 
+    if [ ! -d "$bare_git" ]; then
+      long_log "Bare repo doesn't exists." info 
       return 1
     fi
   fi
