@@ -1775,6 +1775,7 @@ long_check_git_clean() {
   if [ -z "$out" ]; then
     return 0
   fi
+  long_log "Git status is not clean: %s" info "$out"
   return 1
 }
 
