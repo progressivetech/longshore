@@ -1807,7 +1807,7 @@ long_gitify_site() {
 
   if [ "$?" = "0" ]; then
     # The repository is already setup properly. 
-    long_check_git_clean
+    long_check_git_clean "$site"
     return "$?"
   fi
 
