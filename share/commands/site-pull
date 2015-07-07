@@ -1,8 +1,10 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) <site> [<db>] [<platform>]
-Provision a site. This is a single command to create a new site from scratch
-and start it. It handles site-create, site-setup and site-configure.  
+long_usage_message="usage: $(basename $0) site-pull <site> [<db>] [<platform>]
+
+Pull in a live site and then provision it locally. This is a single command,
+designed to be used on a dev server only, to create a new site and start it. It
+handles site-create, site-setup and site-configure.  
 
 Arguments
   <site> - The site you want to create, e.g. ptp 

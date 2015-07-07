@@ -1178,15 +1178,14 @@ long_setup_site() {
   # Ensure all basic drupal and civicrm paths and urls are set. 
   long_exec_drush_cmd "$site" "lsd-set-paths"
 
-  # Ensure the esmtprc is properly configured to forward email to the
-  # right host (the dockerhost on live sites, e.g. dockerhost:25, which is
+  # Ensure the esmtprc is properly configured to forward email to the right
+  # host (the dockerhost on live sites, e.g. bulk.ourpowerbase.net25, which is
   # configured by default) and the dockerhost:2525 on dev sites, which expects
   # the dev host to be running the mail container.
-  if [ "$LONG_LIVE" = "n" ]; then
+  if [ "$LONG_LIVE" != "y" ]; then
     docker exec "$site" /bin/sed -i 's/^hostname=bulk.ourpowerbase.net:25$/hostname=dockerhost:2525/' \
       /etc/esmtprc
   fi
-
 }
 
 # Once the site is setup, ensure that it is configured in the PTP/PowerBase

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) <site> [<db>] [<platform>]
+long_usage_message="usage: $(basename $0) site-provision <site> [<db>] [<platform>]
 Provision a site. This is a single command to create a new site from scratch
 and start it. It handles site-create, site-setup and site-configure.  
 
