@@ -1430,7 +1430,7 @@ long_download_aegir_db() {
 
 long_fetch_site() {
   local site="$1"
-  long_log "Getting remote path and server" info
+  long_log "Getting remote path and server" info 
   local user=longshore
   local default_host=olivera
   local path="/srv/longshore/services/sites/${site}"
@@ -1457,22 +1457,25 @@ long_fetch_site() {
   fi
 
   # Make sure source git repo is clean and warn if it isn't.
-  long_log "Check if remote site (%s) git repo is clean." info "$site"
-  local out=$(ssh "${user}@${host}.mayfirst.org" "/srv/longshore/bin/longshore site-gitify '$site'")
-
-  if [ -n "$out" ]; then
-    long_log "Doesn't seem like the source git repo is clean for %s.\n%s" error "$site" "$out"
-    return
-  fi
+  long_check_remote_git_clean "$site" "$host"
 
   # Build out the directory structure. This will gitify the local repo
   # if necessary.
   long_create_site_directories "$site"
 
+  # Set quiet option if necessary.
+  local cmd_quiet=
+  if [ "$LONG_LOG_LEVEL" != "info" ]; then
+    cmd_quiet="-q"
+  fi
   # git pull to get most recent code. 
   cd "$target_drupal"
-  git pull live master
+  long_log "Pulling in changes from live server via git." info
+  git pull -q live master
 
+  if [ "$?" -ne 0 ]; then
+    long_log "Error git pulling from remote repo." error
+  fi
   # Now get files.
 
   # First we have to chown so we can rsync. After building out the directories,
@@ -1494,8 +1497,7 @@ long_fetch_site() {
   rsync -a --no-owner --no-perms --delete \
     "${source_drupal}/private/" "${target_drupal}/private/"
 
-  # Lastly get the database.
-  scp "${source_base}/backup/${site}.sql.gz" "${target_base}/backup/"
+  scp $cmd_quiet "${source_base}/backup/${site}.sql.gz" "${target_base}/backup/"
 }
 
 long_afetch_site() {
@@ -1770,8 +1772,8 @@ long_check_git_setup() {
   return 0
 }
 
-# See if git repo is clean. Return 0 if it is clean, 1 if there are un-committed
-# changes
+# See if a local git repo is clean. Return 0 if it is clean, 1 if there are un-committed
+# changes. If un-committed changes log an error.
 long_check_git_clean() {
   local site="$1"
   local dir="${LONG_SRV}/services/sites/${site}/drupal"
@@ -1780,13 +1782,43 @@ long_check_git_clean() {
   if [ -z "$out" ]; then
     return 0
   fi
-  long_log "Git status is not clean for dir %s: %s" info "$dir" "$out"
+  long_log "Warning: Un-committed changes for site %s.\n%s\n" error "$site" "$out"
   return 1
 }
 
-# Save site data in a git repo if it doesn't exist and return 0 if the
-# git repo is clean or 1 if there are files/changes to commit, or 2 
-# if the site doesn't exist.
+# See if a remote git repo is clean. Output error message if it is not
+# clean, showing which files are not committed and return 1. Or return
+# 0 if clean.
+long_check_remote_git_clean() {
+  local site="$1"
+  local host="$2"
+  long_log "Check if remote site (%s) git repo is clean." info "$site"
+  local out=$(ssh "${user}@${host}.mayfirst.org" "/srv/longshore/bin/longshore site-gitify '$site'")
+
+  if [ -n "$out" ]; then
+    long_log "Doesn't seem like the remote source git repo is clean for %s.\n%s" error "$site" "$out"
+    return 1
+  else
+    long_log "The remote source git repo is clean.\n" info
+    return 0
+  fi
+}
+
+# Setup and check the status of a git repo for the given site.
+#
+# Every site's drupal directory has customizations saved in a git repo
+# that is linked to a bare repo one directory above the drupal directory.
+# Only live sites have a bare repo created, dev sites only have the
+# regular git repo in the drupal directory, with a remote set to the
+# bare repo on the live server (this way, a dev site can pull and push
+# to the bare repo on the live server).
+#
+# This function will create the necessary git repo(s) on either a live
+# or dev site, check-in any existing code (if necessary) and then return
+# with a code to indicate whether the status of the repo is clean or not.
+#
+# This function returns 0 if the git repo is clean or 1 if there are
+# files/changes to commit, or 2 if the site doesn't exist.
 long_gitify_site() {
   local site="$1"
   local dir="${LONG_SRV}/services/sites/$site"
@@ -1812,7 +1844,8 @@ long_gitify_site() {
   long_check_git_setup "$site"
 
   if [ "$?" = "0" ]; then
-    # The repository is already setup properly. 
+    # The repository is already setup properly. Now determine whether or
+    # not it is clean and return the appropriate code.
     long_check_git_clean "$site"
     return "$?"
   fi
@@ -1823,7 +1856,7 @@ long_gitify_site() {
     cd "$git_dir"
     git init --quiet --bare
     local post_update="${git_dir}/hooks/post-update"
-    printf "#!/bin/bash\ncd %s\nunset GIT_DIR\ngit pull --quiet bear master\n" \
+    printf "#!/bin/bash\ncd %s\nunset GIT_DIR\ngit pull --quiet bare master\n" \
       "$drupal_dir" > "$post_update"
     chmod 755 "$post_update"
   fi
@@ -1833,7 +1866,7 @@ long_gitify_site() {
   git init --quiet
   if [ "$LONG_LIVE" = "y" ]; then
     # Initialize from scratch
-    git remote add bear "$git_dir" 
+    git remote add bare "$git_dir" 
 
     files=$(find custom-civicrm libraries modules themes -type f)
     if [ -z "$files" ]; then
@@ -1842,17 +1875,22 @@ long_gitify_site() {
       printf "Site specific Civi templates and php code go here\n" > custom-civicrm/README
     fi
 
-    printf "civicrm.settings.php\ndefault.settings.php\nfiles\nprivate\nsettings.php\n.gitignore\nlocal.settings.php" \
+    printf "civicrm.settings.php\ndefault.settings.php\nfiles\nprivate\nsettings.php\nlocal.settings.php" \
       > "${drupal_dir}/.gitignore"
-    git add custom-civicrm libraries modules themes
+    git add custom-civicrm libraries modules themes .gitignore
     git commit --quiet -m "initial commit"
-    git push --quiet bear master
+    git push --quiet bare master
   else
     # Dev instance, add remote and pull 
     local user=longshore
     local default_host=olivera
     long_log "Get host for site (%s)" info "$site"
     local host=$(ssh ${user}@${default_host}.mayfirst.org "/srv/longshore/bin/longshore site-info '$site'" | grep ^Host: | cut -d: -f2 | tr -d ' ')
+
+    # Check if the remote site is clean and warn if it isn't (but keep going
+    # to avoid half-completing this function).
+    long_check_remote_git_clean "$site" "$host"    
+
     git remote add live "${user}@${host}.mayfirst.org:${dir}/git"
     git pull live master
   fi

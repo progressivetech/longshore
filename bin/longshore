@@ -13,6 +13,14 @@ if [ "$command" = "-f" -o "$command" = "--force" ]; then
   command="$1"
 fi
 
+# You can pass -x for debugging, which will print each bash command
+# prior to executing it.
+if [ "$command" = "-x" ]; then
+  set -x
+  shift
+  command="$1"
+fi
+
 # Try to find a config file
 locations="~/.config/longshore/longshore.conf /etc/longshore/longshore.conf /usr/local/etc/longshore/longshore.conf"
 
