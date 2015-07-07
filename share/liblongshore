@@ -811,7 +811,7 @@ long_create_site_directories() {
   else
     # It is a dev instance, so git pull instead of adding these files.
     mkdir -p "${dir}/drupal"
-    long_gitify_site "$site"
+    long_gitify_site "$name"
   fi
   local create=
   for create in $creates; do

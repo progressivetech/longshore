@@ -23,6 +23,7 @@ RUN apt-get update && \
     iputils-ping \
     bc \
     openssh-client \
+    heirloom-mailx \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
