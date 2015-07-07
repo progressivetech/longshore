@@ -21,6 +21,8 @@ RUN apt-get update && \
     vim-tiny \
     ca-certificates \
     iputils-ping \
+    bc \
+    openssh-client \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
