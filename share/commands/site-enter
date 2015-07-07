@@ -1,0 +1,22 @@
+#!/bin/bash
+
+ptp_usage_message="usage: $(basename $0) site-cmd <site>
+Launch an interactive bash shell in the given site as the www-data user..
+
+Arguments
+  <site> - Pass the site if you only want to run the command on that site."
+
+long_check_args "$2" "$#" 1
+
+# Run for all local sites
+hostname=$(hostname)
+
+site="$2"
+
+# If the site is not running we can't run a command.
+if ! long_container_running "$site"; then
+  long_log "Not executing command for %s because it is not running." info "$site"
+  continue
+fi
+
+long_enter_site "$site"

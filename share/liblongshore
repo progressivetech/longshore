@@ -649,6 +649,13 @@ long_exec_drush_cmd() {
   rm "$file"
 }
 
+# Launch an interactive bash shell in the given site as wwww-data
+long_enter_site() {
+  local site="$1"
+  docker exec -i -t "$site" su -l -s "/bin/bash" www-data
+
+
+}
 # Execute the given command in the given container as www-data. 
 long_exec_in_container() {
   local site="$1"
