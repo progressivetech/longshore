@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ptp_usage_message="usage: $(basename $0) site-cmd [<site>]
+long_usage_message="usage: $(basename $0) site-cmd [<site>]
 Run the specified command, as the www-data user, on the specified site or on
 all sites on this host if <site> is ommitted. This command will not have any
 user-interaction but can take arguments. Try site-enter instead if you want an

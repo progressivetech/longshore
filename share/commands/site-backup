@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ptp_usage_message="usage: $(basename $0) site-backup [<site>] [<name>]
+long_usage_message="usage: $(basename $0) site-backup [<site>] [<name>]
 Create a backup given site or all sites that this frontend manages.
 
 Arguments

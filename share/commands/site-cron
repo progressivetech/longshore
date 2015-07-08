@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ptp_usage_message="usage: $(basename $0) site-cron [<site>]
+long_usage_message="usage: $(basename $0) site-cron [<site>]
 Runs both the drupal and CiviCRM cron job on the specified site or all
 sites on this frontend of site is ommitted.
 

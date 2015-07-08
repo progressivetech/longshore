@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ptp_usage_message="usage: $(basename $0) site-gitify [<site>]
+long_usage_message="usage: $(basename $0) site-gitify [<site>]
 Configure the given site with a git repo that can be pushed to.
 
 Arguments

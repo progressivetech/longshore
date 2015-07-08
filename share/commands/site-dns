@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ptp_usage_message="usage: $(basename $0) site-dns <site>
+long_usage_message="usage: $(basename $0) site-dns <site>
 Create or update a DNS A record for the given site. 
 
 Arguments
