@@ -1899,12 +1899,17 @@ long_gitify_site() {
     long_log "Get host for site (%s)" info "$site"
     local host=$(ssh ${user}@${default_host}.mayfirst.org "/srv/longshore/bin/longshore site-info '$site'" | grep ^Host: | cut -d: -f2 | tr -d ' ')
 
-    # Check if the remote site is clean and warn if it isn't (but keep going
-    # to avoid half-completing this function).
-    long_check_remote_git_clean "$site" "$host"    
+    # Remove this cruft after we finish aegir conversion
+    if [ -z "$host" ]; then
+      long_log "No longshore host, probably old aegir site. Not checking remote git repo." info
+    else
+      # Check if the remote site is clean and warn if it isn't (but keep going
+      # to avoid half-completing this function).
+      long_check_remote_git_clean "$site" "$host"    
 
-    git remote add live "${user}@${host}.mayfirst.org:${dir}/git"
-    git pull live master
+      git remote add live "${user}@${host}.mayfirst.org:${dir}/git"
+      git pull live master
+    fi
   fi
 
   # Since it's a new repo, it should be clean.

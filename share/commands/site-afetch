@@ -1,9 +1,7 @@
 #!/bin/bash
 
 long_usage_message="usage: $(basename $0) afetch <site>
-Copy all data from the local aegir directories. You have to run
-the old ptp-dev-import script first. This is a temporary helper
-that should be removed once we transfer off of aegir.
+Pulling a live aegir site.
 
 Arguments
   <site> - The site to fetch the data for."
