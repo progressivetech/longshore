@@ -1940,7 +1940,7 @@ long_sanitize_db_username() {
     test="${dbuser}${index}"
     long_log "DB username is too long. Testing '%s'" info "$test"
     if ! cat "${LONG_SRV}"/services/sites/*/my.cnf | cut -d= -f2 | grep "$test" &> /dev/null; then
-      long_log "DB username '%s' is available. Using it." "$test"
+      long_log "DB username '%s' is available. Using it." info "$test"
       LONG_DBUSER="$test"
       return
     fi
