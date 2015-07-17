@@ -573,11 +573,9 @@ long_create_drupal_settings() {
   local site="$1"
   local db="$2"
 
-  # Ensure db username is 16 characters or less
-  long_sanitize_db_username "$db"
-
   local dir="${LONG_SRV}/services/sites/${site}"
   local pass=$(grep password "${dir}/my.cnf" | cut -d= -f2)
+  local user=$(grep user "${dir}/my.cnf" | cut -d= -f2)
   long_get_platform_for_site "$site"
   local source="${LONG_SRV}/platforms/${LONG_PLATFORM}/sites/default/default.settings.php"
   local target="${dir}/drupal/settings.php"
@@ -590,7 +588,7 @@ long_create_drupal_settings() {
   cat "$source" | \
     sed \
     -e "s:LONG_DB_NAME:$site:" \
-    -e "s#LONG_DB_USER#$LONG_DBUSER#" \
+    -e "s#LONG_DB_USER#$user#" \
     -e "s#LONG_PASSWORD#$pass#" \
     -e "s#LONG_DB_HOST#$db#" \
     >> "$target"
@@ -1047,8 +1045,9 @@ long_install_drupal() {
   # have group ownership over the directroy from site-create).
   chmod 775 "${dir}/drupal"
 
-  # Retrieve the password and db host.
+  # Retrieve the password, db user, and db host.
   local password=$(grep password "${dir}/my.cnf" | cut -d= -f2)
+  local dbuser=$(grep user "${dir}/my.cnf" | cut -d= -f2)
   long_get_db_for_site "$site"
 
   if [ -z "$LONG_DB_HOST" ] || [ "$LONG_DB_HOST" = "<no value>" ]; then
@@ -1065,7 +1064,7 @@ cat << EOF > "$install_file"
   drush_set_option('site-name', '$site');
   drush_set_option('site-mail', 'info@progressivetech.org');
   drush_set_option('account-mail', 'info@progressivetech.org');
-  drush_set_option('db-url', 'mysql://${site}:${password}@${LONG_DB_HOST}/${site}');
+  drush_set_option('db-url', 'mysql://${dbuser}:${password}@${LONG_DB_HOST}/${site}');
   drush_core_pre_site_install();
   drush_core_site_install(NULL);
 EOF
