@@ -150,18 +150,12 @@ long_generate_my_cnf() {
   local password="$2"
   local port="$3"
   local user="$4"
+  local db="$5"
 
   [ -z "$user" ] && user=root
 
-  # For sites, the user and the database name is the same
-  db="$user"
-
-  # However, unlike the db name, the username must be sanitized to 
-  # ensure it is not longer than 16 characters.
-  long_sanitize_db_username "$user"
-
   printf "[client]\nuser=%s\npassword=%s\nport=%s\nhost=127.0.0.1\n" \
-    "$LONG_DBUSER" "$password" "$port" > \
+    "$user" "$password" "$port" > \
     "$dir"/my.cnf
 
   # If this is a site my.cnf file, add the database name.
@@ -461,7 +455,7 @@ long_create_db() {
 
     # Get the LONG_DB_PORT for this database host.
     long_get_mysql_port "$dbhost"
-    long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT" "$site"
+    long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT" "$LONG_DBUSER" "$site"
   fi
 
   while ! long_up_long_enough "$dbhost" 30; do
