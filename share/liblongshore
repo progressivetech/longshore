@@ -436,6 +436,7 @@ long_create_db() {
   local dbuser="$site"
   local dbhost="$2"
   
+  long_sanitize_db_username "$dbuser"
   local temp=$(mktemp)
 
   # Always ensure database exists. This is easy, idempotent.
@@ -448,7 +449,7 @@ long_create_db() {
     # Generate random password.
     long_log "Generating database password." info
     long_pwgen
-    echo "GRANT ALL ON \`$dbname\`.* TO '$dbuser'@'%' IDENTIFIED BY '$LONG_PASSWORD';" >> "$temp"
+    echo "GRANT ALL ON \`$dbname\`.* TO '$LONG_DBUSER'@'%' IDENTIFIED BY '$LONG_PASSWORD';" >> "$temp"
 
     # Get the LONG_DB_PORT for this database host.
     long_get_mysql_port "$dbhost"
@@ -570,6 +571,9 @@ long_create_drupal_settings() {
   local site="$1"
   local db="$2"
 
+  # Ensure db username is 16 characters or less
+  long_sanitize_db_username "$db"
+
   local dir="${LONG_SRV}/services/sites/${site}"
   local pass=$(grep password "${dir}/my.cnf" | cut -d= -f2)
   long_get_platform_for_site "$site"
@@ -584,7 +588,7 @@ long_create_drupal_settings() {
   cat "$source" | \
     sed \
     -e "s:LONG_DB_NAME:$site:" \
-    -e "s#LONG_DB_USER#$site#" \
+    -e "s#LONG_DB_USER#$LONG_DBUSER#" \
     -e "s#LONG_PASSWORD#$pass#" \
     -e "s#LONG_DB_HOST#$db#" \
     >> "$target"
@@ -1914,4 +1918,30 @@ long_gitify_site() {
 
   # Since it's a new repo, it should be clean.
   return 0
+}
+
+# Provide a unique shortened database username if the provided username
+# is longer than 16 characters.
+long_sanitize_db_username() {
+  local dbuser="$1"
+  local len=$(echo -n "$dbuser" | wc -c)
+  if [ "$len" -lt "17" ]; then
+    LONG_DBUSER="$dbuser"
+    return
+  fi
+
+  # Shorten the name to 14 characters
+  dbuser=${dbuser:0:14}
+
+  # Ensure it's unique by adding numbers to it.
+  local index=
+  for index in 00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20; do
+    long_log "DB username is too long. Testing '%s'" "${dbuser}${index}"
+    if ! grep "${dbuser}${index}" "${LONG_SRV}"/services/sites/*/my.cnf | cut -d= -f2" > /dev/null; then
+      long_log "DB username '%s' is available. Using it." "${dbuser}${index}"
+      LONG_DBUSER="${dbuser}${index}
+      return
+    fi
+  done
+  long_die "Can't get unique database username for ${dbuser}."
 }
