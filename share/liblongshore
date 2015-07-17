@@ -945,7 +945,13 @@ long_create_site_container() {
   local publish="-p 127.0.0.1:$LONG_PHP_PORT:9000"
 
   # Make sure we can communicate with the db container.
-  local link="$link --link $db:$db"
+  local link="--link $db:$db"
+
+  # If this is a dev site, we also need to link to the smtp container
+  # so we can send/receive email without actually sending any email.
+  if [ "$LONG_LIVE" != "y" ]; then
+    link="$link --link smtp:smtp"
+  fi
 
   # We need to add an /etc/hosts entry for the host so that esmtp-run 
   # can relay email via the host (it's configured in the container in
@@ -1183,12 +1189,13 @@ long_setup_site() {
   # Ensure all basic drupal and civicrm paths and urls are set. 
   long_exec_drush_cmd "$site" "lsd-set-paths"
 
-  # Ensure the esmtprc is properly configured to forward email to the
-  # right host (the dockerhost on live sites, e.g. dockerhost:25, which is
-  # configured by default) and the dockerhost:2525 on dev sites, which expects
-  # the dev host to be running the mail container.
+  # Ensure the esmtprc is properly configured to forward email to the right
+  # host (bulk.ourpowerbase.net:25 on live sites which is configured by
+  # default) and the smtp:25 on dev sites, which expects the dev host
+  # to be running the mail container.
+  
   if [ "$LONG_LIVE" = "n" ]; then
-    docker exec "$site" /bin/sed -i 's/^hostname=bulk.ourpowerbase.net:25$/hostname=dockerhost:2525/' \
+    docker exec "$site" /bin/sed -i 's/^hostname=bulk.ourpowerbase.net:25$/hostname=smtp:25/' \
       /etc/esmtprc
   fi
 
@@ -1545,6 +1552,8 @@ long_afetch_site() {
 
   long_log "Sync'ing code and templates" info
 
+  mkdir -p "${target_base}/custom-civicrm/php"
+  mkdir -p "${target_base}/custom-civicrm/templates"
   rsync -a --no-owner --no-perms --delete \
     "${source_base}/modules/" "${target_base}/modules/"
   rsync -a --no-owner --no-perms --delete \
