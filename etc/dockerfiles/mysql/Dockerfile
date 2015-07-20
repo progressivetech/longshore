@@ -4,7 +4,6 @@ RUN apt-get update && \
   export DEBIAN_FRONTEND=noninteractive && \
   apt-get install --no-install-recommends -y \
   mysql-server \ 
-  apt-utils && \
   rm -rf /var/lib/apt/lists/*
 
 # Shutdown mysql so we can manipulate it's user and

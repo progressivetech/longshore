@@ -9,7 +9,6 @@ RUN apt-get update && \
     --no-install-recommends \
     php5-fpm \
     php-apc \
-    apt-utils \
     php5-mcrypt \
     php5-mysql && \
     rm -rf /var/lib/apt/lists/*
