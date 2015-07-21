@@ -124,6 +124,10 @@ if [ -z "$source_platform_path_temp" ]; then
   for file in $delete; do
     [ -e "$file" ] && rm -rf "$file"
   done
+
+  # Now, put our custom fonts in place. This allows for korean fonts in mailing
+  # labels
+  rsync -a "${LONG_SHARE}/fonts" "${source_platform_path_temp}/sites/all/libraries/"
 fi
 
 long_log "Moving platform into place." info

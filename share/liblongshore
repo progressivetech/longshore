@@ -721,7 +721,7 @@ long_create_mysql_container() {
     -e "MYSQL_UID=$UID" \
     -p "127.0.0.1:${LONG_DB_PORT}:3306" \
     $LONG_MEMORY_LIMIT \
-    ptp-mysql:latest mysqld
+    ptp-mysql:latest mysqld || long_die "Failed to create the container %s" 1 "$name"
 }
 
 # Low leverl phpmyadmin container creation. Call long_create_container instead
@@ -782,7 +782,7 @@ long_create_phpmyadmin_container() {
     $link \
     $publish \
     $LONG_MEMORY_LIMIT \
-    ptp-php:latest php5-fpm 
+    ptp-php:latest php5-fpm  || long_die "Failed to create the phpmyadmin container"
 }
 
 # Build out the required directories and permissions
@@ -978,7 +978,7 @@ long_create_site_container() {
     $LONG_MEMORY_LIMIT \
     $link \
     $publish \
-    ptp-powerbase:latest php5-fpm 
+    ptp-powerbase:latest php5-fpm || long_die "Failed to create the container %s" 1 "$name"
 }
 
 long_create_container() {
@@ -1037,7 +1037,9 @@ long_get_platform_for_site() {
   # first one listed should always be the platform. It will return the 
   # full path to the platform - so we use basename to reduce it to just
   # the platform name.
-  LONG_PLATFORM=$(basename $(docker inspect -f '{{.HostConfig.Binds}}' "$site" | egrep -o "/srv/longshore/platforms/ourpowerbase-[a-z0-9.-]*"))
+  local platform_path=$(docker inspect -f '{{.HostConfig.Binds}}' "$site" | egrep -o "/srv/longshore/platforms/ourpowerbase-[a-z0-9.-]*")
+  [ -z "$platform_path" ] && long_die "Failed to get platform path for %s." 1 "$site"
+  LONG_PLATFORM=$(basename "$platform_path")
 }
 
 long_get_db_for_site() {
