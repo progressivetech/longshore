@@ -25,6 +25,8 @@ RUN apt-get update && \
     openssh-client \
     heirloom-mailx \
     less \
+    xfonts-baekmuk \
+    ttf-baekmuk \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
