@@ -14,7 +14,7 @@ if [ -z "$sites" ]; then
   long_set_sites
   sites="$LONG_SITES"
   for sibling in $LONG_SIBLINGS; do
-    LONG_SITES="$sites ssh ${sibling}.mayfirst.org '/srv/longshore/bin/longshore site-list'"
+    sites="$sites ssh ${sibling}.mayfirst.org '/srv/longshore/bin/longshore site-list'"
   done
 fi
 timeout=10
