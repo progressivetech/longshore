@@ -438,14 +438,20 @@ long_create_db() {
   local dbuser="$site"
   local dbhost="$2"
   
+  # Ensure we don't have usernames longer than 16 characters.
   long_sanitize_db_username "$dbuser"
+
+  # Site names should only have letters, numbers and dashes. However,
+  # dashes aren't allowed so replace - with _.
+  dbname="${dbname//-/_}" 
+
   local temp=$(mktemp)
 
   # Always ensure database exists. This is easy, idempotent.
   echo "CREATE DATABASE IF NOT EXISTS \`$dbname\`;" > "$temp"
 
   # Only ensure the user/password exists if we don't have a my.cnf file.
-  local dir="${LONG_SRV}/services/sites/${name}"
+  local dir="${LONG_SRV}/services/sites/${site}"
   local mycnf_file="${dir}/my.cnf"
   if [ ! -f "$mycnf_file" ]; then 
     # Generate random password.
@@ -455,7 +461,7 @@ long_create_db() {
 
     # Get the LONG_DB_PORT for this database host.
     long_get_mysql_port "$dbhost"
-    long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT" "$LONG_DBUSER" "$site"
+    long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT" "$LONG_DBUSER" "$dbname"
   fi
 
   while ! long_up_long_enough "$dbhost" 30; do
@@ -571,11 +577,12 @@ long_init_site_tmp_var() {
 # Create a drupal settings.php file.
 long_create_drupal_settings() {
   local site="$1"
-  local db="$2"
+  local dbhost="$2"
 
   local dir="${LONG_SRV}/services/sites/${site}"
-  local pass=$(grep password "${dir}/my.cnf" | cut -d= -f2)
-  local user=$(grep user "${dir}/my.cnf" | cut -d= -f2)
+  local dbpass=$(grep ^password "${dir}/my.cnf" | cut -d= -f2)
+  local dbuser=$(grep ^user "${dir}/my.cnf" | cut -d= -f2)
+  local dbname=$(grep ^database "${dir}/my.cnf" | cut -d= -f2)
   long_get_platform_for_site "$site"
   local source="${LONG_SRV}/platforms/${LONG_PLATFORM}/sites/default/default.settings.php"
   local target="${dir}/drupal/settings.php"
@@ -587,10 +594,10 @@ long_create_drupal_settings() {
   source="${LONG_SHARE}/templates/db.php"
   cat "$source" | \
     sed \
-    -e "s:LONG_DB_NAME:$site:" \
-    -e "s#LONG_DB_USER#$user#" \
-    -e "s#LONG_PASSWORD#$pass#" \
-    -e "s#LONG_DB_HOST#$db#" \
+    -e "s:LONG_DB_NAME:$dbname:" \
+    -e "s#LONG_DB_USER#$dbuser#" \
+    -e "s#LONG_PASSWORD#$dbpass#" \
+    -e "s#LONG_DB_HOST#$dbhost#" \
     >> "$target"
   # Ensure proper permissions
   chmod 0640 "$target"
@@ -1052,8 +1059,9 @@ long_install_drupal() {
   chmod 775 "${dir}/drupal"
 
   # Retrieve the password, db user, and db host.
-  local password=$(grep password "${dir}/my.cnf" | cut -d= -f2)
-  local dbuser=$(grep user "${dir}/my.cnf" | cut -d= -f2)
+  local dbpassword=$(grep ^password "${dir}/my.cnf" | cut -d= -f2)
+  local dbuser=$(grep ^user "${dir}/my.cnf" | cut -d= -f2)
+  local dbname=$(grep ^database "${dir}/my.cnf" | cut -d= -f2)
   long_get_db_for_site "$site"
 
   if [ -z "$LONG_DB_HOST" ] || [ "$LONG_DB_HOST" = "<no value>" ]; then
@@ -1065,12 +1073,12 @@ long_install_drupal() {
   local install_file=$(mktemp "${LONG_SITE_TMP}/install.XXXXXXX.php");
 cat << EOF > "$install_file"
   <?php
-  drush_set_option('account-pass', '$password');
+  drush_set_option('account-pass', '$dbpassword');
   drush_set_option('account-name', 'admin');
   drush_set_option('site-name', '$site');
   drush_set_option('site-mail', 'info@progressivetech.org');
   drush_set_option('account-mail', 'info@progressivetech.org');
-  drush_set_option('db-url', 'mysql://${dbuser}:${password}@${LONG_DB_HOST}/${site}');
+  drush_set_option('db-url', 'mysql://${dbuser}:${dbpassword}@${LONG_DB_HOST}/${dbname}');
   drush_core_pre_site_install();
   drush_core_site_install(NULL);
 EOF
