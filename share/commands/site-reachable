@@ -17,7 +17,7 @@ if [ -z "$sites" ]; then
     LONG_SITES="$sites ssh ${sibling}.mayfirst.org '/srv/longshore/bin/longshore site-list'"
   done
 fi
-timeout=10 --timeout=seconds
+timeout=10
 for site in $sites; do
   long_log "Checking %s" info "$site"
   if ! wget --timeout="$timeout" https://${site}.ourpowerbase.net -O- 2>&1 | grep "ERROR 403:" >/dev/null; then
