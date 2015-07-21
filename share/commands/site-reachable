@@ -6,7 +6,7 @@ Check to see if the given site is accessible via https.
 Arguments
   <site> - Optionally, pass the site you want to check. If empty, check all sites."
 
-long_check_args "$2" "$#" 1
+long_check_args "$2" "$#" 0
 
 sites="$2"
 
