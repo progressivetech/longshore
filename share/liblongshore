@@ -1245,13 +1245,11 @@ long_configure_site() {
 
   # Populate the local.settings.php
   local local_settings="${drupal}/local.settings.php"
-  if [ ! -f "$local_settings" ]; then
-    cat "${LONG_SHARE}/templates/local.settings.php" | sed \
-      -e "s/LONG_ERROR_REPORTING/$LONG_ERROR_REPORTING/" \
-      -e "s/LONG_YAHOO_BOSS_API_KEY/$LONG_YAHOO_BOSS_API_KEY/" \
-      -e "s/LONG_YAHOO_BOSS_API_SECRET/$LONG_YAHOO_BOSS_API_SECRET/" \
-      > "${drupal}/local.settings.php"
-  fi
+  cat "${LONG_SHARE}/templates/local.settings.php" | sed \
+    -e "s/LONG_ERROR_REPORTING/$LONG_ERROR_REPORTING/" \
+    -e "s/LONG_YAHOO_BOSS_API_KEY/$LONG_YAHOO_BOSS_API_KEY/" \
+    -e "s/LONG_YAHOO_BOSS_API_SECRET/$LONG_YAHOO_BOSS_API_SECRET/" \
+    > "${drupal}/local.settings.php"
 
   long_configure_imap "$site"
 
