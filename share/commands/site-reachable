@@ -1,0 +1,16 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-reachable <site>
+Check to see if the given site is accessible via https.
+
+Arguments
+  <site> - Pass the site you want to check."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+if ! wget https://${site}.ourpowerbase.net -O- 2>&1 | grep "ERROR 403:" >/dev/null; then
+  long_log "Site %s is offline." "$site"
+fi
+
+
