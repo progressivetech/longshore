@@ -425,25 +425,28 @@ long_get_php_port() {
 
 # Take the passed in var and sanitize for sql statement
 long_sql_sanitize_var() {
-  LONG_SANE_VAR=$(echo "$1" | sed 's/[^0-9a-z]//g')
+  LONG_SANE_VAR=$(echo "$1" | sed 's/[^0-9a-z_]//g')
 }
 
 # Create a database and database user for the given site, db name
 # and password.
 long_create_db() {
   local site="$1"
-  long_sql_sanitize_var "$site"
-  site="$LONG_SANE_VAR"
   local dbname="$site"
   local dbuser="$site"
   local dbhost="$2"
   
   # Ensure we don't have usernames longer than 16 characters.
   long_sanitize_db_username "$dbuser"
+  dbuser="$LONG_DBUSER"
 
   # Site names should only have letters, numbers and dashes. However,
   # dashes aren't allowed so replace - with _.
   dbname="${dbname//-/_}" 
+
+  # Just in case, sanitize the resulting dbname.
+  long_sql_sanitize_var "$dbname"
+  dbname="$LONG_SANE_VAR"
 
   local temp=$(mktemp)
 
@@ -457,11 +460,11 @@ long_create_db() {
     # Generate random password.
     long_log "Generating database password." info
     long_pwgen
-    echo "GRANT ALL ON \`$dbname\`.* TO '$LONG_DBUSER'@'%' IDENTIFIED BY '$LONG_PASSWORD';" >> "$temp"
+    echo "GRANT ALL ON \`$dbname\`.* TO '$dbuser'@'%' IDENTIFIED BY '$LONG_PASSWORD';" >> "$temp"
 
     # Get the LONG_DB_PORT for this database host.
     long_get_mysql_port "$dbhost"
-    long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT" "$LONG_DBUSER" "$dbname"
+    long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT" "$dbuser" "$dbname"
   fi
 
   while ! long_up_long_enough "$dbhost" 30; do
