@@ -1,16 +1,28 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-reachable <site>
+long_usage_message="usage: $(basename $0) site-reachable [<site>]
 Check to see if the given site is accessible via https.
 
 Arguments
-  <site> - Pass the site you want to check."
+  <site> - Optionally, pass the site you want to check. If empty, check all sites."
 
 long_check_args "$2" "$#" 1
 
-site="$2"
-if ! wget https://${site}.ourpowerbase.net -O- 2>&1 | grep "ERROR 403:" >/dev/null; then
-  long_log "Site %s is offline." "$site"
+sites="$2"
+
+if [ -z "$sites" ]; then
+  long_set_sites
+  sites="$LONG_SITES"
+  for sibling in $LONG_SIBLINGS; do
+    LONG_SITES="$sites ssh ${sibling}.mayfirst.org '/srv/longshore/bin/longshore site-list'"
+  done
 fi
+timeout=10 --timeout=seconds
+for site in $sites; do
+  long_log "Checking %s" info "$site"
+  if ! wget --timeout="$timeout" https://${site}.ourpowerbase.net -O- 2>&1 | grep "ERROR 403:" >/dev/null; then
+    long_log "Site %s is offline." "$site"
+  fi
+done
 
 
