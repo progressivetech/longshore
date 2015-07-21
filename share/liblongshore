@@ -1631,8 +1631,7 @@ long_create_dns() {
   [ -z "$LONG_IP_ADDR" ] && long_die "The host IP address is not set in longshore.conf"
 
   if [ -n "$exists" ]; then
-    # if [ "$exists" = "$LONG_IP_ADDR" ]; then
-    if [ 1 = 2 ]; then
+    if [ "$exists" = "$LONG_IP_ADDR" ]; then
       long_log "The DNS has already been created and has the same value (%s)." info "$exists"
       # return
     else
