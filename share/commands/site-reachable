@@ -22,7 +22,7 @@ timeout=10
 for site in $sites; do
   long_log "Checking %s" info "$site"
   if ! wget --timeout="$timeout" https://${site}.ourpowerbase.net -O- 2>&1 | grep "ERROR 403:" >/dev/null; then
-    long_log "Site %s is offline." "$site"
+    long_log "Site %s is offline." error "$site"
   fi
 done
 
