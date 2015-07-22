@@ -436,10 +436,6 @@ long_create_db() {
   local dbuser="$site"
   local dbhost="$2"
   
-  # Ensure we don't have usernames longer than 16 characters.
-  long_sanitize_db_username "$dbuser"
-  dbuser="$LONG_DBUSER"
-
   # Site names should only have letters, numbers and dashes. However,
   # dashes aren't allowed so replace - with _.
   dbname="${dbname//-/_}" 
@@ -457,6 +453,10 @@ long_create_db() {
   local dir="${LONG_SRV}/services/sites/${site}"
   local mycnf_file="${dir}/my.cnf"
   if [ ! -f "$mycnf_file" ]; then 
+    # Ensure we don't have usernames longer than 16 characters.
+    long_sanitize_db_username "$dbuser"
+    dbuser="$LONG_DBUSER"
+
     # Generate random password.
     long_log "Generating database password." info
     long_pwgen
