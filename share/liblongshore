@@ -1603,7 +1603,26 @@ long_afetch_site() {
 }
 
 long_set_sites() {
-  LONG_SITES=$(ls "${LONG_SRV}/services/sites")
+  local sibling="$1"
+  local me=$(hostname)
+
+  # Don't use cache, just show my sites.
+  if [ "$sibling" = "$me" ]; then
+    LONG_SITES=$(ls "${LONG_SRV}/services/sites")
+    return
+  fi
+
+  # Generate cache for the other operations
+  long_generate_sibling_cache
+
+  # Show sites from another server.
+  if [ -n "$sibling" ]; then
+    LONG_SITES=$(grep ":${sibling}" "$LONG_SIBLING_CACHE" | cut -d: -f1)
+    return
+  fi
+
+  # Show all sites.
+  LONG_SITES=$(cat "$LONG_SIBLING_CACHE" | cut -d: -f1)
 }
 
 # Either create or update a DNS record.
@@ -1968,4 +1987,57 @@ long_sanitize_db_username() {
     fi
   done
   long_die "Can't get unique database username for ${dbuser}."
+}
+
+long_clear_sibling_cache() {
+  rm -f "$LONG_SIBLING_CACHE" 
+  for sibling in $LONG_SIBLINGS; do
+    ssh ${sibling}.mayfirst.org "rm -f '$LONG_SIBLING_CACHE'"
+  done
+}
+
+long_generate_sibling_cache() {
+  local target="$LONG_SIBLING_CACHE"
+  # See if our cache is less than one day old
+  if [ -f "$target" ]; then
+    mod_ts=$(stat -c %Y "$target")
+    now=$(date +%s)
+    diff=$(( $now - $mod_ts ))
+    if [ "$diff" -lt "86400" ]; then
+      # Less than a day old, return.
+      return
+    fi
+  fi
+
+  # Truncate the target file
+  : > "$target"
+
+  local temp=$(mktemp)
+
+  # First get sites on this sibling.
+  local me=$(hostname)
+  local site=
+  long_set_sites "$me" 
+  long_log "Generating local site list." info
+  for site in $LONG_SITES; do
+    printf "%s:%s\n" "$site" "$me" >> "$temp"
+  done
+
+  # Now get sites on the other siblings.
+  for sibling in $LONG_SIBLINGS; do
+    long_log "Generating site list for %s." info "$sibling"
+    local sites=$(ssh ${sibling}.mayfirst.org /srv/longshore/bin/longshore site-list "$sibling")
+    for site in $sites; do
+      printf "%s:%s\n" "$site" "$sibling" >> "$temp"
+    done
+  done
+
+  sort "$temp" > "$target"
+  rm "$temp"
+
+  # Lastly, copy to the other siblings
+  for sibling in $LONG_SIBLINGS; do
+    long_log "Copying site list to %s." info "$sibling"
+    scp -q "$target" "${sibling}.mayfirst.org:${target}"
+  done
 }

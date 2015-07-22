@@ -90,3 +90,6 @@ LONG_ERROR_REPORTING=E_ERROR
 # Set our Yahoo api key values
 LONG_YAHOO_BOSS_API_KEY=""
 LONG_YAHOO_BOSS_API_SECRET=""
+
+LONG_SIBLING_CACHE=~/.long-sibling-cache
+
