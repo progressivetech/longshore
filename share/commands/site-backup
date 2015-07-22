@@ -1,7 +1,7 @@
 #!/bin/bash
 
 long_usage_message="usage: $(basename $0) site-backup [<site>] [<name>]
-Create a backup given site or all sites that this frontend manages.
+Create a backup given site or all sites that this sibling manages.
 
 Arguments
   <site> - Optionally pass the site if you only want that site backed up.
