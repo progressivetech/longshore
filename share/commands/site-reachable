@@ -16,10 +16,11 @@ if [ -z "$sites" ]; then
 fi
 timeout=10
 for site in $sites; do
-  long_log "Checking %s" info "$site"
   # Ensure anonymous access to the page generates a login box.
   if ! curl -s --max-time "$timeout" https://${site}.ourpowerbase.net  | grep "block-user-login" >/dev/null; then
     long_log "Site %s is offline." error "$site"
+  else
+    long_log "Site %s is online" info "$site"
   fi
 done
 
