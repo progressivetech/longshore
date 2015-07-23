@@ -1,19 +1,28 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-reachable [<site>]
+long_usage_message="usage: $(basename $0) site-reachable [<site>] [--noreport]
 Check to see if the given site is accessible via https.
 
 Arguments
-  <site> - Optionally, pass the site you want to check. If empty, check all sites."
+  <site> - Optionally, pass the site you want to check. If empty or --all, 
+    check all sites.
+  --noreport - Optional indicate that you don't want the summary report at the
+    end (e.g. if running via cron job)"
 
 long_check_args "$2" "$#" 0
 
 sites="$2"
+noreport="$3"
 
-if [ -z "$sites" ]; then
+if [ -n "$noreport" -a "$noreport" != "--noreport" ]; then
+  long_die "I didn't understand the last argument (%s). I was expecting --noreport." 1 "$noreport"
+fi
+
+if [ -z "$sites" -o "$sites" = "--all" ]; then
   long_set_sites
   sites="$LONG_SITES"
 fi
+
 timeout=10
 total_count=0
 online_count=0
@@ -30,7 +39,9 @@ for site in $sites; do
   fi
 done
 
-long_log "Total checked: %s" info "$total_count"
-long_log "Total online: %s" info "$online_count"
-long_log "Total offline: %s" info "$offline_count"
+if [ -z "$noreport" ]; then
+  printf "\nTotal checked: %s\n" "$total_count"
+  printf "Total online: %s\n" "$online_count"
+  printf "Total offline: %s\n\n" "$offline_count"
+fi
 
