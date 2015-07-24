@@ -1,0 +1,85 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-theme <site> [<theme-name>]
+Create the base template files for a theme for the given site.
+
+Arguments
+ <site> - subdomain of the site you'd like to have the theme.
+ <theme-name> - optionally provide a name for the theme (by default
+   a theme with the same name as the subdomain is created. This 
+   argument is required if you have  more than one theme."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+name="$3"
+
+# If the theme name is ommitted, use the name of the site.
+[ -z "$name" ] && name="$site"
+
+if [[ ! $name =~ ^[a-z0-9]+$ ]]; then
+  long_die "Only letters and numbers are allowed in the theme name. You entered %s." 1 "$name"
+fi
+
+path="${LONG_SRV}/services/sites/${site}/drupal"
+theme_path="$path/themes/$name"
+if [ -d "$theme_path" ]; then
+  long_die "A theme with that name already exists."
+fi
+
+mkdir -p "$theme_path"
+
+homepage="http://${site}.org/"
+
+# Info page
+cat > "${theme_path}/${name}.info" <<EOF
+name = $name 
+description = $name Subtheme
+base theme = newsflash
+core = 7.x
+engine = phptemplate
+stylesheets[all][] = $name.css
+EOF
+
+# optional template.php page
+cat > "${theme_path}/template.php" <<EOF
+<?php
+
+/** 
+ * This function replaces the home page link at the top of the them
+ * with an alternate URL to users are directed to the group's actual
+ * home page rather than the PowerBase home page.
+ *
+ * Uncomment the function lines and edit to enable.
+ **/
+function ${name}_preprocess_page(&\$variables) {
+  \$variables['front_page'] = '$homepage';
+}
+EOF
+
+cat > "${theme_path}/$name.css" <<EOF
+#logo-title {
+  margin: 0px;
+}
+
+#header {
+}
+
+#name-and-slogan {
+  margin: 0px;
+}
+
+body {
+  background-color: #0A3442;
+  padding: 0px;
+}
+
+#page {
+  padding: 0px;
+}
+EOF
+
+long_prompt "Would you like to edit the css file now?"
+if [ "$reply" = "y" ]; then
+  editor "${theme_path}/$name.css"
+fi
