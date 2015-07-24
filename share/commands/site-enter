@@ -17,8 +17,7 @@ long_rerun_over_network "$@" && exit
 
 # If the site is not running we can't run a command.
 if ! long_container_running "$site"; then
-  long_log "Not executing command for %s because it is not running." info "$site"
-  continue
+  long_die "Not executing command for %s because it is not running." 1 "$site"
 fi
 
 long_enter_site "$site"
