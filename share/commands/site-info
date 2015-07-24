@@ -10,7 +10,7 @@ long_check_args "$2" "$#" 1
 
 site="$2"
 
-long_rerun_over_network site-info "$site" && exit
+long_rerun_over_network "$@" && exit
 
 mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
 pass=$(grep password= "$mycnf" | cut -d= -f2)

@@ -59,25 +59,6 @@ long_set_ssh_command() {
   [ -n "$frontend" ] && [ "$host" != "$frontend" ] && LONG_SSH="ssh ${frontend}.mayfirst.org"
 }
 
-# Given a site, check if we should connect to a remote aegir frontend to run
-# the given command that was called (in which case, make the connection and run
-# the command) or run it locally. This function should be called by scripts
-# that need to be run locally.
-long_rerun_over_network() { 
-  local site="$1"
-  long_set_ssh_command "$site"
-  # Return 0 (aka success) to indicate that we did
-  # run the command over ssh
-  if [ -n "$LONG_SSH" ]; then
-    $LONG_SSH "$0" "$site" "$2" "$3"
-    return 0
-  fi
-  # Return 1 (aka failure) to indicate that we didn't
-  # rerun it over the network and the script should
-  # proceed to run it locally.
-  return 1
-}
-
 # Prompt the user with a given message ($1) and the question
 # "Proceed? [Yn]" - set $reply variable to either y or n, properly
 # parsing case and the default.
@@ -1917,8 +1898,7 @@ long_rerun_over_network() {
     # Return 1 to indicate that we did not re-run over the network.
     return 1
   fi
-
-  echo ssh "${LONG_SITE_SIBLING}.mayfirst.org" "longshore '$subcmd' '$site' $@" 
+  ssh "${LONG_SITE_SIBLING}.mayfirst.org" "/srv/longshore/bin/longshore '$@'" 
 
 }
 
