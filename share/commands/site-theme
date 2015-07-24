@@ -14,6 +14,11 @@ long_check_args "$2" "$#" 1
 site="$2"
 name="$3"
 
+long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+
+long_rerun_over_network "$@" && exit
+
+
 # If the theme name is ommitted, use the name of the site.
 [ -z "$name" ] && name="$site"
 
@@ -23,10 +28,15 @@ fi
 
 path="${LONG_SRV}/services/sites/${site}/drupal"
 theme_path="$path/themes/$name"
-if [ -d "$theme_path" ]; then
-  long_die "A theme with that name already exists."
+if [  -d "$theme_path" ]; then
+  long_prompt "A theme with that name already exists. Do you want to edit the css file?"
+  if [ "$reply" = "y" ]; then
+    editor "${theme_path}/$name.css"
+    exit
+  else
+    long_die "Please choose a different theme name."
+  fi
 fi
-
 mkdir -p "$theme_path"
 
 homepage="http://${site}.org/"
@@ -79,7 +89,7 @@ body {
 }
 EOF
 
-long_prompt "Would you like to edit the css file now?"
+long_prompt "Your theme ($name) has been created. Would you like to edit the css file now?"
 if [ "$reply" = "y" ]; then
   editor "${theme_path}/$name.css"
 fi

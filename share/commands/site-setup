@@ -1,6 +1,6 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) <site>
+long_usage_message="usage: $(basename $0) site-setup <site>
 Install drupal/civicrm if necessary and configure all paths and settings
 required for the basic operations of the site.
 

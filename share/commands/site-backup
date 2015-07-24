@@ -49,6 +49,10 @@ day=$(date +%d)
 date=$(date +%Y%m%d)
 
 for site in $sites; do
+  if [ ! long_check_site_exists "$site" ]; then
+    long_log "Site doesn't exist (%s)." error "$site"
+    continue
+  fi
   long_log "Starting backup of %s." info "$site"
 
   # If the site is not running, don't backup (otherwise we might end up

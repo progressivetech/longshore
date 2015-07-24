@@ -1,6 +1,6 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) <site> [<db>] [<platform>]
+long_usage_message="usage: $(basename $0) site-create <site> [<db>] [<platform>]
 Create a site. This is a thin wrapper around container-create for sites. 
 
 Arguments

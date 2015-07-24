@@ -24,6 +24,10 @@ fi
 cmd="$3"
 
 for site in $sites; do
+  if [ ! long_check_site_exists "$site" ]; then
+    long_log "Site doesn't exist (%s)." error "$site"
+    continue
+  fi
   # If the site is not running we can't run a command.
   if ! long_container_running "$site"; then
     long_log "Not executing command for %s because it is not running." info "$site"
