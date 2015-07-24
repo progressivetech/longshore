@@ -657,6 +657,7 @@ long_exec_drush_cmd() {
   chmod 755 "$file"
   printf "#!/bin/bash\n" > "$file"
   printf "export LONG_LIVE=$LONG_LIVE\n" >> "$file"
+  printf "export LONG_SHARE=$LONG_SHARE\n" >> "$file"
   printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
   printf "drush $quiet $2\n" >> "$file"
   long_exec_in_container "$site" "$file"
