@@ -1898,7 +1898,7 @@ long_rerun_over_network() {
     # Return 1 to indicate that we did not re-run over the network.
     return 1
   fi
-  ssh "${LONG_SITE_SIBLING}.mayfirst.org" "/srv/longshore/bin/longshore '$@'" 
+  ssh "${LONG_SITE_SIBLING}.mayfirst.org" "/srv/longshore/bin/longshore $@" 
 
 }
 
