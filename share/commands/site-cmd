@@ -1,38 +1,34 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-cmd [<site>]
+long_usage_message="usage: $(basename $0) site-cmd <site> '<cmd>'
 Run the specified command, as the www-data user, on the specified site or on
-all sites on this host if <site> is ommitted. This command will not have any
-user-interaction but can take arguments. Try site-enter instead if you want an
-interactive shell.
+all sites on this host if <site> is set to --all. This command will not have
+any user-interaction but can take arguments as long as the cmd and arguments
+are quoted together. Try site-enter instead if you want an interactive shell.
 
 Arguments
-  <site> - Optionally pass the site if you only want to run the command on that site."
+  <site> - Pass the site if you only want to run the command on that site or --all.
+  '<cmd>' - The command and arguments all within quotes."
 
-long_check_args "$2" "$#" 0
+long_check_args "$2" "$#" 2
 
-# Run for all local sites
-hostname=$(hostname)
-
-if [ -n "$2" ]; then
+if [ -n "$2" -a "$2" != "--all" ]; then
   sites="$2"
 else
-  long_set_sites "$hostname"
+  long_set_sites
   sites="$LONG_SITES"
 fi
 
-for site in $sites; do
-  # Shift off the sub-command and site name and pass all other arguments through
-  # as the command to be run.
-  shift 2
+cmd="$3"
 
+for site in $sites; do
   # Try to run over network first.
-  long_rerun_over_network site-cmd "$site" "$@" && continue
+  long_rerun_over_network site-cmd "$site" "$cmd" && continue
 
   # If the site is not running we can't run a command.
   if ! long_container_running "$site"; then
     long_log "Not executing command for %s because it is not running." info "$site"
     continue
   fi
-  long_exec_in_container "$site" "$@"
+  long_exec_in_container "$site" "$cmd"
 done
