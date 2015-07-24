@@ -1235,6 +1235,13 @@ long_configure_site() {
     -e "s/LONG_YAHOO_BOSS_API_SECRET/$LONG_YAHOO_BOSS_API_SECRET/" \
     > "${drupal}/local.settings.php"
 
+  # But wait, there's more. Some sites want to disabled authnet email receipt settings
+  # see: https://support.ourpowerbase.net/ticket/1014.
+  # So far, that's elpueblo and texasenvironment.
+  if [ "$site" = "elpueblo" -o "$site" = "texasnenvironment" ]; then
+    echo '$civicrm_setting["CiviCRM Preferences"]["authnet_email_receipt_override"] = FALSE;' >> "${drupal}/local.settings.php"
+  fi
+
   long_configure_imap "$site"
 
   long_exec_drush_cmd "$site" "-y pbd-configure"
