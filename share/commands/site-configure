@@ -11,5 +11,5 @@ long_check_args "$2" "$#" 1
 
 site="$2"
 
-long_check_site_exists || long_die "Site doesn't exist (%s)." 1 "$site"
+long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 long_configure_site "$site"
