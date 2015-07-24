@@ -22,17 +22,17 @@ else
 fi
 
 for site in $sites; do
-  # If the site is not running we can't run a command.
-  if ! long_container_running "$site"; then
-    long_log "Not executing command for %s because it is not running." info "$site"
-    continue
-  fi
-
   # Shift off the sub-command and site name and pass all other arguments through
   # as the command to be run.
   shift 2
 
   # Try to run over network first.
   long_rerun_over_network site-cmd "$site" "$@" && continue
+
+  # If the site is not running we can't run a command.
+  if ! long_container_running "$site"; then
+    long_log "Not executing command for %s because it is not running." info "$site"
+    continue
+  fi
   long_exec_in_container "$site" "$@"
 done
