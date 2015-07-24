@@ -1533,76 +1533,6 @@ long_fetch_site() {
   rsync $cmd_quiet "${source_base}/backup/${site}.sql.gz" "${target_base}/backup/"
 }
 
-long_afetch_site() {
-  local site="$1"
-  long_log "Getting remote path and server" info
-  local user=aegir
-  local default_frontend=nicolas
-
-  local live_info=$(ssh ${user}@${default_frontend}.mayfirst.org "ptp-get-frontend-for-site '$site' && ptp-get-path '$site'")
-  local frontend=$(echo "$live_info" | head -n1)
-  local path=$(echo "$live_info" | tail -n -1)
-
-  if [ -z "$frontend" -o -z "$path" ]; then
-    long_die "Can't find front end or path" 
-  fi
-
-  local source_base="${user}@${frontend}.mayfirst.org:$path"
-  local target_base=${LONG_SRV}/services/sites/${site}/drupal
-
-  long_prompt "\nSource: %s\ntarget: %s\n" "$source_base" "$target_base"
-
-  if [ "$reply" != "y" ]; then
-    long_die "Not continuing."
-  fi
-
-  # Build out the directory structure
-  long_create_site_directories "$site"
-
-  # Copy over modules and themes
-
-  # We don't want to bring over owner/perms to facilitate setting perms
-  # properly in the site-create stage.
-
-  long_log "Sync'ing code and templates" info
-
-  mkdir -p "${target_base}/custom-civicrm/php"
-  mkdir -p "${target_base}/custom-civicrm/templates"
-  rsync -a --no-owner --no-perms --delete \
-    "${source_base}/modules/" "${target_base}/modules/"
-  rsync -a --no-owner --no-perms --delete \
-    "${source_base}/themes/" "${target_base}/themes/"
-  rsync -a --no-owner --no-perms --delete \
-    "${source_base}/custom-civicrm/php/" "${target_base}/custom-civicrm/php/"
-  rsync -a --no-owner --no-perms --delete \
-    "${source_base}/custom-civicrm/templates/" "${target_base}/custom-civicrm/templates/"
-
-  # Now get files.
-
-  # First we have to chown so we can rsync. After building out the directories,
-  # these directories will be owned by longshore-php, not $LONG_HOST_USER.
-  sudo chown -R "$LONG_HOST_USER" "${target_base}/files"
-  sudo chown -R "$LONG_HOST_USER" "${target_base}/private"
-
-  # Rsync
-
-  # Clear the js, css and template caches
-  rm -rf "${target_base}"/files/js/*
-  rm -rf "${target_base}"/files/css/*
-  rm -rf "${target_base}"/files/civicrm/templates_c/*
-
-  long_log "Sync'ing files" info
-
-  rsync -a --no-owner --no-perms --delete --exclude 'js/*' \
-    --exclude 'css/*' --exclude 'civicrm/templates_c/*' \
-    --exclude 'civicrm/ConfigAndLog/*' \
-    "${source_base}/files/" "${target_base}/files/"
-  rsync -a --no-owner --no-perms --delete \
-    "${source_base}/private/" "${target_base}/private/"
-
-  long_download_aegir_db "$site" "$frontend"
-}
-
 long_set_sites() {
   local sibling="$1"
   local me=$(hostname)
@@ -1947,7 +1877,7 @@ long_gitify_site() {
 
     # Remove this cruft after we finish aegir conversion
     if [ -z "$host" ]; then
-      long_log "No longshore host, probably old aegir site. Not checking remote git repo." info
+      long_log "Can't find the host" info
     else
       # Check if the remote site is clean and warn if it isn't (but keep going
       # to avoid half-completing this function).
@@ -1960,6 +1890,36 @@ long_gitify_site() {
 
   # Since it's a new repo, it should be clean.
   return 0
+}
+
+# Set the variable $LONG_SIBLING_CACHE to the sibling hosting the 
+# given site.
+long_set_site_sibling() {
+  local site="$1"
+
+  # Make sure our cache is up to date
+  long_generate_sibling_cache
+
+  LONG_SITE_SIBLING=$(grep "^${site}:" $LONG_SIBLING_CACHE | cut -d: -f2)
+}
+
+# Re-run the given command on the appropriate sibling if the site
+# is hosted elsewhere. If the site is locally hosted, return 1
+# and do nothing.
+long_rerun_over_network() {
+  local subcmd="$1"
+  local site="$2"
+  local me=$(hostname)
+
+  long_set_site_sibling "$site"
+
+  if [ "$LONG_SITE_SIBLING" = "$me" ]; then
+    # Return 1 to indicate that we did not re-run over the network.
+    return 1
+  fi
+
+  echo ssh "${LONG_SITE_SIBLING}.mayfirst.org" "longshore '$subcmd' '$site' $@" 
+
 }
 
 # Provide a unique shortened database username if the provided username
@@ -2009,9 +1969,6 @@ long_generate_sibling_cache() {
       return
     fi
   fi
-
-  # Truncate the target file
-  : > "$target"
 
   local temp=$(mktemp)
 
