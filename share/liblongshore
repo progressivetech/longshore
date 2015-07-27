@@ -2018,7 +2018,6 @@ long_set_dbs() {
       siblings="$LONG_SIBLINGS $me"
     fi
   fi
-  LONG_DBS=
   local db=
   local dbs=
   local count=
@@ -2031,7 +2030,7 @@ long_set_dbs() {
         printf "%s:%s:%s:%s\n" "$count" "$sibling" "$db" "$dbs"
       done
     else
-      ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling" | sort -n
+      ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling" 
     fi
   done
 }
