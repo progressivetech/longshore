@@ -2028,11 +2028,10 @@ long_set_dbs() {
       for db in $dbs; do
         dbs=$(ls "$LONG_SRV/services/databases/$db/mysql" | egrep -v '^(ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)')
         count=$(echo "$dbs" | wc -w)
-        LONG_DBS=$(printf "%s %s:%s:%s:%s\n" "$LONG_DBS" "$count" "$sibling" "$db" "$dbs")
+        printf "%s:%s:%s:%s\n" "$count" "$sibling" "$db" "$dbs"
       done
     else
-      dbs=$(ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling")
-      LONG_DBS=$(printf "%s\n%s" "$LONG_DBS" "$dbs")
+      ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling"
     fi
   done
 }
