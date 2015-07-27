@@ -2015,7 +2015,7 @@ long_set_dbs() {
     if [ -z "$LONG_SIBLINGS" ]; then
       siblings="$me"
     else
-      siblings="$LONG_SIBLINGS"
+      siblings="$LONG_SIBLINGS $me"
     fi
   fi
   LONG_DBS=
@@ -2031,7 +2031,7 @@ long_set_dbs() {
         printf "%s:%s:%s:%s\n" "$count" "$sibling" "$db" "$dbs"
       done
     else
-      ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling"
+      ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling" | sort -n
     fi
   done
 }
