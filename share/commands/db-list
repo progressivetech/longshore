@@ -12,5 +12,3 @@ siblings="$2"
 
 long_set_dbs "$siblings"
 
-echo $LONG_DBS
-
