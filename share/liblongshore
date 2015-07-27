@@ -2005,3 +2005,34 @@ long_check_site_exists() {
   fi
   return 0
 }
+
+# Get a list of all databases.
+long_set_dbs() {
+  local siblings="$1"
+  local me=$(hostname)
+
+  if [ -z "$siblings" ]; then
+    if [ -z "$LONG_SIBLINGS" ]; then
+      siblings="$me"
+    else
+      siblings="$LONG_SIBLINGS"
+    fi
+  fi
+  LONG_DBS=
+  local db=
+  local dbs=
+  local count=
+  for sibling in $siblings; do
+    if [ "$sibling" = "$me" ]; then
+      for db in $(ls "$LONG_SRV/services/databases"); do
+        dbs=$(ls "$LONG_SRV/services/databases/$db/mysql" | egrep -v '^(ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)')
+        count=$(echo "$dbs" | wc -w)
+        LONG_DBS="$LONG_DBS ${count}:${sibling}:${db}:$dbs"
+      done
+    else
+      for db in $(ssh '${sibling}.mayfirst.org /srv/longshore/bin/longshore db-list $sibling'); do
+        LONG_DBS="$LONG_DBS ${sibling}:${db}"
+      done
+    fi
+  done
+}
