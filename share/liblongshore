@@ -2012,11 +2012,8 @@ long_set_dbs() {
   local me=$(hostname)
 
   if [ -z "$siblings" ]; then
-    if [ -z "$LONG_SIBLINGS" ]; then
-      siblings="$me"
-    else
-      siblings="$LONG_SIBLINGS $me"
-    fi
+    # Populate with all siblings, including the calling sibling.
+    siblings="$me $LONG_SIBLINGS"
   fi
   local db=
   local dbs=
@@ -2027,7 +2024,7 @@ long_set_dbs() {
       for db in $dbs; do
         dbs=$(ls "$LONG_SRV/services/databases/$db/mysql" | egrep -v '^(ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)' | tr "\n" " ")
         count=$(echo "$dbs" | wc -w)
-        printf "%s:%s:%s:%s\n" "$count" "$sibling" "$db" "$dbs"
+        printf "%s:%s:%s:%s" "$count" "$sibling" "$db" "$dbs"
       done
     else
       ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling" 
