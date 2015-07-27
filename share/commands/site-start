@@ -11,7 +11,8 @@ long_check_args "$2" "$#" 0
 sites="$2"
 
 if [ -z "$sites" ]; then
-  long_set_sites
+  me=$(hostname)
+  long_set_sites "$me"
   sites="$LONG_SITES"
 fi
 
