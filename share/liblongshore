@@ -2030,7 +2030,7 @@ long_set_dbs() {
         LONG_DBS="$LONG_DBS ${count}:${sibling}:${db}:$dbs"
       done
     else
-      for db in $(ssh "${sibling}.mayfirst.org /srv/longshore/bin/longshore db-list $sibling"); do
+      for db in $(ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling"); do
         LONG_DBS="$LONG_DBS ${sibling}:${db}"
       done
     fi
