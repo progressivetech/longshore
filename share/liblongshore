@@ -2031,7 +2031,7 @@ long_set_dbs() {
     for db in $dbs; do
       dbs=$(ls "$LONG_SRV/services/databases/$db/mysql" | egrep -v '^(ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)')
       count=$(echo "$dbs" | wc -w)
-      LONG_DBS="$LONG_DBS ${count}:${sibling}:${db}:$dbs\n"
+      LONG_DBS=$(printf "%s %s:%s:%s:%s\n" "$LONG_DBS" "$count" "$sibling" "$db" "$dbs")
     done
   done
 }
