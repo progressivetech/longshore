@@ -1,0 +1,16 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-sibling <site>
+Output the sibling that this site lives on. 
+
+Arguments
+  <site> - The site you want to find the sibling for."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+long_set_site_sibling "$site"
+echo "$LONG_SITE_SIBLING"
+
