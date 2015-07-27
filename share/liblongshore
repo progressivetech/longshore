@@ -2024,15 +2024,14 @@ long_set_dbs() {
   local count=
   for sibling in $siblings; do
     if [ "$sibling" = "$me" ]; then
-      for db in $(ls "$LONG_SRV/services/databases"); do
-        dbs=$(ls "$LONG_SRV/services/databases/$db/mysql" | egrep -v '^(ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)')
-        count=$(echo "$dbs" | wc -w)
-        LONG_DBS="$LONG_DBS ${count}:${sibling}:${db}:$dbs"
-      done
+      dbs=$(ls "$LONG_SRV/services/databases")
     else
-      for db in $(ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling"); do
-        LONG_DBS="$LONG_DBS ${sibling}:${db}"
-      done
+      dbs=$(ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling")
     fi
+    for db in $dbs; do
+      dbs=$(ls "$LONG_SRV/services/databases/$db/mysql" | egrep -v '^(ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)')
+      count=$(echo "$dbs" | wc -w)
+      LONG_DBS="$LONG_DBS ${count}:${sibling}:${db}:$dbs\n"
+    done
   done
 }
