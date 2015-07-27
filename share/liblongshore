@@ -2032,7 +2032,7 @@ long_set_dbs() {
       done
     else
       dbs=$(ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling")
-      LONG_DBS=$(printf "%s\n%s" "$LONG_DBS" "$dbs"
+      LONG_DBS=$(printf "%s\n%s" "$LONG_DBS" "$dbs")
     fi
   done
 }
