@@ -2026,7 +2026,7 @@ long_set_dbs() {
     if [ "$sibling" = "$me" ]; then
       dbs=$(ls "$LONG_SRV/services/databases")
       for db in $dbs; do
-        dbs=$(ls "$LONG_SRV/services/databases/$db/mysql" | egrep -v '^(ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)')
+        dbs=$(ls "$LONG_SRV/services/databases/$db/mysql" | egrep -v '^(ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)' | sed "s/\n/ /")
         count=$(echo "$dbs" | wc -w)
         printf "%s:%s:%s:%s\n" "$count" "$sibling" "$db" "$dbs"
       done
