@@ -349,8 +349,8 @@ long_container_up() {
     long_log "Starting container (%s)" info "$label"
     if [ "$type" = "site" ]; then
       # Ensure db container is running first.
-      long_get_db_for_site "$name"
-      long_container_up mysql "$LONG_DB_HOST"
+      long_set_site_db_host "$name"
+      long_container_up mysql "$LONG_SITE_DB_HOST"
     fi
     docker start "$label" || long_die "Failed to start the container %s" 1 "$label"
   fi
@@ -362,7 +362,7 @@ long_nginx_reload() {
 }
 
 # Get the port for this mysql container, or assign a new one.
-long_get_mysql_port() {
+long_set_mysql_port() {
   local name="$1"
   local dir="${LONG_SRV}/services/databases/${name}"
   local last_port=
@@ -380,7 +380,7 @@ long_get_mysql_port() {
 }
 
 # Get the port for this php container, or assign a new one.
-long_get_php_port() {
+long_set_php_port() {
   local name="$1"
   local envdir=
   local last_port=
@@ -444,7 +444,7 @@ long_create_db() {
     echo "GRANT ALL ON \`$dbname\`.* TO '$dbuser'@'%' IDENTIFIED BY '$LONG_PASSWORD';" >> "$temp"
 
     # Get the LONG_DB_PORT for this database host.
-    long_get_mysql_port "$dbhost"
+    long_set_mysql_port "$dbhost"
     long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT" "$dbuser" "$dbname"
   fi
 
@@ -493,18 +493,18 @@ long_execute_site_query() {
     long_die "Can't find file with queries to execute."
   fi
 
-  long_get_db_for_site "$site"
+  long_set_site_db_host "$site"
 
   # Make sure the db container exists
-  long_container_exists "$LONG_DB_HOST"
+  long_container_exists "$LONG_SITE_DB_HOST"
 
   if [ "$?" != 0 ]; then
-    long_die "The database container doesn't exist (%s)" 1 "$LONG_DB_HOST"
+    long_die "The database container doesn't exist (%s)" 1 "$LONG_SITE_DB_HOST"
   fi
 
-  long_container_running "$LONG_DB_HOST"
+  long_container_running "$LONG_SITE_DB_HOST"
   if [ "$?" != 0 ]; then
-    long_die "The database container isn't running (%s)" 1 "$LONG_DB_HOST"
+    long_die "The database container isn't running (%s)" 1 "$LONG_SITE_DB_HOST"
   fi
 
   mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
@@ -567,8 +567,8 @@ long_create_drupal_settings() {
   local dbpass=$(grep ^password "${dir}/my.cnf" | cut -d= -f2)
   local dbuser=$(grep ^user "${dir}/my.cnf" | cut -d= -f2)
   local dbname=$(grep ^database "${dir}/my.cnf" | cut -d= -f2)
-  long_get_platform_for_site "$site"
-  local source="${LONG_SRV}/platforms/${LONG_PLATFORM}/sites/default/default.settings.php"
+  long_set_site_platform "$site"
+  local source="${LONG_SRV}/platforms/${LONG_SITE_PLATFORM}/sites/default/default.settings.php"
   local target="${dir}/drupal/settings.php"
 
   # Copy the template into place.
@@ -581,7 +581,7 @@ long_create_drupal_settings() {
     -e "s:LONG_DB_NAME:$dbname:" \
     -e "s#LONG_DB_USER#$dbuser#" \
     -e "s#LONG_PASSWORD#$dbpass#" \
-    -e "s#LONG_DB_HOST#$dbhost#" \
+    -e "s#LONG_SITE_DB_HOST#$dbhost#" \
     >> "$target"
   # Ensure proper permissions
   chmod 0640 "$target"
@@ -589,7 +589,7 @@ long_create_drupal_settings() {
 }
 
 # Give a site, set a variable for the base_url
-long_get_base_url_for_site() {
+long_set_site_base_url() {
   site="$1"
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
     protocol='https://'
@@ -597,7 +597,7 @@ long_get_base_url_for_site() {
     protocol='http://'
   fi
 
-  LONG_BASE_URL="${protocol}${site}.${LONG_DEFAULT_DOMAIN}"
+  LONG_SITE_BASE_URL="${protocol}${site}.${LONG_DEFAULT_DOMAIN}"
 }
 
 # Create civicrm settings file.
@@ -609,8 +609,8 @@ long_create_civicrm_settings() {
   # already have group ownership over the directroy from site-create).
   chmod 775 "${dir}/drupal"
 
-  long_get_base_url_for_site "$site"
-  long_exec_drush_cmd "$site" "lsd-civicrm-settings --base_url='$LONG_BASE_URL'"
+  long_set_site_base_url "$site"
+  long_exec_drush_cmd "$site" "lsd-civicrm-settings --base_url='$LONG_SITE_BASE_URL'"
 
   # Ensure proper permissions
   local target="${LONG_SRV}/services/sites/${site}/drupal/civicrm.settings.php"
@@ -679,7 +679,7 @@ long_create_mysql_container() {
 
   # Get the port number. Each MySQL container is assigned a unique port
   # on the host. This will generate a LONG_DB_PORT variable.
-  long_get_mysql_port "$name"
+  long_set_mysql_port "$name"
 
   # Check for existence of my.cnf file and create if necessary.
   if [ ! -f "${dir}/my.cnf" ]; then
@@ -739,7 +739,7 @@ long_create_phpmyadmin_container() {
 
   # We have to publish the port to the host so nginx can communicate
   # with it. Each PHP container has to have a unique port.
-  long_get_php_port phpmyadmin
+  long_set_php_port phpmyadmin
 
   # The phpmyadmin container has to be available via a local port since 
   # nginx, which is running on localhost, has to communicate with it.
@@ -913,7 +913,7 @@ long_create_site_container() {
 
   # We have to publish the port to the host so nginx can communicate
   # with it. Each PHP container has to have a unique port.
-  long_get_php_port "$name" 
+  long_set_php_port "$name" 
 
   # Create nginx configuration
   long_create_nginx_site_conf "$site" "$platform" "$LONG_PHP_PORT"
@@ -1006,26 +1006,26 @@ long_create_container() {
     if long_container_exists "$name"; then
       # If the container already exists, and we are not specifying a db,
       # then use the db specified in the container.
-      long_get_db_for_site "$name"
+      long_set_site_db_host "$name"
       if [ -z "$db" ]; then
-        db="$LONG_DB_HOST"
+        db="$LONG_SITE_DB_HOST"
       else
         # If it exists and we are specifying a db, make sure they match.
-        if [ "$db" != "$LONG_DB_HOST" ]; then
+        if [ "$db" != "$LONG_SITE_DB_HOST" ]; then
           long_die "Mis-matched database host for %s. Calling function said: %s, existing container says: %s" \
-            1 "$name" "$db" "$LONG_DB_HOST"
+            1 "$name" "$db" "$LONG_SITE_DB_HOST"
         fi
       fi
 
       # Now repeat for platform.
-      long_get_platform_for_site "$name"
+      long_set_site_platform "$name"
       if [ -z "$platform" ]; then
-        platform="$LONG_PLATFORM"
+        platform="$LONG_SITE_PLATFORM"
       else
         # If it exists and we are specifying a platform, make sure they match.
-        if [ "$platform" != "$LONG_PLATFORM" ]; then
+        if [ "$platform" != "$LONG_SITE_PLATFORM" ]; then
           long_die "Mis-matched platform for %s. Calling function said: %s, existing container says: %s" \
-            1 "$name" "$platform" "$LONG_PLATFORM"
+            1 "$name" "$platform" "$LONG_SITE_PLATFORM"
         fi
       fi
     else
@@ -1045,7 +1045,7 @@ long_create_container() {
   fi
 }
 
-long_get_platform_for_site() {
+long_set_site_platform() {
   local site="$1"
   # .HostConfig.Binds shows which volumes are mounted from the host. The
   # first one listed should always be the platform. It will return the 
@@ -1053,12 +1053,12 @@ long_get_platform_for_site() {
   # the platform name.
   local platform_path=$(docker inspect -f '{{.HostConfig.Binds}}' "$site" | egrep -o "/srv/longshore/platforms/ourpowerbase-[a-z0-9.-]*")
   [ -z "$platform_path" ] && long_die "Failed to get platform path for %s." 1 "$site"
-  LONG_PLATFORM=$(basename "$platform_path")
+  LONG_SITE_PLATFORM=$(basename "$platform_path")
 }
 
-long_get_db_for_site() {
+long_set_site_db_host() {
   local site="$1"
-  LONG_DB_HOST=$(docker inspect -f '{{.HostConfig.Links}}' "$site"| cut -d: -f1 | tr -d '[/')
+  LONG_SITE_DB_HOST=$(docker inspect -f '{{.HostConfig.Links}}' "$site"| cut -d: -f1 | tr -d '[/')
 }
 
 # Install drupal from scratch.
@@ -1066,10 +1066,10 @@ long_install_drupal() {
   local site="$1"
   local dir="${LONG_SRV}/services/sites/${site}"
 
-  long_get_platform_for_site "$site"
+  long_set_site_platform "$site"
 
   # Copy default settings file into place.
-  local default_settings_source="${LONG_SRV}/platforms/${LONG_PLATFORM}/sites/default/default.settings.php"
+  local default_settings_source="${LONG_SRV}/platforms/${LONG_SITE_PLATFORM}/sites/default/default.settings.php"
   cp "$default_settings_source" "${dir}/drupal/"
 
   # Grant the longshore-php group write access to the container to it can
@@ -1081,9 +1081,9 @@ long_install_drupal() {
   local dbpassword=$(grep ^password "${dir}/my.cnf" | cut -d= -f2)
   local dbuser=$(grep ^user "${dir}/my.cnf" | cut -d= -f2)
   local dbname=$(grep ^database "${dir}/my.cnf" | cut -d= -f2)
-  long_get_db_for_site "$site"
+  long_set_site_db_host "$site"
 
-  if [ -z "$LONG_DB_HOST" ] || [ "$LONG_DB_HOST" = "<no value>" ]; then
+  if [ -z "$LONG_SITE_DB_HOST" ] || [ "$LONG_SITE_DB_HOST" = "<no value>" ]; then
     long_die "This site (%s) has no database configured. You should probably re-create it." 1 "$site"
   fi
 
@@ -1097,7 +1097,7 @@ cat << EOF > "$install_file"
   drush_set_option('site-name', '$site');
   drush_set_option('site-mail', 'info@progressivetech.org');
   drush_set_option('account-mail', 'info@progressivetech.org');
-  drush_set_option('db-url', 'mysql://${dbuser}:${dbpassword}@${LONG_DB_HOST}/${dbname}');
+  drush_set_option('db-url', 'mysql://${dbuser}:${dbpassword}@${LONG_SITE_DB_HOST}/${dbname}');
   drush_core_pre_site_install();
   drush_core_site_install(NULL);
 EOF
@@ -1137,8 +1137,8 @@ long_install_civicrm() {
   # Create the file to be executed. We can't simply run drush -y civicrm-install
   # because civicrm module is not yet enabled which means civicrm.drush.inc commands
   # are not available to us, so we use a helper command in lsd.
-  long_get_base_url_for_site "$site"
-  long_exec_drush_cmd "$site" "-q -y lsd-civicrm-install --base_url='$LONG_BASE_URL'"
+  long_set_site_base_url "$site"
+  long_exec_drush_cmd "$site" "-q -y lsd-civicrm-install --base_url='$LONG_SITE_BASE_URL'"
 
   # Reset permissions. 
   # Regain ownership of the settings.php file.
@@ -1377,11 +1377,11 @@ long_install_site() {
         long_log "Not continuing, as directed."
         return
       fi
-      long_get_db_for_site "$site"
-      if [ -z "$LONG_DB_HOST" ] || [ "$LONG_DB_HOST" = "<no value>" ]; then
+      long_set_site_db_host "$site"
+      if [ -z "$LONG_SITE_DB_HOST" ] || [ "$LONG_SITE_DB_HOST" = "<no value>" ]; then
         long_die "This site (%s) has no database configured. You should probably re-create it." 1 "$site"
       fi
-      long_create_drupal_settings "$site" "$LONG_DB_HOST"
+      long_create_drupal_settings "$site" "$LONG_SITE_DB_HOST"
       long_import_backup "$site"
     fi
   fi
@@ -1408,20 +1408,20 @@ long_destroy_site() {
   fi
 
   # Kill the database.
-  long_get_db_for_site "$site"
+  long_set_site_db_host "$site"
   # If no database is configured, this is not an error, just continue.
-  if [ -n "$LONG_DB_HOST" ] && [ "$LONG_DB_HOST" != "<no value>" ]; then
+  if [ -n "$LONG_SITE_DB_HOST" ] && [ "$LONG_SITE_DB_HOST" != "<no value>" ]; then
 
     # Ensure the db container is running so we can drop the database.
-    long_container_up mysql "$LONG_DB_HOST"
-    while ! long_up_long_enough "$LONG_DB_HOST" 30; do
+    long_container_up mysql "$LONG_SITE_DB_HOST"
+    while ! long_up_long_enough "$LONG_SITE_DB_HOST" 30; do
       long_log "Waiting 10 more seconds to ensure database has started." info
       sleep 10 
     done
     temp=$(mktemp)
     echo "DROP DATABASE IF EXISTS \`$site\`" > "$temp"
-    long_log "Dropping database (%s) on host (%s)." info "$site" "$LONG_DB_HOST"
-    long_execute_root_query "$LONG_DB_HOST" "$temp"  
+    long_log "Dropping database (%s) on host (%s)." info "$site" "$LONG_SITE_DB_HOST"
+    long_execute_root_query "$LONG_SITE_DB_HOST" "$temp"  
     rm "$temp"
   fi
 
@@ -1732,9 +1732,9 @@ long_recreate_container() {
   # Before we remove the container, we need to get the database host and
   # platform so we can properly re-create.
   if [ "$image" = "ptp-powerbase" ]; then
-    long_get_db_for_site "$container"
-    long_get_platform_for_site "$container"
-    if [ -z "$LONG_DB_HOST" -o -z "$LONG_PLATFORM" -o "$LONG_DB_HOST" = "<no value>" ]; then
+    long_set_site_db_host "$container"
+    long_set_site_platform "$container"
+    if [ -z "$LONG_SITE_DB_HOST" -o -z "$LONG_SITE_PLATFORM" -o "$LONG_SITE_DB_HOST" = "<no value>" ]; then
       # Die before we actually delete this container.
       long_die "Failed to get database host or platform for %s container." 1 "$container"
     fi
@@ -1751,7 +1751,7 @@ long_recreate_container() {
   elif [ "$image" = "ptp-php" ]; then
     local type=phpmyadmin
   fi
-  long_container_up "$type" "$container" "$LONG_DB_HOST" "$LONG_PLATFORM"
+  long_container_up "$type" "$container" "$LONG_SITE_DB_HOST" "$LONG_SITE_PLATFORM"
 }
 
 # Check if site has git repo setup properly. Return 0 if it's setup properly
