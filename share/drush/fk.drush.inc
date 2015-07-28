@@ -81,11 +81,10 @@ function drush_fk_delete_orphans() {
  * Generate foreign key schema file in JSON format.
  * 
  * This function creates the output json file with the up-to-date schema.
- * It should be run against a brand new database. Save the output to
- * /var/aegir/.drush/provision_pb/foreign.key.constraints.json
+ * It should be run against a brand new database. 
  *
  * drush @schema.piglet php-eval 'provision_pb_generate_fk_standard()' > \
- * /var/aegir/.drush/provision_pb/foreign.key.constraints.json
+ * /path/to/foreign.key.constraints.json
  */
 function drush_fk_print() {
   _civicrm_init();

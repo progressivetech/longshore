@@ -117,7 +117,6 @@ function drush_pbd_configure() {
   pbd_turn_off_pdf_receipt();
   pbd_turn_off_version_check();
   pbd_turn_off_empowered_by_civicrm_footer();
-  pbd_symlink_extensions();
   pbd_enable_default_extensions();
   pbd_ensure_civicrm_news_removed_from_dashboard();
   pbd_set_viewable_contact_tabs();
@@ -2935,9 +2934,7 @@ function pbd_enable_modules() {
   $modules_wanted = array(
     'themekey', 'imce', 'civicrm_imce', 'opb',
     'civicrm_cicero', 'ctools', 'views', 'views_ui',
-    // disabled due to bug in drush 4 
-    // https://drupal.org/node/1391452 we should upgrade to aegir 2
-    // 'webform_civicrm',
+    'webform_civicrm',
     'webform','options_element',
     'libraries', 'autologout', 'themekey_civicrm', 'civicrm_engage',
     'themekey_ui'
@@ -3361,78 +3358,6 @@ function pbd_configure_default_cicero_mappings() {
   variable_set('civicrm_cicero_contact_field_map', $map);
 }
 
-/**
- * We are keeping all civicrm extensions in sites/all/libraries so they can
- * be shared and more easily upgraded. We have to add a symlink to each
- * site's CiviCRM extensions directory for them to available.
- **/
-function pbd_symlink_extensions() {
-  // Only run on aegir sites. This step is no longer necessary with longshore.
-  $root = drush_get_context('DRUSH_DRUPAL_ROOT');
-  if($root == '/var/www/powerbase') return;
-
-  $targets = array(
-    'reportbase' => 'nz.co.fuzion.reportbase',
-    'advancedfundraising' => 'net.ourpowerbase.report.advancedfundraising',
-    'sumfields' => 'net.ourpowerbase.sumfields',
-    'badgeup' => 'net.ourpowerbase.badgeup',
-    'quickentry' => 'net.ourpowerbase.quickentry',
-    'surveylinks' => 'net.ourpowerbase.surveylinks',
-    'engage' => 'net.ourpowerbase.engage',
-    'yahooboss' => 'net.ourpowerbase.geocoder.yahooboss',
-    'cividiscount' => 'org.civicrm.module.cividiscount',
-    // clickandpledge has an extra subdirectory in the git repo
-    'clickandpledge/com.clickandpledge.payment.clickandpledge' => 'com.clickandpledge.payment.clickandpledge',
-    'civimobile' => 'com.webaccessglobal.module.civimobile',
-    'anyteloremailjma' => 'biz.jmaconsulting.search.anyteloremail',
-    'eventcount' => 'net.ourpowerbase.search.eventcount',
-    'dbhealth' => 'net.ourpowerbase.report.dbhealth',
-    'noverwrite' => 'eu.tttp.noverwrite',
-    'twilio' => 'org.civicrm.sms.twilio',
-    'clickatell' => 'org.civicrm.sms.clickatell',
-    'extendedreport' => 'nz.co.fuzion.extendedreport',
-    'assessment' => 'net.ourpowerbase.assessment',
-    'supersearch' => 'net.ourpowerbase.search.supersearch',
-    'iats' => 'ca.civicrm.iats',
-    'optionsimporter' => 'com.ixiam.modules.optionsimporter',
-    'petitionemail' => 'cc.tadpole.petitionemail',
-    'uscounties' => 'com.aghstrategies.uscounties',
-    'stripe' => 'com.drastikbydesign.stripe',
-    'authnetecheck' => 'com.donordepot.authnetecheck',
-    'civisualize' => 'civisualize',
-    'simpledonate' => 'com.webaccessglobal.simpledonate',
-    'zip2state' => 'net.ourpowerbase.zip2state',
-  );
-  $target_base =  drush_get_context('DRUSH_DRUPAL_ROOT') . '/';
-  // We are making a platform switch - in old platforms, extensions are
-  // stored in sites/all/libraries. In new platforms, they are in 
-  // sites/all/extensions. If sites/all/extensions exists, use it.
-  if(file_exists("${target_base}/sites/all/extensions")) {
-    $target_base = "${target_base}/sites/all/extensions/";
-  }
-  else {
-    $target_base = "${target_base}/sites/all/libraries/";
-  }
-
-  $link_base = conf_path() . '/custom-civicrm/extensions/';
-  while(list($drupal_name,$civicrm_name) = each($targets)) {
-    $target_path = $target_base . $drupal_name;
-    $link_path = $link_base . $civicrm_name;
-    if(file_exists($link_path) && !is_link($link_path)) {
-      // This needs to be dealt with by hand.
-      drush_log(dt("The directory (!link_path) needs to be deleted!", array('!link_path' => $link_path)), 'error');
-    }
-    else {
-      // Blindly remove - file_exists returns false if target doesn't
-      // exist.
-      @unlink($link_path);
-      if(!file_exists($target_path)) {
-        drush_log("Missing $target_path.", 'error');
-      }
-      symlink($target_path, $link_path);
-    }
-  }
-}
 
 /**
  * Some extensions we want enabled on all sites.
@@ -3462,16 +3387,7 @@ function pbd_enable_default_extensions() {
     // Reset for installing.
     $params['keys'] = array();
     while(list(,$ext) = each($default_extensions)) {
-      $parts = explode('.', $ext);
-      $name = array_pop($parts);
-      // Ensure the extension is installed as a library
-      if(libraries_get_path($name)) {
-        // And ensure the symlink exists
-        $link_base = conf_path() . '/custom-civicrm/extensions/' . $ext ;
-        if(file_exists($link_base)) {
-          $params['keys'][] = $ext;
-        }
-      }
+      $params['keys'][] = $ext;
     }
     civicrm_api3('Extension', 'install', $params);
   }

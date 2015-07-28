@@ -90,7 +90,7 @@ function drush_ptp_update_site_stats() {
   $logins_field = 'custom_472';
   // custom_471 is count of contacts
   $contacts_field = 'custom_471';
-  // cusotm_470 is aegir frontend
+  // cusotm_470 is hosting frontend
   $frontend_field = 'custom_470';
   // custom_469 is host server
   $host_field = 'custom_469';

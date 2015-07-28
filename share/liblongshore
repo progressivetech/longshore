@@ -717,20 +717,6 @@ long_create_phpmyadmin_container() {
   long_db_containers
   echo "$LONG_DB_CONTAINERS" > "${dir}/src/servers.list"
 
-  # FIXME - This is temporary while we are supporting both longshore and 
-  # aegir. The phpmyadmin instance has to connect to the aegir servers 
-  # too.
-  local server=
-  for server in $(ls -d /var/aegir/platforms/*-ourpowerbase-d7-c4.5 | sed 's/-ourpowerbase-d7-c4\.5$//' | cut -d/ -f5); do
-    # On dev servers - master is used for localhost
-    if [ "$server" = "master" ]; then
-      continue
-    else
-      server="${server}.mayfirst.org"
-    fi
-    echo "$server" >> "${dir}/src/servers.list"
-  done
-
   # Create the --link argument
   local link=
   for link_db in $long_db_containers; do
@@ -816,9 +802,6 @@ long_create_site_directories() {
     perms=$(stat -c "%A" "${dir}/${create}")
     if [ "$perms" != "drwxr-xr-x" ]; then
       chmod 0755 "${dir}/${create}"
-      # Aegir makes some of these directories group sticky. We don't
-      # need that anymore.
-      chmod g-s "${dir}/${create}"
     fi
   done
 
@@ -848,10 +831,6 @@ long_create_site_directories() {
     perms=$(stat -c "%A" "${dir}/${create}")
     if [ "$perms" != "drwxr-x---" ]; then
       chmod 0750 "${dir}/${create}" 
-      # Aegir makes some of these directories group sticky. We don't
-      # need that anymore.
-      chmod g-s "${dir}/${create}"
-
     fi
   done
   
@@ -1457,30 +1436,6 @@ long_enter_site_database() {
   mysql --defaults-file="$mycnf"
 }
 
-# Download the database from a live aegir site. Once we get off aegir this should be
-# removed.
-long_download_aegir_db() {
-  local site="$1"
-  local frontend="$2"
-  local live_frontend_login="aegir@${frontend}.mayfirst.org"
-  local fqdn="${site}.ourpowerbase.net"
-  local temp=$(mktemp -u)
-  local local_sql_dump="${LONG_SRV}/services/sites/${site}/backup/${site}.sql.gz"
-  
-  path="/var/aegir/backups/${fqdn}.daily.tar.gz"
-  long_log "Extracting database on %s" "$live_frontend_login"
-  ssh "$live_frontend_login" "ionice -c2 -n7 tar --extract --to-stdout --file '$path' ./database.sql > '$temp'"
-
-  long_log "gzip'ing dump" info
-  ssh "$live_frontend_login" "gzip '$temp'"
-
-  long_log "Copying sql dump to %s" info "${local_sql_dump}"
-  scp "$live_frontend_login":"${temp}.gz" "${local_sql_dump}"
-
-  long_log "Removing dump from live server" info
-  ssh "$live_frontend_login" "rm '${temp}.gz'"
-}
-
 long_fetch_site() {
   local site="$1"
   long_log "Getting remote path and server" info 
@@ -1897,7 +1852,6 @@ long_gitify_site() {
     long_log "Get host for site (%s)" info "$site"
     local host=$(ssh ${user}@${default_host}.mayfirst.org "/srv/longshore/bin/longshore site-info '$site'" | grep ^Host: | cut -d: -f2 | tr -d ' ')
 
-    # Remove this cruft after we finish aegir conversion
     if [ -z "$host" ]; then
       long_log "Can't find the host" info
     else
