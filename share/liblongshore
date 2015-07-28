@@ -2033,13 +2033,22 @@ long_set_dbs() {
   local db=
   local dbs=
   local count=
+  local id=
+  local pid=
+  local mem=
   for sibling in $siblings; do
     if [ "$sibling" = "$me" ]; then
       dbs=$(ls "$LONG_SRV/services/databases")
       for db in $dbs; do
         dbs=$(ls "$LONG_SRV/services/databases/$db/mysql" | egrep -v '^(ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)' | tr "\n" " ")
         count=$(echo "$dbs" | wc -w)
-        printf "%s:%s:%s:%s\n" "$count" "$sibling" "$db" "$dbs"
+        # Get Id for this db
+        id=$(docker inspect -f {{.Id}} "$db")
+        mem=0
+        for pid in $(grep "$id" /proc/*/cgroup 2>/dev/null | cut -d/ -f3| sort | uniq); do
+          mem=$(( $mem + $(( $(ps -h -p "$pid" -o rss) / 1024 )) ))
+        done
+        printf "%s:%s:%s:%s:%s\n" "$count" "$sibling" "$db" "$mem" "$dbs"
       done
     else
       ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling" 
