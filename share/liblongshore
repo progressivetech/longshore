@@ -2059,7 +2059,7 @@ long_set_dbs() {
         fi
       done
     else
-      ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling" 
+      ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling $order_by_memory" 
     fi
   done
 }
