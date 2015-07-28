@@ -14,7 +14,8 @@ long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 
 long_rerun_over_network "$@" && exit
 
-long_prompt "You are about to delete all data related to the site '%s'." "$site"
+me=$(hostname)
+long_prompt "You are about to delete all data related to the site '%s' on sibling %s." "$site" "$me"
 if [ "$reply" = "y" ]; then
   long_destroy_site "$site"
 else
