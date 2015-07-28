@@ -872,6 +872,20 @@ long_create_site_container() {
     long_die "That platform doesn't seem to exist (%s)." 1 "$platform"
   fi
 
+  # Another sanity check - if the site exists on a different sibling, we
+  # should get a confirmation to proceed. This helps us avoid accidentally
+  # creating a duplicate site.
+  me=$(hostname)
+  long_set_site_sibling
+  if [ -n "$LONG_SITE_SIBLING" -a "$LONG_SITE_SIBLING" != "$me" ]; then
+    long_prompt "A site with the same name (%s) exists on a different sibling (%s). Continue?" \
+      "$name" "$sibling"
+    if [ "$reply" != "y" ]; then
+      long_log "Not continuing." info
+      exit 0
+    fi
+  fi
+
   # Ensure that the database container exists and is running. It has to
   # be running, not just created, so we can create the database and database
   # username/password.
