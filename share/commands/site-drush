@@ -14,5 +14,5 @@ site="$2"
 cmd="$3"
 
 long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
-long_rerun_over_network "$@"
+long_rerun_over_network "$@" && exit
 long_exec_drush_cmd "$site" "$cmd"

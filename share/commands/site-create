@@ -17,6 +17,8 @@ platform="$4"
 [ -z "$db" ] && db="$LONG_DEFAULT_DB"
 [ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
 
+# Do not re-run over the network! We should only be calling site-create
+# and site-provision on the sibling that we want the site.
 long_create_container site "$site" "$db" "$platform"
 long_nginx_reload
 

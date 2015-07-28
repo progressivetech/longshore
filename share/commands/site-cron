@@ -11,18 +11,21 @@ long_check_args "$2" "$#" 0
 
 # This scripts is designed to be run by a cron job that runs every 10 minutes.
 
-
-# Run for all local sites
-hostname=$(hostname)
+# If the site is specified, run on that site regardless of which sibling it is
+# on. However, if the site is not specified, run for all sites on this, and
+# only this, sibling (so it can be called by a cron job and not overlap with the
+# other siblings).
 
 if [ -n "$2" ]; then
   sites="$2"
 else
+  hostname=$(hostname)
   long_set_sites "$hostname"
   sites="$LONG_SITES"
 fi
 
 for site in $sites; do
+  long_rerun_over_network "$@" && continue
   # If the site is not running we can't run cron.
   if ! long_container_running "$site"; then
     long_log "Not executing cron for %s because it is not running." info "$site"
