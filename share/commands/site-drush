@@ -14,6 +14,8 @@ site="$2"
 cmd="$3"
 
 long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+
+me=$(hostname)
 # We can't use the re-run over network helper function because the command has to
 # be fully quoted. So, re-implementing here.
 long_set_site_sibling "$site"
