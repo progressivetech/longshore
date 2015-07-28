@@ -1923,6 +1923,13 @@ long_rerun_over_network() {
     return 1
   fi
   ssh -t "${LONG_SITE_SIBLING}.mayfirst.org" "/srv/longshore/bin/longshore $@" 
+  if [ "$?" != "0" ]; then
+    long_log "Rerunning %s for site %s over network failed." error "$subcmd" "$site"
+  fi
+  # Return 0 to indicate that we did rerun over the network to avoid having
+  # the calling script confuse an error message with not having run the
+  # command.
+  return 0
 
 }
 
