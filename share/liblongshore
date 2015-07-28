@@ -1441,11 +1441,21 @@ long_destroy_site() {
 }
 
 # Access the given site's database via mysql cli
-long_enter_site_database() {
+long_launch_site_sql_cli() {
   local site="$1"
   local mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
   if [ ! -f "$mycnf" ]; then
     long_die "Can't find site my.cnf file (%s)" 1 "$mycnf"
+  fi
+  mysql --defaults-file="$mycnf"
+}
+
+# Access the given database as root via mysql cli
+long_launch_root_sql_cli() {
+  local db="$1"
+  local mycnf="${LONG_SRV}/services/databases/${db}/my.cnf"
+  if [ ! -f "$mycnf" ]; then
+    long_die "Can't find db my.cnf file (%s)" 1 "$mycnf"
   fi
   mysql --defaults-file="$mycnf"
 }

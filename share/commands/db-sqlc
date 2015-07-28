@@ -1,0 +1,14 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) db-sqlc <db>
+Get a root sql cli on the given database host.
+
+Arguments
+  <db> - The name of the database on which you want the sql cli."
+
+long_check_args "$2" "$#" 1
+
+db="$2"
+
+long_launch_root_sql_cli "$db"
+
