@@ -876,7 +876,7 @@ long_create_site_container() {
   # should get a confirmation to proceed. This helps us avoid accidentally
   # creating a duplicate site.
   me=$(hostname)
-  long_set_site_sibling
+  long_set_site_sibling "$name"
   if [ -n "$LONG_SITE_SIBLING" -a "$LONG_SITE_SIBLING" != "$me" ]; then
     long_prompt "A site with the same name (%s) exists on a different sibling (%s). Continue?" \
       "$name" "$sibling"
