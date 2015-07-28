@@ -1,14 +1,29 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) db-list [<sibling>]
-List all databases on all siblings, or a given sibling.
+long_usage_message="usage: $(basename $0) db-list [<sibling>] [-m]
+List all databases on all siblings, or a given sibling. This list includes, by
+default, the count of database, the sibling, the database name, the amount of
+memory used by the database and the names of the databases. 
+
+Optionally, pass -m to switch the count with the memory so you can more easily
+sort the output.
 
 Arguments
-  <sibling> - Optionally, limit to the given sibling."
+  <sibling> - Optionally, limit to the given sibling, or enter --all.
+  <-m> - Optionally, put memory usage first instead of count of dbs."
 
 long_check_args "$2" "$#" 0
 
 siblings="$2"
+order_by_memory="$3"
 
-long_set_dbs "$siblings"
+if [ -n "$order_by_memory" -a "$order_by_memory" != "-m" ]; then
+  long_die "I don't understand the last argument (%s). Expecting -m." 1 "$order_by_memory"
+fi
+
+if [ "$siblings" = "--all" ]; then
+  siblings=
+fi
+
+long_set_dbs "$siblings" "$order_by_memory"
 

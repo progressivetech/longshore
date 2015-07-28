@@ -2024,6 +2024,8 @@ long_check_site_exists() {
 # Get a list of all databases.
 long_set_dbs() {
   local siblings="$1"
+  local order_by_memory="$2"
+
   local me=$(hostname)
 
   if [ -z "$siblings" ]; then
@@ -2048,7 +2050,13 @@ long_set_dbs() {
         for pid in $(grep "$id" /proc/*/cgroup 2>/dev/null | cut -d/ -f3| sort | uniq); do
           mem=$(( $mem + $(( $(ps -h -p "$pid" -o rss) / 1024 )) ))
         done
-        printf "%s:%s:%s:%s:%s\n" "$count" "$sibling" "$db" "$mem" "$dbs"
+        if [ "$order_by_memory" = "-m" ]; then
+          # Put memory first.
+          printf "%s:%s:%s:%s:%s\n" "$mem" "$count" "$sibling" "$db"  "$dbs"
+        else
+          # Put count first.
+          printf "%s:%s:%s:%s:%s\n" "$count" "$sibling" "$db" "$mem"  "$dbs"
+        fi
       done
     else
       ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling" 
