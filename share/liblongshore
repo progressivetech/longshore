@@ -1037,7 +1037,7 @@ long_set_site_platform() {
 
 long_set_site_db_host() {
   local site="$1"
-  LONG_SITE_DB_HOST=$(docker inspect -f '{{.HostConfig.Links}}' "$site"| cut -d: -f1 | tr -d '[/')
+  LONG_SITE_DB_HOST=$(docker inspect -f '{{.HostConfig.Links}}' "$site"|  egrep -o "/db[0-9]{2}:" | tr -d '/:')
 }
 
 # Install drupal from scratch.
