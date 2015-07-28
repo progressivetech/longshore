@@ -45,3 +45,8 @@ if [ -z "$quiet" ]; then
   printf "Total offline: %s\n\n" "$offline_count"
 fi
 
+if [ "$offline_count" -gt "0" ]; then
+  exit 1
+fi
+exit 0
+
