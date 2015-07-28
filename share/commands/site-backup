@@ -55,8 +55,11 @@ for site in $sites; do
   fi
   long_log "Starting backup of %s." info "$site"
 
-  # If the site is not running, don't backup (otherwise we might end up
-  # with an empty database, if the database container is not running.
+  # If the site is not running, don't backup (otherwise we might end up with an
+  # empty database, if the database container is not running).  This also
+  # ensures that we aren't trying to back up a site from a different sibling.
+  # Backups are designed to be run on each sibling and for each sibling
+  # independently of the other siblings.
   if ! long_container_running "$site"; then
     long_log "Not backing up %s because it is not running." info "$site"
     continue
