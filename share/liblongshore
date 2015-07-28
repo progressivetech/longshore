@@ -2046,3 +2046,30 @@ long_set_dbs() {
     fi
   done
 }
+
+# Set the site ID
+long_set_site_id() {
+  local site="$1"
+  LONG_SITE_ID=$(docker inspect -f {{.Id}} "$site")
+}
+
+# Set a variable to hold all PIDs for this site
+long_set_site_pids() {
+  local site="$1"
+  long_set_site_id "$site"
+  LONG_SITE_PIDS=$(grep "$LONG_SITE_ID" /proc/*/cgroup 2>/dev/null | cut -d/ -f3| sort | uniq | tr "\n" " ")
+}
+
+# Calculate total memory in use by this site
+long_set_site_memory() {
+  local site="$1"
+  long_set_site_pids "$site"
+  LONG_SITE_MEMORY=0
+  local mem=0
+  local pid=
+  for pid in $LONG_SITE_PIDS; do
+    # -h means no header
+    mem=$(( $(ps -h -p "$pid" -o rss) / 1024 ))
+    LONG_SITE_MEMORY=$(( $LONG_SITE_MEMORY + $mem ))
+  done
+}

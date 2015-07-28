@@ -16,6 +16,7 @@ long_rerun_over_network "$@" && exit
 mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
 pass=$(grep password= "$mycnf" | cut -d= -f2)
 long_set_site_db_host "$site"
+long_set_site_memory "$site"
 
-printf "Site: %s\nPassword: %s\nDB: %s\nPHPMyAdmin URL: %s\nHost: %s\n" \
-  "$site" "$pass"  "$LONG_SITE_DB_HOST" "$LONG_PHPMYADMIN_URL" "$(hostname)"
+printf "Site: %s\nPassword: %s\nDB: %s\nPHPMyAdmin URL: %s\nHost: %s\nPids: %s\nMemory: %s\n" \
+  "$site" "$pass"  "$LONG_SITE_DB_HOST" "$LONG_PHPMYADMIN_URL" "$(hostname)" "$LONG_SITE_PIDS" "$LONG_SITE_MEMORY"
