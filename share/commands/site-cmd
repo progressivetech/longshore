@@ -22,9 +22,8 @@ else
 fi
 
 cmd="$3"
-
 for site in $sites; do
-  if [ ! long_check_site_exists "$site" ]; then
+  if ! long_check_site_exists "$site"; then
     long_log "Site doesn't exist (%s)." error "$site"
     continue
   fi
