@@ -14,5 +14,23 @@ site="$2"
 cmd="$3"
 
 long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
-long_rerun_over_network "$@" && exit
-long_exec_drush_cmd "$site" "$cmd"
+# We can't use the re-run over network helper function because the command has to
+# be fully quoted. So, re-implementing here.
+long_set_site_sibling "$site"
+if [ -z "$LONG_SITE_SIBLING" ]; then
+  # This could mean the site name was mis-typed.
+  long_log "Can't determine where to run this command because site doesn't have sibling (%s)." error "$site"
+  continue
+fi
+if [ "$LONG_SITE_SIBLING" = "$me" ]; then
+  # Run locally.
+  # If the site is not running we can't run a command.
+  if ! long_container_running "$site"; then
+    long_log "Not executing command for %s because it is not running." info "$site"
+    continue
+  fi
+  long_exec_drush_cmd "$site" "$cmd"
+else
+  # Run over the network.
+  ssh -t "${LONG_SITE_SIBLING}.mayfirst.org" "/srv/longshore/bin/longshore site-drush '$site' '$cmd'" 
+fi
