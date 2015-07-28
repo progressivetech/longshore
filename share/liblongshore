@@ -879,7 +879,7 @@ long_create_site_container() {
   long_set_site_sibling "$name"
   if [ -n "$LONG_SITE_SIBLING" -a "$LONG_SITE_SIBLING" != "$me" ]; then
     long_prompt "A site with the same name (%s) exists on a different sibling (%s). Continue?" \
-      "$name" "$sibling"
+      "$name" "$LONG_SITE_SIBLING"
     if [ "$reply" != "y" ]; then
       long_log "Not continuing." info
       exit 0
