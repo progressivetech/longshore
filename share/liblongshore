@@ -1586,7 +1586,7 @@ long_create_dns() {
   if [ -n "$exists" ]; then
     if [ "$exists" = "$LONG_IP_ADDR" ]; then
       long_log "The DNS has already been created and has the same value (%s)." info "$exists"
-      # return
+      return
     else
       long_log "Updating IP address from %s to %s." info "$exists" "$LONG_IP_ADDR"
 
