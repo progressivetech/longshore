@@ -991,23 +991,53 @@ long_create_container() {
   fi
 
   # NOTE: These functions not only create the docker containers, but also
-  # do a number of indempotent prepration steps. These steps should be
+  # do a number of idempotent prepration steps. These steps should be
   # taken even if the container already exists, so we wait on the check to see
   # if the container exists until the last docker create statement in each
   # specific container_create function.
   
-
   # Create a mysql container.
   if [ "$type" = "mysql" ]; then
     long_create_mysql_container "$name"
   elif [ "$type" = "phpmyadmin" ]; then
     long_create_phpmyadmin_container 
   elif [ "$type" = "site" ]; then
-    if [ -z "$db" ]; then
-      db="$LONG_DEFAULT_DB"
-    fi
-    if [ -z "$platform" ]; then
-      platform="$LONG_DEFAULT_PLATFORM"
+    # Figure out which database and platform to use if it's not specified.
+    if long_container_exists "$name"; then
+      # If the container already exists, and we are not specifying a db,
+      # then use the db specified in the container.
+      long_get_db_for_site "$name"
+      if [ -z "$db" ]; then
+        db="$LONG_DB_HOST"
+      else
+        # If it exists and we are specifying a db, make sure they match.
+        if [ "$db" != "$LONG_DB_HOST" ]; then
+          long_die "Mis-matched database host for %s. Calling function said: %s, existing container says: %s" \
+            1 "$name" "$db" "$LONG_DB_HOST"
+        fi
+      fi
+
+      # Now repeat for platform.
+      long_get_platform_for_site "$name"
+      if [ -z "$platform" ]; then
+        platform="$LONG_PLATFORM"
+      else
+        # If it exists and we are specifying a platform, make sure they match.
+        if [ "$platform" != "$LONG_PLATFORM" ]; then
+          long_die "Mis-matched platform for %s. Calling function said: %s, existing container says: %s" \
+            1 "$name" "$platform" "$LONG_PLATFORM"
+        fi
+      fi
+    else
+      # If the container doesn't exist and we aren't specifying a db, 
+      # the user the default.
+      if [ -z "$db" ]; then
+        db="$LONG_DEFAULT_DB"
+      fi
+      # Ditto for platform.
+      if [ -z "$platform" ]; then
+        platform="$LONG_DEFAULT_PLATFORM"
+      fi
     fi
     long_create_site_container "$name" "$db" "$platform" 
   else
