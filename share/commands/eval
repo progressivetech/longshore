@@ -1,0 +1,11 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) eval '<bash-code>'
+Evaluate the given bash code in a bootstrapped longshore environment.
+
+Arguments
+  <bash-code> - the code to evaluate."
+
+long_check_args "$2" "$#" 1
+
+eval "$2"
