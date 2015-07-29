@@ -59,7 +59,7 @@ function drush_ptp_update_site_stats() {
 
   $sub = ptp_get_subdomain();
   if($sub != 'ptp') {
-    drush_log("Please run against ptp.ourpowerbase.net only.", 'error');
+    drush_log("Please run against ptp.ourpowerbase.net only, not $sub.", 'error');
     return;
   }  
 
