@@ -457,8 +457,7 @@ function ptp_set_outbound_mail_settings() {
  * caaav.ourpowerbase.net)
  */
 function ptp_get_subdomain() {
-  global $base_url;
-  $url_pieces = parse_url($base_url);
+  $url_pieces = parse_url(CIVICRM_UF_BASEURL);
   $host_pieces = explode('.',$url_pieces['host']);
   return array_shift($host_pieces);
 }
