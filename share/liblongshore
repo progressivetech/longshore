@@ -2095,3 +2095,22 @@ long_set_site_memory() {
     LONG_SITE_MEMORY=$(( $LONG_SITE_MEMORY + $mem ))
   done
 }
+
+# Count the number of contacts in the given site
+long_set_site_contacts_count() {
+  local site="$1"
+  local temp=$(mktemp)
+  printf 'SELECT COUNT(*) FROM civicrm_contact WHERE is_deleted = 0' >> "$temp"
+  LONG_SITE_CONTACTS_COUNT=$(long_execute_site_query "$site" "$temp" | tail -n1)
+  rm "$temp"
+}
+
+# Count the number of recent logins on the given site. 
+long_set_site_recent_logins_count() {
+  local site="$1"
+  local temp=$(mktemp)
+  # Limit to last two weeks.
+  printf 'SELECT COUNT(DISTINCT users.uid) FROM users JOIN sessions USING(uid) WHERE uid != 0 AND name != "civicron" AND timestamp > UNIX_TIMESTAMP() - 14 * 86400' >> "$temp"
+  LONG_SITE_RECENT_LOGINS_COUNT=$(long_execute_site_query "$site" "$temp" | tail -n1)
+  rm "$temp"
+}

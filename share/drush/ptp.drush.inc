@@ -36,12 +36,10 @@ function ptp_drush_command() {
     array( 
       'description' => "Update information about the passed site in the PTP database.",
       'options' => array(
-        '--site' => 'FQDN of the site to update',
-        '--guest' => 'Name of the guest',
-        '--host' => 'Name of the host',
+        '--site' => 'the site to update (e.g. apen)',
         '--contacts' => 'Number of contacts in the database',
         '--logins' => 'Number of recent logins',
-        '--frontend' => 'Name of frontend',
+        '--sibling' => 'Name of longshore sibling guest',
       ),
     );
   $items['ptp-configure'] =
@@ -66,11 +64,9 @@ function drush_ptp_update_site_stats() {
   }  
 
   $site = drush_get_option('site', NULL);
-  $guest = drush_get_option('guest', NULL);
-  $host = drush_get_option('host', NULL);
   $contacts = drush_get_option('contacts', NULL);
   $logins = drush_get_option('logins', NULL);
-  $frontend = drush_get_option('frontend', NULL);
+  $sibling = drush_get_option('sibling', NULL);
  
   if(is_null($site)) {
     drush_log("Site is required.", 'error');
@@ -84,21 +80,17 @@ function drush_ptp_update_site_stats() {
   $site_url = "https://$site%";
   // custom_335 is the site URL
   $site_url_field = 'custom_335';
-  // custom_404 is the guest name 
-  $guest_field = 'custom_404';
   // custom_472 is recent logins
   $logins_field = 'custom_472';
   // custom_471 is count of contacts
   $contacts_field = 'custom_471';
-  // cusotm_470 is hosting frontend
-  $frontend_field = 'custom_470';
-  // custom_469 is host server
-  $host_field = 'custom_469';
+  // cusotm_470 is hosting frontend, aka sibling
+  $sibling_field = 'custom_470';
 
   $params = array(
     $site_url_field => $site_url, 
     'version' => 3,
-    'return' => "${guest_field},${logins_field},${contacts_field},${frontend_field},${host_field}"
+    'return' => "${logins_field},${contacts_field},${sibling_field}"
   );
   $results = civicrm_api('Contact','get', $params);
   if($results['is_error'] != 0) {
@@ -116,27 +108,11 @@ function drush_ptp_update_site_stats() {
     'version' => 3
   );
 
-  if(!is_null($guest)) {
-    $existing_guest = $contact[$guest_field];
-    if($existing_guest != $guest) {
+  if(!is_null($sibling)) {
+    $existing_sibling = $contact[$sibling_field];
+    if($existing_sibling != $sibling) {
       // Update the record.
-      $params[$guest_field] = $guest;
-    }
-  }
-
-  if(!is_null($host)) {
-    $existing_host = $contact[$host_field];
-    if($existing_host != $host) {
-      // Update the record.
-      $params[$host_field] = $host;
-    }
-  }
-
-  if(!is_null($frontend)) {
-    $existing_frontend = $contact[$frontend_field];
-    if($existing_frontend != $frontend) {
-      // Update the record.
-      $params[$frontend_field] = $frontend;
+      $params[$sibling_field] = $sibling;
     }
   }
 

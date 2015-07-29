@@ -1,14 +1,22 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-info <site>
-Print all details about this site, including password.
+long_usage_message="usage: $(basename $0) site-info <site> [<-u>]
+Print all details about this site, including password. Optionally
+update the PTP database with this information.
 
 Arguments
-  <site> - The site on which to report."
+  <site> - The site on which to report.
+  <-u> - If -u is passed, we will try to update the ptp database with 
+  the login count, contacts count and hostname."
 
 long_check_args "$2" "$#" 1
 
 site="$2"
+update="$3"
+
+if [ -n "$update" -a "$update" != '-u' ]; then
+  long_die "I didn't understand the last argument. I was expecting -u but got %s." 1 "$update"
+fi
 
 long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 long_rerun_over_network "$@" && exit
@@ -17,6 +25,14 @@ mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
 pass=$(grep password= "$mycnf" | cut -d= -f2)
 long_set_site_db_host "$site"
 long_set_site_memory "$site"
+long_set_site_contacts_count "$site"
+long_set_site_recent_logins_count "$site"
 
-printf "Site: %s\nPassword: %s\nDB: %s\nPHPMyAdmin URL: %s\nHost: %s\nPids: %s\nMemory: %s\n" \
-  "$site" "$pass"  "$LONG_SITE_DB_HOST" "$LONG_PHPMYADMIN_URL" "$(hostname)" "$LONG_SITE_PIDS" "$LONG_SITE_MEMORY"
+printf "Site: %s\nPassword: %s\nDB: %s\nPHPMyAdmin URL: %s\nSibling: %s\nRecent Logins: %s\nContacts: %s\nPids: %s\nMemory: %s\n" \
+  "$site" "$pass"  "$LONG_SITE_DB_HOST" "$LONG_PHPMYADMIN_URL" "$(hostname)" \
+  "$LONG_SITE_RECENT_LOGINS_COUNT" "$LONG_SITE_CONTACTS_COUNT" "$LONG_SITE_PIDS" "$LONG_SITE_MEMORY"
+
+if [ -n "$update" ]; then
+  # Call external longshore command to update the results
+  ${LONG_SRV}/bin/longshore site-drush ptp "ptp-update-site-stats '--site=$site' '--contacts=$contacts' '--logins=$logins' '--sibling=$sibling'"
+fi
