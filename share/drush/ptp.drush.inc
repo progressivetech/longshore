@@ -36,10 +36,10 @@ function ptp_drush_command() {
     array( 
       'description' => "Update information about the passed site in the PTP database.",
       'options' => array(
-        '--site' => 'the site to update (e.g. apen)',
-        '--contacts' => 'Number of contacts in the database',
-        '--logins' => 'Number of recent logins',
-        '--sibling' => 'Name of longshore sibling guest',
+        'site' => 'the site to update (e.g. apen)',
+        'contacts' => 'Number of contacts in the database',
+        'logins' => 'Number of recent logins',
+        'sibling' => 'Name of longshore sibling guest',
       ),
     );
   $items['ptp-configure'] =
