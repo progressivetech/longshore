@@ -1275,6 +1275,11 @@ long_configure_site() {
 long_configure_imap() {
   local site="$1"
 
+  # Don't run on dev sites.
+  if [ "$LONG_LIVE" != "y" ]; then
+    long_log "Not checking IMAP user on dev site." info
+    return
+  fi
   # We have to create a user with -activities appended to it, and the total
   # length can't exceed 32 characters, so limit usernames to the first
   # 21 characters (-activities is 11, 21 + 11 = 32).
