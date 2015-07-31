@@ -19,4 +19,5 @@ fi
 for site in $sites; do
   long_container_up site "$site"
 done
+
 long_nginx_reload

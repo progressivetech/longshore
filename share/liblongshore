@@ -122,6 +122,8 @@ long_generate_my_cnf() {
   local user="$4"
   local db="$5"
 
+  [ ! -d "$dir" ] && long_die "Can't generate my.cnf. Directory (%s) doesn't exist." 1 "$dir"
+
   [ -z "$user" ] && user=root
 
   printf "[client]\nuser=%s\npassword=%s\nport=%s\nhost=127.0.0.1\n" \
@@ -659,6 +661,11 @@ long_exec_in_container() {
 # if possible.
 long_create_mysql_container() {
   local name="$1"
+
+  if [ -z "$name" ]; then
+    long_die "Can't create a db container without a name." 
+  fi
+
   local dir="${LONG_SRV}/services/databases/${name}"
   # Make sure our base directory and a mysql sub directory exists.
   # Our my.cnf file will go in ${dir}/my.cnf and be mounted in the host
@@ -684,6 +691,8 @@ long_create_mysql_container() {
     return
   fi
 
+  long_log "Creating mysql container (%s)." info "$name"
+
   docker create --name "$name" \
     -v "${dir}/mysql":/var/lib/mysql \
     -v "${dir}/my.cnf:/root/.my.cnf" \
@@ -693,6 +702,15 @@ long_create_mysql_container() {
     -p "127.0.0.1:${LONG_DB_PORT}:3306" \
     $LONG_MEMORY_LIMIT \
     ptp-mysql:latest mysqld || long_die "Failed to create the container %s" 1 "$name"
+
+  # Since db containers are linked to other containers, the other containers
+  # will fail to start if the db containers are not started. So, always
+  # start after creation.
+  #docker start "$name"
+
+  # Lastly, re-create the phpmyadmin container so it can link to the
+  # potentially new db container.
+  #long_recreate_container phpmyadmin
 }
 
 # Low level phpmyadmin container creation. Call long_create_container instead
@@ -990,6 +1008,10 @@ long_create_container() {
       # then use the db specified in the container.
       long_set_site_db_host "$name"
       if [ -z "$db" ]; then
+        if [ -z "$LONG_SITE_DB_HOST" ]; then
+          # This is a fatal error.
+          long_die "The site container (%s) exists but doesn't have a db set." 1 "$name"
+        fi
         db="$LONG_SITE_DB_HOST"
       else
         # If it exists and we are specifying a db, make sure they match.
@@ -1774,15 +1796,19 @@ long_print_upgradable_packages() {
   printf "$packages"
 }
 
+# If a container needs to be upgraded, recreate it.
+long_upgrade_container() {
+  local container="$1"
+  if ! long_needs_upgrade "$container"; then
+    long_log "The container %s doesn't need an upgrade." info "$container"
+    return
+  fi
+}
+
 # Stop, delete and re-create the given container. This is the proper way
 # to "upgrade" a container.
 long_recreate_container() {
   local container="$1"
-
-  if ! long_needs_upgrade "$container"; then
-    long_log "The container %s doesn't need an upgrade." info "$container"
-    continue
-  fi
 
   # Get the image so we know what kind of container we are dealing with.
   local image=$(docker inspect -f {{.Config.Image}} "$container" | cut -d: -f1)

@@ -52,7 +52,7 @@ for container in $containers; do
       elif ! long_needs_upgrade "$container"; then
         long_log "%s: Upgrade not needed\n" info "$container"
      else
-        long_recreate_container "$container"
+        long_upgrade_container "$container"
       fi
     else
       long_log "Not continuing." info
