@@ -1,0 +1,35 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-disable <site>
+Stop a site and ensure it won't be restarted automatically and won't be
+included in the list of servers on this sibling.
+
+Arguments
+  <site> - The site you want to stop, e.g. ptp"
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+# We aren't going to run this over the network - too complicated since
+# once we run it once it falls out of the sibling cache file.
+
+# Check to make sure the site has a site directory locally in either sites
+# or sites.disabled.
+if [ ! -d "${LONG_SRV}/services/sites/${site}" -a ! -d "${LONG_SRV}/services/sites.disabled/${site}" ]; then
+  long_set_site_sibling "$site"
+  if [ -n "$LONG_SITE_SIBLING" ]; then
+    long_die "This site lives on %s. Try disabling it from that sibling." 1 "$LONG_SITE_SIBLING"
+  else
+    long_die "That site doesn't seem to exist on this sibling."
+  fi
+fi
+
+me=$(hostname)
+long_prompt "You are about to stop and disable the site '%s' on sibling %s." "$site" "$me"
+if [ "$reply" = "y" ]; then
+  long_disable_site "$site"
+else
+  long_log "Site not disable." info
+fi
+

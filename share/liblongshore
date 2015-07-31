@@ -1393,7 +1393,7 @@ long_install_site() {
 
 # Delete a site container and all related containers and data
 long_destroy_site() {
-  site="$1"
+  local site="$1"
   
   # Remove the nginx file first so the site is no longer accessible.
   long_log "Disabling nginx configuration." info
@@ -1443,6 +1443,101 @@ long_destroy_site() {
   $LONG_MANAGE_IMAP_USER_CMD delete "${site}-returns" 2>/dev/null
 
   long_clear_sibling_cache
+}
+
+# Disable a site container. 
+long_disable_site() {
+  local site="$1"
+
+  if long_container_running "$site"; then
+    # Stop the container.
+    docker stop "$site"
+  fi
+
+  # Ensure disabled sites directory exists.
+  mkdir -p "${LONG_SRV}/services/sites.disabled"
+
+  # Move to disabled directory if necessary and clear sibling cache 
+  if [ ! -d "${LONG_SRV}/services/sites.disabled/${site}" ]; then
+    if [ ! -d "${LONG_SRV}/services/sites/${site}" ]; then
+      long_die "The site doesn't seem to have a site directory. Can't disable."
+    fi
+    mv "${LONG_SRV}/services/sites/${site}" "${LONG_SRV}/services/sites.disabled"
+  fi
+  long_clear_sibling_cache
+  
+  # Delete nginx configuration
+  rm -f "${LONG_NGINX_SITES_ENABLED}/${site}.conf"
+
+  # Regenerate nginx disabled sites configuration file and reload nginx.
+  long_generate_nginx_disabled_sites_config
+  long_nginx_reload
+}
+
+# Enable a site container. 
+long_enable_site() {
+  local site="$1"
+
+  # Move to enabled directory if necessary and clear sibling cache 
+  if [ ! -d "${LONG_SRV}/services/sites/${site}" ]; then
+    if [ ! -d "${LONG_SRV}/services/sites.disabled/${site}" ]; then
+      long_die "The site doesn't seem to have a site directory. Can't enable."
+    fi
+    mv "${LONG_SRV}/services/sites.disabled/${site}" "${LONG_SRV}/services/sites/"
+  fi
+  long_clear_sibling_cache
+  
+  # Regenerate diabled sites to remove this one.
+  long_generate_nginx_disabled_sites_config
+
+  long_container_up site "$site"
+  long_nginx_reload
+}
+# Generate list of disabled sites.
+long_set_disabled_sites() {
+  LONG_DISABLED_SITES=$(ls "${LONG_SRV}/services/sites.disabled" 2>/dev/null)
+}
+
+# Create a special nginx configuration file for diabled sites.
+long_generate_nginx_disabled_sites_config() {
+  long_set_disabled_sites
+
+  local target="${LONG_NGINX_SITES_ENABLED}/disabled.conf"
+  # If there are no disabled sites, then ensure the configuration is removed
+  if [ -z "$LONG_DISABLED_SITES" ]; then
+    rm -rf "$target"
+    return
+  fi
+
+  # Generate server list
+  local server_name=
+  local disabled_site=
+  local template="${LONG_SHARE}/templates/nginx-disabled.conf"
+  for disabled_site in $LONG_DISABLED_SITES; do
+    if [ -z "$server_name" ]; then
+      server_name="${disabled_site}.${LONG_DEFAULT_DOMAIN}"
+    else
+      server_name="${server_name} ${disabled_site}.${LONG_DEFAULT_DOMAIN}"
+    fi
+  done
+
+  local access_log="disabled.access.log"
+  local web_root="${LONG_SHARE}/www/disabled"
+
+  if [ -f "$LONG_NGINX_TLS_PATH" ]; then
+    local tls_or_not="include $LONG_NGINX_TLS_PATH;"
+    long_create_nginx_tls_conf
+    long_create_nginx_redirect "$site" "$server_name"
+  else
+    local tls_or_not="listen ${LONG_IP_ADDR}:80;"
+  fi
+  cat "$template" | \
+    sed \
+    -e "s/LONG_TLS_OR_NOT/$tls_or_not/" \
+    -e "s#LONG_WEB_ROOT#$web_root#" \
+    -e "s#LONG_SITE_URL#$server_name#" \
+    -e "s#LONG_ACCESS_LOG#$access_log#" \
+    > "$target"
 }
 
 # Access the given site's database via mysql cli
@@ -1920,7 +2015,7 @@ long_rerun_over_network() {
 
   if [ -z "$LONG_SITE_SIBLING" ]; then
     # This could mean the site name was mis-typed.
-    long_log "Can't determine where to run this command because site doesn't have sibling (%s)." error "$site"
+    long_log "Can't determine where to run this command because site doesn't have sibling (%s). Running locally (%s)." error "$site" "$me"
     return 1
   fi
   if [ "$LONG_SITE_SIBLING" = "$me" ]; then

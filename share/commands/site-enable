@@ -1,0 +1,28 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-enable <site>
+Enable a site that has been disabled.
+
+Arguments
+  <site> - The site you want to enable, e.g. ptp"
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+# We aren't going to run this over the network - too complicated since
+# once we run it once it falls out of the sibling cache file.
+
+# Check to make sure the site has a site directory locally in either sites
+# or sites.disabled.
+if [ ! -d "${LONG_SRV}/services/sites/${site}" -a ! -d "${LONG_SRV}/services/sites.disabled/${site}" ]; then
+  long_set_site_sibling "$site"
+  if [ -n "$LONG_SITE_SIBLING" ]; then
+    long_die "This site lives on %s. Try enabling it from that sibling." 1 "$LONG_SITE_SIBLING"
+  else
+    long_die "That site doesn't seem to exist on this sibling."
+  fi
+fi
+
+long_enable_site "$site"
+
