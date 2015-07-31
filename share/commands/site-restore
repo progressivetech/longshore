@@ -1,0 +1,45 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-restore <site> <path> [<db>] [<platform>]
+Setup a new site from the files in the backed up tar ball provide by the
+<path> argument. This command ensures that the new site is installed on the
+provided database (not necessarily the same database as the one specified
+in the backup).
+
+Arguments
+  <site> - The site you want to import the db over, e.g. ptp
+  <path> - The path to the tar ball containing the backup.
+  <db> - Optionally provide the db. If omitted, use the one designated in
+  the backup."
+
+long_check_args "$2" "$#" 2
+
+site="$2"
+path="$3"
+db="$4"
+platform="$5"
+
+if [ -z "$db" ]; then
+  long_prompt "Restoring site using default database (%s)" "$LONG_DEFAULT_DB"
+  db="$LONG_DEFAULT_DB"
+fi
+
+[ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
+
+long_container_exists "$site" && long_die "The site '%s' already exists. \
+  Please site-destroy it before restoring it." 1 "$site"
+
+if [ ! -f "$path" ]; then
+  long_die "Can't find the path to the backup (%s)." 1 "$path"
+fi
+
+# Unpack it.
+cd "${LONG_SRV}/services/sites"
+tar -xzf "$path" || long_die "Failed to unpack tar ball"
+
+long_create_container site "$site" "$db" "$platform"
+docker start "$site"
+long_create_dns "$site"
+long_setup_site "$site"
+long_configure_site "$site"
+long_nginx_reload
