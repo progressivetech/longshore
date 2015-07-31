@@ -48,17 +48,6 @@ long_check_args() {
   fi
 }
 
-# Given a site, set the ssh variable to empty if it should 
-# be run locally or a working ssh command that connects to
-# the appropriate frontend.
-long_set_ssh_command() {
-  local site="$1"
-  local host=$(hostname)
-  frontend=$(ptp-get-frontend-for-site "$site")
-  LONG_SSH=
-  [ -n "$frontend" ] && [ "$host" != "$frontend" ] && LONG_SSH="ssh ${frontend}.mayfirst.org"
-}
-
 # Prompt the user with a given message ($1) and the question
 # "Proceed? [Yn]" - set $reply variable to either y or n, properly
 # parsing case and the default.
@@ -2015,12 +2004,16 @@ long_rerun_over_network() {
 
   if [ -z "$LONG_SITE_SIBLING" ]; then
     # This could mean the site name was mis-typed.
-    long_log "Can't determine where to run this command because site doesn't have sibling (%s). Running locally (%s)." error "$site" "$me"
-    return 1
+    long_die "Can't determine where to run this command because site doesn't have sibling (%s)." 1 "$site"
   fi
   if [ "$LONG_SITE_SIBLING" = "$me" ]; then
     # Return 1 to indicate that we did not re-run over the network.
     return 1
+  fi
+  # Ensure the host is reachable.
+  if ! long_is_host_reachable "${LONG_SITE_SIBLING}.mayfirst.org"; then
+    long_die "The sibling I was trying to run this command on (%s) is not reachable." \
+      1 "${LONG_SITE_SIBLING}.mayfirst.org"
   fi
   ssh -t "${LONG_SITE_SIBLING}.mayfirst.org" "/srv/longshore/bin/longshore $@" 
   if [ "$?" != "0" ]; then
@@ -2033,6 +2026,14 @@ long_rerun_over_network() {
 
 }
 
+# Return 0 if it is reachable and 1 if it is not.
+long_is_host_reachable() {
+  local host="$1"
+  if ping -q -c1 "$host" &>/dev/null; then
+    return 0
+  fi
+  return 1
+}
 # Provide a unique shortened database username if the provided username
 # is longer than 16 characters.
 long_sanitize_db_username() {
@@ -2064,7 +2065,12 @@ long_sanitize_db_username() {
 long_clear_sibling_cache() {
   rm -f "$LONG_SIBLING_CACHE" 
   for sibling in $LONG_SIBLINGS; do
-    ssh ${sibling}.mayfirst.org "rm -f '$LONG_SIBLING_CACHE'"
+    if ! long_is_host_reachable "${sibling}.mayfirst.org"; then
+      long_error "The sibling I was trying to delete the cache on (%s) is not reachable. Continuing." \
+        error "${sibling}.mayfirst.org"
+    else
+      ssh ${sibling}.mayfirst.org "rm -f '$LONG_SIBLING_CACHE'"
+    fi
   done
 }
 
@@ -2095,10 +2101,16 @@ long_generate_sibling_cache() {
   # Now get sites on the other siblings.
   for sibling in $LONG_SIBLINGS; do
     long_log "Generating site list for %s." info "$sibling"
-    local sites=$(ssh ${sibling}.mayfirst.org /srv/longshore/bin/longshore site-list "$sibling")
-    for site in $sites; do
-      printf "%s:%s\n" "$site" "$sibling" >> "$temp"
-    done
+    if ! long_is_host_reachable "${sibling}.mayfirst.org"; then
+      long_error "The sibling I was trying to retrieve the cache for \
+        (%s) is not reachable. Continuing without this sibling's sites." \
+        error "${sibling}.mayfirst.org"
+    else
+      local sites=$(ssh ${sibling}.mayfirst.org /srv/longshore/bin/longshore site-list "$sibling")
+      for site in $sites; do
+        printf "%s:%s\n" "$site" "$sibling" >> "$temp"
+      done
+    fi
   done
 
   sort "$temp" > "$target"
@@ -2159,7 +2171,12 @@ long_set_dbs() {
         fi
       done
     else
-      ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling $order_by_memory" 
+      if ! long_is_host_reachable "${sibling}.mayfirst.org"; then
+        long_error "The sibling I was trying to get a list of dbs for (%s) is not reachable. Continuing." \
+          error "${sibling}.mayfirst.org"
+      else
+        ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling $order_by_memory" 
+      fi
     fi
   done
 }
