@@ -37,6 +37,12 @@ fi
 cd "${LONG_SRV}/services/sites"
 tar -xzf "$path" || long_die "Failed to unpack tar ball"
 
+# Remove the db/server specific files
+rm -f "${LONG_SRV}/services/sites/$site/my.cnf"
+rm -f "${LONG_SRV}/services/sites/$site/env/PORT"
+rm -f "${LONG_SRV}/services/sites/$site/drupal/settings.php"
+rm -f "${LONG_SRV}/services/sites/$site/drupal/civicrm.settings.php"
+
 long_create_container site "$site" "$db" "$platform"
 docker start "$site"
 long_create_dns "$site"
