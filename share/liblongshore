@@ -213,7 +213,7 @@ long_create_nginx_phpmyadmin_conf() {
   LONG_CGI_PORT="$port"
   cat "$template" | \
     sed \
-    -e "s:LONG_TLS_OR_NOT:$LONG_TLS_OR_NOT:" \
+    -e "s/LONG_TLS_OR_NOT/$LONG_TLS_OR_NOT/" \
     -e "s:LONG_SITE_URL:$LONG_SITE_URL:" \
     -e "s:LONG_CGI_PORT:$LONG_CGI_PORT:" \
     > "$target"
@@ -294,7 +294,7 @@ long_phpmyadmin_is_latest() {
 }
 
 # This variable containing the names of all database containers
-long_db_containers() {
+long_set_db_containers() {
   LONG_DB_CONTAINERS=$(ls "${LONG_SRV}/services/databases/")
 }
 
@@ -706,7 +706,7 @@ long_create_mysql_container() {
     ptp-mysql:latest mysqld || long_die "Failed to create the container %s" 1 "$name"
 }
 
-# Low leverl phpmyadmin container creation. Call long_create_container instead
+# Low level phpmyadmin container creation. Call long_create_container instead
 # if possible.
 long_create_phpmyadmin_container() {
   local dir="${LONG_SRV}/services/phpmyadmin"
@@ -714,12 +714,12 @@ long_create_phpmyadmin_container() {
   mkdir -p "$dir/src"
 
   # Create the server.list file with all db servers on this host
-  long_db_containers
+  long_set_db_containers
   echo "$LONG_DB_CONTAINERS" > "${dir}/src/servers.list"
 
   # Create the --link argument
   local link=
-  for link_db in $long_db_containers; do
+  for link_db in $LONG_DB_CONTAINERS; do
     link="$link --link $link_db:$link_db"
   done
 
