@@ -1521,14 +1521,14 @@ long_generate_nginx_disabled_sites_config() {
   fi
 
   # Generate server list
-  local server_name=
+  local server_names=
   local disabled_site=
   local template="${LONG_SHARE}/templates/nginx-disabled.conf"
   for disabled_site in $LONG_DISABLED_SITES; do
-    if [ -z "$server_name" ]; then
-      server_name="${disabled_site}.${LONG_DEFAULT_DOMAIN}"
+    if [ -z "$server_names" ]; then
+      server_names="${disabled_site}.${LONG_DEFAULT_DOMAIN}"
     else
-      server_name="${server_name} ${disabled_site}.${LONG_DEFAULT_DOMAIN}"
+      server_names="${server_names} ${disabled_site}.${LONG_DEFAULT_DOMAIN}"
     fi
   done
 
@@ -1538,7 +1538,10 @@ long_generate_nginx_disabled_sites_config() {
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
     local tls_or_not="include $LONG_NGINX_TLS_PATH;"
     long_create_nginx_tls_conf
-    long_create_nginx_redirect "$site" "$server_name"
+    local server_name=
+    for server_name in $server_names; do
+      long_create_nginx_redirect "$site" "$server_name"
+    done
   else
     local tls_or_not="listen ${LONG_IP_ADDR}:80;"
   fi
