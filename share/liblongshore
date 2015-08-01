@@ -232,24 +232,24 @@ long_create_nginx_site_conf() {
 
   local template="${LONG_SHARE}/templates/nginx-site.conf"
   local target="${LONG_NGINX_SITES_ENABLED}/${site}.conf"
-  LONG_SITE_URL="${site}.${LONG_DEFAULT_DOMAIN}"
+  local long_site_url="${site}.${LONG_DEFAULT_DOMAIN}"
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
-    LONG_TLS_OR_NOT="include $LONG_NGINX_TLS_PATH;"
+    local long_tls_or_not="include $LONG_NGINX_TLS_PATH;"
     long_create_nginx_tls_conf
-    long_create_nginx_redirect "$site" "$LONG_SITE_URL"
+    long_create_nginx_redirect "$site" "$long_site_url"
   else
     LONG_TLS_OR_NOT="listen ${LONG_IP_ADDR}:80;"
   fi
-  LONG_ACCESS_LOG="${site}.access.log"
-  LONG_WEB_ROOT="/var/www/powerbase/${platform}"
-  LONG_PHP_ROOT="/var/www/powerbase"
-  LONG_CGI_PORT="$port"
+  local LONG_ACCESS_LOG="${site}.access.log"
+  local LONG_WEB_ROOT="/var/www/powerbase/${platform}"
+  local LONG_PHP_ROOT="/var/www/powerbase"
+  local LONG_CGI_PORT="$port"
 
   cat "$template" | \
     sed \
-    -e "s#LONG_TLS_OR_NOT#$LONG_TLS_OR_NOT#" \
+    -e "s#LONG_TLS_OR_NOT#$long_tls_or_not#" \
     -e "s#LONG_ACCESS_LOG#$LONG_ACCESS_LOG#" \
-    -e "s#LONG_SITE_URL#$LONG_SITE_URL#" \
+    -e "s#LONG_SITE_URL#$long_site_url#" \
     -e "s#LONG_WEB_ROOT#$LONG_WEB_ROOT#" \
     -e "s#LONG_PHP_ROOT#$LONG_PHP_ROOT#" \
     -e "s#LONG_CGI_PORT#$LONG_CGI_PORT#" \
@@ -1539,8 +1539,8 @@ long_generate_nginx_disabled_sites_config() {
     local tls_or_not="include $LONG_NGINX_TLS_PATH;"
     long_create_nginx_tls_conf
     local server_name=
-    for server_name in $server_names; do
-      long_create_nginx_redirect "$site" "$server_name"
+    for disabled_site in $LONG_DISABLED_SITES; do
+      long_create_nginx_redirect "$disabled_site" "${disabled_site}.${LONG_DEFAULT_DOMAIN}"
     done
   else
     local tls_or_not="listen ${LONG_IP_ADDR}:80;"
