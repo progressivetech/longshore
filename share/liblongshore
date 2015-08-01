@@ -1540,6 +1540,7 @@ long_generate_nginx_disabled_sites_config() {
     long_create_nginx_tls_conf
     local server_name=
     for disabled_site in $LONG_DISABLED_SITES; do
+      [ -z "$disabled_site" ] && continue
       long_create_nginx_redirect "$disabled_site" "${disabled_site}.${LONG_DEFAULT_DOMAIN}"
     done
   else
