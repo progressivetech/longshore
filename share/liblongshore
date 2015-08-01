@@ -1544,7 +1544,7 @@ long_generate_nginx_disabled_sites_config() {
   fi
   cat "$template" | \
     sed \
-    -e "s/LONG_TLS_OR_NOT/$tls_or_not/" \
+    -e "s#LONG_TLS_OR_NOT#$tls_or_not#" \
     -e "s#LONG_WEB_ROOT#$web_root#" \
     -e "s#LONG_SITE_URL#$server_name#" \
     -e "s#LONG_ACCESS_LOG#$access_log#" \
