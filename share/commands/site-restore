@@ -45,7 +45,13 @@ rm -f "${LONG_SRV}/services/sites/$site/drupal/civicrm.settings.php"
 
 long_create_container site "$site" "$db" "$platform"
 docker start "$site"
-long_create_dns "$site"
 long_setup_site "$site"
 long_configure_site "$site"
 long_nginx_reload
+
+long_prompt "Updating DNS"
+if [ "$reply" = "y" ]; then
+  long_create_dns "$site"
+else
+  long_log "Not updating DNS."
+fi
