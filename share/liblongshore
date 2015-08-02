@@ -1751,9 +1751,12 @@ long_dump_database() {
   fi
   mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
 
+  # The database name might not be the site name (rap-dpt => rap_dpt)
+  local dbname=$(grep ^database "${mycnf}" | cut -d= -f2)
+
   # All databases are named after the site name. Set pipefail so if 
   # mysqldump fails but gzip succeeds we get an error message.
-  out=$(set -o pipefail && mysqldump --defaults-file="$mycnf" "$site" | gzip --to-stdout > "$temp")
+  out=$(set -o pipefail && mysqldump --defaults-file="$mycnf" "$dbname" | gzip --to-stdout > "$temp")
   
   # Only move into place if it was successful.
   if [ "$?" = 0 ]; then
