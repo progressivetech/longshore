@@ -47,7 +47,7 @@ RUN chown www-data:www-data /var/www/.ssh
 RUN mkdir /var/www/powerbase
 
 # Copy our custom PHP settings for powerbase.
-COPY powerbase.ini /etc/php5/fpm/conf.d/powerbase.ini
+COPY powerbase.ini /etc/php5/fpm/conf.d/99-powerbase.ini
 
 # We want a lot more processes to be able to run
 RUN sed -i 's#pm.max_children = 5#pm.max_children = 40#' /etc/php5/fpm/pool.d/www.conf
