@@ -23,9 +23,11 @@ else
   long_set_sites "$hostname"
   sites="$LONG_SITES"
 fi
-
 for site in $sites; do
-  long_rerun_over_network "$@" && continue
+  # This command never has more arguments than site-cron and the site. And
+  # if we just pass "$@" like we do for the other commands, we will lose
+  # the <site> if this command was called without a site argument.
+  long_rerun_over_network site-cron "$site" && continue
   # If the site is not running we can't run cron.
   if ! long_container_running "$site"; then
     long_log "Not executing cron for %s because it is not running." info "$site"
