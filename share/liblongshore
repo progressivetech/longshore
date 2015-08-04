@@ -756,6 +756,7 @@ long_create_phpmyadmin_container() {
     -v "${dir}/src:/var/www/phpmyadmin" \
     $link \
     $publish \
+    -e "LONG_LIVE=$LONG_LIVE" \
     $LONG_MEMORY_LIMIT \
     ptp-php:latest php5-fpm  || long_die "Failed to create the phpmyadmin container"
 }
@@ -956,6 +957,7 @@ long_create_site_container() {
     -v "${LONG_SRV}/platforms/${platform}:/var/www/powerbase" \
     -v "${dir}/drupal:/var/www/powerbase/sites/default" \
     -v "${LONG_SHARE}/drush:/var/www/.drush" \
+    -e "LONG_LIVE=$LONG_LIVE" \
     -e "PB_URL=${name}.${LONG_DEFAULT_DOMAIN}" \
     $LONG_MEMORY_LIMIT \
     $link \
