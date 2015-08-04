@@ -1583,7 +1583,7 @@ long_fetch_site() {
   local path="/srv/longshore/services/sites/${site}"
 
   long_log "Get host for site (%s)" info "$site"
-  local host=$(ssh ${user}@${default_host}.mayfirst.org "/srv/longshore/bin/longshore site-info '$site'" | grep ^Host: | cut -d: -f2 | tr -d ' ')
+  local host=$(ssh ${user}@${default_host}.mayfirst.org "/srv/longshore/bin/longshore site-info '$site'" | grep ^Sibling: | cut -d: -f2 | tr -d ' ')
 
   if [ -z "$host" ]; then
     long_die "Can't find host" 
@@ -1996,7 +1996,7 @@ long_gitify_site() {
     local user=longshore
     local default_host=olivera
     long_log "Get host for site (%s)" info "$site"
-    local host=$(ssh ${user}@${default_host}.mayfirst.org "/srv/longshore/bin/longshore site-info '$site'" | grep ^Host: | cut -d: -f2 | tr -d ' ')
+    local host=$(ssh ${user}@${default_host}.mayfirst.org "/srv/longshore/bin/longshore site-info '$site'" | grep ^Sibling: | cut -d: -f2 | tr -d ' ')
 
     if [ -z "$host" ]; then
       long_log "Can't find the host" info
