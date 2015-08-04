@@ -2048,7 +2048,15 @@ long_rerun_over_network() {
     long_die "The sibling I was trying to run this command on (%s) is not reachable." \
       1 "${LONG_SITE_SIBLING}.mayfirst.org"
   fi
-  ssh -t "${LONG_SITE_SIBLING}.mayfirst.org" "/srv/longshore/bin/longshore $@" 
+  if [ -p /dev/fd/0 ]; then
+    # Stdin is a pipe, don't allocate a terminal
+    local t=
+  else
+    # Stdin is not a pipe, allocate a terminal in case we want this command to be
+    # interactive.
+    local t=-t
+  fi
+  ssh $t "${LONG_SITE_SIBLING}.mayfirst.org" "/srv/longshore/bin/longshore $@" 
   if [ "$?" != "0" ]; then
     long_log "Rerunning %s for site %s over network failed." error "$subcmd" "$site"
   fi
