@@ -195,16 +195,16 @@ long_create_nginx_phpmyadmin_conf() {
   local target="${LONG_NGINX_SITES_ENABLED}/phpmyadmin.conf"
   LONG_SITE_URL="$LONG_PHPMYADMIN_URL"
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
-    LONG_TLS_OR_NOT="include $LONG_NGINX_TLS_PATH;"
+    local tls_or_not="include $LONG_NGINX_TLS_PATH;"
     long_create_nginx_tls_conf
     long_create_nginx_redirect phpmyadmin "$LONG_SITE_URL"
   else
-    LONG_TLS_OR_NOT="listen ${LONG_IP_ADDR}:80;"
+    local tls_or_not="listen ${LONG_IP_ADDR}:80;"
   fi
   LONG_CGI_PORT="$port"
   cat "$template" | \
     sed \
-    -e "s#LONG_TLS_OR_NOT#$LONG_TLS_OR_NOT#" \
+    -e "s#LONG_TLS_OR_NOT#$tls_or_not#" \
     -e "s:LONG_SITE_URL:$LONG_SITE_URL:" \
     -e "s:LONG_CGI_PORT:$LONG_CGI_PORT:" \
     > "$target"
@@ -234,11 +234,11 @@ long_create_nginx_site_conf() {
   local target="${LONG_NGINX_SITES_ENABLED}/${site}.conf"
   local long_site_url="${site}.${LONG_DEFAULT_DOMAIN}"
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
-    local long_tls_or_not="include $LONG_NGINX_TLS_PATH;"
+    local tls_or_not="include $LONG_NGINX_TLS_PATH;"
     long_create_nginx_tls_conf
     long_create_nginx_redirect "$site" "$long_site_url"
   else
-    LONG_TLS_OR_NOT="listen ${LONG_IP_ADDR}:80;"
+    local tls_or_not="listen ${LONG_IP_ADDR}:80;"
   fi
   local LONG_ACCESS_LOG="${site}.access.log"
   local LONG_WEB_ROOT="/var/www/powerbase/${platform}"
@@ -247,7 +247,7 @@ long_create_nginx_site_conf() {
 
   cat "$template" | \
     sed \
-    -e "s#LONG_TLS_OR_NOT#$long_tls_or_not#" \
+    -e "s#LONG_TLS_OR_NOT#$tls_or_not#" \
     -e "s#LONG_ACCESS_LOG#$LONG_ACCESS_LOG#" \
     -e "s#LONG_SITE_URL#$long_site_url#" \
     -e "s#LONG_WEB_ROOT#$LONG_WEB_ROOT#" \
