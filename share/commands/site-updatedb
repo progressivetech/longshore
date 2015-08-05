@@ -25,5 +25,3 @@ for site in $sites; do
   long_exec_drush_cmd "$site" "-y updatedb"
   long_exec_drush_cmd "$site" "-y civicrm-upgrade-db"
 done
-
-long_nginx_reload
