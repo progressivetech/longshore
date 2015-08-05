@@ -1,0 +1,24 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-updatedb [<site>]
+Run all Drupal and CiviCRM database updates on the given site.
+
+Arguments
+  <site> - The site to update. If left out, update all sites."
+
+long_check_args "$2" "$#" 0
+
+sites="$2"
+
+if [ -z "$sites" ]; then
+  long_set_sites
+  sites="$LONG_SITES"
+fi
+
+for site in $sites; do
+  long_rerun_over_network site-updatedb "$site" && continue
+  long_exec_drush_cmd "$site" "-y updatedb"
+  long_exec_drush_cmd "$site" "-y civicrm-upgrade-db"
+done
+
+long_nginx_reload
