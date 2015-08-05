@@ -149,6 +149,11 @@ else
     "${source_platform_path}/" 
 fi
 
+# Now ensure all sites have db updates run.
+for site in $(/srv/longshore/bin/longshore site-list $(hostname) ); do
+  /srv/longshore/bin/longshore site-updatedb "$site"
+done
+
 # If we have other servers to copy to 
 siblings="$LONG_SIBLINGS"
 if [[ $(echo "$siblings" | wc -w) -gt "1" ]] && [ "$sync" = "y" ]; then
