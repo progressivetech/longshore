@@ -1,0 +1,60 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) platform-update <make-file-path> [<site>]
+Test a given platform make file to see if any of the packages have available
+updates.
+
+Arguments:
+ <make-file-path> path to a drush make file.
+ <site> optionally, indicate which site to test upgrades on. This site will 
+   have the upgrade module enabled and then disabled when we're done. Without
+   this option, drupal module updates are not checked." 
+
+long_check_args "$2" "$#" 1
+
+base=${LONG_SRV}/platforms
+makefile_path="$2"
+site="$3"
+
+# First check out all git repos and look for updates
+
+# Get a list of project names that use git to download source
+for project in $(grep  type "$makefile_path"  | grep git | cut -d[ -f2 | tr -d ']'); do
+  # Get the url and revision
+  url=$(grep -F "[$project][download][url]" "$makefile_path" | cut -d= -f2 | tr -d '" ')
+  revision=$(grep -F "[$project][download][revision]" "$makefile_path" | cut -d= -f2 | tr -d '" ')
+  # Skip repos I carefully handle by hand.
+  if [ "$project" = "civicrm" -o "$project" = "civicrm_drupal" -o "$project" = "civicrm_packages" ]; then
+    long_log "Skipping %s" info "$project"
+    continue
+  fi
+  if [ -z "$url" ]; then
+    long_log "Failed to find url for project (%s)" error "$project"
+    long_log "Failed to find revision for project (%s)" error "$project"
+  else
+    temp=$(mktemp -d)
+    cd "$temp"
+    if ! git clone -q "$url" code; then
+      long_log "Failed to checkout project %s" error "$project"
+      cd
+      rm -rf "$temp"
+      continue
+    fi
+    cd code
+    commit=$(git log | head -n1 | cut -d\  -f2)
+    if [ "$commit" != "$revision" ]; then
+      long_log "Project %s needs update from %s to %s" error "$project" "$revision" "$commit"
+    else
+      long_log "Project %s is update to date" info "$project"
+    fi
+    cd
+    rm -rf "$temp"
+  fi
+done
+
+if [ -n "$site" ]; then
+  # Now check drupal modules.
+  long_log "Enabling update module." info
+  long_exec_drush_cmd "$site" "-y en update"
+  long_exec_drush_cmd "$site" "pm-update"
+fi
