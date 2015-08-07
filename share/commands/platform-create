@@ -79,6 +79,16 @@ if [ -z "$source_platform_path_temp" ]; then
   ln -s ../../../default/private/extensions/cache  \
     "${source_platform_path_temp}/sites/all/extensions/cache"
 
+  # If this platform is CiviCRM 4.5 or lower, we don't need to run bower, etc.
+  # Otherwise, it's required.
+  if [ "$makefile" != "ourpowerbase-d7-c4.5" ]; then
+    pushd "${source_platform_path_temp}/sites/all/modules/civicrm"
+    composer install
+    npm install
+    nodejs node_modules/bower/bin/bower install
+    popd
+  fi
+
   long_log "Running GenCode.php..." info
   target_path="${source_platform_path_temp}/sites/all/modules/civicrm/xml"
   [ ! -d "$target_path" ] && long_die "The xml directory on the platform doesn't exist."
@@ -151,7 +161,10 @@ fi
 
 # Now ensure all sites have db updates run.
 for site in $(/srv/longshore/bin/longshore site-list $(hostname) ); do
-  /srv/longshore/bin/longshore site-updatedb "$site"
+  long_set_site_platform "$site"
+  if [ "$LONG_SITE_PLATFORM" = "$makefile" ]; then
+    /srv/longshore/bin/longshore site-updatedb "$site"
+  fi
 done
 
 # If we have other servers to copy to 
