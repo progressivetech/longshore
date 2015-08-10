@@ -2269,3 +2269,23 @@ long_set_site_recent_logins_count() {
   LONG_SITE_RECENT_LOGINS_COUNT=$(long_execute_site_query "$site" "$temp" | tail -n1)
   rm "$temp"
 }
+
+# Check if site is online
+long_is_site_reachable() {
+  local site="$1"
+  local timeout="$2"
+
+  # If no timeout is specified use 10 seconds as the default.
+  if [ -z "$timeout" ]; then
+    timeout=10
+  fi
+  if [ "$LONG_HTTPS_ENABLED" = "y" ]; then
+    local protocol=https
+  else
+    local protocol=http
+  fi
+  if ! curl -s --max-time "$timeout" "${protocol}://${site}.${LONG_DEFAULT_DOMAIN}" | grep "block-user-login" >/dev/null; then
+    return 1
+  fi
+  return 0
+}
