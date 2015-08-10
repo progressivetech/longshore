@@ -2279,7 +2279,7 @@ long_is_site_reachable() {
   if [ -z "$timeout" ]; then
     timeout=10
   fi
-  if [ "$LONG_HTTPS_ENABLED" = "y" ]; then
+  if [ -f "$LONG_NGINX_TLS_PATH" ]; then
     local protocol=https
   else
     local protocol=http
