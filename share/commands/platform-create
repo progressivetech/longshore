@@ -90,61 +90,65 @@ if [ -z "$source_platform_path_temp" ]; then
   ln -s ../../../default/private/extensions/cache  \
     "${source_platform_path_temp}/sites/all/extensions/cache"
 
-  # If this platform is CiviCRM 4.5 or lower, we don't need to run bower, etc.
-  # Otherwise, it's required.
-  if [ "$makefile" != "ourpowerbase-d7-c4.5" ]; then
-    pushd "${source_platform_path_temp}/sites/all/modules/civicrm"
-    composer install
-    npm install
-    nodejs node_modules/bower/bin/bower install
-    popd
-  fi
+  # There is a complicated process for taking a CiviCRM git repo and turning it
+  # into a safe and functional folder that can be used on a production CiviCRM
+  # site. Our strategy is to use as much code as possible from the distmaker
+  # bash utility that is used by the core developers to create the official
+  # tarballs.
+  long_log "Running distmaker..." info
 
-  long_log "Running GenCode.php..." info
-  target_path="${source_platform_path_temp}/sites/all/modules/civicrm/xml"
-  [ ! -d "$target_path" ] && long_die "The xml directory on the platform doesn't exist."
-  cd "$target_path"
-  php GenCode.php > /dev/null
+  # For easier compatibility with distmaker - using their variable names.
+  TRG=$(mktemp -d)
+  SRC="${source_platform_path_temp}/sites/all/modules/civicrm"
+  long_log "TRG: %s and SRC: %s" info "$TRG" "$SRC" 
 
-  delete="sites/all/modules/civicrm/bin/setup.sh
-  sites/all/modules/civicrm/distmaker
-  sites/all/modules/civicrm/.gitignore
-  sites/all/modules/civicrm/header-afl.txt
-  sites/all/modules/civicrm/header-agpl.txt
-  sites/all/modules/civicrm/header.sql
-  sites/all/modules/civicrm/header.tpl
-  sites/all/modules/civicrm/header.txt
-  sites/all/modules/civicrm/packages/amavisd-new
-  sites/all/modules/civicrm/packages/git-footnote
-  sites/all/modules/civicrm/packages/_ORIGINAL_
-  sites/all/modules/civicrm/packages/PhpDocumentor
-  sites/all/modules/civicrm/packages/PHPUnit
-  sites/all/modules/civicrm/packages/SeleniumRC
-  sites/all/modules/civicrm/packages/SymfonyComponents
-  sites/all/modules/civicrm/sql/civicrm_arms_sample_data.sql
-  sites/all/modules/civicrm/sql/GenerateData.php
-  sites/all/modules/civicrm/sql/GenerateData.README
-  sites/all/modules/civicrm/sql/GenerateGroups.php
-  sites/all/modules/civicrm/sql/GenerateMailing.php
-  sites/all/modules/civicrm/sql/GenerateReportData.php
-  sites/all/modules/civicrm/sql/README.txt
-  sites/all/modules/civicrm/sql/sample_data_pl.xml
-  sites/all/modules/civicrm/sql/sample_data.xml
-  sites/all/modules/civicrm/sql/test_data.mysql
-  sites/all/modules/civicrm/sql/test_data_second_domain.mysql
-  sites/all/modules/civicrm/sql/trigger.mysql
-  sites/all/modules/civicrm/sql/upgrade_pcm.mysql
-  sites/all/modules/civicrm/sql/webtest_data.mysql
-  sites/all/modules/civicrm/sql/zipcodes.mysql
-  sites/all/modules/civicrm/tests
-  sites/all/modules/civicrm/tools
-  sites/all/modules/civicrm/xml"
+  distmaker_functions="${SRC}/distmaker/dists/common.sh"
+  [ ! -f "$distmaker_functions" ] && long_die "The distmaker common functions doesn't exist."
+  source "$distmaker_functions"
 
-  long_log "Deleting un-needed source files." info
-  cd "$source_platform_path_temp"
-  for file in $delete; do
-    [ -e "$file" ] && rm -rf "$file"
-  done
+  long_log "Running dm_generate_vendor" info
+  dm_generate_vendor "$SRC" > /dev/null || long_die "Failed to dm_generate_vendor"
+
+  long_log "Running dm_generate_bower" info
+  dm_generate_bower "$SRC" > /dev/null || long_die "Failed to dm_generate_bower"
+
+  long_log "Running GenCode" info
+  cwd=$(pwd)
+  cd "$SRC/xml"
+  php GenCode.php schema/Schema.xml > /dev/null || long_die "Failed to GenCode.php"
+
+  long_log "Resetting TRG directory" info
+  dm_reset_dirs "$TRG"
+
+  # Figure out the current version from civicrm-version.php
+  DM_VERSION=$(grep version "$SRC/civicrm-version.php"  | cut -d\' -f4)
+  long_log "Running dm_generate_version (%s)" info "$version"
+  cp $SRC/drupal/civicrm.config.php.drupal $TRG/civicrm.config.php
+  dm_generate_version "$TRG/civicrm-version.php" Drupal
+
+  long_log "Running dm_install_core" info
+  dm_install_core "$SRC" "$TRG" > /dev/null || long_die "Failed to dm_install_core"
+
+  long_log "Running dm_install_packages" info
+  dm_install_packages "$SRC/packages" "$TRG/packages" > /dev/null || long_die "Failed to dm_install_packages"
+
+  long_log "Running dm_install_vendor" info
+  dm_install_vendor "$SRC/vendor" "$TRG/vendor" > /dev/null || long_die "Failed to dm_install_vendor"
+
+  long_log "Running dm_install_bower" info
+  dm_install_bower "$SRC/bower_components" "$TRG/bower_components" >/dev/null || long_die "Failed dm_install_bower"
+
+  long_log "Running dm_install_drupal" info
+  dm_install_drupal "$SRC/drupal" "$TRG/drupal" > /dev/null || long_die "Failed to dm_install_drupal"
+
+  # Kill our src civicrm directory and replace with our newly created one.
+  # Avoid getcwd errors by switching to our original directory before deleting
+  # this one.
+  cd "$cwd"
+  rm -rf "$SRC"
+  long_log "Replacing civicrm with newly generated civicrm code." info
+  mv "$TRG" "$SRC"
+  rm -rf $TRG
 
   # Now, put our custom fonts in place. This allows for korean fonts in mailing
   # labels
