@@ -2,7 +2,8 @@
 
 long_usage_message="usage: $(basename $0) platform-create <make-file-path> [<built-platform-path>]
 Build a new platform based on the given makefile and copy it into place.
-Optionally, copy the built platform to other servers.
+Optionally, copy the built platform to other servers. And, optionally, set 
+LONG_NO_UPDATE_DB if you don't want to run database updates.
 
 Arguments:
  <make-file-path> path to a drush make file.
@@ -12,13 +13,23 @@ Arguments:
    if it's not being used so we can determine the path of the platform.
    Also NOTE: the built-platform-path will be deleted when we finish.
    It should be a temporary directory. This option is used when copying
-   a built platform to other servers." 
+   a built platform to other servers."
 
 long_check_args "$2" "$#" 1
 
 base=${LONG_SRV}/platforms
 makefile_path="$2"
 source_platform_path_temp="$3"
+no_update=
+
+if [ -n "$LONG_NO_UPDATE_DB" ]; then
+  # The no_update variable will be inserted into the ssh command if we
+  # need to run this on our siblings.
+  no_update="LONG_NO_UPDATE_DB=1"
+  long_log "Not running database updates." info
+else
+  long_log "Running database updates." info
+fi
 
 # By default, we should prompt the user to sync the platform to other servers.
 sync=y
@@ -159,13 +170,15 @@ else
     "${source_platform_path}/" 
 fi
 
-# Now ensure all sites have db updates run.
-for site in $(/srv/longshore/bin/longshore site-list $(hostname) ); do
-  long_set_site_platform "$site"
-  if [ "$LONG_SITE_PLATFORM" = "$makefile" ]; then
-    /srv/longshore/bin/longshore site-updatedb "$site"
-  fi
-done
+if [ -z "no_update" ]; then
+  # Now ensure all sites have db updates run.
+  for site in $(/srv/longshore/bin/longshore site-list $(hostname) ); do
+    long_set_site_platform "$site"
+    if [ "$LONG_SITE_PLATFORM" = "$makefile" ]; then
+      /srv/longshore/bin/longshore site-updatedb "$site"
+    fi
+  done
+fi
 
 # If we have other servers to copy to 
 siblings="$LONG_SIBLINGS"
@@ -181,7 +194,7 @@ if [[ $(echo "$siblings" | wc -w) -gt "1" ]] && [ "$sync" = "y" ]; then
       else
         # Now finish the process on the remote sibling
         long_log "Running platform-create on remote sibling."
-        ssh -t longshore@${sibling}.mayfirst.org /srv/longshore/bin/longshore \
+        ssh -t longshore@${sibling}.mayfirst.org $no_update /srv/longshore/bin/longshore \
           platform-create "$makefile_path" "$source_platform_path_temp"
       fi
     done
