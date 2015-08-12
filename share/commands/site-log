@@ -1,0 +1,19 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-log <site> 
+Pipe the current ConfigAndLog file to less.
+
+Arguments
+  <site> - The site on which to report."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+long_rerun_over_network "$@" && exit
+
+# Find the right log
+path="${LONG_SRV}/services/sites/$site/drupal/files/civicrm/ConfigAndLog/"
+log=$(ls -t "$path"/CiviCRM.*.log | head -n1)
+less "$log"
