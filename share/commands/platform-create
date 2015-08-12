@@ -28,7 +28,7 @@ if [ -n "$LONG_NO_UPDATE_DB" ]; then
   no_update="LONG_NO_UPDATE_DB=1"
   long_log "Not running database updates." info
 else
-  long_log "Running database updates." info
+  long_log "Running database updates. Pass LONG_NO_UPDATE_DB=1 if you want to disable updates." info
 fi
 
 # By default, we should prompt the user to sync the platform to other servers.
@@ -106,11 +106,17 @@ if [ -z "$source_platform_path_temp" ]; then
   [ ! -f "$distmaker_functions" ] && long_die "The distmaker common functions doesn't exist."
   source "$distmaker_functions"
 
-  long_log "Running dm_generate_vendor" info
-  dm_generate_vendor "$SRC" > /dev/null || long_die "Failed to dm_generate_vendor"
+  if [ "$makefile" != "ourpowerbase-d7-c4.5" ]; then
+    # These functions only available in ourpowerbase-d7-c4.6 and higher.
+    long_log "Running dm_generate_vendor" info
+    dm_generate_vendor "$SRC" > /dev/null || long_die "Failed to dm_generate_vendor"
 
-  long_log "Running dm_generate_bower" info
-  dm_generate_bower "$SRC" > /dev/null || long_die "Failed to dm_generate_bower"
+    long_log "Running dm_generate_bower" info
+    dm_generate_bower "$SRC" > /dev/null || long_die "Failed to dm_generate_bower"
+  else
+    # This needs to be set for c4.5 for some reason.
+    DM_RSYNC=/usr/bin/rsync
+  fi
 
   long_log "Running GenCode" info
   cwd=$(pwd)
@@ -121,8 +127,8 @@ if [ -z "$source_platform_path_temp" ]; then
   dm_reset_dirs "$TRG"
 
   # Figure out the current version from civicrm-version.php
-  DM_VERSION=$(grep version "$SRC/civicrm-version.php"  | cut -d\' -f4)
-  long_log "Running dm_generate_version (%s)" info "$version"
+  DM_VERSION=$(grep version_no $SRC/xml/version.xml | egrep -o '[0-9.]+')
+  long_log "Running dm_generate_version (%s)" info "$DM_VERSION"
   cp $SRC/drupal/civicrm.config.php.drupal $TRG/civicrm.config.php
   dm_generate_version "$TRG/civicrm-version.php" Drupal
 
@@ -132,11 +138,14 @@ if [ -z "$source_platform_path_temp" ]; then
   long_log "Running dm_install_packages" info
   dm_install_packages "$SRC/packages" "$TRG/packages" > /dev/null || long_die "Failed to dm_install_packages"
 
-  long_log "Running dm_install_vendor" info
-  dm_install_vendor "$SRC/vendor" "$TRG/vendor" > /dev/null || long_die "Failed to dm_install_vendor"
+  if [ "$makefile" != "ourpowerbase-d7-c4.5" ]; then
+    # These functions only available in ourpowerbase-d7-c4.6 and higher.
+    long_log "Running dm_install_vendor" info
+    dm_install_vendor "$SRC/vendor" "$TRG/vendor" > /dev/null || long_die "Failed to dm_install_vendor"
 
-  long_log "Running dm_install_bower" info
-  dm_install_bower "$SRC/bower_components" "$TRG/bower_components" >/dev/null || long_die "Failed dm_install_bower"
+    long_log "Running dm_install_bower" info
+    dm_install_bower "$SRC/bower_components" "$TRG/bower_components" >/dev/null || long_die "Failed dm_install_bower"
+  fi
 
   long_log "Running dm_install_drupal" info
   dm_install_drupal "$SRC/drupal" "$TRG/drupal" > /dev/null || long_die "Failed to dm_install_drupal"
