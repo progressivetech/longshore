@@ -2,8 +2,7 @@
 
 long_usage_message="usage: $(basename $0) platform-create <make-file-path> [<built-platform-path>]
 Build a new platform based on the given makefile and copy it into place.
-Optionally, copy the built platform to other servers. And, optionally, set 
-LONG_NO_UPDATE_DB if you don't want to run database updates.
+Optionally, copy the built platform to other servers.
 
 Arguments:
  <make-file-path> path to a drush make file.
@@ -20,15 +19,23 @@ long_check_args "$2" "$#" 1
 base=${LONG_SRV}/platforms
 makefile_path="$2"
 source_platform_path_temp="$3"
-no_update=
+run_db_updates=0
 
-if [ -n "$LONG_NO_UPDATE_DB" ]; then
-  # The no_update variable will be inserted into the ssh command if we
-  # need to run this on our siblings.
-  no_update="LONG_NO_UPDATE_DB=1"
+while [ "$run_db_updates" != "y" -a "$run_db_updates" != "n" ]; do
+  read -p "Run DB updates after installing platform? [yN] "
+  if [ "$REPLY" = "Y" -o "$REPLY" = "y" ]; then
+    run_db_updates=y
+  elif [ "$REPLY" = "n" -o "$REPLY" = "N" -o -z "$REPLY" ]; then
+    run_db_updates=n
+  else
+    long_log "Please enter y or n or just hit enter." error
+  fi
+done
+
+if [ "$run_db_updates" = "n" ]; then
   long_log "Not running database updates." info
 else
-  long_log "Running database updates. Pass LONG_NO_UPDATE_DB=1 if you want to disable updates." info
+  long_log "Running database updates." info
 fi
 
 # By default, we should prompt the user to sync the platform to other servers.
@@ -100,10 +107,9 @@ if [ -z "$source_platform_path_temp" ]; then
   # For easier compatibility with distmaker - using their variable names.
   TRG=$(mktemp -d)
   SRC="${source_platform_path_temp}/sites/all/modules/civicrm"
-  long_log "TRG: %s and SRC: %s" info "$TRG" "$SRC" 
 
   distmaker_functions="${SRC}/distmaker/dists/common.sh"
-  [ ! -f "$distmaker_functions" ] && long_die "The distmaker common functions doesn't exist."
+  [ ! -f "$distmaker_functions" ] && long_die "The distmaker common functions file doesn't exist."
   source "$distmaker_functions"
 
   if [ "$makefile" != "ourpowerbase-d7-c4.5" ]; then
@@ -150,6 +156,26 @@ if [ -z "$source_platform_path_temp" ]; then
   long_log "Running dm_install_drupal" info
   dm_install_drupal "$SRC/drupal" "$TRG/drupal" > /dev/null || long_die "Failed to dm_install_drupal"
 
+  # Now download the internationalization file and unpack it.
+  l10n_file="civicrm-${DM_VERSION}-l10n.tar.gz"
+  l10n_url="https://downloads.civicrm.org/${l10n_file}"
+  cd "$TRG"
+  long_log "Downloading %s to %s." info "$l10n_url" "$TRG"
+  wget -q "$l10n_url" || long_die "Failed to download l10n file (%s)." 1 "$l10n_url"
+  tar -xzf "$l10n_file" || long_die "Failed to unpack l10n file (%s)." 1 "$l10n_file"
+  # Unpacking creates a civicrm folder with an l10n and sql folder inside. However,
+  # we are already in the base civicrm folder - so we have to move these files and
+  # directories up one level.
+  mv civicrm/l10n .
+  mv civicrm/sql/* sql/
+  rmdir civicrm/sql
+  rmdir civicrm
+
+  long_log "Listing $TRG" info
+  ls "$TRG"
+  # Clean up the left over tar ball.
+  rm "$l10n_file"
+
   # Kill our src civicrm directory and replace with our newly created one.
   # Avoid getcwd errors by switching to our original directory before deleting
   # this one.
@@ -183,7 +209,7 @@ else
     "${source_platform_path}/" 
 fi
 
-if [ -z "no_update" ]; then
+if [ "$run_db_updates" = "y" ]; then
   # Now ensure all sites have db updates run.
   for site in $(/srv/longshore/bin/longshore site-list $(hostname) ); do
     long_set_site_platform "$site"
