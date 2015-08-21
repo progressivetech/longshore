@@ -170,9 +170,6 @@ if [ -z "$source_platform_path_temp" ]; then
   mv civicrm/sql/* sql/
   rmdir civicrm/sql
   rmdir civicrm
-
-  long_log "Listing $TRG" info
-  ls "$TRG"
   # Clean up the left over tar ball.
   rm "$l10n_file"
 
