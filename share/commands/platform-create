@@ -223,7 +223,7 @@ if [[ $(echo "$siblings" | wc -w) -gt "1" ]] && [ "$sync" = "y" ]; then
   if [ "$reply" == "y" ]; then
     for sibling in $siblings; do
       long_log "rsync'ing to %s\n" "info" "$sibling"
-      rsync -a "${source_platform_path_temp}/" \
+      rsync -a "${source_platform_path_temp}" \
         "longshore@${sibling}.mayfirst.org:${source_platform_path_temp}"
       if [ "$?" != "0" ]; then
         long_log "Failed to sync to %s" error "$frontend"
