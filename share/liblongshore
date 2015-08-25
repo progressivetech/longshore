@@ -1296,8 +1296,13 @@ long_configure_imap() {
   # We have to create a user with -activities appended to it, and the total
   # length can't exceed 32 characters, so limit usernames to the first
   # 21 characters (-activities is 11, 21 + 11 = 32).
+  # FIXME: What if we have two users and the first 21 characters are the
+  # same? Like with a clone site?
   local imap_base_user=$(echo ${site:0:21})
   local user=
+
+  # By default, we only set the password when we create a new user.
+  local set_password=n
 
   for user in ${imap_base_user}-activities ${imap_base_user}-returns; do
     long_log "Checking IMAP user '%s'" info "$user"
@@ -1306,6 +1311,18 @@ long_configure_imap() {
       long_log "IMAP user '%s' doesn't exist, adding." info "$user"
       # Create the user
       $LONG_MANAGE_IMAP_USER_CMD add "$user"
+      set_password=y
+    fi
+
+    # Sometimes the PowerBase password is out of sync, in this special
+    # case we can use the env variable LONG_SET_IMAP_PASSWORD to signal
+    # that it should be reset.
+    if [ -n "$LONG_SET_IMAP_PASSWORD" ]; then
+      long_log "Overriding IMAP password, updating the password." info
+      set_password=y
+    fi
+
+    if [ "$set_password" = "y" ]; then
       # Set the password.
       pass=$($LONG_MANAGE_IMAP_USER_CMD passwd "$user" 2>/dev/null)
       if [ -z "$pass" ]; then
