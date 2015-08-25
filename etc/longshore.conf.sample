@@ -73,7 +73,7 @@ LONG_MANAGE_IMAP_USER_CMD=/bin/true
 # If LONG_MANAGE_IMAP_USER_CMD is set to /bin/true then this variable
 # will never be used. Otherwise, it will be used MailSettings "server"
 # in CiviCRM.
-LONG_IMAP_HOST=civicrm.ourpowerbase.net
+LONG_IMAP_HOST=civimail.ourpowerbase.net
 
 # If the host supports it, you can set a default memory limit for each
 # container (you have to edit /etc/default/grub and add GRUB_CMDLINE_LINUX="cgroup_enable=memory"
