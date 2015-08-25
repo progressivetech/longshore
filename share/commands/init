@@ -46,6 +46,19 @@ fi
 if ! dpkg -l mysql-client 2>/dev/null | grep ^ii >/dev/null; then
   install="$install mysql-client"
 fi
+
+if ! dpkg -l composer 2>/dev/null | grep ^ii >/dev/null; then
+  install="$install composer"
+fi
+
+if ! dpkg -l nodejs 2>/dev/null | grep ^ii >/dev/null; then
+  install="$install nodejs"
+fi
+
+if ! dpkg -l npm 2>/dev/null | grep ^ii >/dev/null; then
+  install="$install npm"
+fi
+
 if [ -n "$LONG_TLS_KEY_PATH" ]; then
   if ! dpkg -l openssl 2>/dev/null | grep ^ii >/dev/null; then
     install="$install openssl"
