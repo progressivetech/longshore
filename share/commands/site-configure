@@ -2,7 +2,9 @@
 
 long_usage_message="usage: $(basename $0) site-configure <site>
 Configure the site to be a PowerBase site. Enable all modules, themes,
-and extensions. Configure all settings.
+and extensions. Configure all settings. Optionally set the:
+LONG_SET_IMAP_PASSWORD env variable to any value to force the IMAP
+password to be reset.
 
 Arguments
   <site> - The site to configure."
