@@ -225,14 +225,14 @@ if [[ $(echo "$siblings" | wc -w) -gt "1" ]] && [ "$sync" = "y" ]; then
       long_log "rsync'ing to %s\n" "info" "$sibling"
       # Ensure temp path exists
       ssh "longshore@${sibling}.mayfirst.org" "mkdir -p ${source_platform_path_temp}"
-      rsync -a "${source_platform_path_temp}/" \
+      rsync -va "${source_platform_path_temp}/" \
         "longshore@${sibling}.mayfirst.org:${source_platform_path_temp}"
       if [ "$?" != "0" ]; then
         long_log "Failed to sync to %s" error "$frontend"
       else
         # Now finish the process on the remote sibling
         long_log "Running platform-create on remote sibling."
-        ssh -t longshore@${sibling}.mayfirst.org $no_update /srv/longshore/bin/longshore \
+        ssh -t longshore@${sibling}.mayfirst.org /srv/longshore/bin/longshore \
           platform-create "$makefile_path" "$source_platform_path_temp"
       fi
     done
