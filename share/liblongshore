@@ -1244,6 +1244,7 @@ long_configure_site() {
   long_init_site_tmp_var "$site"
 
   # Set PTP configurations. 
+  long_log "Running drush ptp-configure" info
   long_exec_drush_cmd "$site" "ptp-configure"
 
   # Ensure CIVICRM_MAIL_SMARTY is configured so we can use smarty in our
@@ -1279,7 +1280,7 @@ long_configure_site() {
   fi
 
   long_configure_imap "$site"
-
+  long_log "Running drush pbd-configure" info
   long_exec_drush_cmd "$site" "-y pbd-configure"
 }
 
