@@ -216,22 +216,27 @@ if [ "$run_db_updates" = "y" ]; then
   done
 fi
 
-# If we have other servers to copy to 
+# See if we have other servers to copy the code to 
 siblings="$LONG_SIBLINGS"
-if [[ $(echo "$siblings" | wc -w) -gt "1" ]] && [ "$sync" = "y" ]; then
+if [[ $(echo "$siblings" | wc -w) -lt "2" ]]; then
+  # Don't prompt to sync if we have nobody to sync to.
+  sync=n
+fi
+
+if [ "$sync" = "y" ]; then
   long_prompt "rsync'ing platform to other siblings."
   if [ "$reply" == "y" ]; then
     for sibling in $siblings; do
       long_log "rsync'ing to %s\n" "info" "$sibling"
       # Ensure temp path exists
       ssh "longshore@${sibling}.mayfirst.org" "mkdir -p ${source_platform_path_temp}"
-      rsync -va "${source_platform_path_temp}/" \
+      rsync -a "${source_platform_path_temp}/" \
         "longshore@${sibling}.mayfirst.org:${source_platform_path_temp}"
       if [ "$?" != "0" ]; then
         long_log "Failed to sync to %s" error "$frontend"
       else
         # Now finish the process on the remote sibling
-        long_log "Running platform-create on remote sibling."
+        long_log "Running platform-create on remote sibling (%s)." info "$sibling"
         ssh -t longshore@${sibling}.mayfirst.org /srv/longshore/bin/longshore \
           platform-create "$makefile_path" "$source_platform_path_temp"
       fi
