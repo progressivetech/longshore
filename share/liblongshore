@@ -619,7 +619,7 @@ long_exec_drush_cmd() {
   cmd="$2"
 
   # Set drush quiet setting. Default is not to be quiet.
-  quiet=
+  quiet=-v
   if [ "$LONG_LOG_LEVEL" = "error" ]; then
     # Make drush more quiet.
     quiet=-q
