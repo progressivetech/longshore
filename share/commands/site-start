@@ -1,6 +1,6 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) [<site>]
+long_usage_message="usage: $(basename $0) site-start [<site>]
 Start the given site container and all linked db containers.
 
 Arguments
