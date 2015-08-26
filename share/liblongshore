@@ -2307,3 +2307,13 @@ long_is_site_reachable() {
   fi
   return 0
 }
+
+# Truncate the sessions table to ensure nobody is logged in and to
+# reduce backup size of drupal database.
+long_clear_sessions() {
+  locale site="$1"
+  temp=$(mktemp)
+  printf "TRUNCATE TABLE sessions" > "$temp"
+  long_execute_site_query "$site" "$temp"
+  rm "$temp"
+}

@@ -1,0 +1,73 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-migrate <site> <new-platform>
+Migrate the site from it's current platform to a new platform.
+
+Arguments
+  <site> - The site to migrate.
+  <platform> - The name or path to the new platform."
+
+long_check_args "$2" "$#" 2
+
+site="$2"
+new_platform=$(basename "$2")
+
+# Run some sanity checks.
+if [ ! -d "${LONG_SRV}/platforms/${new_platform}" ]; then
+  long_die "Can't find the new platform (%s)." 1 "$new_platform"
+fi
+
+# Record existing platform
+long_site_platform "$site"
+old_platform="$LONG_SITE_PLATFORM"
+
+# Record existing database
+long_site_db_host "$site"
+db_host="$LONG_SITE_DB_HOST"
+
+if [ -z "$db_host" ]; then
+  long_die "Can't determine current database host."
+fi
+
+if [ "$new_platform" = "$old_platform" ]; then
+  long_die "Site is already running that platform."
+fi
+
+# Empty sessions table for quicker restore and to ensure everyone is 
+# logged out for upgrade.
+long_prompt "Truncating sessions table"
+[ "$reply" = "y" ] && long_clear_sessions "$site"
+
+# Make a backup so we can restore in case of error. If backup fails exit
+# with error.
+long_prompt "Making a backup..."
+if [ "$reply" = "y" ]; then
+  (longshore site-backup "$site" "preupgrade") || long_die "Failed to backup site."
+fi
+
+long_prompt "Entering maintenance mode..."
+[ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"
+
+ptp_prompt "Stopping and removing site container..."
+if [ "$reply" = "y" ]; then
+  docker stop "$site"
+  docker rm "site"
+fi
+
+ptp_prompt "Stopping and removing site container..."
+if [ "$reply" = "y" ]; then
+  docker stop "$site"
+  docker rm "site"
+fi
+
+ptp_prompt "Launching new container with new platform"
+[ "$reply" = "y" ] && long_container_up site "$site" "$db_host" "$new_platform"
+
+ptp_prompt "Upgrading civicrm database..."
+[ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y civicrm-upgrade-db" 
+
+ptp_prompt "Removing maintenance mode..."
+[ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"
+
+ptp_prompt "Running site-configure..."
+[ "$reply" = "y" ] && long_configure_site "$site" 
