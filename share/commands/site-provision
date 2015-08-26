@@ -7,13 +7,16 @@ and start it. It handles site-create, site-setup and site-configure.
 Arguments
   <site> - The site you want to create, e.g. ptp 
   <db> - The db container you want to link this site to. If blank, use default.
-  <platform> - The platform you want this site to use. If blank, use default"
+  <platform> - The platform you want this site to use. If blank, use default.
+    You can also pass the path to the platform."
 
 long_check_args "$2" "$#" 1
 
 site="$2"
 db="$3"
-platform="$4"
+
+# Platform can either be the name or the path. But, we want the name.
+platform=$(basename "$4")
 
 [ -z "$db" ] && db="$LONG_DEFAULT_DB"
 [ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
