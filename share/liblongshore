@@ -1710,7 +1710,7 @@ long_create_dns() {
     long_log "Not setting DNS in dev instance." info
     return
   fi
-  exists=$(dig +short @b.ns.mayfirst.org "$fqdn")
+  exists=$(dig +short "$fqdn")
   if [ "$?" != 0 ]; then
     long_die "Error checking dns (%s). Output: %s" 1 "$fqdn" "$exists"
   fi

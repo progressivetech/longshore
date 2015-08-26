@@ -21,6 +21,7 @@ platform=$(basename "$4")
 [ -z "$db" ] && db="$LONG_DEFAULT_DB"
 [ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
 
+long_log "Site: %s, DB: %s, Platform: %s\n" info "$site" "$db" "$platform"
 long_create_container site "$site" "$db" "$platform"
 docker start "$site"
 long_create_dns "$site"
