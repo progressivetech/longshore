@@ -93,7 +93,5 @@ done
 long_prompt "Removing maintenance mode..."
 [ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"
 
-long_prompt "Running site-configure..."[ "$reply" = "y" ] && long_configure_site "$site" 
-
-long_prompt "Clean up backup database?"
-[ "$reply" = "y" ] && rm -rf "$copy_path"
+long_prompt "Running site-configure..."
+[ "$reply" = "y" ] && long_configure_site "$site" 
