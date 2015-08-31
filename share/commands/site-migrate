@@ -71,6 +71,9 @@ fi
 long_prompt "Launching new container with new platform"
 [ "$reply" = "y" ] && long_container_up site "$site" "$db_host" "$new_platform"
 
+long_prompt "Reload nginx"
+[ "$reply" = "y" ] && long_nginx_reload 
+
 # Run the upgrade in a loop - so if there is a failure we can
 # restore the database and try again.
 while [ 1 ]; do 
