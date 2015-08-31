@@ -17,5 +17,6 @@ long_container_running "$site" || long_die "The site '%s' isn't running." 1 "$si
 # If tables exist in the database, the user will be prompted before continuing
 # by the long_drop_tables function.
 long_drop_tables "$site"
+long_log "Importing backup file." info
 long_import_backup "$site" "$path"
 
