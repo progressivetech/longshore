@@ -10,27 +10,41 @@ Arguments
 long_check_args "$2" "$#" 2
 
 site="$2"
-new_platform=$(basename "$2")
+new_platform=$(basename "$3")
 
 # Run some sanity checks.
+if ! long_check_site_exists "$site"; then
+  long_die "Site doesn't exist (%s)." 1 "$site"
+fi
+
+if ! long_container_running "$site"; then
+  long_die "Please start the site before migrating"
+fi
+
 if [ ! -d "${LONG_SRV}/platforms/${new_platform}" ]; then
   long_die "Can't find the new platform (%s)." 1 "$new_platform"
 fi
 
 # Record existing platform
-long_site_platform "$site"
+long_set_site_platform "$site"
 old_platform="$LONG_SITE_PLATFORM"
 
 # Record existing database
-long_site_db_host "$site"
+long_set_site_db_host "$site"
 db_host="$LONG_SITE_DB_HOST"
 
 if [ -z "$db_host" ]; then
   long_die "Can't determine current database host."
 fi
 
+if [ -z "$old_platform" ]; then
+  long_die "Can't determine current platform."
+fi
+
 if [ "$new_platform" = "$old_platform" ]; then
-  long_die "Site is already running that platform."
+  long_log "Site is already running that platform." error
+  long_prompt ""
+  [ "$reply" != "y" ] && long_die "Not continuing." 0
 fi
 
 # Empty sessions table for quicker restore and to ensure everyone is 
@@ -48,26 +62,38 @@ fi
 long_prompt "Entering maintenance mode..."
 [ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"
 
-ptp_prompt "Stopping and removing site container..."
+long_prompt "Stopping and removing site container..."
 if [ "$reply" = "y" ]; then
   docker stop "$site"
-  docker rm "site"
+  docker rm "$site"
 fi
 
-ptp_prompt "Stopping and removing site container..."
-if [ "$reply" = "y" ]; then
-  docker stop "$site"
-  docker rm "site"
-fi
-
-ptp_prompt "Launching new container with new platform"
+long_prompt "Launching new container with new platform"
 [ "$reply" = "y" ] && long_container_up site "$site" "$db_host" "$new_platform"
 
-ptp_prompt "Upgrading civicrm database..."
-[ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y civicrm-upgrade-db" 
+# Run the upgrade in a loop - so if there is a failure we can
+# restore the database and try again.
+while [ 1 ]; do 
+  long_prompt "Upgrading civicrm database..."
+  if [ "$reply" = "y" ]; then
+    long_exec_drush_cmd "$site" "-y civicrm-upgrade-db" 
+    long_prompt "Was the upgrade successful?"
+    [ "$reply" = "y" ] && break
+    long_prompt "Restore database from backup so you can try again?"
+    if [ "$reply" = "y" ]; then
+      long_log "Importing from backup. This will take a while" info
+      (longshore site-import "$site") || long_die "Failed to restore the backup."
+    fi
+  else
+    # If we are not upgrading, break out of while loop.
+    break
+  fi
+done
 
-ptp_prompt "Removing maintenance mode..."
+long_prompt "Removing maintenance mode..."
 [ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"
 
-ptp_prompt "Running site-configure..."
-[ "$reply" = "y" ] && long_configure_site "$site" 
+long_prompt "Running site-configure..."[ "$reply" = "y" ] && long_configure_site "$site" 
+
+long_prompt "Clean up backup database?"
+[ "$reply" = "y" ] && rm -rf "$copy_path"
