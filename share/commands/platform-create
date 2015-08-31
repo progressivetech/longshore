@@ -97,6 +97,18 @@ if [ -z "$source_platform_path_temp" ]; then
   ln -s ../../../default/private/extensions/cache  \
     "${source_platform_path_temp}/sites/all/extensions/cache"
 
+  # And more hacks... The CiviMobile extension will try to include js files
+  # expecting to be installed in com.webaccessglobal.module.civimobile, however
+  # we have it installed in civimobile. Create symlink.
+  full_extension_paths='civimobile:com.webaccessglobal.module.civimobile'
+  cd "${source_platform_path_temp}/sites/all/extensions"
+  for extension in $full_extensions_paths; do
+    source=$(echo "$extension" | cut -d: -f1)
+    target=$(echo "$extension" | cut -d: -f2)
+    ln -s "$source" "$target"
+  done
+  cd "${source_platform_path_temp}"
+
   # There is a complicated process for taking a CiviCRM git repo and turning it
   # into a safe and functional folder that can be used on a production CiviCRM
   # site. Our strategy is to use as much code as possible from the distmaker
