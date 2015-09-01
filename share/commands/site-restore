@@ -89,6 +89,7 @@ if [ "$reply" = "y" ]; then
 
   # Rename/move the backup database if necessary
   if [ "$bak_site" != "$site" ]; then
+    mkdir -p "${site_path}/backup"
     mv "$db_path" "${site_path}/backup/${site}.sql.gz"
   fi
 
