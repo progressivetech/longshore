@@ -52,22 +52,32 @@ if [ "$reply" = "y" ]; then
   long_log "Extracting backup file" info
   tar -xzf "$path" || long_die "Failed to unpack tar ball"
 
+  # Path to newly created site.
+  site_path="${LONG_SRV}/services/sites/${site}"
+
   # Old style backups (prior to 2015-08-01) will be named after the full
   # domain (e.g. ptp.ourpowerbase.net) and untar into the root directory.
   # New style backups will be named after the subdomain (ptp) and unpack
   # into a directory named after the site.
-  unpacked=
-  if expr "$basename" : .*ourpowerbase\.net.* >/dev/null; then
-    [ ! -d "${temp}/${bak_site}" ] && long_die "Failed to find bak_site directory (%s)" 1 "${temp}/${bak_site}"
-    unpacked="${temp}/${bak_site}"
+  unpacked_dir=
+  db_path=
+  if expr "$bak_basename" : .*ourpowerbase\.net.* >/dev/null; then
+    # Backup basename has ourpowerbase.net in it, it's old style.
+    unpacked_dir="$temp"
+    long_log "Gzipping database to be consistent new backup format." info
+    gzip "${temp}/database.sql"
+    # After we move the files into place, this is where the db will end up.
+    db_path="${site_path}/database.sql.gz"
   else
-    unpacked="$temp"
+    [ ! -d "${temp}/${bak_site}" ] && long_die "Failed to find bak_site directory (%s)" 1 "${temp}/${bak_site}"
+    unpacked_dir="${temp}/${bak_site}"
+    # After we move the files into place, this is where the db will end up.
+    db_path="${site_path}/backup/${bak_site}.sql.gz"
   fi
 
   # Move it into place
-  site_path="${LONG_SRV}/services/sites/${site}"
   mkdir "$site_path"
-  mv "${unpacked}"/* "${site_path}/"
+  mv "${unpacked_dir}"/* "${site_path}/"
 
   rm -rf "$temp"
 
@@ -77,9 +87,9 @@ if [ "$reply" = "y" ]; then
   rm -f "${site_path}/drupal/settings.php"
   rm -f "${site_path}/drupal/civicrm.settings.php"
 
-  # Rename the backup database if necessary
+  # Rename/move the backup database if necessary
   if [ "$bak_site" != "$site" ]; then
-    mv "${site_path}/backup/${bak_site}.sql.gz" "${site_path}/backup/${site}.sql.gz"
+    mv "$db_path" "${site_path}/backup/${site}.sql.gz"
   fi
 
   long_log "Creating site" info
