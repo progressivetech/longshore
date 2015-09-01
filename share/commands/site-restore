@@ -9,8 +9,9 @@ in the backup).
 Arguments
   <site> - The site you want to import the db over, e.g. ptp
   <path> - The path to the tar ball containing the backup.
-  <db> - Optionally provide the db. If omitted, use the one designated in
-  the backup."
+  <db> - Optionally provide the db. If omitted, use the default DB.
+  <platform> - Optionally provide the platform. If ommitted use the 
+  default platform."
 
 long_check_args "$2" "$#" 2
 
@@ -20,7 +21,6 @@ db="$4"
 platform="$5"
 
 if [ -z "$db" ]; then
-  long_prompt "Restoring site using default database (%s)" "$LONG_DEFAULT_DB"
   db="$LONG_DEFAULT_DB"
 fi
 
@@ -29,29 +29,60 @@ fi
 long_container_exists "$site" && long_die "The site '%s' already exists. \
   Please site-destroy it before restoring it." 1 "$site"
 
+[ -d "${LONG_SRV}/services/sites/$site" ] && long_die "There are still files \
+  from that site in the services/sites directory. Please remove them first." 1
+
 if [ ! -f "$path" ]; then
   long_die "Can't find the path to the backup (%s)." 1 "$path"
 fi
 
-# Unpack it.
-cd "${LONG_SRV}/services/sites"
-tar -xzf "$path" || long_die "Failed to unpack tar ball"
+long_prompt "Restoring to: %s\nBackup: %s\nDB: %s\nPlatform: %s" "$site" "$path" "$db" "$platform"
 
-# Remove the db/server specific files
-rm -f "${LONG_SRV}/services/sites/$site/my.cnf"
-rm -f "${LONG_SRV}/services/sites/$site/env/PORT"
-rm -f "${LONG_SRV}/services/sites/$site/drupal/settings.php"
-rm -f "${LONG_SRV}/services/sites/$site/drupal/civicrm.settings.php"
-
-long_create_container site "$site" "$db" "$platform"
-docker start "$site"
-long_setup_site "$site"
-long_configure_site "$site"
-long_nginx_reload
-
-long_prompt "Updating DNS"
 if [ "$reply" = "y" ]; then
-  long_create_dns "$site"
+  # The tar ball may not be the same site as the one we are creating (e.g.
+  # if we are creating a clone site from a backup of a live site).
+
+  # What is the name of the site we are unpacking?
+  bak_site=$(echo $(basename "$path") | cut -d. -f1)
+
+  # Unpack it.
+  temp=$(mktemp -d)
+  cd "$temp"
+  long_log "Extracting backup file" info
+  tar -xzf "$path" || long_die "Failed to unpack tar ball"
+  [ ! -d "${temp}/${bak_site}" ] && long_die "Failed to find bak_site directory (%s)" 1 "${temp}/${bak_site}"
+
+  # Move it into place
+  site_path="${LONG_SRV}/services/sites/${site}"
+  mkdir "$site_path"
+  mv "${temp}/${bak_site}"/* "${site_path}/"
+
+  rm -rf "$temp"
+
+  # Remove the db/server specific files
+  rm -f "${site_path}/my.cnf"
+  rm -f "${site_path}/env/PORT"
+  rm -f "${site_path}/drupal/settings.php"
+  rm -f "${site_path}/drupal/civicrm.settings.php"
+
+  # Rename the backup database if necessary
+  if [ "$bak_site" != "$site" ]; then
+    mv "${site_path}/backup/${bak_site}.sql.gz" "${site_path}/backup/${site}.sql.gz"
+  fi
+
+  long_log "Creating site" info
+  long_create_container site "$site" "$db" "$platform"
+  docker start "$site"
+  long_setup_site "$site"
+  long_configure_site "$site"
+  long_nginx_reload
+
+  long_prompt "Updating DNS"
+  if [ "$reply" = "y" ]; then
+    long_create_dns "$site"
+  else
+    long_log "Not updating DNS."
+  fi
 else
-  long_log "Not updating DNS."
+  long_log "Cancelled restore." info
 fi
