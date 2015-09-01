@@ -79,6 +79,7 @@ if [ "$reply" = "y" ]; then
   mkdir "$site_path"
   mv "${unpacked_dir}"/* "${site_path}/"
 
+  cd "$HOME"
   rm -rf "$temp"
 
   # Remove the db/server specific files
