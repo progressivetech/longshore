@@ -43,19 +43,31 @@ if [ "$reply" = "y" ]; then
   # if we are creating a clone site from a backup of a live site).
 
   # What is the name of the site we are unpacking?
-  bak_site=$(echo $(basename "$path") | cut -d. -f1)
+  bak_basename=$(basename "$path")
+  bak_site=$(echo "$bak_basename" | cut -d. -f1)
 
   # Unpack it.
   temp=$(mktemp -d)
   cd "$temp"
   long_log "Extracting backup file" info
   tar -xzf "$path" || long_die "Failed to unpack tar ball"
-  [ ! -d "${temp}/${bak_site}" ] && long_die "Failed to find bak_site directory (%s)" 1 "${temp}/${bak_site}"
+
+  # Old style backups (prior to 2015-08-01) will be named after the full
+  # domain (e.g. ptp.ourpowerbase.net) and untar into the root directory.
+  # New style backups will be named after the subdomain (ptp) and unpack
+  # into a directory named after the site.
+  unpacked=
+  if expr "$basename" : .*ourpowerbase\.net.* >/dev/null; then
+    [ ! -d "${temp}/${bak_site}" ] && long_die "Failed to find bak_site directory (%s)" 1 "${temp}/${bak_site}"
+    unpacked="${temp}/${bak_site}"
+  else
+    unpacked="$temp"
+  fi
 
   # Move it into place
   site_path="${LONG_SRV}/services/sites/${site}"
   mkdir "$site_path"
-  mv "${temp}/${bak_site}"/* "${site_path}/"
+  mv "${unpacked}"/* "${site_path}/"
 
   rm -rf "$temp"
 
