@@ -1,6 +1,6 @@
 # Based on https://github.com/AsavarTzeth/docker-php5-fpm
 # Used for PowerBase sites.
-FROM ptp-jessie:latest
+FROM my-jessie:latest
 
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 
