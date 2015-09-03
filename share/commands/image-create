@@ -18,18 +18,18 @@ fi
 for itype in $itypes; do
   # First delete image if FORCE is used.
   if [ "$LONG_FORCE" = 1 ]; then
-    long_image_delete "$itype"
+    long_delete_image "$itype"
   fi
 
   # Create a mysql image.
   if [ "$itype" = "ptp-mysql" ]; then
-    long_image_create ptp-mysql ${LONG_ETC}/dockerfiles/mysql
+    long_create_image ptp-mysql ${LONG_ETC}/dockerfiles/mysql
   elif [ "$itype" = "ptp-php" ]; then
-    long_image_create  ptp-php ${LONG_ETC}/dockerfiles/php
+    long_create_image  ptp-php ${LONG_ETC}/dockerfiles/php
   elif [ "$itype" = "ptp-powerbase" ]; then
-    long_image_create  ptp-powerbase ${LONG_ETC}/dockerfiles/powerbase
+    long_create_image  ptp-powerbase ${LONG_ETC}/dockerfiles/powerbase
   elif [ "$itype" = "my-jessie" ]; then
-    long_image_create my-jessie 
+    long_create_image my-jessie 
   else
     long_die "I don't know how to make an image of that type (%s)." 1 "$itype"
   fi

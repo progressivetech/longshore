@@ -291,14 +291,14 @@ long_set_db_containers() {
 
 # Create if necessary the given image
 # first argument is tag, second is path to docker directory
-long_image_create() {
+long_create_image() {
   local image_tag="$1"
   local image_path="$2"
   if ! long_image_exists "$image_tag"; then
     long_log "Creating image (%s)" info "$image_tag"
     if [ "$image_tag" = "my-jessie" ]; then
       # This is a special condition
-      long_image_create_base
+      long_create_base_image
     else
       docker build -t "$image_tag" "$image_path"
     fi
@@ -306,13 +306,13 @@ long_image_create() {
 }
 
 # Create the base image
-long_image_create_base() {
+long_create_base_image() {
   long_log "Creating base image" info
   sudo /usr/local/sbin/longshore-create-base-image
 }
 
 # Delete, if necessary, the image
-long_image_delete() {
+long_delete_image() {
   local tag="$1"
   if long_image_exists "$tag"; then
     long_log "Deleting  image (%s)" info "$tag"
