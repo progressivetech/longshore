@@ -1,5 +1,6 @@
 # Based on https://github.com/AsavarTzeth/docker-php5-fpm
-FROM ptp-php:latest
+# Used for PowerBase sites.
+FROM ptp-jessie:latest
 
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 
@@ -8,6 +9,10 @@ RUN apt-get update && \
     export DEBIAN_FRONTEND=noninteractive && \ 
     apt-get install -y \
     --no-install-recommends \
+    php5-fpm \
+    php-apc \
+    php5-mcrypt \
+    php5-mysql
     php5-curl \
     php5-gd \
     liboauth-php \
@@ -18,17 +23,18 @@ RUN apt-get update && \
     wget \
     mysql-client \
     esmtp-run \
-    vim-tiny \
     ca-certificates \
     iputils-ping \
     bc \
     openssh-client \
     heirloom-mailx \
-    less \
     xfonts-baekmuk \
     ttf-baekmuk \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
+
+# Listen on 127.0.0.1 
+RUN sed -i 's#listen = /var/run/php5-fpm.sock#listen = 9000#' /etc/php5/fpm/pool.d/www.conf
 
 # User arbitrary high UID so we can more easily understand UIDs on the host
 RUN groupmod -g 5001 www-data
@@ -54,3 +60,10 @@ RUN sed -i 's#pm.max_children = 5#pm.max_children = 40#' /etc/php5/fpm/pool.d/ww
 
 # Copy over our esmtprc file to configure handling email.
 COPY esmtprc /etc/esmtprc
+
+COPY ./docker-entrypoint.sh /entrypoint.sh
+
+EXPOSE 9000
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["php5-fpm"]
