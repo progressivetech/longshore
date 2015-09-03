@@ -869,11 +869,11 @@ long_create_site_directories() {
 # Low lever site container creation. Call long_create_container instead
 # if possible.
 long_create_site_container() {
-  local name="$1"
+  local site="$1"
   local db="$2"
   local platform="$3"
 
-  local dir="${LONG_SRV}/services/sites/$name"
+  local dir="${LONG_SRV}/services/sites/$site"
 
   # Sanity check - make sure platform exists.
   if [ ! -d "${LONG_SRV}/platforms/${platform}" ]; then
@@ -884,10 +884,10 @@ long_create_site_container() {
   # should get a confirmation to proceed. This helps us avoid accidentally
   # creating a duplicate site.
   me=$(hostname)
-  long_set_site_sibling "$name"
+  long_set_site_sibling "$site"
   if [ -n "$LONG_SITE_SIBLING" -a "$LONG_SITE_SIBLING" != "$me" ]; then
     long_prompt "A site with the same name (%s) exists on a different sibling (%s). Continue?" \
-      "$name" "$LONG_SITE_SIBLING"
+      "$site" "$LONG_SITE_SIBLING"
     if [ "$reply" != "y" ]; then
       long_log "Not continuing." info
       exit 0
@@ -910,11 +910,11 @@ long_create_site_container() {
   long_container_up mysql "$db"
 
   # Build out directories. 
-  long_create_site_directories "$name"
+  long_create_site_directories "$site"
 
   # We have to publish the port to the host so nginx can communicate
   # with it. Each PHP container has to have a unique port.
-  long_set_php_port "$name" 
+  long_set_php_port "$site" 
 
   # Create nginx configuration
   long_create_nginx_site_conf "$site" "$platform" "$LONG_PHP_PORT"
@@ -927,11 +927,11 @@ long_create_site_container() {
   # the database and user and record the password in my.cnf.
   #
   # The actual installation, if needed, will happen in longshore site-setup
-  long_create_db "$name" "$db"
+  long_create_db "$site" "$db"
 
   # Bail if the container already exists. All remaining items in this
   # function are only needed if the site has never been created.
-  if long_container_exists "$name"; then
+  if long_container_exists "$site"; then
     return
   fi 
   # Ensure the container is accessible on localhost so nginx can reach it.
@@ -952,17 +952,17 @@ long_create_site_container() {
   local ip=$(ip addr show dev docker0 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
   
   # Docker
-  docker create --name "$name" \
+  docker create --name "$site" \
     --add-host "dockerhost:$ip" \
     -v "${LONG_SRV}/platforms/${platform}:/var/www/powerbase" \
     -v "${dir}/drupal:/var/www/powerbase/sites/default" \
     -v "${LONG_SHARE}/drush:/var/www/.drush" \
     -e "LONG_LIVE=$LONG_LIVE" \
-    -e "PB_URL=${name}.${LONG_DEFAULT_DOMAIN}" \
+    -e "PB_URL=${site}.${LONG_DEFAULT_DOMAIN}" \
     $LONG_MEMORY_LIMIT \
     $link \
     $publish \
-    ptp-powerbase:latest php5-fpm || long_die "Failed to create the container %s" 1 "$name"
+    ptp-powerbase:latest php5-fpm || long_die "Failed to create the container %s" 1 "$site"
 
   long_clear_sibling_cache
 }
