@@ -5,7 +5,10 @@ Create a site. This is a thin wrapper around container-create for sites.
 
 Arguments
   <site> - The site you want to create, e.g. ptp 
-  <db> - The db container you want to link this site to. If blank, use default.
+  <db> - The db container you want to link this site to. If blank, try to
+    lookup it up if the container exists or has existed. For brand new sites
+    this is a required value. For existing sites, the value should be blank
+    or must match the database it's currently on.
   <platform> - The platform you want this site to use. If blank, use default"
 
 long_check_args "$2" "$#" 1
@@ -13,9 +16,6 @@ long_check_args "$2" "$#" 1
 site="$2"
 db="$3"
 platform="$4"
-
-[ -z "$db" ] && db="$LONG_DEFAULT_DB"
-[ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
 
 # Do not re-run over the network! We should only be calling site-create
 # and site-provision on the sibling that we want the site.

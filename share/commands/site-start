@@ -4,7 +4,7 @@ long_usage_message="usage: $(basename $0) site-start [<site>]
 Start the given site container and all linked db containers.
 
 Arguments
-  <site> - The site to start. If left out, start all containers"
+  <site> - The site to start. If left out, start all containers that exist."
 
 long_check_args "$2" "$#" 0
 
@@ -17,7 +17,14 @@ if [ -z "$sites" ]; then
 fi
 
 for site in $sites; do
-  long_container_up site "$site"
+  if ! long_container_exists "$site"; then
+    long_log "The site (%s) doesn't exist. Please call site-create if you want if to start." \
+      error "$site"
+    continue
+  fi
+  long_set_site_db_host "$site"
+  long_set_site_platform "$site"
+  long_container_up site "$site" "$LONG_SITE_DB_HOST" "$LONG_SITE_PLATFORM"
 done
 
 long_nginx_reload

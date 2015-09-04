@@ -22,7 +22,6 @@ LONG_DEFAULT_LOG_LEVEL=error
 LONG_NON_PRODUCTION_REGEXP="^(restore|clone|test|sandbox|demo|training[123]|robyn|josue|tomas|mark|alice|f|grits|bacon|spanish)"
 LONG_DEFAULT_PLATFORM=ourpowerbase-d7-c4.5
 LONG_DEFAULT_DOMAIN=animal
-LONG_DEFAULT_DB=db01
 
 # When setting up web sites, should we enable https?
 LONG_HTTPS_ENABLED=n

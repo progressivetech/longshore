@@ -1,6 +1,6 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-restore <site> <path> [<db>] [<platform>]
+long_usage_message="usage: $(basename $0) site-restore <site> <path> <db> [<platform>]
 Setup a new site from the files in the backed up tar ball provide by the
 <path> argument. This command ensures that the new site is installed on the
 provided database (not necessarily the same database as the one specified
@@ -9,20 +9,16 @@ in the backup).
 Arguments
   <site> - The site you want to import the db over, e.g. ptp
   <path> - The path to the tar ball containing the backup.
-  <db> - Optionally provide the db. If omitted, use the default DB.
+  <db> - Provide the database you'd like it restored to.
   <platform> - Optionally provide the platform. If ommitted use the 
   default platform."
 
-long_check_args "$2" "$#" 2
+long_check_args "$2" "$#" 3
 
 site="$2"
 path="$3"
 db="$4"
 platform="$5"
-
-if [ -z "$db" ]; then
-  db="$LONG_DEFAULT_DB"
-fi
 
 [ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
 

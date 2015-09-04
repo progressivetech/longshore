@@ -970,7 +970,7 @@ long_create_site_container() {
 long_create_container() {
   local type="$1"
   local name="$2"
-  local db="$3"
+  local db_host="$3"
   local platform="$4"
 
   if [ -z "$name" ]; then
@@ -1006,20 +1006,20 @@ long_create_container() {
   elif [ "$type" = "site" ]; then
     # Figure out which database and platform to use if it's not specified.
     if long_container_exists "$name"; then
-      # If the container already exists, and we are not specifying a db,
-      # then use the db specified in the container.
+      # If the container already exists, and we are not specifying a db_host,
+      # then use the db_host specified in the container.
       long_set_site_db_host "$name"
-      if [ -z "$db" ]; then
+      if [ -z "$db_host" ]; then
         if [ -z "$LONG_SITE_DB_HOST" ]; then
           # This is a fatal error.
-          long_die "The site container (%s) exists but doesn't have a db set." 1 "$name"
+          long_die "The site container (%s) exists but doesn't have a db_host set." 1 "$name"
         fi
-        db="$LONG_SITE_DB_HOST"
+        db_host="$LONG_SITE_DB_HOST"
       else
-        # If it exists and we are specifying a db, make sure they match.
-        if [ "$db" != "$LONG_SITE_DB_HOST" ]; then
+        # If it exists and we are specifying a db_host, make sure they match.
+        if [ "$db_host" != "$LONG_SITE_DB_HOST" ]; then
           long_die "Mis-matched database host for %s. Calling function said: %s, existing container says: %s" \
-            1 "$name" "$db" "$LONG_SITE_DB_HOST"
+            1 "$name" "$db_host" "$LONG_SITE_DB_HOST"
         fi
       fi
 
@@ -1035,17 +1035,35 @@ long_create_container() {
         fi
       fi
     else
-      # If the container doesn't exist and we aren't specifying a db, 
-      # the user the default.
-      if [ -z "$db" ]; then
-        db="$LONG_DEFAULT_DB"
+      # If the container doesn't exist and we aren't specifying a db_host, 
+      # check for an existing settings.php file - this may be the case if the
+      # container was deleted in order to be re-created. Use the db_host
+      # specified by the previoulsy existing site.
+      if [ -z "$db_host" ]; then
+        local settings="${LONG_SRV}/services/sites/${name}/drupal/settings.php"
+        if [ -f "$settings" ]; then
+          db_host=$(egrep "'host' => 'db[0-9]+'," "$settings" | cut -d'>' -f2 | tr -d "', ")
+        fi 
+        
       fi
-      # Ditto for platform.
+      # Ditto for platform, however, we'll need to check the nginx file.
+      # And, we'll use the default platform if the site doesn't exist.
       if [ -z "$platform" ]; then
-        platform="$LONG_DEFAULT_PLATFORM"
+        local nginx_path="${LONG_NGINX_SITES_ENABLED}/${name}.conf"
+        if [ -f "$nginx_path" ]; then
+          platform=$(egrep -o 'ourpowerbase-d[0-9]+-c[0-9.]+' "$nginx_path")
+        fi
+        # We use the default if the site is brand new.
+        if [ -z "$platform" ]; then
+          platform="$LONG_DEFAULT_PLATFORM"
+        fi
       fi
     fi
-    long_create_site_container "$name" "$db" "$platform" 
+    if [ -z "$db_host" ]; then
+      long_die "This site has never been created on this host. Please specify the db host."
+    fi
+    long_log "Creating site: %s, db_host: %s, platform: %s" info "$name" "$db_host" "$platform"
+    long_create_site_container "$name" "$db_host" "$platform" 
   else
     long_die "I don't know how to make a container of that type (%s)." 1 "$type"
   fi
