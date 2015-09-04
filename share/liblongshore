@@ -1831,6 +1831,7 @@ long_upgrade_container() {
     long_log "The container %s doesn't need an upgrade." info "$container"
     return
   fi
+  long_recreate_container
 }
 
 # Stop, delete and re-create the given container. This is the proper way
