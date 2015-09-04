@@ -12,7 +12,7 @@ RUN apt-get update && \
     php5-fpm \
     php-apc \
     php5-mcrypt \
-    php5-mysql
+    php5-mysql \
     php5-curl \
     php5-gd \
     liboauth-php \
