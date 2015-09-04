@@ -1062,7 +1062,7 @@ long_create_container() {
     if [ -z "$db_host" ]; then
       long_die "This site has never been created on this host. Please specify the db host."
     fi
-    long_log "Creating site: %s, db_host: %s, platform: %s" info "$name" "$db_host" "$platform"
+    long_log "Details\nsite: %s\ndb_host: %s\nplatform: %s" info "$name" "$db_host" "$platform"
     long_create_site_container "$name" "$db_host" "$platform" 
   else
     long_die "I don't know how to make a container of that type (%s)." 1 "$type"
@@ -1194,11 +1194,12 @@ long_drop_tables() {
   get_tables_temp=$(mktemp)
   drop_tables_temp=$(mktemp)
   echo "SHOW TABLES;" > "$get_tables_temp"
+  local table_count=0
   # The drupal blocked_ips table is needed for the drush command sql-query to
   # function properly.
   for table in $(long_execute_site_query "$site" "$get_tables_temp" \
     | grep -v ^Tables_in | grep -v ^blocked_ips); do
-    printf "$table\n"
+    table_count=$(( $table_count + 1 ))
     entity=TABLE
     if echo "$table" | grep ^civicrm_view > /dev/null; then
       entity=VIEW
@@ -1208,7 +1209,7 @@ long_drop_tables() {
   # Only run if we have a drop file that is more than 0 bytes (i.e. 
   # don't run if there are no tables in the database)
   if [ -s "$drop_tables_temp" ]; then
-    long_prompt "Deleting all the tables listed above in the site '%s'" "$site"
+    long_prompt "Deleting %s tables from the database for site '%s'" "$table_count" "$site"
     if [ "$reply" = "y" ]; then
       long_log "Deleting the tables" info
       long_execute_site_query "$site" "$drop_tables_temp"
