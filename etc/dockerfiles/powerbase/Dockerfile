@@ -31,6 +31,7 @@ RUN apt-get update && \
     xfonts-baekmuk \
     ttf-baekmuk \
     openssh-client \
+    bc \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
