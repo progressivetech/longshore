@@ -571,6 +571,7 @@ function ptp_create_help_menu() {
     // what to do
     drush_log("More than one help menu... not trying to build PTP help menus.", 'error');
     print_r($keys);
+    print_r($menus);
     return FALSE;
   }
   $help_id = array_pop($keys);
