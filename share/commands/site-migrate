@@ -86,6 +86,9 @@ while [ 1 ]; do
     if [ "$reply" = "y" ]; then
       long_log "Importing from backup. This will take a while" info
       (longshore site-import "$site") || long_die "Failed to restore the backup."
+
+      long_prompt "Entering maintenance mode..."
+      [ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"
     fi
   else
     # If we are not upgrading, break out of while loop.
