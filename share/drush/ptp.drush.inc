@@ -426,14 +426,15 @@ function ptp_update_contact($search_params, $first_name, $last_name, $email) {
 }
 
 /**
- * Set outbounc email settings.
+ * Set outbound email settings. 
  */
 function ptp_set_outbound_mail_settings() {
   // Set the outbound email settings
   drush_log(dt("Setting outbound mail settings."));
-  // For training sites, redirect to the database.
   $sub = ptp_get_subdomain();
-  if(preg_match('/^training[0-9]/', $sub)) {
+  if(preg_match('/(^training|^demo|clone)$/', $sub)) {
+    // For training, demo or clone sites, redirect to the database.
+    // We don't want to send email on these sites ever.
     $new['outBound_option'] = 5;  // 5 is redirect to db 
   } elseif(PTP_OUTGOING_MAIL == 'smtp' ) {
     $new['outBound_option'] = 0;  // 0 is for smtp
