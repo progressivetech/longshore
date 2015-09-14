@@ -19,10 +19,12 @@ thread_cache_size = 12
 ; re-run against the database. 
 ; http://docs.oracle.com/cd/E17952_01/refman-5.0-en/query-cache.html
 
-; query_cache_size is the size of the cache, default is 0
-; setting to 64M. If Qcache_lowmem_prunes is high, this value
-; should be increased. It should be in the tens of MBytes.
-query_cache_size = 67109000 
+; query_cache_size is the size of the cache, default is 0 
+; setting to 96M (upped from 64M 2015-09-14 because of high Query cache prunes). 
+; If Qcache_lowmem_prunes is high, this value should be increased. It should be 
+; in the tens of MBytes.
+query_cache_size = 100663296
+
 ; query_cache_limit  is the max size of a query 
 ; to cache (default is don't cache over 1 MB) ... setting to 8M
 query_cache_limit = 8388600 
@@ -54,7 +56,7 @@ table_open_cache = 96
 ; we have 4 GB of RAM on each server
 ; http://www.mysqlperformanceblog.com/2007/11/03/choosing-innodb_buffer_pool_size/
 ; default is just 8MB, setting to 1GB
-innodb_buffer_pool_size =  1073700000 
+innodb_buffer_pool_size = 2147483648 
 ; used to store internal db info. increase if you have lots
 ; of tables. default is 1M, setting to 20M
 innodb_additional_mem_pool_size = 20972000 
