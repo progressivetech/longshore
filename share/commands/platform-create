@@ -221,9 +221,13 @@ fi
 if [ "$run_db_updates" = "y" ]; then
   # Now ensure all sites have db updates run.
   for site in $(/srv/longshore/bin/longshore site-list $(hostname) ); do
-    long_set_site_platform "$site"
-    if [ "$LONG_SITE_PLATFORM" = "$makefile" ]; then
-      /srv/longshore/bin/longshore site-updatedb "$site"
+    if long_container_running "$site"; then
+      long_set_site_platform "$site"
+      if [ "$LONG_SITE_PLATFORM" = "$makefile" ]; then
+        /srv/longshore/bin/longshore site-updatedb "$site"
+      fi
+    else
+      long_log "Not updating non-running container (%s)" info "$site"
     fi
   done
 fi
