@@ -4,7 +4,8 @@
  * @file 
  *
  * Functions that add PTP data to database and/or report data about the
- * site to PTP or link the site to PTP service providers.
+ * site to PTP or link the site to PTP service providers or otherwise 
+ * would not be interesting to people who are not PTP.
  *
  * See also:
  *  * lsd.drush.inc: Ensures basic functionality of Drupal/CiviCRM. 
@@ -146,6 +147,7 @@ function drush_ptp_update_site_stats() {
  * run multiple times.
  */
 function drush_ptp_configure() {
+  drush_log(dt("Initializing CiviCRM"));
   _civicrm_init();
 
   // NOTE: configuring IMAP is handled separately since it needs to
@@ -160,6 +162,34 @@ function drush_ptp_configure() {
   // FIXME: I think these two should be moved to pbd.
   ptp_configure_wkhtmltopdf();
   ptp_set_max_file_size();
+  if ( getenv('LONG_LIVE') == 'n' ) {
+    ptp_configure_dev_site();
+  }
+ 
+}
+
+/**
+ * Enable settings appropriate for a dev site. 
+ *
+ **/
+function ptp_configure_dev_site() {
+  drush_log(dt("Configuring dev site settings."));
+
+  # Enable devel module.
+  $modules = array('devel');
+  module_enable($modules);
+
+  ptp_grant_anonymous_access_to_devel_info();
+  drush_civicrm_enable_debug();
+}
+
+/**
+ * Convenience function to easily grant anon acces to dev info, which is
+ * useful when debugging issues on a dev environment - should never be called
+ * on live site
+ **/
+function ptp_grant_anonymous_access_to_devel_info() {
+  user_role_grant_permissions(1, array('access devel information'));
 }
 
 /**
