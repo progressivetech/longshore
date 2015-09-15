@@ -6,13 +6,8 @@ It is a set of bash helper scripts providing a thin wrapper around docker comman
 
 == Installing on Debian jessie ==
 
- * Add docker repository to /etc/apt/sources.list.d/docker.list:
-   deb https://get.docker.com/ubuntu docker main
+ * Install docker.io from jessie-backports
 
- * Add docker apt key
-   curl https://get.docker.io/gpg | apt-key add -
-   apt-key finger | grep -C2 "36A1 D786 9245 C895 0F96  6E92 D857 6A8B A88D 21E9"
- 
  * cd /srv && git clone git://git.progressivetech.org/provisioning/longshore.git
 
  * cp /srv/longshore/etc/longshore.conf.sample /srv/longshore/etc/longshore.conf
@@ -20,3 +15,37 @@ It is a set of bash helper scripts providing a thin wrapper around docker comman
  * Edit /srv/longshore/etc/longshore.conf
 
  * /srv/longshore/bin/longshore init
+
+== Switching from initial install to new install ==
+
+ * Delete /etc/apt/source.list.d/docker
+ * Shutdown all containers 
+```
+for id in $(docker ps -q); do docker stop "$id"; done
+```
+ * Remove all containers
+```
+for id in $(docker ps -a -q); do docker rm "$id"; done
+```
+ * Remove all images
+```
+for id in $(docker images -a -q); do docker rmi "$id"; done
+```
+ * Stop Docker
+```
+/etc/init.d/docker stop
+```
+ * Uninstall docker
+```
+apt-get remove lxc-docker
+apt-get autoremove
+apt-get remove $(deborphan)
+```
+ * Edit MF/PL puppet file to add server name - git push new puppet configs
+ * Install docker.io
+ * Re-run longshore init as root.
+ * Build all images
+```longshore images-create all```
+ * Rebuild and start all containers
+```longshore site-start```
+ * Rebuild sites

@@ -14,9 +14,7 @@ user=$(whoami)
 
 install=
 if ! dpkg -l docker.io 2>/dev/null | grep ^ii >/dev/null; then
-  if ! dpkg -l lxc-docker 2>/dev/null | grep ^ii >/dev/null; then
-    install=lxc-docker
-  fi
+  install=docker.io
 fi
 
 if ! dpkg -l sudo 2>/dev/null | grep ^ii >/dev/null; then
