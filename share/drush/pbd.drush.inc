@@ -3102,7 +3102,7 @@ function pbd_add_include_exclude_search_menu() {
   $menus = CRM_Core_BAO_Navigation::getNavigationList();
   $exists_array = preg_grep("#$label#", $menus);
   if(count($exists_array)) {
-    drush_log(dt("Already added."), 'notice');
+    drush_log(dt("Menu already added."), 'notice');
     return;
   }
   // Get the value for the custom search - we need it for the URL
@@ -3369,7 +3369,6 @@ function pbd_enable_default_extensions() {
     'net.ourpowerbase.search.eventcount',
     'net.ourpowerbase.engage',
     'net.ourpowerbase.report.dbhealth',
-    'nz.co.fuzion.reportbase',
     'net.ourpowerbase.report.advancedfundraising',
     'com.aghstrategies.uscounties'
   );
@@ -3377,19 +3376,30 @@ function pbd_enable_default_extensions() {
   _civicrm_init();
   try{
     // Uninstall first.
-    $params['keys'] = array();
+    $uninstall_extensions = array();
+    $code_version = CRM_Utils_System::version();
+    if(version_compare($code_version, '>=', '4.6')) {
+      $uninstall_extensions[] = 'nz.co.fuzion.reportbase';
+    }
+
     while(list(,$ext) = each($uninstall_extensions)) {
       $params['keys'][] = $ext;
     }
-    civicrm_api3('Extension', 'disable', $params);
-    civicrm_api3('Extension', 'uninstall', $params);
-    
+    if(count($params['keys'] > 0)) {
+      drush_log(dt("Uninstalling extensions"));
+      civicrm_api3('Extension', 'disable', $params);
+      civicrm_api3('Extension', 'uninstall', $params);
+    }
+
     // Reset for installing.
     $params['keys'] = array();
     while(list(,$ext) = each($default_extensions)) {
       $params['keys'][] = $ext;
     }
-    civicrm_api3('Extension', 'install', $params);
+    if(count($params['keys'] > 0)) {
+      drush_log(dt("Installing extensions"));
+      civicrm_api3('Extension', 'install', $params);
+    }
   }
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("There was an error installing/uninstalling the default extensions."), 'error');
