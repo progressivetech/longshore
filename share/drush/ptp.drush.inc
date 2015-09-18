@@ -590,6 +590,7 @@ function ptp_create_help_menu() {
        'parent_id' => '',
     ); 
     // Rebuild array
+    drush_log("Help main menu item is not available. Adding it.", 'error');
     CRM_Core_BAO_Navigation::add($params);
     $menus = CRM_Core_BAO_Navigation::getNavigationList();
     array_walk($menus, 'ptp_strip_nbsp');
@@ -597,10 +598,11 @@ function ptp_create_help_menu() {
 
   // Get the id of the help menu
   $keys = array_keys($menus, 'Help');
-  if(count($keys) != 1) {
+  $keys_count = count($keys);
+  if($keys_count != 1) {
     // Hm... if they have more than one Help menu, then I'm not sure
     // what to do
-    drush_log("More than one help menu... not trying to build PTP help menus.", 'error');
+    drush_log("Instead of 1, I found $keys_count help menu(s)... not trying to build PTP help menus.", 'error');
     print_r($keys);
     print_r($menus);
     return FALSE;

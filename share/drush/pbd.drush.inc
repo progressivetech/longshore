@@ -3102,7 +3102,7 @@ function pbd_add_include_exclude_search_menu() {
   $menus = CRM_Core_BAO_Navigation::getNavigationList();
   $exists_array = preg_grep("#$label#", $menus);
   if(count($exists_array)) {
-    drush_log(dt("Menu already added."), 'notice');
+    drush_log(dt("Include/Exclude Menu already added."), 'notice');
     return;
   }
   // Get the value for the custom search - we need it for the URL
