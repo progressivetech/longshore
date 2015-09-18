@@ -50,8 +50,8 @@ else
       1 "${LONG_SITE_SIBLING}.mayfirst.org"
   fi
   # We have to quote the string. Alas.
-  query=$(echo "$query" | sed "s#'#\\'#")
-  query=$(echo "$query" | sed 's#"#\\"#')
+  query=$(echo "$query" | sed "s#'#\\\'#g")
+  query=$(echo "$query" | sed 's#"#\\\"#g')
   ssh "${LONG_SITE_SIBLING}.mayfirst.org" /srv/longshore/bin/longshore site-sqlq "$site" "$query"
   if [ "$?" != "0" ]; then
     long_log "Rerunning %s for site %s over network failed." error "site-sqlq" "$site"
