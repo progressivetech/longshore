@@ -11,7 +11,11 @@ Arguments
 long_check_args "$2" "$#" 1
 
 site="$2"
-query="$3"
+
+# To avoid complicating quoting issues - accept all remaining
+# arguments as part of the query.
+shift 2
+query="$@"
 
 long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 
