@@ -11,7 +11,10 @@ Arguments
 long_check_args "$2" "$#" 2
 
 site="$2"
-cmd="$3"
+
+# Accept all arguments as the drush command
+shift 2
+cmd="$@"
 
 long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 
