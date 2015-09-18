@@ -3378,10 +3378,7 @@ function pbd_enable_default_extensions() {
     // Uninstall first.
     $uninstall_extensions = array();
     $code_version = CRM_Utils_System::version();
-    if(version_compare($code_version, '>=', '4.6')) {
-      $uninstall_extensions[] = 'nz.co.fuzion.reportbase';
-    }
-
+    $params['keys'] = array();
     while(list(,$ext) = each($uninstall_extensions)) {
       $params['keys'][] = $ext;
     }
