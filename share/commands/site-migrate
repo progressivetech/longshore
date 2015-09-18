@@ -47,6 +47,18 @@ if [ "$new_platform" = "$old_platform" ]; then
   [ "$reply" != "y" ] && long_die "Not continuing." 0
 fi
 
+# Remove reportbase - it is no longer needed and has been removed
+# from the 4.6 platform. NOTE: this should be removed after the 4.6 
+# upgrade.
+if [ "$new_platform" = "ourpowerbase-d7-c4.6" ]; then
+  long_prompt "Disable/Uninstall reportbase"
+  if [ "$reply" = "y" ]; then
+    long_exec_drush_cmd "$site" \
+      "php-eval '_civicrm_init(); civicrm_api3(\"extension\", \"disable\", array(\"keys\" => array(\"nz.co.fuzion.reportbase\")));'"
+    long_exec_drush_cmd "$site" \
+      "php-eval '_civicrm_init(); civicrm_api3(\"extension\", \"uninstall\", array(\"keys\" => array(\"nz.co.fuzion.reportbase\")));'"
+  fi
+fi
 # Empty sessions table for quicker restore and to ensure everyone is 
 # logged out for upgrade.
 long_prompt "Truncating sessions table"
