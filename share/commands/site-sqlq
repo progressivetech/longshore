@@ -1,0 +1,29 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-sqlq <site> <query>
+Run the given query in the site's database.
+
+Arguments
+  <site> - The site database to run the query
+  <query> - The SQL statement to run. Either pass directly or 
+    pass the name of a file."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+query="$3"
+
+long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+long_rerun_over_network "$@" && exit
+
+cleanup=0
+if [ ! -f "$query" ]; then
+  temp=$(mktemp)
+  echo "$query" > "$temp"
+  query="$temp"
+  cleanup=1
+fi
+long_execute_site_query "$site" "$query"
+
+# Only cleanup if we created a temp file.
+[ "$cleanup" -eq 1 ] && rm "$query"
