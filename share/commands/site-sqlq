@@ -49,6 +49,9 @@ else
     long_die "The sibling I was trying to run this command on (%s) is not reachable." \
       1 "${LONG_SITE_SIBLING}.mayfirst.org"
   fi
+  # We have to quote the string. Alas.
+  query=$(echo "$query" | sed "s#'#\\'#")
+  query=$(echo "$query" | sed 's#"#\\"#')
   ssh "${LONG_SITE_SIBLING}.mayfirst.org" /srv/longshore/bin/longshore site-sqlq "$site" "$query"
   if [ "$?" != "0" ]; then
     long_log "Rerunning %s for site %s over network failed." error "site-sqlq" "$site"
