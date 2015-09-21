@@ -80,7 +80,6 @@ long_debug() {
     echo "$debug_subject" >&2
     echo "$deubg_msg" >&2
   fi
-  exit 1
 }
 
 # Check if a conatiner with the given name exists or not.
