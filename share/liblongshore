@@ -1025,6 +1025,10 @@ long_create_container() {
       # Now repeat for platform.
       long_set_site_platform "$name"
       if [ -z "$platform" ]; then
+        if [ -z "$LONG_SITE_PLATFORM" ]; then
+          # This is a fatal error.
+          long_die "The site container (%s) exists but doesn't have a platform set." 1 "$name"
+        fi
         platform="$LONG_SITE_PLATFORM"
       else
         # If it exists and we are specifying a platform, make sure they match.
@@ -1075,7 +1079,6 @@ long_set_site_platform() {
   # full path to the platform - so we use basename to reduce it to just
   # the platform name.
   local platform_path=$(docker inspect -f '{{.HostConfig.Binds}}' "$site" | egrep -o "/srv/longshore/platforms/ourpowerbase-[a-z0-9.-]*")
-  [ -z "$platform_path" ] && long_die "Failed to get platform path for %s." 1 "$site"
   LONG_SITE_PLATFORM=$(basename "$platform_path")
 }
 
