@@ -2326,7 +2326,7 @@ long_is_site_reachable() {
   else
     local protocol=http
   fi
-  if ! curl -s --max-time "$timeout" "${protocol}://${site}.${LONG_DEFAULT_DOMAIN}" | grep "block-user-login" >/dev/null; then
+  if ! curl -s --max-time "$timeout" "${protocol}://${site}.${LONG_DEFAULT_DOMAIN}" | grep "You don't seem to have access to this page" >/dev/null; then
     return 1
   fi
   return 0
