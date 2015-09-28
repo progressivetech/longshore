@@ -761,20 +761,11 @@ long_create_phpmyadmin_container() {
 }
 
 # Build out the required directories and permissions
-# for a given site. This function is also run as root
-# to fix broken permissions.
+# for a given site. 
 long_create_site_directories() {
   local name="$1"
   local perms=
   local dir="${LONG_SRV}/services/sites/$name"
-
-  # This function may be run as root to fix broken permissions.
-  root=n
-  sudo=sudo
-  if [[ $(whoami) = "root" ]]; then
-    root=y
-    sudo=
-  fi
 
   # These are the main directories that should be readable the the web. 
   local creates="
@@ -805,7 +796,6 @@ long_create_site_directories() {
   local create=
   for create in $creates; do
     mkdir -p "${dir}/${create}"
-    [ "$root" = "y" ] && chown "$LONG_HOST_USER" "${dir}/${create}"
     perms=$(stat -c "%A" "${dir}/${create}")
     if [ "$perms" != "drwxr-xr-x" ]; then
       chmod 0755 "${dir}/${create}"
@@ -834,7 +824,6 @@ long_create_site_directories() {
     # We only need to make this change at the top level - no need for
     # recursive.
     mkdir -p "${dir}/${create}"
-    [ "$root" = "y" ] && chown "$LONG_HOST_USER" "${dir}/${create}"
     perms=$(stat -c "%A" "${dir}/${create}")
     if [ "$perms" != "drwxr-x---" ]; then
       chmod 0750 "${dir}/${create}" 
@@ -845,7 +834,6 @@ long_create_site_directories() {
   # so that the host can create temporary files to be deleted after being
   # executed in the container. See the long_exec_in_container function.
   mkdir -p "${dir}/drupal/private/temp"
-  [ "$root" = "y" ] && chown "$LONG_HOST_USER" "${dir}/${create}"
   perms=$(stat -c "%A" "${dir}/drupal/private/temp")
   if [ "$perms" != "drwxrwxr-x" ]; then
     chmod 0775 "${dir}/drupal/private/temp"
@@ -856,13 +844,13 @@ long_create_site_directories() {
   for foo in $web_writable; do
     # Maintain group ownership by the $LONG_HOST_USER user so we can read the
     # files from the host for convenience and trouble-shooting.
-    $sudo chown -R longshore-php:"$LONG_HOST_USER" "${dir}/${foo}"
+    sudo chown -R longshore-php:"$LONG_HOST_USER" "${dir}/${foo}"
   done
 
   # Give the longshore-php user group ownership over the drupal directory
   # so we can easily flip on and off group write/read access when
   # installing drupal and civicrm.
-  $sudo chgrp longshore-php "${dir}/drupal"
+  sudo chgrp longshore-php "${dir}/drupal"
 }
 
 # Low lever site container creation. Call long_create_container instead
