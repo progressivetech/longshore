@@ -91,13 +91,24 @@ function drush_pbd_configure() {
   // which is the only way to create an account anyway...).
   variable_set('user_mail_status_activated_notify', 0);
 
-  // Handle themes
+  // Handle themes for all versions.
   theme_enable(array('newsflash', 'iframe'));
-  pbd_set_blocks_for_theme('iframe');
   pbd_set_iframe_settings();
-  pbd_set_blocks_for_theme('newsflash');
-  variable_set('theme_default','newsflash');
   pbd_set_newsflash_settings();
+  pbd_set_blocks_for_theme('newsflash');
+  pbd_set_blocks_for_theme('iframe');
+
+  $dbVer = db_query('select version from {civicrm_domain} where id = :id', array(':id' => CIVICRM_DOMAIN_ID))->fetchField();
+  if (substr($dbVer, 0, 3) >= '4.6') {
+    # Setup bartik_responsive for 4.6 
+    theme_enable(array('responsive_bartik'));
+    pbd_set_blocks_for_theme('responsive_bartik');
+    variable_set('theme_default','resposive_bartik');
+    pbd_set_responsive_bartik_settings();
+  }
+  else {
+    variable_set('theme_default','newsflash');
+  }
 
   pbd_add_include_exclude_search_menu();
   menu_rebuild();
@@ -902,13 +913,15 @@ function pbd_get_templates() {
 }
 
 function pbd_set_blocks_for_theme($theme) {
-  // Use generic names for regions
+  // Set default names for regions. Note: in the database, setting the 
+  // region to -1 disables it.
   $regions = array(
     'left_sidebar' => 'left_sidebar',
     'disabled' => -1,
     'footer' => 'footer',
     'content' => 'content'
   );
+
   // Now, override for specific theme names
   // for the same regions
 
@@ -926,6 +939,11 @@ function pbd_set_blocks_for_theme($theme) {
     $regions['left_sidebar'] = -1;
     $regions['content'] = 'main';
     $regions['footer'] = -1;
+  }
+
+  // responsive_bartik 
+  if($theme == 'responsive_bartik') {
+    $regions['left_sidebar'] = 'sidebar_first';
   }
 
   // Iterate over every standard block and define 
@@ -1483,6 +1501,28 @@ function pbd_set_iframe_settings() {
   $theme_iframe_settings['newsflash_logoheight'] = 0;
   $theme_iframe_settings['favicon_path'] = '';
   variable_set('theme_iframe_settings', $theme_iframe_settings);
+}
+
+function pbd_set_responsive_bartik_settings() {
+  $settings = variable_get('theme_responsive_bartik_settings', array());
+  // override the default favicon
+  $settings['toggle_favicon'] = 1;
+  $settings['default_favicon'] = 0;
+  $settings['favicon_path'] = 'sites/all/themes/pb_custom_theme_elements/poweron.ico';
+  $settings['favicon_mimetype'] = 'image/vnd.microsoft.icon';
+
+  // and override the default logo
+  $settings['default_logo'] = 0;
+  $settings['logo_path'] = 'sites/all/themes/pb_custom_theme_elements/poweron.png';
+  $settings['toggle_logo'] = 1;
+  $settings['toggle_name'] = 1;
+  $settings['toggle_slogan'] = 0;
+  $settings['toggle_node_user_picture'] = 0;
+  $settings['toggle_comment_user_picture'] = 0;
+  $settings['toggle_comment_user_verification'] = 0;
+  $settings['toggle_main_menu'] = 0;
+  $settings['toggle_secondary_menu'] = 0;
+  variable_set('theme_responsive_bartik_settings', $settings);
 }
 
 function pbd_set_newsflash_settings() {
