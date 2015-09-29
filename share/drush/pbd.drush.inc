@@ -103,7 +103,7 @@ function drush_pbd_configure() {
     # Setup bartik_responsive for 4.6 
     theme_enable(array('responsive_bartik'));
     pbd_set_blocks_for_theme('responsive_bartik');
-    variable_set('theme_default','resposive_bartik');
+    variable_set('theme_default','responsive_bartik');
     pbd_set_responsive_bartik_settings();
   }
   else {
