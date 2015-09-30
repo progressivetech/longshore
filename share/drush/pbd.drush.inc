@@ -100,7 +100,7 @@ function drush_pbd_configure() {
 
   $dbVer = db_query('select version from {civicrm_domain} where id = :id', array(':id' => CIVICRM_DOMAIN_ID))->fetchField();
   if (substr($dbVer, 0, 3) >= '4.6') {
-    # Setup bartik_responsive for 4.6 
+    # Setup responsive_bartik based theme 
     theme_enable(array('powerbase'));
     pbd_set_blocks_for_theme('powerbase');
     variable_set('theme_default','powerbase');
@@ -3430,8 +3430,18 @@ function pbd_enable_default_extensions() {
 
     // Reset for installing.
     $params['keys'] = array();
+    // To speed things up - eliminate extensions that are already enabled.
+    // by first building an array of enabled extensions.
+    $sql = "SELECT full_name FROM civicrm_extension WHERE is_active = 1";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    $enabled_already = array();
+    while($dao->fetch()) {
+      $enabled_already[] = $dao->full_name;
+    }
     while(list(,$ext) = each($default_extensions)) {
-      $params['keys'][] = $ext;
+      if(!in_array($ext, $enabled_already)) {
+        $params['keys'][] = $ext;
+      }
     }
     if(count($params['keys'] > 0)) {
       drush_log(dt("Installing extensions"));
