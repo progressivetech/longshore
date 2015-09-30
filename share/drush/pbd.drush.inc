@@ -101,10 +101,10 @@ function drush_pbd_configure() {
   $dbVer = db_query('select version from {civicrm_domain} where id = :id', array(':id' => CIVICRM_DOMAIN_ID))->fetchField();
   if (substr($dbVer, 0, 3) >= '4.6') {
     # Setup bartik_responsive for 4.6 
-    theme_enable(array('responsive_bartik'));
-    pbd_set_blocks_for_theme('responsive_bartik');
-    variable_set('theme_default','responsive_bartik');
-    pbd_set_responsive_bartik_settings();
+    theme_enable(array('powerbase'));
+    pbd_set_blocks_for_theme('powerbase');
+    variable_set('theme_default','powerbase');
+    pbd_set_powerbase_theme_settings();
   }
   else {
     variable_set('theme_default','newsflash');
@@ -941,8 +941,8 @@ function pbd_set_blocks_for_theme($theme) {
     $regions['footer'] = -1;
   }
 
-  // responsive_bartik 
-  if($theme == 'responsive_bartik') {
+  // responsive_bartik / powerbase 
+  if($theme == 'responsive_bartik' || $theme == 'powerbase') {
     $regions['left_sidebar'] = 'sidebar_first';
   }
 
@@ -1503,17 +1503,17 @@ function pbd_set_iframe_settings() {
   variable_set('theme_iframe_settings', $theme_iframe_settings);
 }
 
-function pbd_set_responsive_bartik_settings() {
-  $settings = variable_get('theme_responsive_bartik_settings', array());
+function pbd_set_powerbase_theme_settings() {
+  $settings = variable_get('theme_powerbase_settings', array());
   // override the default favicon
   $settings['toggle_favicon'] = 1;
   $settings['default_favicon'] = 0;
-  $settings['favicon_path'] = 'sites/all/themes/pb_custom_theme_elements/poweron.ico';
+  $settings['favicon_path'] = 'sites/all/themes/powerbase/images/poweron.ico';
   $settings['favicon_mimetype'] = 'image/vnd.microsoft.icon';
 
   // and override the default logo
   $settings['default_logo'] = 0;
-  $settings['logo_path'] = 'sites/all/themes/pb_custom_theme_elements/poweron.png';
+  $settings['logo_path'] = 'sites/all/themes/powerbase/images/poweron.png';
   $settings['toggle_logo'] = 1;
   $settings['toggle_name'] = 1;
   $settings['toggle_slogan'] = 0;
@@ -1522,7 +1522,7 @@ function pbd_set_responsive_bartik_settings() {
   $settings['toggle_comment_user_verification'] = 0;
   $settings['toggle_main_menu'] = 0;
   $settings['toggle_secondary_menu'] = 0;
-  variable_set('theme_responsive_bartik_settings', $settings);
+  variable_set('theme_powerbase_settings', $settings);
 }
 
 function pbd_set_newsflash_settings() {
