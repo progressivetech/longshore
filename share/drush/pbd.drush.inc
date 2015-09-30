@@ -2981,6 +2981,7 @@ function pbd_enable_modules() {
     'themekey_ui'
   );
 
+  drush_log(dt("Checking which modules are already enabled."));
   $modules_already_enabled = pm_module_list();
   $modules_to_enable = array();
   while(list(,$module) = each($modules_wanted)) {
@@ -2991,6 +2992,9 @@ function pbd_enable_modules() {
   if(count($modules_to_enable) > 0) {
     drush_log(dt("Enabling Drupal modules."));
     module_enable($modules_to_enable);
+  }
+  else {
+    drush_log(dt("No modules to enable."));
   }
 
 }
