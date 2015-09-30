@@ -101,6 +101,7 @@ function drush_pbd_configure() {
   $dbVer = db_query('select version from {civicrm_domain} where id = :id', array(':id' => CIVICRM_DOMAIN_ID))->fetchField();
   if (substr($dbVer, 0, 3) >= '4.6') {
     # Setup responsive_bartik based theme 
+    theme_disable(array('responsive_bartik'));
     theme_enable(array('powerbase'));
     pbd_set_blocks_for_theme('powerbase');
     variable_set('theme_default','powerbase');
