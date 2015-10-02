@@ -947,7 +947,6 @@ long_create_site_container() {
     -e "LONG_LIVE=$LONG_LIVE" \
     -e "PB_URL=${site}.${LONG_DEFAULT_DOMAIN}" \
     $LONG_DOCKER_MEMORY_LIMIT \
-    $LONG_DOCKER_ENV \
     $link \
     $publish \
     ptp-powerbase:latest php5-fpm || long_die "Failed to create the container %s" 1 "$site"

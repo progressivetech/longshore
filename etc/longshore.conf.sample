@@ -78,9 +78,6 @@ LONG_IMAP_HOST=civimail.ourpowerbase.net
 # container (you have to edit /etc/default/grub and add GRUB_CMDLINE_LINUX="cgroup_enable=memory"
 LONG_DOCKER_MEMORY_LIMIT="-m 1GB"
 
-# Add additional environment variables when creating all docker containers.
-LONG_DOCKER_ENV="-e LONG_RESOLV_CONF_IP=10.11.12.1"
-
 # Set the name of the local user on the host. We have to ensure this user
 # has proper permissions.
 LONG_HOST_USER=longshore
