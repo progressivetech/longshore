@@ -20,4 +20,8 @@ if [ "$LONG_LIVE" = "n" ]; then
   printf "log_errors = On\n" >> '/etc/php5/fpm/conf.d/99-powerbase-dev.ini'
 fi
 
+# Allow us to overwrite the DNS caching server at runtime.
+if [ -n "$LONG_RESOLV_CONF_IP" ]; then
+  printf "nameserver %s\n" "$LONG_RESOLV_CONF_IP" > /etc/resolv.conf
+fi
 exec "$@"
