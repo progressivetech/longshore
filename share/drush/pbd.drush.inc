@@ -3503,7 +3503,7 @@ function pbd_import_engage_data() {
     civicrm_engage_enable_address_parsing();
     civicrm_engage_set_autocomplete_options();
   }
-  else }
+  else {
     drush_log(dt("civicrm_enage is not enabled."), 'error');
   }
 }
