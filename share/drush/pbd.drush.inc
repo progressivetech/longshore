@@ -100,7 +100,6 @@ function drush_pbd_configure() {
 
   $dbVer = db_query('select version from {civicrm_domain} where id = :id', array(':id' => CIVICRM_DOMAIN_ID))->fetchField();
   if (substr($dbVer, 0, 3) >= '4.6') {
-    # Setup responsive_bartik based theme 
     theme_disable(array('responsive_bartik'));
     theme_enable(array('powerbase'));
     pbd_set_blocks_for_theme('powerbase');
@@ -943,7 +942,7 @@ function pbd_set_blocks_for_theme($theme) {
   }
 
   // responsive_bartik / powerbase 
-  if($theme == 'responsive_bartik' || $theme == 'powerbase') {
+  if($theme == 'powerbase') {
     $regions['left_sidebar'] = 'sidebar_first';
   }
 
@@ -2978,10 +2977,17 @@ function pbd_enable_modules() {
     'webform_civicrm',
     'webform','options_element',
     'libraries', 'autologout', 'themekey_civicrm', 'civicrm_engage',
-    'themekey_ui'
+    'themekey_ui', 'jquery_update'
   );
 
   drush_log(dt("Checking which modules are already enabled."));
+
+  // jquery_update is only available in 4.6 makefile.
+  $dbVer = db_query('select version from {civicrm_domain} where id = :id', array(':id' => CIVICRM_DOMAIN_ID))->fetchField();
+  if (substr($dbVer, 0, 3) < '4.6') {
+    unset($modules_wanted['jquery_update']);
+  }
+
   $modules_already_enabled = pm_module_list();
   $modules_to_enable = array();
   while(list(,$module) = each($modules_wanted)) {
