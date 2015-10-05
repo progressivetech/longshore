@@ -73,6 +73,7 @@ function drush_pbd_configure() {
   pbd_enable_modules();
   pbd_configure_imce();
   pbd_configure_autologout();
+  pbd_configure_jquery_update();
   pbd_create_drupal_roles();
   pbd_grant_anonymous_and_authenticated_role_access();
   pbd_email_footer();
@@ -3252,6 +3253,18 @@ function pbd_disable_webform_promote_to_front() {
       unset($var[$id]);
       variable_set('node_options_webform', $var);
     }
+  }
+}
+
+/**
+ * Ensure proper jquery version is selected.
+ */
+function pbd_configure_jquery_update() {
+  if(module_exists('jquery_update')) {
+    variable_set('jquery_update_compression_type', 'min');
+    variable_set('jquery_update_jquery_admin_version', '');
+    variable_set('jquery_update_jquery_cdn', 'none');
+    variable_set('jquery_update_jquery_version', '1.10');
   }
 }
 
