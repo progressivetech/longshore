@@ -3485,17 +3485,21 @@ function pbd_enable_default_extensions() {
  **/
 function pbd_import_engage_data() {
   if(module_exists('civicrm_engage')) {
+    drush_log(dt("Checking civicrm_engage data."));
     module_load_include('inc', 'civicrm_engage', 'civicrm_engage.admin');
     if(!civicrm_engage_subtypes_added()) {
+      drush_log(dt("Contact subtypes not added, loading them now."));
       civicrm_engage_load_contact_subtypes();
     }
     if(!civicrm_engage_custom_data_added()) {
+      drush_log(dt("Custom data not added, loading now."));
       civicrm_engage_load_custom_data();
     }
     if(!civicrm_engage_custom_voter_us_data_added()) {
+      drush_log(dt("Voter us data not added, loading now."));
       civicrm_engage_load_custom_voter_us_data();
     }
-    // These can be set twice with damage.
+    // These can be set twice without damage.
     civicrm_engage_enable_address_parsing();
     civicrm_engage_set_autocomplete_options();
   }
