@@ -473,7 +473,7 @@ function pbd_one_time_configuration() {
   // this must happen after campaign component is enabled
   drush_pm_enable('civicrm_engage');
 
-  drush_log("importing civicrm_engage data", 'notice');
+  drush_log("Importing civicrm_engage data", 'notice');
   pbd_import_engage_data();
 
   variable_set('site_frontpage','civicrm');
