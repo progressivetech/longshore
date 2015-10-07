@@ -173,7 +173,7 @@ if [ -z "$source_platform_path_temp" ]; then
 
   # FIXME 4.6.9 is not available - file not found. 
   if [ "$l10n_file" = "civicrm-4.6.9-l10n.tar.gz" ]; then
-    "$l10n_file" = "civicrm-4.6.8-l10n.tar.gz"
+    l10n_file="civicrm-4.6.8-l10n.tar.gz"
   fi
 
   l10n_url="https://downloads.civicrm.org/${l10n_file}"
