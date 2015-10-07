@@ -15,4 +15,7 @@ if [ "$LONG_LIVE" = "y" ]; then
 fi
 long_fetch_site "$site"
 
+# We have to create site directories to ensure permissions are properly
+# set.
+long_create_site_directories "$site"
 
