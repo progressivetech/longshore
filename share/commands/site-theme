@@ -45,10 +45,27 @@ homepage="http://${site}.org/"
 cat > "${theme_path}/${name}.info" <<EOF
 name = $name 
 description = $name Subtheme
-base theme = newsflash
+base theme = powerbase 
 core = 7.x
 engine = phptemplate
+
 stylesheets[all][] = $name.css
+
+;;;;;;;;;;;;;;;;;;;;;
+;; Regions
+;;;;;;;;;;;;;;;;;;;;;
+
+regions[navigation]     = 'Navigation'
+regions[header]         = 'Top Bar'
+regions[highlighted]    = 'Highlighted'
+regions[help]           = 'Help'
+regions[content]        = 'Content'
+regions[sidebar_first]  = 'Primary'
+regions[sidebar_second] = 'Secondary'
+regions[footer]         = 'Footer'
+regions[page_top]       = 'Page top'
+regions[page_bottom]    = 'Page bottom'
+
 EOF
 
 # optional template.php page
@@ -68,24 +85,23 @@ function ${name}_preprocess_page(&\$variables) {
 EOF
 
 cat > "${theme_path}/$name.css" <<EOF
-#logo-title {
-  margin: 0px;
+.navbar-default {
+  background-color: white;
+  border-color: white;
 }
 
-#header {
+#navbar {
+  margin-left: 0px;
+  margin-right: 0px;
+  width: 100%;
+  margin-top: 0px;
+  border: none;
 }
 
-#name-and-slogan {
-  margin: 0px;
-}
-
-body {
-  background-color: #0A3442;
-  padding: 0px;
-}
-
-#page {
-  padding: 0px;
+#navbar .logo {
+  display: block;
+  height: auto;
+  max-width: 100% !important;
 }
 EOF
 

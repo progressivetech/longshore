@@ -99,13 +99,13 @@ function drush_pbd_configure() {
   pbd_set_blocks_for_theme('newsflash');
   pbd_set_blocks_for_theme('iframe');
 
+  theme_enable(array('powerbase'));
+  pbd_set_powerbase_theme_settings();
+  pbd_set_blocks_for_theme('powerbase');
   $dbVer = db_query('select version from {civicrm_domain} where id = :id', array(':id' => CIVICRM_DOMAIN_ID))->fetchField();
   if (substr($dbVer, 0, 3) >= '4.6') {
     theme_disable(array('responsive_bartik'));
-    theme_enable(array('powerbase'));
-    pbd_set_blocks_for_theme('powerbase');
     variable_set('theme_default','powerbase');
-    pbd_set_powerbase_theme_settings();
   }
   else {
     variable_set('theme_default','newsflash');
@@ -2982,12 +2982,6 @@ function pbd_enable_modules() {
   );
 
   drush_log(dt("Checking which modules are already enabled."));
-
-  // jquery_update is only available in 4.6 makefile.
-  $dbVer = db_query('select version from {civicrm_domain} where id = :id', array(':id' => CIVICRM_DOMAIN_ID))->fetchField();
-  if (substr($dbVer, 0, 3) < '4.6') {
-    unset($modules_wanted['jquery_update']);
-  }
 
   $modules_already_enabled = pm_module_list();
   $modules_to_enable = array();
