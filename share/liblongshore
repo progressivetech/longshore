@@ -780,7 +780,7 @@ long_create_site_directories() {
   # If this is a dev instance or a clone, we don't make a modules, themes,
   # custom-civicrm and libraries directories because we pull that in via git.
   # If it's live we do.
-  if [ "$LONG_LIVE" = "y" ] && long_is_clone "$site"; then
+  if [ "$LONG_LIVE" = "y" ] && ! long_is_clone "$site"; then
     creates="$creates
       drupal/modules
       drupal/themes
@@ -789,7 +789,7 @@ long_create_site_directories() {
       drupal/custom-civicrm/php
       drupal/custom-civicrm/templates"
   else
-    # It is a dev instance, so git pull instead of adding these files.
+    # It is a dev instance or clone, so git pull instead of adding these files.
     mkdir -p "${dir}/drupal"
     long_gitify_site "$site"
   fi
@@ -1966,7 +1966,7 @@ long_check_git_setup() {
 
   # If this is a live instance and it's not a clone, make sure the bare
   # repo exists. If it's a dev instance, we don't need a bare repo.
-  if [ "$LONG_LIVE" = "y" ] && !long_is_clone "$site"; then
+  if [ "$LONG_LIVE" = "y" ] && ! long_is_clone "$site"; then
     local bare_git="${dir}/git" 
     if [ ! -d "$bare_git" ]; then
       long_log "Bare repo doesn't exist." info 
@@ -2057,7 +2057,7 @@ long_gitify_site() {
   fi
 
   # First make the bare repo, if we are live instance.
-  if [ "$LONG_LIVE" = "y" ] && !long_is_clone "$site"; then
+  if [ "$LONG_LIVE" = "y" ] && ! long_is_clone "$site"; then
     mkdir "$git_dir"
     cd "$git_dir"
     git init --quiet --bare
@@ -2070,7 +2070,7 @@ long_gitify_site() {
   # Now make the site git repo
   cd "$drupal_dir"
   git init --quiet
-  if [ "$LONG_LIVE" = "y" ] && !long_is_clone "$site"; then
+  if [ "$LONG_LIVE" = "y" ] && ! long_is_clone "$site"; then
     # Initialize from scratch
     git remote add bare "$git_dir" 
 
