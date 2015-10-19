@@ -2087,7 +2087,7 @@ long_gitify_site() {
     git commit --quiet -m "initial commit"
     git push --quiet bare master
   else
-    if long_is_clone; then
+    if long_is_clone "$site"; then
       # Clone site. Add remote from non-clone site.
       # Check if remote is clean.
       long_check_git_clean "${site:0: -5}"
