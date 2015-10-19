@@ -777,10 +777,10 @@ long_create_site_directories() {
     drupal/files/civicrm
     drupal/files/civicrm/persist"
 
-  # If this is a dev instance, we don't make a modules, themes, custom-civicrm
-  # and libraries directories because we pull that in via git. If it's live we
-  # do.
-  if [ "$LONG_LIVE" = "y" ]; then
+  # If this is a dev instance or a clone, we don't make a modules, themes,
+  # custom-civicrm and libraries directories because we pull that in via git.
+  # If it's live we do.
+  if [ "$LONG_LIVE" = "y" ] && long_is_clone "$site"; then
     creates="$creates
       drupal/modules
       drupal/themes
@@ -1605,6 +1605,72 @@ long_launch_root_sql_cli() {
   mysql --defaults-file="$mycnf"
 }
 
+# Clone a site from the same server
+long_clone_site() {
+  local site="$1"
+  local clone_site="${1}clone"
+  local path="/srv/longshore/services/sites/${site}"
+
+  local source_git="${path}/git"
+  local source_drupal="${path}/drupal"
+  local target_base="${path}clone"
+  target_drupal="${target_base}/drupal"
+
+  # Make sure source git repo is clean and warn if it isn't.
+  long_check_git_clean "$site"
+
+  # Build out the directory structure. This will gitify the local repo
+  # if necessary.
+  long_create_site_directories "$clone_site"
+
+  # Set quiet option if necessary.
+  local cmd_quiet="-v"
+  if [ "$LONG_LOG_LEVEL" != "info" ]; then
+    cmd_quiet="-q"
+  fi
+
+  # If we are cloning on a dev server, then 
+  if [ "$LONG_LIVE" = "y" ]; then
+    # git pull to get most recent code. 
+    cd "$target_drupal"
+    long_log "Pulling in changes from original site via git." info
+    git pull "$cmd_quiet" live master
+
+    if [ "$?" -ne 0 ]; then
+      long_log "Error git pulling from remote repo." error
+    fi
+  fi
+  # Now get files.
+
+  # First we have to chown so we can rsync. After building out the directories,
+  # these directories will be owned by longshore-php, not $LONG_HOST_USER.
+  sudo chown -R "$LONG_HOST_USER" "${target_drupal}/files"
+  sudo chown -R "$LONG_HOST_USER" "${target_drupal}/private"
+
+  # Clear the js, css and template caches
+  rm -rf "${target_drupal}"/files/js/*
+  rm -rf "${target_drupal}"/files/css/*
+  rm -rf "${target_drupal}"/files/civicrm/templates_c/*
+
+  long_log "Sync'ing files" info
+  rsync -a --no-owner --no-perms --delete --exclude 'js/*' \
+    --exclude 'css/*' --exclude 'civicrm/templates_c/*' \
+    --exclude 'civicrm/ConfigAndLog/*' \
+    "${source_drupal}/files/" "${target_drupal}/files/"
+
+  long_log "Sync'ing private" info
+  rsync -a --no-owner --no-perms --delete \
+    "${source_drupal}/private/" "${target_drupal}/private/"
+
+  if [ -f "${source_base}/backup/${site}.sql.gz" ]; then
+    long_log "Sync'ing database dump" info
+    rsync $cmd_quiet "${source_base}/backup/${site}.sql.gz" "${target_base}/backup/"
+  else
+    long_log "Not database backup." error
+  fi
+}
+
+# Fetch a site from the remote server. Copy all files.
 long_fetch_site() {
   local site="$1"
   long_log "Getting remote path and server" info 
@@ -1640,21 +1706,7 @@ long_fetch_site() {
   # if necessary.
   long_create_site_directories "$site"
 
-  # Set quiet option if necessary.
-  local cmd_quiet="-v"
-  if [ "$LONG_LOG_LEVEL" != "info" ]; then
-    cmd_quiet="-q"
-  fi
-  # git pull to get most recent code. 
-  cd "$target_drupal"
-  long_log "Pulling in changes from live server via git." info
-  git pull -q live master
-
-  if [ "$?" -ne 0 ]; then
-    long_log "Error git pulling from remote repo." error
-  fi
   # Now get files.
-
   # First we have to chown so we can rsync. After building out the directories,
   # these directories will be owned by longshore-php, not $LONG_HOST_USER.
   sudo chown -R "$LONG_HOST_USER" "${target_drupal}/files"
@@ -1887,6 +1939,15 @@ long_recreate_container() {
   long_container_up "$type" "$container" "$LONG_SITE_DB_HOST" "$LONG_SITE_PLATFORM"
 }
 
+# Check if a given site variable ends in clone.
+long_is_clone() {
+  local site="$1"
+  if [ "${site: -5:5}" = "clone" ]; then
+    return 0
+  fi
+  return 1
+}
+
 # Check if site has git repo setup properly. Return 0 if it's setup properly
 # and 1 if it's not, and 2 if the site doesn't exist.
 long_check_git_setup() {
@@ -1903,9 +1964,9 @@ long_check_git_setup() {
     return 1
   fi
 
-  # If this is a live instance, make sure the bare repo exists. If it's a
-  # dev instance, we don't need a bare repo.
-  if [ "$LONG_LIVE" = "y" ]; then
+  # If this is a live instance and it's not a clone, make sure the bare
+  # repo exists. If it's a dev instance, we don't need a bare repo.
+  if [ "$LONG_LIVE" = "y" ] && !long_is_clone "$site"; then
     local bare_git="${dir}/git" 
     if [ ! -d "$bare_git" ]; then
       long_log "Bare repo doesn't exist." info 
@@ -1954,11 +2015,13 @@ long_check_remote_git_clean() {
 # Only live sites have a bare repo created, dev sites only have the
 # regular git repo in the drupal directory, with a remote set to the
 # bare repo on the live server (this way, a dev site can pull and push
-# to the bare repo on the live server).
+# to the bare repo on the live server). Similarly, clone sites have a 
+# regular repo with a remote set to the bare repo of the live version
+# of the site.
 #
-# This function will create the necessary git repo(s) on either a live
-# or dev site, check-in any existing code (if necessary) and then return
-# with a code to indicate whether the status of the repo is clean or not.
+# This function will create the necessary git repo(s) on either a live or dev
+# or clone site, check-in any existing code (if necessary) and then return with
+# a code to indicate whether the status of the repo is clean or not.
 #
 # This function returns 0 if the git repo is clean or 1 if there are
 # files/changes to commit, or 2 if the site doesn't exist.
@@ -1994,7 +2057,7 @@ long_gitify_site() {
   fi
 
   # First make the bare repo, if we are live instance.
-  if [ "$LONG_LIVE" = "y" ]; then
+  if [ "$LONG_LIVE" = "y" ] && !long_is_clone "$site"; then
     mkdir "$git_dir"
     cd "$git_dir"
     git init --quiet --bare
@@ -2007,7 +2070,7 @@ long_gitify_site() {
   # Now make the site git repo
   cd "$drupal_dir"
   git init --quiet
-  if [ "$LONG_LIVE" = "y" ]; then
+  if [ "$LONG_LIVE" = "y" ] && !long_is_clone "$site"; then
     # Initialize from scratch
     git remote add bare "$git_dir" 
 
@@ -2024,21 +2087,36 @@ long_gitify_site() {
     git commit --quiet -m "initial commit"
     git push --quiet bare master
   else
-    # Dev instance, add remote and pull 
-    local user=longshore
-    local default_host=olivera
-    long_log "Get host for site (%s)" info "$site"
-    local host=$(ssh ${user}@${default_host}.mayfirst.org "/srv/longshore/bin/longshore site-info '$site'" | grep ^Sibling: | cut -d: -f2 | tr -d ' ')
+    if long_is_clone; then
+      # Clone site. Add remote from non-clone site.
+      # Check if remote is clean.
+      long_check_git_clean "${site:0: -5}"
 
-    if [ -z "$host" ]; then
-      long_log "Can't find the host" info
+      # Add remote.
+      live_git_dir=${git_dir:0: -5}
+      if [ ! -d "$live_git_dir" ]; then
+        long_log "No bare git repo. Maybe a clone on a dev site?" error
+      else
+        git remote add live "$live_git_dir" 
+        git pull live master
+      fi
     else
-      # Check if the remote site is clean and warn if it isn't (but keep going
-      # to avoid half-completing this function).
-      long_check_remote_git_clean "$site" "$host"    
+      # Dev instance, add remote and pull 
+      local user=longshore
+      local default_host=olivera
+      long_log "Get host for site (%s)" info "$site"
+      local host=$(ssh ${user}@${default_host}.mayfirst.org "/srv/longshore/bin/longshore site-info '$site'" | grep ^Sibling: | cut -d: -f2 | tr -d ' ')
 
-      git remote add live "${user}@${host}.mayfirst.org:${dir}/git"
-      git pull live master
+      if [ -z "$host" ]; then
+        long_log "Can't find the host" info
+      else
+        # Check if the remote site is clean and warn if it isn't (but keep going
+        # to avoid half-completing this function).
+        long_check_remote_git_clean "$site" "$host"    
+
+        git remote add live "${user}@${host}.mayfirst.org:${dir}/git"
+        git pull live master
+      fi
     fi
   fi
 

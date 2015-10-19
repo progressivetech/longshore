@@ -1,0 +1,40 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-clone <site>
+
+Clone a live site and then provision it. The resulting site will end in
+'clone' - e.g. ptpclone. It will use the same db and platform as the 
+original site.
+
+Arguments
+  <site> - The site you want to create, e.g. ptp"
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+# Check for easy mistakes.
+if long_is_clone "$site"; then
+  long_die "Please pass the original site as the first argument, not the clone."
+fi
+
+# Make sure the original is on this host
+if [ ! -d "${LONG_SRV}/services/sites/${site}" ]; then
+  long_die "Please run on the same server as the original site."
+fi
+
+if [ -d "${LONG_SRV}/services/sites/${site}clone" ]; then
+  long_die "The clone seems to already exist."
+fi
+
+long_set_site_db_host "$site"
+long_set_site_platform "$site"
+
+long_clone_site "$site"
+long_create_container site "${site}clone" "$LONG_SITE_DB_HOST" "$LONG_SITE_PLATFORM"
+docker start "${site}clone"
+long_create_dns "${site}clone"
+long_setup_site "${site}clone"
+long_configure_site "${site}clone"
+long_nginx_reload
+
