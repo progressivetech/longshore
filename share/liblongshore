@@ -2072,6 +2072,7 @@ long_gitify_site() {
   git init --quiet
   if [ "$LONG_LIVE" = "y" ] && ! long_is_clone "$site"; then
     # Initialize from scratch
+    long_log "Initializing git repo from scratch for live site." info
     git remote add bare "$git_dir" 
 
     files=$(find custom-civicrm libraries modules themes -type f)
@@ -2088,6 +2089,7 @@ long_gitify_site() {
     git push --quiet bare master
   else
     if long_is_clone "$site"; then
+      long_log "Initializing git repo for clone site." info
       # Clone site. Add remote from non-clone site.
       # Check if remote is clean.
       long_check_git_clean "${site:0: -5}"
@@ -2102,6 +2104,7 @@ long_gitify_site() {
       fi
     else
       # Dev instance, add remote and pull 
+      long_log "Initializing git repo for dev site." info
       local user=longshore
       local default_host=olivera
       long_log "Get host for site (%s)" info "$site"
