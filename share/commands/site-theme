@@ -22,7 +22,7 @@ long_rerun_over_network "$@" && exit
 # If the theme name is ommitted, use the name of the site.
 [ -z "$name" ] && name="$site"
 
-if [[ ! $name =~ ^[a-z0-9]+$ ]]; then
+if [[ ! $name =~ ^[a-z0-9_]+$ ]]; then
   long_die "Only letters and numbers are allowed in the theme name. You entered %s." 1 "$name"
 fi
 
