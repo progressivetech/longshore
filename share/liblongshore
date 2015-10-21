@@ -1608,13 +1608,14 @@ long_launch_root_sql_cli() {
 # Clone a site from the same server
 long_clone_site() {
   local site="$1"
+  local source_base="/srv/longshore/services/sites/${site}"
+  local source_git="${source_base}/git"
+  local source_drupal="${source_base}/drupal"
+
   local clone_site="${site}clone"
-  local path="/srv/longshore/services/sites/${site}"
   long_log "Cloning site %s to %s" "$site" "$clone_site"
 
-  local source_git="${path}/git"
-  local source_drupal="${path}/drupal"
-  local target_base="${path}clone"
+  local target_base="${source_base}clone"
   local target_drupal="${target_base}/drupal"
 
   # Make sure source git repo is clean and warn if it isn't.
@@ -1969,8 +1970,13 @@ long_check_git_setup() {
 long_check_git_clean() {
   local site="$1"
   local dir="${LONG_SRV}/services/sites/${site}/drupal"
+
+  # Track where we are so we can return after cd'ing
+  local cwd=$(pwd)
   cd "$dir"
   local out=$(git status -s)
+  cd "$cwd"
+
   if [ -z "$out" ]; then
     return 0
   fi
@@ -2049,15 +2055,22 @@ long_gitify_site() {
   if [ "$LONG_LIVE" = "y" ] && ! long_is_clone "$site"; then
     long_log "Creating bare git repo for new live site." info
     mkdir "$git_dir"
+
+    # Keep track of where we are before we cd
+    local cwd=$(pwd)
     cd "$git_dir"
     git init --quiet --bare
+    cd "$cwd"
+
     local post_update="${git_dir}/hooks/post-update"
     printf "#!/bin/bash\ncd %s\nunset GIT_DIR\ngit pull --quiet bare master\n" \
       "$drupal_dir" > "$post_update"
     chmod 755 "$post_update"
   fi
 
-  # Now make the site git repo
+  # Now make the site git repo. Again, keep track of where we are. We will
+  # return before we leave this function.
+  local cwd=$(pwd)
   cd "$drupal_dir"
   git init --quiet
   if [ "$LONG_LIVE" = "y" ] && ! long_is_clone "$site"; then
@@ -2085,9 +2098,9 @@ long_gitify_site() {
       long_check_git_clean "${site:0: -5}"
 
       # Add remote.
-      live_git_dir=${git_dir:0: -5}
+      local live_git_dir="${dir:0: -5}/git"
       if [ ! -d "$live_git_dir" ]; then
-        long_log "No bare git repo. Maybe a clone on a dev site?" error
+        long_log "No bare git repo (%s). Maybe a clone on a dev site?" error "$live_git_dir"
       else
         git remote add live "$live_git_dir" 
         git pull live master
@@ -2112,7 +2125,7 @@ long_gitify_site() {
       fi
     fi
   fi
-
+  cd "$cwd"
   # Since it's a new repo, it should be clean.
   return 0
 }
