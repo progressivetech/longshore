@@ -1930,10 +1930,8 @@ long_recreate_container() {
 long_is_clone() {
   local site="$1"
   if [ "${site: -5:5}" = "clone" ]; then
-    long_log "%s is a clone" info "$site"
     return 0
   fi
-  long_log "%s is not a clone" info "$site"
   return 1
 }
 
