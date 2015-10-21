@@ -1652,7 +1652,7 @@ long_clone_site() {
 
   if [ -f "${source_base}/backup/${site}.sql.gz" ]; then
     long_log "Sync'ing database dump" info
-    rsync $cmd_quiet "${source_base}/backup/${site}.sql.gz" "${target_base}/backup/"
+    rsync $cmd_quiet "${source_base}/backup/${site}.sql.gz" "${target_base}/backup/${clone_site}.sql.gz"
   else
     long_log "No database backup." error
   fi
