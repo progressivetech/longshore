@@ -763,9 +763,9 @@ long_create_phpmyadmin_container() {
 # Build out the required directories and permissions
 # for a given site. 
 long_create_site_directories() {
-  local name="$1"
+  local site="$1"
   local perms=
-  local dir="${LONG_SRV}/services/sites/$name"
+  local dir="${LONG_SRV}/services/sites/$site"
 
   # These are the main directories that should be readable the the web. 
   local creates="
@@ -1608,37 +1608,25 @@ long_launch_root_sql_cli() {
 # Clone a site from the same server
 long_clone_site() {
   local site="$1"
-  local clone_site="${1}clone"
+  local clone_site="${site}clone"
   local path="/srv/longshore/services/sites/${site}"
+  long_log "Cloning site %s to %s" "$site" "$clone_site"
 
   local source_git="${path}/git"
   local source_drupal="${path}/drupal"
   local target_base="${path}clone"
-  target_drupal="${target_base}/drupal"
+  local target_drupal="${target_base}/drupal"
 
   # Make sure source git repo is clean and warn if it isn't.
+  long_log "Checking if %s site has clean git repo" info "$site"
   long_check_git_clean "$site"
 
   # Build out the directory structure. This will gitify the local repo
-  # if necessary.
+  # if necessary, which will pull in the code from live version of the
+  # site.
+  long_log "Creating site directories for %s" info "$clone_site"
   long_create_site_directories "$clone_site"
 
-  # Set quiet option if necessary.
-  local cmd_quiet="-v"
-  if [ "$LONG_LOG_LEVEL" != "info" ]; then
-    cmd_quiet="-q"
-  fi
-
-  if [ "$LONG_LIVE" = "y" ]; then
-    # git pull to get most recent code. 
-    cd "$target_drupal"
-    long_log "Pulling in changes from original site via git." info
-    git pull "$cmd_quiet" live master
-
-    if [ "$?" -ne 0 ]; then
-      long_log "Error git pulling from remote repo." error
-    fi
-  fi
   # Now get files.
 
   # First we have to chown so we can rsync. After building out the directories,
@@ -1665,7 +1653,7 @@ long_clone_site() {
     long_log "Sync'ing database dump" info
     rsync $cmd_quiet "${source_base}/backup/${site}.sql.gz" "${target_base}/backup/"
   else
-    long_log "Not database backup." error
+    long_log "No database backup." error
   fi
 }
 
@@ -1942,8 +1930,10 @@ long_recreate_container() {
 long_is_clone() {
   local site="$1"
   if [ "${site: -5:5}" = "clone" ]; then
+    long_log "%s is a clone" info "$site"
     return 0
   fi
+  long_log "%s is not a clone" info "$site"
   return 1
 }
 
@@ -2051,12 +2041,14 @@ long_gitify_site() {
   if [ "$?" = "0" ]; then
     # The repository is already setup properly. Now determine whether or
     # not it is clean and return the appropriate code.
+    long_log "Git repo already exists for %s" info "$site"
     long_check_git_clean "$site"
     return "$?"
   fi
 
   # First make the bare repo, if we are live instance.
   if [ "$LONG_LIVE" = "y" ] && ! long_is_clone "$site"; then
+    long_log "Creating bare git repo for new live site." info
     mkdir "$git_dir"
     cd "$git_dir"
     git init --quiet --bare
