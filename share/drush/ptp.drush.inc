@@ -563,13 +563,21 @@ function ptp_set_admin_password() {
  * Setup special Help menu.
  *
  * PTP wants special items in the help menu to direct users to our help
- * resources.
+ * resources. NOTE: CiviCRM changed the name of the menu from Help to
+ * Support in 4.6.9.
  */
 function ptp_create_help_menu() {
   // There are existing Civi menu items, and a bunch of random variations
   // that we've created in the past. To ensure we have a consistent help
   // menu, we first delete everything in the help menu, then rebuild it. 
-
+  
+  // Depending on our version, we may look for "Help" or "Support"
+  $menu_name = "Support";
+  $code_ver = CRM_Utils_System::version();
+  if(version_compare($code_ver, '4.6.9', '<')) {
+    $menu_name = "Help";
+  }
+  drush_log(dt("Using menu name @menu_name", array('@menu_name' => $menu_name)));
   // Get list of menus
   $menus = CRM_Core_BAO_Navigation::getNavigationList();
 
@@ -578,9 +586,9 @@ function ptp_create_help_menu() {
   array_walk($menus, 'ptp_strip_nbsp');
 
   // Ensure that the parent Help menu is there and get the id
-  if(!in_array('Help',$menus)) {
+  if(!in_array($menu_name,$menus)) {
     $params = array(
-      'label' => 'Help',
+      'label' => $menu_name,
       'url' => '',
       'permission' => array(
         0 => 'access CiviCRM',
@@ -590,19 +598,20 @@ function ptp_create_help_menu() {
        'parent_id' => '',
     ); 
     // Rebuild array
-    drush_log("Help main menu item is not available. Adding it.", 'error');
+    drush_log("Help/Support main menu item is not available. Adding it.", 'error');
     CRM_Core_BAO_Navigation::add($params);
+    CRM_Core_BAO_Navigation::resetNavigation();
     $menus = CRM_Core_BAO_Navigation::getNavigationList();
     array_walk($menus, 'ptp_strip_nbsp');
   }
 
   // Get the id of the help menu
-  $keys = array_keys($menus, 'Help');
+  $keys = array_keys($menus, $menu_name);
   $keys_count = count($keys);
   if($keys_count != 1) {
     // Hm... if they have more than one Help menu, then I'm not sure
     // what to do
-    drush_log("Instead of 1, I found $keys_count help menu(s)... not trying to build PTP help menus.", 'error');
+    drush_log("Instead of 1, I found $keys_count support/help menu(s)... not trying to build PTP help menus.", 'error');
     print_r($keys);
     print_r($menus);
     return FALSE;
