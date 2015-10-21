@@ -1775,12 +1775,11 @@ long_create_dns() {
       long_log "Updating IP address from %s to %s." info "$exists" "$LONG_IP_ADDR"
 
       # First, get the item id.
-      local get_item_cmd="wget -q '--post-data=action=select&object=item&where:dns_fqdn=${site}.ourpowerbase.net&user_name=${api_login}&where:service_id=${service_id}&where:hosting_order_id=${hosting_order_id}&user_pass=${api_password}&output_format=text' -O- '$url'"
-      local item_id=$($get_item_cmd | egrep -o '"item_id":[0-9]+' | cut -d: -f2)
+      local item_id=$(wget -q "--post-data=action=select&object=item&where:dns_fqdn=${site}.ourpowerbase.net&user_name=${api_login}&where:service_id=${service_id}&where:hosting_order_id=${hosting_order_id}&user_pass=${api_password}&output_format=text" -O- "$url" |  egrep -o '"item_id":[0-9]+' | cut -d: -f2)
 
       local item_id_count=$(echo "$item_id" | wc -l)
       if [ -z "$item_id" ]; then 
-        long_die "Failed to get existing item_id. Command: %s" 1 "$get_item_cmd"
+        long_die "Failed to get existing item_id. Try removing -q from wget command." 
         return
       elif [ "$item_id_count" -gt "1" ]; then
         long_log "When searching for domain (%s), found the following item ids: %s" info "${site}.ourpowerbase.net" "$item_id"
