@@ -102,14 +102,6 @@ function drush_pbd_configure() {
   theme_enable(array('powerbase'));
   pbd_set_powerbase_theme_settings();
   pbd_set_blocks_for_theme('powerbase');
-  $dbVer = db_query('select version from {civicrm_domain} where id = :id', array(':id' => CIVICRM_DOMAIN_ID))->fetchField();
-  if (substr($dbVer, 0, 3) >= '4.6') {
-    theme_disable(array('responsive_bartik'));
-    variable_set('theme_default','powerbase');
-  }
-  else {
-    variable_set('theme_default','newsflash');
-  }
 
   pbd_add_include_exclude_search_menu();
   menu_rebuild();
@@ -456,6 +448,10 @@ function pbd_one_time_configuration() {
   }
 
   $one_time = TRUE;
+
+  # All new sites get the new powerbase theme.
+  variable_set('theme_default','powerbase');
+
   pbd_grant_anonymous_and_authenticated_role_access($one_time);
 
   // _civicrm_init no longer creates config singleton.
