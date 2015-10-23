@@ -47,8 +47,6 @@ apt-get remove $(deborphan)
  * Build all images
 ```longshore images-create all```
  * Rebuild and start all containers
-```longshore site-start```
- * Rebuild sites
 ```
 for site in $(longshore site-list $(hostname)); do longshore site-create "$site" && longshore site-start "$site"; done
 ```
