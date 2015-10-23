@@ -99,17 +99,20 @@ long_prompt "Reload nginx"
 # Run the upgrade in a loop - so if there is a failure we can
 # restore the database and try again.
 while [ 1 ]; do 
-  long_prompt "Upgrading civicrm database..."
+  # Don't use long_prompt - we don't want it to be possible to automate
+  # the answers to these questions.
+  long_always_prompt "Upgrading civicrm database..."
   if [ "$reply" = "y" ]; then
     long_exec_drush_cmd "$site" "-y civicrm-upgrade-db" 
-    long_prompt "Was the upgrade successful?"
+
+    long_always_prompt "Was the upgrade successful?"
     [ "$reply" = "y" ] && break
-    long_prompt "Restore database from backup so you can try again?"
+    long_always_prompt "Restore database from backup so you can try again?"
     if [ "$reply" = "y" ]; then
       long_log "Importing from backup. This will take a while" info
       (longshore site-import "$site") || long_die "Failed to restore the backup."
 
-      long_prompt "Entering maintenance mode..."
+      long_always_prompt "Entering maintenance mode..."
       [ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"
     fi
   else

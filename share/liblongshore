@@ -48,6 +48,23 @@ long_check_args() {
   fi
 }
 
+# Prompt the user but don't allow LONG_YES to override the prompt.
+# See long_prompt() for syntax.
+long_always_prompt() {
+  local prompt_msg="$1"
+  shift
+
+  # Override LONG_YES
+  local orig_long_yes="$LONG_YES"
+  LONG_YES=0
+
+  # Prompt user
+  long_prompt "$prompt_msg" "$@"
+
+  # Reset LONG_YES
+  LONG_YES="$orig_long_yes"
+}
+
 # Prompt the user with a given message ($1) and the question
 # "Proceed? [Yn]" - set $reply variable to either y or n, properly
 # parsing case and the default.
