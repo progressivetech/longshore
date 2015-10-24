@@ -18,7 +18,7 @@ It is a set of bash helper scripts providing a thin wrapper around docker comman
 
 == Switching from initial install to new install ==
 
- * Delete /etc/apt/source.list.d/docker
+ * Delete /etc/apt/source.list.d/docker.list
  * Shutdown all containers 
 ```
 for id in $(docker ps -q); do docker stop "$id"; done
@@ -45,7 +45,7 @@ apt-get remove $(deborphan)
  * Install docker.io
  * Re-run longshore init as root.
  * Build all images
-```longshore images-create all```
+```longshore image-create all```
  * Rebuild and start all containers
 ```
 for site in $(longshore site-list $(hostname)); do longshore site-create "$site" && longshore site-start "$site"; done
