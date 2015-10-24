@@ -2238,7 +2238,7 @@ long_clear_sibling_cache() {
   rm -f "$LONG_SIBLING_CACHE" 
   for sibling in $LONG_SIBLINGS; do
     if ! long_is_host_reachable "${sibling}.mayfirst.org"; then
-      long_error "The sibling I was trying to delete the cache on (%s) is not reachable. Continuing." \
+      long_log "The sibling I was trying to delete the cache on (%s) is not reachable. Continuing." \
         error "${sibling}.mayfirst.org"
     else
       ssh ${sibling}.mayfirst.org "rm -f '$LONG_SIBLING_CACHE'"
@@ -2274,7 +2274,7 @@ long_generate_sibling_cache() {
   for sibling in $LONG_SIBLINGS; do
     long_log "Generating site list for %s." info "$sibling"
     if ! long_is_host_reachable "${sibling}.mayfirst.org"; then
-      long_error "The sibling I was trying to retrieve the cache for \
+      long_log "The sibling I was trying to retrieve the cache for \
         (%s) is not reachable. Continuing without this sibling's sites." \
         error "${sibling}.mayfirst.org"
     else
@@ -2344,7 +2344,7 @@ long_set_dbs() {
       done
     else
       if ! long_is_host_reachable "${sibling}.mayfirst.org"; then
-        long_error "The sibling I was trying to get a list of dbs for (%s) is not reachable. Continuing." \
+        long_log "The sibling I was trying to get a list of dbs for (%s) is not reachable. Continuing." \
           error "${sibling}.mayfirst.org"
       else
         ssh "${sibling}.mayfirst.org" "/srv/longshore/bin/longshore db-list $sibling $order_by_memory" 
