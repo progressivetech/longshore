@@ -16,7 +16,7 @@ for sibling in $LONG_SIBLINGS; do
   # to save on bandwidth.
   bwlimit=
   if [ "$host" = "chico" ]; then
-    [ "$sibling" != "victoria" ] && continue
+    [ "$sibling" != "olivera" ] && continue
     # Also set a bandwidth limit
     bwlimit="--bwlimit=200"
   fi
