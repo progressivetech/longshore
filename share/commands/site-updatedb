@@ -24,4 +24,5 @@ for site in $sites; do
   long_log "Updating %s" info "$site"
   long_exec_drush_cmd "$site" "-y updatedb"
   long_exec_drush_cmd "$site" "-y civicrm-upgrade-db"
+  long_exec_drush_cmd "$site" "-y lsd-extensions-update"
 done
