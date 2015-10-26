@@ -171,12 +171,7 @@ if [ -z "$source_platform_path_temp" ]; then
   # Now download the internationalization file and unpack it.
   l10n_file="civicrm-${DM_VERSION}-l10n.tar.gz"
 
-  # FIXME 4.6.9 is not available - file not found. 
-  if [ "$l10n_file" = "civicrm-4.6.9-l10n.tar.gz" ]; then
-    l10n_file="civicrm-4.6.8-l10n.tar.gz"
-  fi
-
-  l10n_url="https://downloads.civicrm.org/${l10n_file}"
+  l10n_url="https://download.civicrm.org/${l10n_file}"
   cd "$TRG"
   long_log "Downloading %s to %s." info "$l10n_url" "$TRG"
   wget -q "$l10n_url" || long_die "Failed to download l10n file (%s)." 1 "$l10n_url"
