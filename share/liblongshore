@@ -2200,12 +2200,29 @@ long_rerun_over_network() {
 
 # Return 0 if it is reachable and 1 if it is not.
 long_is_host_reachable() {
+  # Try the host this many times.
+  local tries=3
+
   local host="$1"
-  if ping -q -c1 "$host" &>/dev/null; then
-    return 0
-  fi
-  return 1
+  local try=0
+  while [ 1 ]; do
+    if ping -q -c1 "$host" &>/dev/null; then
+      # If successful, return 0/True
+      return 0
+    fi
+    # Try up to $tries times before we give up
+    if [ $try -ge $tries ]; then
+      # Give up, host is down.
+      return 1
+    fi
+    long_log "Failed attempt number %s when testing reachability of %s\n" \
+      error "$try" "$host"
+    # Pause for a second and continue loop.
+    try=$(( $try + 1 ))
+    sleep 1
+  done
 }
+
 # Provide a unique shortened database username if the provided username
 # is longer than 16 characters.
 long_sanitize_db_username() {
@@ -2274,9 +2291,30 @@ long_generate_sibling_cache() {
   for sibling in $LONG_SIBLINGS; do
     long_log "Generating site list for %s." info "$sibling"
     if ! long_is_host_reachable "${sibling}.mayfirst.org"; then
-      long_log "The sibling I was trying to retrieve the cache for \
-        (%s) is not reachable. Continuing without this sibling's sites." \
-        error "${sibling}.mayfirst.org"
+      # If a sibling is not availale, it could be a temporary network 
+      # error, in which case we should simply bail on regenerating the
+      # cache because a stale cache is better than a cache that is missing
+      # an entire sibling's servers. On the other hand, if the sibling is
+      # offline and we are moving sites to a new server, then we want to
+      # generate the cache without that sibling, because the sibling is
+      # no longer hosting any sites. 
+      #
+      # So... by default, we assume that the problem is a temporary network
+      # error, but we allow the user to set the:
+      # LONG_FORCE_GENERATE_SIBLING_CACHE=1 environment variable to force the
+      # regeneration of the cache.
+      if [ "$LONG_FORCE_GENERATE_SIBLING_CACHE" -eq "1" ]; then
+        long_log "The sibling I was trying to retrieve the cache for \
+          (%s) is not reachable. Continuing without this sibling's sites
+          because LONG_FORCE_GENERATE_SIBLING_CACHE is set to 1." \
+          error "${sibling}.mayfirst.org"
+      else
+        long_log "The sibling I was trying to retrieve the cache for \
+          (%s) is not reachable. Bailing on cache regeneration. If you \
+          want to force the generation of the cache, set \
+          LONG_FORCE_GENERATE_SIBLING_CACHE=1." \
+          error "${sibling}.mayfirst.org"
+        return
     else
       local sites=$(ssh ${sibling}.mayfirst.org /srv/longshore/bin/longshore site-list "$sibling")
       for site in $sites; do
