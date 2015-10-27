@@ -181,6 +181,10 @@ function ptp_configure_dev_site() {
 
   ptp_grant_anonymous_access_to_devel_info();
   drush_civicrm_enable_debug();
+
+  // Make it easier to debug css and js issues.
+  variable_set('preprocess_css', 0);
+  variable_set('preprocess_js', 0);
 }
 
 /**
