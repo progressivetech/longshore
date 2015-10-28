@@ -2315,6 +2315,7 @@ long_generate_sibling_cache() {
           LONG_FORCE_GENERATE_SIBLING_CACHE=1." \
           error "${sibling}.mayfirst.org"
         return
+      fi
     else
       local sites=$(ssh ${sibling}.mayfirst.org /srv/longshore/bin/longshore site-list "$sibling")
       for site in $sites; do
