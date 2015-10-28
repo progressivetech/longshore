@@ -2,7 +2,8 @@
 
 long_usage_message="usage: $(basename $0) platform-create <make-file-path> [<built-platform-path>]
 Build a new platform based on the given makefile and copy it into place.
-Optionally, copy the built platform to other servers.
+Optionally, copy the built platform to other servers. Set LONG_RUN_DB_UPDATE=0
+or LONG_RUN_DB_UPDATES=1 to avoid the prompt.
 
 Arguments:
  <make-file-path> path to a drush make file.
@@ -19,23 +20,16 @@ long_check_args "$2" "$#" 1
 base=${LONG_SRV}/platforms
 makefile_path="$2"
 source_platform_path_temp="$3"
-run_db_updates=0
 
-while [ "$run_db_updates" != "y" -a "$run_db_updates" != "n" ]; do
-  read -p "Run DB updates after installing platform? [yN] "
-  if [ "$REPLY" = "Y" -o "$REPLY" = "y" ]; then
-    run_db_updates=y
-  elif [ "$REPLY" = "n" -o "$REPLY" = "N" -o -z "$REPLY" ]; then
-    run_db_updates=n
+if [ -z "$LONG_RUN_DB_UPDATES" ]; then
+  long_prompt "Skip DB updates after installing platform?"
+  if [ "$reply" = "y" ]; then
+    LONG_RUN_DB_UPDATES=0
+    long_log "Not running database updates." info
   else
-    long_log "Please enter y or n or just hit enter." error
+    LONG_RUN_DB_UPDATES=1
+    long_log "Running database updates." info
   fi
-done
-
-if [ "$run_db_updates" = "n" ]; then
-  long_log "Not running database updates." info
-else
-  long_log "Running database updates." info
 fi
 
 # By default, we should prompt the user to sync the platform to other servers.
@@ -219,7 +213,7 @@ else
     "${source_platform_path}/" 
 fi
 
-if [ "$run_db_updates" = "y" ]; then
+if [ "$LONG_RUN_DB_UPDATES" = "1" ]; then
   # Now ensure all sites have db updates run.
   for site in $(/srv/longshore/bin/longshore site-list $(hostname) ); do
     if long_container_running "$site"; then
@@ -254,7 +248,8 @@ if [ "$sync" = "y" ]; then
       else
         # Now finish the process on the remote sibling
         long_log "Running platform-create on remote sibling (%s)." info "$sibling"
-        ssh -t longshore@${sibling}.mayfirst.org /srv/longshore/bin/longshore \
+        ssh -t longshore@${sibling}.mayfirst.org LONG_RUN_DB_UPDATES=$LONG_RUN_DB_UPDATES \
+          /srv/longshore/bin/longshore \
           platform-create "$makefile_path" "$source_platform_path_temp"
       fi
     done
