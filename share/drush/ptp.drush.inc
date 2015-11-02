@@ -715,7 +715,7 @@ function ptp_fix_stripe_schema() {
     return;
   }
   drush_log("Fixing for version $version");
-  $sql = "UPDATE civicrm_setting SET version = %0 WHERE id = %1";
+  $sql = "UPDATE civicrm_setting SET value = %0 WHERE id = %1";
   $params = array(
     0 => array('s:4:"0001"','String'),
     1 => array($dao->id, 'Integer')
