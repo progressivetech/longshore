@@ -696,3 +696,41 @@ function ptp_set_max_file_size() {
   $config["maxFileSize"] = 20; 
   CRM_Core_BAO_ConfigSetting::add($config);
 }
+
+/**
+ * Temp fix for stripe 
+ **/
+function ptp_fix_stripe_schema() {
+  _civicrm_init();
+  $sql = "SELECT id, value FROM civicrm_setting WHERE name = 'com.drastikbydesign.stripe:version'";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  if($dao->N == 0) {
+    drush_log("Stripe not installed.");
+    return;
+  }
+  $dao->fetch();
+  $version = unserialize($dao->value);
+  if($version == "1_9_003") {
+    drush_log("Already properly upgraded.");
+    return;
+  }
+  drush_log("Fixing for version $version");
+  $sql = "UPDATE civicrm_setting SET version = '%0' WHERE id = %1";
+  $params = array(
+    0 => array('s:4:"0001"','String'),
+    1 => array($dao->id, 'Integer')
+  );
+  CRM_Core_DAO::executeQuery($sql, $params); 
+  lsd_extensions_update();
+  // Now re-check
+   $sql = "SELECT value FROM civicrm_setting WHERE name = 'com.drastikbydesign.stripe:version'";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  if($dao->value) {
+    $version = unserialize($dao->value);
+    if($version == "1_9_003") {
+      drush_log("It worked.");
+      return;
+    } 
+    drush_log("Update failed", 'error');
+  }
+}
