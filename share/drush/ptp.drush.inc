@@ -46,6 +46,9 @@ function ptp_drush_command() {
   $items['ptp-configure'] =
     array('description' => "Ensure all PTP general settings are properly configured."
   );
+  $items['ptp-fix-stripe-schema'] =
+    array('description' => "Update stripe schema if necessary."
+  );
   return $items;
 }
 
@@ -700,7 +703,7 @@ function ptp_set_max_file_size() {
 /**
  * Temp fix for stripe 
  **/
-function ptp_fix_stripe_schema() {
+function drush_ptp_fix_stripe_schema() {
   _civicrm_init();
   $sql = "SELECT id, value FROM civicrm_setting WHERE name = 'com.drastikbydesign.stripe:version'";
   $dao = CRM_Core_DAO::executeQuery($sql);
