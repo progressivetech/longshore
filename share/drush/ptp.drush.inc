@@ -725,6 +725,7 @@ function ptp_fix_stripe_schema() {
   // Now re-check
    $sql = "SELECT value FROM civicrm_setting WHERE name = 'com.drastikbydesign.stripe:version'";
   $dao = CRM_Core_DAO::executeQuery($sql);
+  $dao->fetch();
   if($dao->value) {
     $version = unserialize($dao->value);
     if($version == "1_9_003") {
