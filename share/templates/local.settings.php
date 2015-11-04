@@ -23,3 +23,6 @@ $civicrm_setting["CiviCRM Preferences"]["additional_fonts"] = array(
   "gulim" => "Gulim",
 );
 
+// If we are using stripe - be sure to use the PHP submission method
+// See: https://github.com/drastik/com.drastikbydesign.stripe/issues/113
+define('STRIPE_SUBMISSION_METHOD', 'php');
