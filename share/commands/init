@@ -12,56 +12,19 @@ user=$(whoami)
 
 [ -z "$LONG_HOST_USER" ] && long_die "You must have LONG_HOST_USER set in longshore.conf"
 
+# Define packages we need to have installed.
 install=
-if ! dpkg -l docker.io 2>/dev/null | grep ^ii >/dev/null; then
-  install=docker.io
-fi
-
-if ! dpkg -l sudo 2>/dev/null | grep ^ii >/dev/null; then
-  install="$install sudo"
-fi
-
-if ! dpkg -l nginx 2>/dev/null | grep ^ii >/dev/null; then
-  install="$install nginx"
-fi
-
-if ! dpkg -l debootstrap 2>/dev/null | grep ^ii >/dev/null; then
-  install="$install debootstrap"
-fi
-
-if ! dpkg -l drush 2>/dev/null | grep ^ii >/dev/null; then
-  install="$install drush"
-fi
-
-if ! dpkg -l wget 2>/dev/null | grep ^ii >/dev/null; then
-  install="$install wget"
-fi
-
-if ! dpkg -l dnsutils 2>/dev/null | grep ^ii >/dev/null; then
-  install="$install dnsutils"
-fi
-
-if ! dpkg -l mysql-client 2>/dev/null | grep ^ii >/dev/null; then
-  install="$install mysql-client"
-fi
-
-if ! dpkg -l composer 2>/dev/null | grep ^ii >/dev/null; then
-  install="$install composer"
-fi
-
-if ! dpkg -l nodejs 2>/dev/null | grep ^ii >/dev/null; then
-  install="$install nodejs"
-fi
-
-if ! dpkg -l npm 2>/dev/null | grep ^ii >/dev/null; then
-  install="$install npm"
-fi
-
+wants="docker.io sudo nginx debootstrap drush wget dnsutils mysql-client \
+  composer nodejs npm parallel"
 if [ -n "$LONG_TLS_KEY_PATH" ]; then
-  if ! dpkg -l openssl 2>/dev/null | grep ^ii >/dev/null; then
-    install="$install openssl"
-  fi
+  wants="$wants openssl"
 fi
+
+for want in $wants; do
+  if ! dpkg -l "$want" 2>/dev/null | grep ^ii >/dev/null; then
+    install="$install $want"
+  fi
+done
 
 if [ -n "$install" ]; then
   long_prompt "Installing $install"
