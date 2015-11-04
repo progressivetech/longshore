@@ -260,8 +260,7 @@ if [ "$sync" = "y" ]; then
 
     long_log "Running platform-create on siblings (%s)." info "$siblings"
     echo $siblings | tr " " "\n" | \
-      parallel -v ssh -t \
-      "$LONG_HOST_USER"@{}.mayfirst.org \
+      parallel -v ssh "$LONG_HOST_USER"@{}.mayfirst.org \
       LONG_RUN_DB_UPDATES=$LONG_RUN_DB_UPDATES \
       /srv/longshore/bin/longshore \
       platform-create "$makefile_path" "$source_platform_path_temp"
