@@ -241,7 +241,7 @@ if [ "$sync" = "y" ]; then
     long_log "Creating temp directory on '%s' in parallel\n" "info" "$siblings"
     echo $siblings | tr " " "\n" | \
       parallel -v ssh $LONG_HOST_USER@{}.mayfirst.org \
-      "mkdir -p ${source_platform_path_temp}"
+      "mkdir -p $source_platform_path_temp"
     if [ "$?" != "0" ]; then
       rm -rf "$source_platform_path_temp"
       long_die "Failed to create directories on %s" 1 "$frontend" 
@@ -250,8 +250,8 @@ if [ "$sync" = "y" ]; then
 
     long_log "Rsyncing to %s in parallel\n" "info" "$siblings"
     echo $siblings | tr " " "\n" | \
-      parallel -v rsync -a "${source_platform_path_temp}/" \
-      "$LONG_HOST_USER@${}.mayfirst.org:${source_platform_path_temp}"
+      parallel -v rsync -a "$source_platform_path_temp/" \
+      "$LONG_HOST_USER@${}.mayfirst.org:$source_platform_path_temp"
     if [ "$?" != "0" ]; then
       rm -rf "$source_platform_path_temp"
       long_die "Failed to create directories on %s" 1 "$frontend" 
