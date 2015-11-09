@@ -14,7 +14,7 @@ long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 long_rerun_over_network "$@" && exit
 long_exec_drush_cmd "$site" "cc all"
 long_exec_in_container "$site" "rm -rf \
-  /var/www/powerbase/sites/default/files/css \
-  /var/www/powerbase/sites/default/files/js \
-  /var/www/powerbase/sites/default/files/civicrm/templates_c/en_US"
+  /var/www/powerbase/sites/default/files/css/* \
+  /var/www/powerbase/sites/default/files/js/* \
+  /var/www/powerbase/sites/default/files/civicrm/templates_c/en_US/*"
 
