@@ -239,11 +239,11 @@ if [ "$sync" = "y" ]; then
   if [ "$reply" == "y" ]; then
     # Copy to all siblings in parallel
     long_log "Creating temp directory on '%s' in parallel" "info" "$siblings"
-    long_log "-----------" "info"
+    long_log " -----------" "info"
     echo $siblings | tr " " "\n" | \
       parallel -v ssh $LONG_HOST_USER@{}.mayfirst.org \
       "mkdir -p $source_platform_path_temp"
-    long_log "-----------" "info"
+    long_log " -----------" "info"
     if [ "$?" != "0" ]; then
       rm -rf "$source_platform_path_temp"
       long_die "Failed to create directories on %s" 1 "$frontend" 
@@ -251,11 +251,11 @@ if [ "$sync" = "y" ]; then
     fi 
 
     long_log "Rsyncing to %s in parallel\n" "info" "$siblings"
-    long_log "-----------" "info"
+    long_log " -----------" "info"
     echo $siblings | tr " " "\n" | \
       parallel -v rsync -a "$source_platform_path_temp/" \
       "$LONG_HOST_USER@{}.mayfirst.org:$source_platform_path_temp"
-    long_log "-----------" "info"
+    long_log " -----------" "info"
     if [ "$?" != "0" ]; then
       rm -rf "$source_platform_path_temp"
       long_die "Failed to create directories on %s" 1 "$frontend" 
@@ -263,13 +263,13 @@ if [ "$sync" = "y" ]; then
     fi
 
     long_log "Running platform-create on siblings (%s)." info "$siblings"
-    long_log "-----------" "info"
+    long_log " -----------" "info"
     echo $siblings | tr " " "\n" | \
       parallel -v ssh "$LONG_HOST_USER"@{}.mayfirst.org \
       LONG_RUN_DB_UPDATES=$LONG_RUN_DB_UPDATES \
       /srv/longshore/bin/longshore \
       platform-create "$makefile_path" "$source_platform_path_temp"
-    long_log "-----------" "info"
+    long_log " -----------" "info"
     if [ "$?" != "0" ]; then
       rm -rf "$source_platform_path_temp"
       long_die "Failed to run platform-create on siblings: %s" 1 "$siblings" 
