@@ -31,3 +31,6 @@ define('STRIPE_SUBMISSION_METHOD', 'php');
 $civicrm_setting["CiviCRM Preferences"]["securityUpdateAlert"] = "1";
 $civicrm_setting["CiviCRM Preferences"]["versionAlert"] = "1";
 
+// Fix broken PHP timezone situation. We already have date.timezone set
+// in our .ini file but apparently that is not enough.
+date_default_timezone_set('America/New_York');
