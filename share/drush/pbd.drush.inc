@@ -124,8 +124,60 @@ function drush_pbd_configure() {
   pbd_set_viewable_contact_tabs();
   pbd_add_partner_greeting_options();
   pbd_enable_user_framework_logging();
+  pbd_configure_wkhtmltopdf();
+  pbd_set_max_file_size();
+
+  // This should go last so we can reset settigs set above (like
+  // preprocess variables).
+  if ( getenv('LONG_LIVE') == 'n' ) {
+    pbd_configure_dev_site();
+  }
+
 }
 
+/**
+ * Enable settings appropriate for a dev site. 
+ *
+ **/
+function pbd_configure_dev_site() {
+  drush_log(dt("Configuring dev site settings."));
+
+  # Enable devel module.
+  $modules = array('devel');
+  module_enable($modules);
+
+  // Allow anon users to see dsm calls.
+  user_role_grant_permissions(1, array('access devel information'));
+  drush_civicrm_enable_debug();
+
+  // Make it easier to debug css and js issues.
+  variable_set('preprocess_css', 0);
+  variable_set('preprocess_js', 0);
+}
+
+/**
+ * Configure CiviCRM to use wkhtmltopdf.
+ *
+ * Using DomPDF to generate PDF's (the default in CiviCRM) is painfully slow.
+ * Use wkthmltopdf instead. We invoke via xvfb-run to avoid an X Server error
+ * that wkhtmltopdf will otherwise generate.
+ **/
+function pbd_configure_wkhtmltopdf() {
+  require_once "CRM/Core/BAO/ConfigSetting.php";
+  $config['wkhtmltopdfPath'] = '/usr/bin/xvfb-run -- wkhtmltopdf';
+  CRM_Core_BAO_ConfigSetting::add($config);
+}
+
+/**
+ * Set max file upload site.
+ *
+ * Ensure our max file size (for uploads) stays at a reasonable size
+ */
+function pbd_set_max_file_size() {
+  // The number is in MB. Our php.ini file should allow up to 30MB.
+  $config["maxFileSize"] = 20; 
+  CRM_Core_BAO_ConfigSetting::add($config);
+}
 /**
  * Send CiviCRM errors to watchdog so users can access them. This is 
  * particularly important for SMS errors.

@@ -162,41 +162,7 @@ function drush_ptp_configure() {
   ptp_set_admin_password();
   ptp_create_help_menu();
 
-  // FIXME: I think these two should be moved to pbd.
-  ptp_configure_wkhtmltopdf();
-  ptp_set_max_file_size();
-  if ( getenv('LONG_LIVE') == 'n' ) {
-    ptp_configure_dev_site();
-  }
  
-}
-
-/**
- * Enable settings appropriate for a dev site. 
- *
- **/
-function ptp_configure_dev_site() {
-  drush_log(dt("Configuring dev site settings."));
-
-  # Enable devel module.
-  $modules = array('devel');
-  module_enable($modules);
-
-  ptp_grant_anonymous_access_to_devel_info();
-  drush_civicrm_enable_debug();
-
-  // Make it easier to debug css and js issues.
-  variable_set('preprocess_css', 0);
-  variable_set('preprocess_js', 0);
-}
-
-/**
- * Convenience function to easily grant anon acces to dev info, which is
- * useful when debugging issues on a dev environment - should never be called
- * on live site
- **/
-function ptp_grant_anonymous_access_to_devel_info() {
-  user_role_grant_permissions(1, array('access devel information'));
 }
 
 /**
@@ -674,30 +640,6 @@ function ptp_create_help_menu() {
  */ 
 function ptp_strip_nbsp(&$value, $key) {
   $value = str_replace('&nbsp;', '', $value);
-}
-
-/**
- * Configure CiviCRM to use wkhtmltopdf.
- *
- * Using DomPDF to generate PDF's (the default in CiviCRM) is painfully slow.
- * Use wkthmltopdf instead. We invoke via xvfb-run to avoid an X Server error
- * that wkhtmltopdf will otherwise generate.
- **/
-function ptp_configure_wkhtmltopdf() {
-  require_once "CRM/Core/BAO/ConfigSetting.php";
-  $config['wkhtmltopdfPath'] = '/usr/bin/xvfb-run -- wkhtmltopdf';
-  CRM_Core_BAO_ConfigSetting::add($config);
-}
-
-/**
- * Set max file upload site.
- *
- * Ensure our max file size (for uploads) stays at a reasonable size
- */
-function ptp_set_max_file_size() {
-  // The number is in MB. Our php.ini file should allow up to 30MB.
-  $config["maxFileSize"] = 20; 
-  CRM_Core_BAO_ConfigSetting::add($config);
 }
 
 /**
