@@ -95,6 +95,16 @@ if  [ ! -f "$target" ] || ! diff -q "$source" "$target" >/dev/null; then
   fi
 fi
 
+# Ensure cron job to preserver premissions for backup is installed and up-to-date
+source="${LONG_SHARE}/templates/longshore-fix-perms" 
+target="/etc/cron.d/longshore-fix-perms"
+if  [ ! -f "$target" ] || ! diff -q "$source" "$target" >/dev/null; then
+  long_prompt "Updating longshore-fix-perms"
+  if [ "$reply" = "y" ]; then
+    cp "$source" "$target" 
+  fi
+fi
+
 # Ensure that our tweak to nginx to allow longer server names is in place.
 source="${LONG_SHARE}/templates/server-names-hash-bucket-size.conf"
 target="/etc/nginx/conf.d/server-names-hash-bucket-size.conf"
