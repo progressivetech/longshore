@@ -1427,7 +1427,7 @@ function pbd_set_footer() {
 }
 
 function pbd_disable_create_new_household_menu() {
-  $delete = array('New Household' => 'civicrm/contact/add&reset=1&ct=Household');
+  $delete = array('New Household' => 'civicrm/contact/add?reset=1&ct=Household');
   $domainID  = CRM_Core_Config::domainID( );
   while(list($label, $url) = each($delete)) {
     $sql = "DELETE FROM civicrm_navigation WHERE label = %1 AND url = %2 ".
