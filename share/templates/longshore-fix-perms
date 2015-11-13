@@ -1,0 +1,10 @@
+# Irritating script that must be run to ensure that the backup that runs
+# on the host as the longshore user has read permission to all files. The
+# problem is that the file upload code in CiviCRM that operates in the 
+# CiviCRM Mail screen will upload files with the mod 0600 which will be
+# owned by the longshore-php user, not the longshore user. All of those
+# files should be placed i files/civicrm/custom.
+#
+# Run onces a night (prior to the backup). Should take at most a few
+# minutes.
+15 22 * * * find /srv/longshore/services/sites -path '/srv/longshore/services/sites/*/drupal/files/civicrm/custom/*' -perm 0600 -exec chmod 644 '{}' \;
