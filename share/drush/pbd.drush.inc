@@ -78,9 +78,7 @@ function drush_pbd_configure() {
   pbd_grant_anonymous_and_authenticated_role_access();
   pbd_email_footer();
   variable_set('preprocess_css',1);
-  // Note: turning off js until http://issues.civicrm.org/jira/browse/CRM-9931
-  // is fixed.
-  variable_set('preprocess_js',0);
+  variable_set('preprocess_js',1);
   // Turning off page caching too...
   // https://app.liquidplanner.com/space/48716/projects/show/5899954P
   variable_set('cache',0);
