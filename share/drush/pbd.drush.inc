@@ -1558,6 +1558,8 @@ function pbd_set_powerbase_theme_settings() {
   $settings['favicon_path'] = 'sites/all/themes/powerbase/images/poweron.ico';
   $settings['favicon_mimetype'] = 'image/vnd.microsoft.icon';
 
+  // kill the breadcrumb for more real estate for the rest of the app
+  $settings['bootstrap_breadcrumb'] = 0;
   // and override the default logo
   $settings['default_logo'] = 0;
   $settings['logo_path'] = 'sites/all/themes/powerbase/images/poweron.png';
