@@ -87,6 +87,7 @@ for site in $sites; do
     --exclude "${site}/drupal/files/civicrm/templates_c/*" \
     --exclude "${site}/drupal/files/css/*" \
     --exclude "${site}/drupal/files/js/*" \
+    --exclude "${site}/drupal/private/temp/*" \
     "$site" \
     2>&1)
   if [ "$?" -eq "0" -a -z "$out" ]; then
