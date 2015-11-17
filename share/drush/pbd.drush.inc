@@ -386,8 +386,14 @@ function drush_pbd_test_smart_groups() {
     $group->find(TRUE);
     $force = TRUE;
     // Check to see if lock exists
-    $lockName = "civicrm.group." . $id;
-    $lock = new CRM_Core_Lock($lockName);
+    $codeVer = CRM_Utils_System::version();
+    if(version_compare($codeVer, '4.6', '>=')) {
+      $lock = Civi\Core\Container::singleton()->get('lockManager')->acquire("data.core.group.{$id}");
+    }
+    else {
+      $lockName = "civicrm.group." . $id;
+      $lock = new CRM_Core_Lock($lockName);
+    }
     if (!$lock->isAcquired()) { 
       drush_log(dt("Lock exists, not rebuilding."), 'error');
       continue;
