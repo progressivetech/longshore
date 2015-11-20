@@ -310,7 +310,15 @@ long_set_db_containers() {
 long_create_image() {
   local image_tag="$1"
   local image_path="$2"
+
+  # By default don't create the image
+  local create_image=0
   if ! long_image_exists "$image_tag"; then
+    # Image doesn't exist, we should create it.
+    create_image=1
+  fi
+
+  if [ "$create_image" -eq "1" -o "$LONG_FORCE" == "1" ]; then
     long_log "Creating image (%s)" info "$image_tag"
     if [ "$image_tag" = "my-jessie" ]; then
       # This is a special condition
@@ -646,6 +654,11 @@ long_exec_drush_cmd() {
   printf "#!/bin/bash\n" > "$file"
   printf "export LONG_LIVE=$LONG_LIVE\n" >> "$file"
   printf "export LONG_SHARE=$LONG_SHARE\n" >> "$file"
+  if [ -n "$LONG_GOOGLE_RECAPTCHA_SECRET_KEY" -a -n "$LONG_GOOGLE_RECAPTCHA_SITE_KEY" ]; then
+    # These two values are used by ptp.drush.inc to configure recaptcha keys.
+    printf "export LONG_GOOGLE_RECAPTCHA_SECRET_KEY=$LONG_GOOGLE_RECAPTCHA_SECRET_KEY\n" >> "$file"
+    printf "export LONG_GOOGLE_RECAPTCHA_SITE_KEY=$LONG_GOOGLE_RECAPTCHA_SITE_KEY\n" >> "$file"
+  fi
   printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
   printf "drush $quiet $2\n" >> "$file"
   long_exec_in_container "$site" "$file"

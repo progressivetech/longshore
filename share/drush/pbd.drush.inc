@@ -122,6 +122,7 @@ function drush_pbd_configure() {
   pbd_enable_user_framework_logging();
   pbd_configure_wkhtmltopdf();
   pbd_set_max_file_size();
+  pbd_configure_google_recaptcha();
 
   // This should go last so we can reset settigs set above (like
   // preprocess variables).
@@ -3581,6 +3582,24 @@ function pbd_ensure_civicrm_news_removed_from_dashboard() {
 
 }
 
-
-
+/**
+ * Configure google recaptcha
+ *
+ * If values are present in the environment, add them to CiviCRM.
+ * Sites should evaluate whether they want to invite Google into 
+ * their CRM by enabling it for a profile.
+ **/
+function pbd_configure_google_recaptcha() {
+  $secret = getenv('LONG_GOOGLE_RECAPTCHA_SECRET_KEY');
+  $site = getenv('LONG_GOOGLE_RECAPTCHA_SITE_KEY');
+  if($secret) {
+    drush_log(dt("Configuring Google Captcha"), 'notice');
+    $config['recaptchaPrivateKey'] = $secret;
+    CRM_Core_BAO_ConfigSetting::add($config);
+  }
+  if($site) {
+    $config['recaptchaPublicKey'] = $site;
+    CRM_Core_BAO_ConfigSetting::add($config);
+  }
+}
 ?>

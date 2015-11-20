@@ -161,8 +161,6 @@ function drush_ptp_configure() {
   ptp_set_outbound_mail_settings();
   ptp_set_admin_password();
   ptp_create_help_menu();
-
- 
 }
 
 /**

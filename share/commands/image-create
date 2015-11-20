@@ -16,11 +16,6 @@ if [ "$itypes" = "all" ]; then
 fi
 
 for itype in $itypes; do
-  # First delete image if FORCE is used.
-  if [ "$LONG_FORCE" = 1 ]; then
-    long_delete_image "$itype"
-  fi
-
   # Create a mysql image.
   if [ "$itype" = "ptp-mysql" ]; then
     long_create_image ptp-mysql ${LONG_ETC}/dockerfiles/mysql
