@@ -9,10 +9,6 @@
  *
  */
 
-// Path to the file containing the Yahoo api key - should live in the pbd
-// folder.
-define('DRUSH_PBD_YAHOO_GEO_API_KEY_PATH', __DIR__ . '/yahoo-geo-api-key');
-
 function pbd_drush_command() {
   $items = array();
   $items['pbd-configure'] =
