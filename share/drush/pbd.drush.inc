@@ -3479,7 +3479,9 @@ function pbd_enable_default_extensions() {
     'net.ourpowerbase.engage',
     'net.ourpowerbase.report.dbhealth',
     'net.ourpowerbase.report.advancedfundraising',
-    'com.aghstrategies.uscounties'
+    'com.aghstrategies.uscounties',
+    'eu.tttp.noverwrite',
+    'net.ourpowerbase.sumfields'
   );
   $uninstall_extensions = array();
   _civicrm_init();
