@@ -542,10 +542,34 @@ function pbd_one_time_configuration() {
   pbd_make_drupal_user_profile_reserved();
   pbd_differentiate_sides_to_equal_relationships();
   pbd_disable_communication_style();
+  pbd_remove_country_from_address_formats();
 
   pbd_set_setting('one-time-configuration-set', 1);
 }
 
+/**
+ * Remove country from address formats
+ *
+ * Run once - most organizations don't work out of the country.
+ **/
+function pbd_remove_country_from_address_formats() {
+  try {
+    foreach(array('address_format', 'mailing_format') as $field) {
+      $params = array('return' => $field);
+      $results = civicrm_api3('Setting', 'get', $params);
+      $values = array_pop($results['values']);
+      $new = str_replace('{contact.country}', '', $values[$field]); 
+      $params = array($field => $new);
+      civicrm_api3('Setting', 'create', $params);
+    }
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    drush_log(dt("Failed to remove country from address formats."), 'error');
+    drush_log($e->getMessage(), 'error');
+    return FALSE;
+  }
+  return TRUE;
+}
 /**
  * Disable communication style
  *
