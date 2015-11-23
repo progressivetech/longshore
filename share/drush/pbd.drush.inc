@@ -544,8 +544,33 @@ function pbd_one_time_configuration() {
   pbd_disable_communication_style();
   pbd_remove_country_from_address_formats();
   pbd_enable_waitlist_participant_status_types();
+  pbd_add_web_signup_group();
 
   pbd_set_setting('one-time-configuration-set', 1);
+}
+
+/**
+ * Add web signup group
+ **/
+function pbd_add_web_signup_group() {
+  // $params = array('id' => 857);
+  // $results = civicrm_api3('Group', 'get', $params);
+  // print_r($results);
+  try {
+    $params = array(
+      'name' => 'Gen_Web_Signup',
+      'title' => 'GEN Web Signup',
+      'is_active' => 1,
+      'group_type' => array(2 => TRUE),
+    );
+    civicrm_api3('Group', 'create', $params);
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    drush_log(dt("Failed to add Web Signup Group."), 'error');
+    drush_log($e->getMessage(), 'error');
+    return FALSE;
+  }
+  return TRUE;
 }
 
 /**
