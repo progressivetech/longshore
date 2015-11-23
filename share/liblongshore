@@ -1213,15 +1213,15 @@ long_drop_tables() {
 
   get_tables_temp=$(mktemp)
   drop_tables_temp=$(mktemp)
-  echo "SHOW TABLES;" > "$get_tables_temp"
-  local table_count=0
+  echo "SELECT TABLE_NAME, TABLE_TYPE FROM information_schema.TABLES WHERE TABLE_TYPE NOT LIKE 'SYSTEM VIEW'" > "$get_tables_temp"
   # The drupal blocked_ips table is needed for the drush command sql-query to
   # function properly.
-  for table in $(long_execute_site_query "$site" "$get_tables_temp" \
-    | grep -v ^Tables_in | grep -v ^blocked_ips); do
-    table_count=$(( $table_count + 1 ))
+  long_execute_site_query "$site" "$get_tables_temp" | \
+    grep -v ^TABLE_NAME | grep -v ^blocked_ips |
+    while read table table_type; do
+
     entity=TABLE
-    if echo "$table" | grep ^civicrm_view > /dev/null; then
+    if [ "$table_type" == "VIEW" ]; then
       entity=VIEW
     fi
     printf "SET FOREIGN_KEY_CHECKS=0; DROP %s %s;\n" "$entity" "$table" >> "$drop_tables_temp"
@@ -1229,6 +1229,7 @@ long_drop_tables() {
   # Only run if we have a drop file that is more than 0 bytes (i.e. 
   # don't run if there are no tables in the database)
   if [ -s "$drop_tables_temp" ]; then
+    table_count=$(wc -l "$drop_tables_temp" | cut -d\  -f1)
     long_prompt "Deleting %s tables from the database for site '%s'" "$table_count" "$site"
     if [ "$reply" = "y" ]; then
       long_log "Deleting the tables" info
