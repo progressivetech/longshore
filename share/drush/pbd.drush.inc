@@ -543,10 +543,35 @@ function pbd_one_time_configuration() {
   pbd_differentiate_sides_to_equal_relationships();
   pbd_disable_communication_style();
   pbd_remove_country_from_address_formats();
+  pbd_enable_waitlist_participant_status_types();
 
   pbd_set_setting('one-time-configuration-set', 1);
 }
 
+/**
+ * Enable waitlist participant status types
+ **/
+function pbd_enable_waitlist_participant_status_types() {
+  try {
+    foreach(array('On waitlist', 'Pending from waitlist') as $name) {
+      $params = array('return' => 'id', 'name' => $name);
+      $results = civicrm_api3('ParticipantStatusType', 'get', $params);
+      $values = array_pop($results['values']);
+      $id = $values['id'];
+      $params = array('id' => $id, 'is_active' => 1);
+      civicrm_api3('ParticipantStatusType', 'create', $params);
+    }
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    drush_log(dt("Failed to enable waitlist participant status type."), 'error');
+    drush_log($e->getMessage(), 'error');
+    return FALSE;
+  }
+  return TRUE;
+
+
+
+}
 /**
  * Remove country from address formats
  *
