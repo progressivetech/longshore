@@ -545,8 +545,31 @@ function pbd_one_time_configuration() {
   pbd_remove_country_from_address_formats();
   pbd_enable_waitlist_participant_status_types();
   pbd_add_web_signup_group();
+  pbd_add_web_location_type();
 
   pbd_set_setting('one-time-configuration-set', 1);
+}
+
+/**
+ * Add web location type.
+ **/
+function pbd_add_web_location_type() {
+  try {
+    $params = array(
+      'name' => 'Web',
+      'display_name' => 'From the Web',
+      'description' => 'Used for information that comes from public unmonitored web signup pages',
+      'is_active' => 1,
+      'group_type' => array(2 => TRUE),
+    );
+    civicrm_api3('LocationType', 'create', $params);
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    drush_log(dt("Failed to add Web location type."), 'error');
+    drush_log($e->getMessage(), 'error');
+    return FALSE;
+  }
+  return TRUE;
 }
 
 /**
