@@ -546,10 +546,74 @@ function pbd_one_time_configuration() {
   pbd_enable_waitlist_participant_status_types();
   pbd_add_web_signup_group();
   pbd_add_web_location_type();
+  pbd_add_constituent_type_fields_to_profiles();
 
   pbd_set_setting('one-time-configuration-set', 1);
 }
 
+/**
+ * Add constituent types to reserved org and ind profiles.
+ *
+ * In PowerBase constituent type is a required field so avoid confusion
+ * by adding it to the main profiles used for data entry.
+ **/
+function pbd_add_constituent_type_fields_to_profiles() {
+  try {
+    // Collect the New Organization and New Individual Reserved
+    // profile ids.
+    $params = array(
+      'return' => 'id',
+      'name' => 'new_organization'
+    );
+    $new_org_id = civicrm_api3('UFGroup', 'getvalue', $params);
+    $params['name'] = 'new_individual';
+    $new_ind_id = civicrm_api3('UFGroup', 'getvalue', $params);
+
+    // Collect the ind constituent type and org constituent type
+    // custom field ids.
+    $params = array(
+      'return' => 'id',
+      'column_name' => 'constituent_type'
+    );
+    $ind_const_type_id = civicrm_api3('CustomField', 'getvalue', $params);
+    $params['column_name'] = 'constituent_type_org';
+    $org_const_type_id = civicrm_api3('CustomField', 'getvalue', $params);
+
+    // Now add the fields to the profiles.
+    $params = array(
+      'uf_group_id' => $new_org_id,
+      'field_name' => 'custom_' . $org_const_type_id,
+      'is_active' => 1,
+      'is_required' => 1,
+      'visibility' => 'User and User Admin Only',
+      'label' => 'Constituent Type - Org',
+      'field_type' => 'Organization',
+      'weight' => 5,
+    );
+    civicrm_api3('UFField', 'create', $params);
+
+    // Now add the fields to the profiles.
+    $params = array(
+      'uf_group_id' => $new_ind_id,
+      'field_name' => 'custom_' . $ind_const_type_id,
+      'is_active' => 1,
+      'is_required' => 1,
+      'visibility' => 'User and User Admin Only',
+      'label' => 'Constituent Type - Ind',
+      'field_type' => 'Individual',
+      'weight' => 5,
+    );
+    civicrm_api3('UFField', 'create', $params);
+
+
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    drush_log(dt("Failed to constituent type fields to reserved profiles."), 'error');
+    drush_log($e->getMessage(), 'error');
+    return FALSE;
+  }
+
+}
 /**
  * Add web location type.
  **/
@@ -1076,7 +1140,6 @@ function pbd_set_blocks_for_theme($theme) {
   // then the generic ones.
   if($theme == 'newsflash') {
     $regions['left_sidebar'] = 'sidebar_first';
-    $regions['content'] = 'main';
   }
 
   // The iframe theme should have all blocks disabled
@@ -1084,7 +1147,6 @@ function pbd_set_blocks_for_theme($theme) {
   // as newsflash (because it's a sub theme)
   if($theme == 'iframe') {
     $regions['left_sidebar'] = -1;
-    $regions['content'] = 'main';
     $regions['footer'] = -1;
   }
 
@@ -1658,8 +1720,8 @@ function pbd_set_powerbase_theme_settings() {
   $settings['favicon_path'] = 'sites/all/themes/powerbase/images/poweron.ico';
   $settings['favicon_mimetype'] = 'image/vnd.microsoft.icon';
 
-  // kill the breadcrumb for more real estate for the rest of the app
-  $settings['bootstrap_breadcrumb'] = 0;
+  // The breadcrumb uses real estate... but is also quite useful.
+  $settings['bootstrap_breadcrumb'] = 1;
   // and override the default logo
   $settings['default_logo'] = 0;
   $settings['logo_path'] = 'sites/all/themes/powerbase/images/poweron.png';
