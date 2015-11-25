@@ -68,7 +68,7 @@ for id in $ids; do
   mem_failcnt=$(cat "${mem_base}/${id}/memory.failcnt")
 
   # Get the name of the container
-  name=$(docker ps --filter "id=$id" | egrep -o ' [^ ]*$' | tr -d ' ' | tail -n1)
+  name=$(docker ps --filter "id=$id" | egrep -o ' [^ ]*\s*$' | tr -d ' ' | tail -n1)
   printf "%s %s %s %s %s %s %s\n" "$name" "$mem_in_use" "$mem_max_usage" "$mem_failcnt" \
     "$mem_limit" "$cpu_usage_ave" "$cpu_usage"  >> "$report"
 done
