@@ -37,7 +37,6 @@ sleep 5
 # output.
 report=$(mktemp)
 
-printf "Container Mem-in-use Max-mem-used Mem-failures Mem-limit Cpu-use-now Cpu-use-total\n" >> "$report"
 
 for id in $ids; do
   if [ -d "${sys_base}/memory/system.slice" ]; then
@@ -71,10 +70,16 @@ for id in $ids; do
 
   # Get the name of the container
   name=$(docker ps --filter "id=$id" | egrep -o ' [^ ]*\s*$' | tr -d ' ' | tail -n1)
-  printf "%s %s %s %s %s %s %s\n" "$name" "$mem_in_use" "$mem_max_usage" "$mem_failcnt" \
-    "$mem_limit" "$cpu_usage_ave" "$cpu_usage"  >> "$report"
+  printf "%s %s %s %s %s %s %s\n" "$cpu_usage_ave" "$cpu_usage" "$mem_in_use" "$mem_max_usage" "$mem_failcnt" \
+    "$mem_limit" "$name" >> "$report"
 done
 
-column -t -s' ' "$report"
+# Add headers and sort the report
+sorted=$(mktemp)
+printf "Cpu-use-now Cpu-use-total Mem-in-use Max-mem-used Mem-failures Mem-limit Container\n" >> "$sorted"
+sort -n "$report" >> "$sorted"
+
+column -t -s' ' "$sorted"
 rm "$report"
+rm "$sorted"
 rm "$first_run"
