@@ -74,5 +74,5 @@ for id in $ids; do
 done
 
 column -t -s' ' "$report"
-rm "$temp"
+rm "$report"
 rm "$first_run"
