@@ -16,14 +16,15 @@ first_run=$(mktemp)
 for id in $ids; do
   if [ -d "${sys_base}/memory/system.slice" ]; then
     cpu_base="${sys_base}/cpu/system.slice"
-    id="docker-${id}.scope"
+    sysid="docker-${id}.scope"
   else
+    sysid="$id"
     cpu_base="${sys_base}/cpu/docker"
   fi
 
   # Get CPU usage 
   time=$(date +%s)
-  cpu_usage=$(cat "${cpu_base}/${id}/cpuacct.usage")
+  cpu_usage=$(cat "${cpu_base}/${sysid}/cpuacct.usage")
 
   printf "%s:%s:%s\n" "$id" "$cpu_usage" "$time"  >> "$first_run"
 done
@@ -42,14 +43,15 @@ for id in $ids; do
   if [ -d "${sys_base}/memory/system.slice" ]; then
     mem_base="${sys_base}/memory/system.slice"
     cpu_base="${sys_base}/cpu/system.slice"
-    id="docker-${id}.scope"
+    sysid="docker-${id}.scope"
   else
     mem_base="${sys_base}/memory/docker"
     cpu_base="${sys_base}/cpu/docker"
+    sysid="$id"
   fi
   # Get CPU usage 
   time=$(date +%s)
-  cpu_usage=$(cat "${cpu_base}/${id}/cpuacct.usage")
+  cpu_usage=$(cat "${cpu_base}/${sysid}/cpuacct.usage")
 
   prev_cpu_usage=$(grep "^${id}:" "$first_run" | cut -d: -f2)
   prev_time=$(grep "^${id}:" "$first_run" | cut -d: -f3)
@@ -58,14 +60,14 @@ for id in $ids; do
   cpu_usage_diff=$(( $cpu_usage - $prev_cpu_usage ))
   cpu_usage_ave=$(( $cpu_usage_diff / $seconds_diff ))
 
-  mem_in_use=$(cat "${mem_base}/${id}/memory.usage_in_bytes")
+  mem_in_use=$(cat "${mem_base}/${sysid}/memory.usage_in_bytes")
   mem_in_use=$(( $mem_in_use / 1024 / 1024 ))
-  mem_max_usage=$(cat "${mem_base}/${id}/memory.max_usage_in_bytes")
+  mem_max_usage=$(cat "${mem_base}/${sysid}/memory.max_usage_in_bytes")
   mem_max_usage=$(( $mem_max_usage / 1024 / 1024 ))
-  mem_limit=$(cat "${mem_base}/${id}/memory.limit_in_bytes")
+  mem_limit=$(cat "${mem_base}/${sysid}/memory.limit_in_bytes")
   mem_limit=$(( $mem_limit / 1024 / 1024 ))
 
-  mem_failcnt=$(cat "${mem_base}/${id}/memory.failcnt")
+  mem_failcnt=$(cat "${mem_base}/${sysid}/memory.failcnt")
 
   # Get the name of the container
   name=$(docker ps --filter "id=$id" | egrep -o ' [^ ]*\s*$' | tr -d ' ' | tail -n1)
