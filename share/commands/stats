@@ -1,0 +1,78 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) stats'
+Provides stats on running containers."
+
+long_check_args "$2" "$#" 0
+
+ids=$(docker ps --no-trunc -q)
+sys_base=/sys/fs/cgroup
+
+# Record initial numbers in temp file. Then we wait 5 seconds and
+# rerun to measure difference.
+first_run=$(mktemp)
+
+# First measure CPU
+for id in $ids; do
+  if [ -d "${sys_base}/memory/system.slice" ]; then
+    cpu_base="${sys_base}/cpu/system.slice"
+    id="docker-${id}.scope"
+  else
+    cpu_base="${sys_base}/cpu/docker"
+  fi
+
+  # Get CPU usage 
+  time=$(date +%s)
+  cpu_usage=$(cat "${cpu_base}/${id}/cpuacct.usage")
+
+  printf "%s:%s:%s\n" "$id" "$cpu_usage" "$time"  >> "$first_run"
+done
+
+# Sleep 5 seconds and run again to see difference in CPU usage.
+long_log "First round collected. Sleeping 5 seconds to collect second round of data." "info"
+sleep 5
+
+# Print report to file, then we will run through columns for readable
+# output.
+report=$(mktemp)
+
+printf "Container Mem-in-use Max-mem-used Mem-failures Mem-limit Cpu-use-now Cpu-use-total\n" >> "$report"
+
+for id in $ids; do
+  if [ -d "${sys_base}/memory/system.slice" ]; then
+    mem_base="${sys_base}/memory/system.slice"
+    cpu_base="${sys_base}/cpu/system.slice"
+    id="docker-${id}.scope"
+  else
+    mem_base="${sys_base}/memory/docker"
+    cpu_base="${sys_base}/cpu/docker"
+  fi
+  # Get CPU usage 
+  time=$(date +%s)
+  cpu_usage=$(cat "${cpu_base}/${id}/cpuacct.usage")
+
+  prev_cpu_usage=$(grep "^${id}:" "$first_run" | cut -d: -f2)
+  prev_time=$(grep "^${id}:" "$first_run" | cut -d: -f3)
+
+  seconds_diff=$(( $time - $prev_time ))
+  cpu_usage_diff=$(( $cpu_usage - $prev_cpu_usage ))
+  cpu_usage_ave=$(( $cpu_usage_diff / $seconds_diff ))
+
+  mem_in_use=$(cat "${mem_base}/${id}/memory.usage_in_bytes")
+  mem_in_use=$(( $mem_in_use / 1024 / 1024 ))
+  mem_max_usage=$(cat "${mem_base}/${id}/memory.max_usage_in_bytes")
+  mem_max_usage=$(( $mem_max_usage / 1024 / 1024 ))
+  mem_limit=$(cat "${mem_base}/${id}/memory.limit_in_bytes")
+  mem_limit=$(( $mem_limit / 1024 / 1024 ))
+
+  mem_failcnt=$(cat "${mem_base}/${id}/memory.failcnt")
+
+  # Get the name of the container
+  name=$(docker ps --filter "id=$id" | egrep -o ' [^ ]*$' | tr -d ' ' | tail -n1)
+  printf "%s %s %s %s %s %s %s\n" "$name" "$mem_in_use" "$mem_max_usage" "$mem_failcnt" \
+    "$mem_limit" "$cpu_usage_ave" "$cpu_usage"  >> "$report"
+done
+
+column -t -s' ' "$report"
+rm "$temp"
+rm "$first_run"
