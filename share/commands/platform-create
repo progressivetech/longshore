@@ -77,6 +77,11 @@ if [ -z "$source_platform_path_temp" ]; then
     long_die "Failed to make the site!"
   fi
 
+  # Remove the install.php file. We don't need it becase we install via
+  # drush and leaving it around is a security risk.
+  # See https://www.drupal.org/PSA-2015-001.
+  rm ${source_platform_path_temp}/install.php
+
   # Hackish way to get symlink to wkhtmltopdf - which is needed if anyone
   # enables the print module
   ln -s /usr/bin/wkhtmltopdf "${source_platform_path_temp}/sites/all/libraries/"
