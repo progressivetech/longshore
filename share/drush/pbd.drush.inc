@@ -547,10 +547,24 @@ function pbd_one_time_configuration() {
   pbd_add_web_signup_group();
   pbd_add_web_location_type();
   pbd_add_constituent_type_fields_to_profiles();
+  pbd_add_first_tag();
 
   pbd_set_setting('one-time-configuration-set', 1);
 }
 
+/**
+ * Add a "example-tag" to the installation
+ *
+ * Include/Exclude search fails if there are no tags so
+ * add one test tag to avoid that problem.
+ **/
+function pbd_add_first_tag() {
+  $result = civicrm_api3('Tag', 'create', array(
+    'sequential' => 1,
+    'name' => "example-tag",
+    'description' => "First tag for default install. If you are using tags, please delete. If you are not using tags, keep this around because certain features fail if no tags are present.",
+  ));
+}
 /**
  * Add constituent types to reserved org and ind profiles.
  *
