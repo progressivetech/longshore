@@ -7,7 +7,7 @@ provided database (not necessarily the same database as the one specified
 in the backup).
 
 Arguments
-  <site> - The site you want to import the db over, e.g. ptp
+  <site> - The site you want to restore. Might be different from tar ball. 
   <path> - The path to the tar ball containing the backup.
   <db> - Provide the database you'd like it restored to.
   <platform> - Optionally provide the platform. If ommitted use the 
