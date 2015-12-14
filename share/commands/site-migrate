@@ -1,7 +1,8 @@
 #!/bin/bash
 
 long_usage_message="usage: $(basename $0) site-migrate <site> <new-platform>
-Migrate the site from it's current platform to a new platform.
+Migrate the site from it's current platform to a new platform. Note, if you 
+want to make a clone or rename a site, use site-restore instead.
 
 Arguments
   <site> - The site to migrate.

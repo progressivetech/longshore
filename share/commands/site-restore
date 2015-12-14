@@ -4,7 +4,7 @@ long_usage_message="usage: $(basename $0) site-restore <site> <path> <db> [<plat
 Setup a new site from the files in the backed up tar ball provided by the
 <path> argument. This command ensures that the new site is installed on the
 provided database (not necessarily the same database as the one specified
-in the backup).
+in the backup). Can be used to clone and rename sites.
 
 Arguments
   <site> - The site you want to restore. Might be different from tar ball. 

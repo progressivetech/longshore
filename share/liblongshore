@@ -2237,6 +2237,13 @@ long_is_host_reachable() {
   done
 }
 
+# Check if the provided name is only alpha-numeric. Used for validating
+# proposed site names. Return 0 if it's only alphanumeric characters and 1 if
+# it contains non-alphanumeric characters.
+long_check_alpha_numeric() {
+  return echo "$1" | egrep '^[0-9a-z]+$' > /dev/null
+}
+
 # Provide a unique shortened database username if the provided username
 # is longer than 16 characters.
 long_sanitize_db_username() {

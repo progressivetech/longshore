@@ -17,6 +17,10 @@ site="$2"
 db="$3"
 platform="$4"
 
+if ! long_check_alpha_numeric "$site"; then
+  long_die "Please ensure your site name only has letters and numbers."
+fi
+
 # Do not re-run over the network! We should only be calling site-create
 # and site-provision on the sibling that we want the site.
 long_create_container site "$site" "$db" "$platform"
