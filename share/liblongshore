@@ -231,11 +231,14 @@ long_create_nginx_phpmyadmin_conf() {
 long_create_nginx_redirect() {
   local site="$1"
   local site_url="$2"
+  local aliases="$3"
+
   local template="${LONG_SHARE}/templates/nginx-redirect-https.conf"
   local target="${LONG_NGINX_SITES_ENABLED}/${site}-redirect.conf"
   cat "$template" | \
     sed \
     -e "s#LONG_SITE_URL#$site_url#" \
+    -e "s#LONG_ALIASES#$aliases#" \
     -e "s#LONG_IP_ADDR#$LONG_IP_ADDR#" \
     > "$target"
 }
@@ -245,14 +248,16 @@ long_create_nginx_site_conf() {
   local site="$1"
   local platform="$2"
   local port="$3"
+  local aliases="$4"
 
   local template="${LONG_SHARE}/templates/nginx-site.conf"
   local target="${LONG_NGINX_SITES_ENABLED}/${site}.conf"
   local long_site_url="${site}.${LONG_DEFAULT_DOMAIN}"
+
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
     local tls_or_not="include $LONG_NGINX_TLS_PATH;"
     long_create_nginx_tls_conf
-    long_create_nginx_redirect "$site" "$long_site_url"
+    long_create_nginx_redirect "$site" "$long_site_url" "$aliases"
   else
     local tls_or_not="listen ${LONG_IP_ADDR}:80;"
   fi
@@ -266,6 +271,7 @@ long_create_nginx_site_conf() {
     -e "s#LONG_TLS_OR_NOT#$tls_or_not#" \
     -e "s#LONG_ACCESS_LOG#$LONG_ACCESS_LOG#" \
     -e "s#LONG_SITE_URL#$long_site_url#" \
+    -e "s#LONG_ALIASES#$aliases#" \
     -e "s#LONG_WEB_ROOT#$LONG_WEB_ROOT#" \
     -e "s#LONG_PHP_ROOT#$LONG_PHP_ROOT#" \
     -e "s#LONG_CGI_PORT#$LONG_CGI_PORT#" \
@@ -934,7 +940,10 @@ long_create_site_container() {
   long_set_php_port "$site" 
 
   # Create nginx configuration
-  long_create_nginx_site_conf "$site" "$platform" "$LONG_PHP_PORT"
+  # Check for aliases.
+  local aliases=
+  [ -f "${dir}/env/ALIASES" ] && aliases=$(cat "${dir}/env/ALIASES")
+  long_create_nginx_site_conf "$site" "$platform" "$LONG_PHP_PORT" "$aliases"
 
   # Ensure that the database exists and that we have a my.cnf file.
   #
@@ -2241,7 +2250,8 @@ long_is_host_reachable() {
 # proposed site names. Return 0 if it's only alphanumeric characters and 1 if
 # it contains non-alphanumeric characters.
 long_check_alpha_numeric() {
-  return echo "$1" | egrep '^[0-9a-z]+$' > /dev/null
+  echo "$1" | egrep '^[0-9a-z]+$' > /dev/null
+  return "$?"
 }
 
 # Provide a unique shortened database username if the provided username
