@@ -60,11 +60,6 @@ function drush_pbd_configure() {
   _civicrm_init();
   $config = CRM_Core_Config::singleton();
 
-  // Should only be run once because it contains settings
-  // that a group may want to change and that we don't
-  // want to override.
-  pbd_one_time_configuration();
-
   /* Drupal Settings */
   pbd_enable_modules();
   pbd_configure_imce();
@@ -123,6 +118,11 @@ function drush_pbd_configure() {
   pbd_configure_wkhtmltopdf();
   pbd_set_max_file_size();
   pbd_configure_google_recaptcha();
+
+  // Should only be run once because it contains settings
+  // that a group may want to change and that we don't
+  // want to override.
+  pbd_one_time_configuration();
 
   // This should go last so we can reset settigs set above (like
   // preprocess variables).
@@ -506,15 +506,15 @@ function pbd_one_time_configuration() {
   # new powerbase one..
   variable_set('theme_default','newsflash');
 
+  // Ensure all the civicrm components we need are enabled
+  pbd_enable_pb_components();
+
   pbd_grant_anonymous_and_authenticated_role_access($one_time);
 
   // _civicrm_init no longer creates config singleton.
   // This is necessary in order to have a fully functional
   // database.
   $config = CRM_Core_Config::singleton();
-
-  // Ensure all the civicrm components we need are enabled
-  pbd_enable_pb_components();
 
   // Only allow user creation by admin
   pbd_lock_down_user_registration();
