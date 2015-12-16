@@ -2250,7 +2250,7 @@ long_is_host_reachable() {
 # proposed site names. Return 0 if it's only alphanumeric characters and 1 if
 # it contains non-alphanumeric characters.
 long_check_alpha_numeric() {
-  echo "$1" | egrep '^[0-9a-z]+$' > /dev/null
+  echo "$1" | egrep '^[-0-9a-z]+$' > /dev/null
   return "$?"
 }
 
