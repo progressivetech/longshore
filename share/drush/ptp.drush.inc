@@ -323,11 +323,11 @@ function ptp_insert_org_contact() {
     $org = array_pop($results['values']);
     drush_log(dt("Inserted PTP organization"));
   } 
-  if(empty($org['contact_id'])) {
+  if(empty($org['id'])) {
     drush_log(dt("Failed to obtain organization contact id."), 'error');
     return FALSE;
   }
-  return $org['contact_id'];
+  return $org['id'];
 }
 
 /**
