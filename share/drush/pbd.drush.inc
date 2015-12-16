@@ -626,7 +626,7 @@ function pbd_add_constituent_type_fields_to_profiles() {
 
   }
   catch (CiviCRM_API3_Exception $e) {
-    drush_log(dt("Failed to constituent type fields to reserved profiles."), 'error');
+    drush_log(dt("Failed to add constituent type fields to reserved profiles."), 'error');
     drush_log($e->getMessage(), 'error');
     return FALSE;
   }
@@ -1573,6 +1573,7 @@ function pbd_grant_anonymous_and_authenticated_role_access($one_time = FALSE) {
   $default_auth_perms = $default_anon_perms;
   $default_auth_perms[] = 'access Contact Dashboard';
   // ensure we are not setting permissions that don't exist
+ 
   $module_perms = user_permission_get_modules();
   $available_perms = array_keys($module_perms);
   $problem_anon_perms = array_diff($default_anon_perms,$available_perms);
@@ -3708,6 +3709,9 @@ function pbd_enable_default_extensions() {
  * the module.
  **/
 function pbd_import_engage_data() {
+  // Reset the module data cache - since the civicrm_engage module was probably
+  // installed during this session.
+  drupal_static_reset('system_rebuild_module_data');
   if(module_exists('civicrm_engage')) {
     drush_log(dt("Checking civicrm_engage data."));
     module_load_include('inc', 'civicrm_engage', 'civicrm_engage.admin');
