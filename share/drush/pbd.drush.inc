@@ -502,8 +502,9 @@ function pbd_one_time_configuration() {
 
   $one_time = TRUE;
 
-  # All new sites get the new powerbase theme.
-  variable_set('theme_default','powerbase');
+  # All new sites get the newsflash theme until we finalize the 
+  # new powerbase one..
+  variable_set('theme_default','newsflash');
 
   pbd_grant_anonymous_and_authenticated_role_access($one_time);
 
