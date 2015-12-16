@@ -60,6 +60,10 @@ function drush_pbd_configure() {
   _civicrm_init();
   $config = CRM_Core_Config::singleton();
 
+  // Enable extensions and modules early so settings and permission
+  // steps that are taken later work properly.
+  pbd_enable_default_extensions();
+
   /* Drupal Settings */
   pbd_enable_modules();
   pbd_configure_imce();
@@ -110,7 +114,6 @@ function drush_pbd_configure() {
   pbd_turn_off_pdf_receipt();
   pbd_turn_off_version_check();
   pbd_turn_off_empowered_by_civicrm_footer();
-  pbd_enable_default_extensions();
   pbd_ensure_civicrm_news_removed_from_dashboard();
   pbd_set_viewable_contact_tabs();
   pbd_add_partner_greeting_options();
