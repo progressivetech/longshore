@@ -62,4 +62,6 @@ else
 fi
 
 # Only cleanup locally if we created a temp file.
-[ "$cleanup" -eq 1 ] && rm "$query"
+if [ "$cleanup" -eq 1 ]; then
+  rm "$query"
+fi
