@@ -4,34 +4,31 @@ long_usage_message="usage: $(basename $0) site-sqlq <site> <query>
 Run the given query in the site's database.
 
 Arguments
-  <site> - The site database to run the query
+  <site> - The site database to run the query or --all for all sites.
   <query> - The SQL statement to run. Either pass directly or 
     pass the name of a file."
 
 long_check_args "$2" "$#" 1
 
-site="$2"
+# Generate list of sites to run on if necessary.
+if [ -n "$2" -a "$2" != "--all" ]; then
+  sites="$2"
+else
+  long_set_sites
+  sites="$LONG_SITES"
+fi
 
 # To avoid complicating quoting issues - accept all remaining
 # arguments as part of the query.
 shift 2
 query="$@"
 
-long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
-
-# Re-run over network manually to manage quoting problems
-long_set_site_sibling "$site"
-
-if [ -z "$LONG_SITE_SIBLING" ]; then
-  # This could mean the site name was mis-typed.
-  long_die "Can't determine where to run this command because site doesn't have sibling (%s)." 1 "$site"
-fi
-
-me=$(hostname)
-
 # Convert to file if necessary. This is how our api wants it and it 
 # avoids quoting problems when running on other siblings.
+# Keep track of whether or not we need to delete a temp file
+# containing the query.
 cleanup=0
+
 if [ ! -f "$query" ]; then
   temp=$(mktemp)
   echo "$query" > "$temp"
@@ -39,27 +36,45 @@ if [ ! -f "$query" ]; then
   cleanup=1
 fi
 
-if [ "$LONG_SITE_SIBLING" = "$me" ]; then
-  # run locally
-  long_execute_site_query "$site" "$query"
-else
-  # run over the network
-  # Ensure the host is reachable.
-  if ! long_is_host_reachable "${LONG_SITE_SIBLING}.mayfirst.org"; then
-    long_die "The sibling I was trying to run this command on (%s) is not reachable." \
-      1 "${LONG_SITE_SIBLING}.mayfirst.org"
+for site in $sites; do
+  long_log "Running query on %s." info "$site"
+
+  long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+
+  # Re-run over network manually so we can properly scp file to execute
+  # and avoid quoting complications.
+  long_set_site_sibling "$site"
+
+  if [ -z "$LONG_SITE_SIBLING" ]; then
+    # This could mean the site name was mis-typed.
+    long_die "Can't determine where to run this command because site doesn't have sibling (%s)." 1 "$site"
   fi
-  # Copy the file to the sibling - use a temp file to avoid clobbering 
-  # a file on the other side.
-  dest=$(ssh "${LONG_SITE_SIBLING}.mayfirst.org" "mktemp")
-  scp -q "$query" "${LONG_SITE_SIBLING}.mayfirst.org:$dest"
-  ssh "${LONG_SITE_SIBLING}.mayfirst.org" /srv/longshore/bin/longshore site-sqlq "$site" "$dest"
-  if [ "$?" != "0" ]; then
-    long_log "Rerunning %s for site %s over network failed." error "site-sqlq" "$site"
+
+
+  me=$(hostname)
+
+  if [ "$LONG_SITE_SIBLING" = "$me" ]; then
+    # run locally
+    long_execute_site_query "$site" "$query"
+  else
+    # run over the network
+    # Ensure the host is reachable.
+    if ! long_is_host_reachable "${LONG_SITE_SIBLING}.mayfirst.org"; then
+      long_die "The sibling I was trying to run this command on (%s) is not reachable." \
+        1 "${LONG_SITE_SIBLING}.mayfirst.org"
+    fi
+    # Copy the file to the sibling - use a temp file to avoid clobbering 
+    # a file on the other side.
+    dest=$(ssh "${LONG_SITE_SIBLING}.mayfirst.org" "mktemp")
+    scp -q "$query" "${LONG_SITE_SIBLING}.mayfirst.org:$dest"
+    ssh "${LONG_SITE_SIBLING}.mayfirst.org" /srv/longshore/bin/longshore site-sqlq "$site" "$dest"
+    if [ "$?" != "0" ]; then
+      long_log "Rerunning %s for site %s over network failed." error "site-sqlq" "$site"
+    fi
+    # Always cleanup on remote serves, since we always create a tmp file.
+    ssh "${LONG_SITE_SIBLING}.mayfirst.org" "rm $dest"
   fi
-  # Always cleanup on remote serves, since we always create a tmp file.
-  ssh "${LONG_SITE_SIBLING}.mayfirst.org" "rm $dest"
-fi
+done
 
 # Only cleanup locally if we created a temp file.
 if [ "$cleanup" -eq 1 ]; then
