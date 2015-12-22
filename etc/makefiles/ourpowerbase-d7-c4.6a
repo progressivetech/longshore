@@ -1,0 +1,388 @@
+;****************************************
+; General
+;****************************************
+; FIXME add md5 sums when http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=676251 is resolved
+; drush make API version
+api = "2" 
+
+;****************************************
+; Drupal Core
+;****************************************
+
+core = "7.x" 
+projects[drupal][version] = "7.41"
+
+;****************************************
+; CiviCRM Core
+;****************************************
+
+; CiviCRM Core
+projects[civicrm][type] = "module" 
+projects[civicrm][directory_name] = "civicrm" 
+projects[civicrm][download][type] = "git" 
+projects[civicrm][download][revision] = "0227da0cd815d60d1118ae892766b4bccb891449"
+projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
+
+; Packages
+projects[civicrm_packages][type] = "library" 
+projects[civicrm_packages][destination] = "modules/civicrm" 
+projects[civicrm_packages][directory_name] = "packages" 
+projects[civicrm_packages][download][type] = "git" 
+projects[civicrm_packages][download][revision] = "0047936daa6dad9d11643169af62c10fce8d1efe"
+projects[civicrm_packages][download][url] = "git://git.progressivetech.org/civicrm/civicrm-packages"
+
+; Drupal
+projects[civicrm_drupal][type] = "library" 
+projects[civicrm_drupal][destination] = "modules/civicrm" 
+projects[civicrm_drupal][directory_name] = "drupal" 
+projects[civicrm_drupal][download][type] = "git" 
+projects[civicrm_drupal][download][revision] = "e16cd661b6c78d109928438c1e73d4754f678ebe"
+projects[civicrm_drupal][download][url] = "git://git.progressivetech.org/civicrm/civicrm-drupal"
+
+;****************************************
+; Drupal third party modules 
+;****************************************
+
+projects[page_theme][type] = "module"
+projects[page_theme][version] = "1.1"
+
+projects[imce][type] = "module"
+projects[imce][version] = "1.9"
+
+projects[views][type] = "module"
+projects[views][version] = "3.11"
+
+projects[advanced_help][type] = "module"
+projects[advanced_help][version] = "1.1"
+
+projects[ctools][type] = "module"
+projects[ctools][version] = "1.9"
+
+projects[views_data_export][type] = "module"
+projects[views_data_export][version] = "3.0-beta8"
+
+projects[webform][type] = "module"
+projects[webform][version] = "4.11"
+
+projects[libraries][type] = "module"
+projects[libraries][version] = "2.2"
+
+projects[themekey][type] = "module"
+projects[themekey][version] = "3.4"
+
+projects[webform_civicrm][type] = "module"
+projects[webform_civicrm][version] = "4.13"
+
+projects[options_element][type] = "module"
+projects[options_element][version] = "1.12"
+
+projects[print][type] = "module"
+projects[print][version] = "2.0"
+
+projects[masquerade][type] = "module"
+projects[masquerade][version] = "1.0-rc7"
+
+projects[token][type] = "module"
+projects[token][version] = "1.6"
+
+projects[migrate][type] = "module"
+projects[migrate][version] = "2.5"
+
+projects[redirect][type] = "module"
+projects[redirect][version] = "1.0-beta4"
+
+projects[backup_migrate][type] = "module"
+projects[backup_migrate][version] = "3.1"
+
+projects[devel][type] = "module"
+projects[devel][version] = "1.5"
+
+projects[autologout][type] = "module"
+projects[autologout][version] = "4.3"
+
+projects[civicrm_cicero][type] = "module"
+projects[civicrm_cicero][version] = "1.10"
+
+projects[cd_sunlight][type] = "module"
+projects[cd_sunlight][version] = "1.0-beta7"
+
+projects[css_injector][type] = "module"
+projects[css_injector][version] = "1.8" 
+
+projects[js_injector][type] = "module"
+projects[js_injector][version] = "2.1" 
+
+projects[l10n_update][type] = "module"
+projects[l10n_update][version] = "1.0"
+
+projects[node_clone][type] = "module"
+projects[node_clone][version] = "1.0-rc2"
+
+projects[civicrm_activity_ical][type] = "module"
+projects[civicrm_activity_ical][version] = "1.1"
+
+projects[password_policy][type] = "module"
+projects[password_policy][version] = "1.10"
+
+projects[jquery_update][type] = "module"
+projects[jquery_update][version] = "3.0-alpha3"
+
+; **************
+; custom modules
+; *************
+projects[opb][type] = "module"
+projects[opb][download][type] = "git"
+projects[opb][download][url] = "git://git.progressivetech.org/powerbase/opb.git"
+projects[opb][download][revision] = "e5bd063448a69013ae7451786bfd27f47935649a"
+
+projects[civicrm_imce][type] = "module"
+projects[civicrm_imce][download][type] = "git"
+projects[civicrm_imce][download][url] = "git://git.progressivetech.org/powerbase/civicrm_imce.git"
+projects[civicrm_imce][download][revision] = "b968e9057598af97d8592a480fc783a80d408970"
+
+projects[civimigrate][type] = "module"
+projects[civimigrate][download][type] = "git"
+projects[civimigrate][download][url] = "https://github.com/eileenmcnaughton/civimigrate.git"
+projects[civimigrate][download][revision] = "d5ff5861b07f50bfc9a92f8a4ea5d9b61dd25034"
+
+projects[themekey_civicrm][type] = "module"
+projects[themekey_civicrm][download][type] = "git"
+projects[themekey_civicrm][download][url] = "git://git.progressivetech.org/powerbase/themekey_civicrm.git"
+projects[themekey_civicrm][download][revision] = "ce9270af52aaeaa621f1896ac5cf2b7cab5e5b23"
+
+projects[arrange_fields][type] = "module"
+projects[arrange_fields][download][type] = "git"
+projects[arrange_fields][download][url] = "git://git.progressivetech.org/powerbase/arrange_fields.git"
+projects[arrange_fields][download][revision] = "997b5358ef0309a801e948a9ecbcb19a6da3349b"
+
+; The following are civicrm module extensions, being stored in
+; sites/all/libraries and symlinked to respective organizations custom-civicrm/extensions
+; directories. NOTE: you can't have periods in names, hence using sumfields not
+; net.ourpowerbase.net.sumfields.
+projects[sumfields][type] = "library"
+projects[sumfields][destination] = "extensions"
+projects[sumfields][download][type] = "git"
+projects[sumfields][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.sumfields.git"
+projects[sumfields][download][revision] = "41948d5c4c059e793132ad1cbaea455e254e1331"
+
+projects[petitionemail][type] = "library"
+projects[petitionemail][destination] = "extensions"
+projects[petitionemail][download][type] = "git"
+projects[petitionemail][download][url] = "git://git.progressivetech.org/extensions/cc.tadpole.petitionemail"
+projects[petitionemail][download][revision] = "382530b9e3a050e7413c19d9313a49632bdfef26"
+
+projects[advancedfundraising][type] = "library"
+projects[advancedfundraising][destination] = "extensions"
+projects[advancedfundraising][download][type] = "git"
+projects[advancedfundraising][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.report.advancedfundraising"
+projects[advancedfundraising][download][revision] = "667f5f25669cb0f9af0018222d52b2d9dbbd110a"
+
+projects[badgeup][type] = "library"
+projects[badgeup][destination] = "extensions"
+projects[badgeup][download][type] = "git"
+projects[badgeup][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.badgeup.git"
+projects[badgeup][download][revision] = "9c3bfdd18fdb9e631c90b791c329f674d100f784"
+
+projects[quickentry][type] = "library"
+projects[quickentry][destination] = "extensions"
+projects[quickentry][download][type] = "git"
+projects[quickentry][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.quickentry.git"
+projects[quickentry][download][revision] = "ac934bf507c82e718357167bba730aeba799952d"
+
+projects[surveylinks][type] = "library"
+projects[surveylinks][destination] = "extensions"
+projects[surveylinks][download][type] = "git"
+projects[surveylinks][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.surveylinks.git"
+projects[surveylinks][download][revision] = "98a9bbc2f86ffec08549f3512bb796865353f518"
+
+projects[engage][type] = "library"
+projects[engage][destination] = "extensions"
+projects[engage][download][type] = "git"
+projects[engage][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.engage.git"
+projects[engage][download][revision] = "84e2ea2748fb6dd22b0b4e518172b14c30e7bff7"
+
+projects[civimobile][type] = "library"
+projects[civimobile][destination] = "extensions"
+projects[civimobile][download][type] = "git"
+projects[civimobile][download][url] = "https://github.com/webaccess/com.webaccessglobal.module.civimobile"
+projects[civimobile][download][revision] = "2b44e18d7afe0263fd64b027c20049bd5275010d"
+
+projects[yahooboss][type] = "library"
+projects[yahooboss][destination] = "extensions"
+projects[yahooboss][download][type] = "git"
+projects[yahooboss][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.geocoder.yahooboss.git"
+projects[yahooboss][download][revision] = "db3eba715d6c0465049336f85edd827ac2a42907"
+
+projects[anyteloremailjma][type] = "library"
+projects[anyteloremailjma][destination] = "extensions"
+projects[anyteloremailjma][download][type] = "git"
+projects[anyteloremailjma][download][url] = "https://github.com/JMAConsulting/biz.jmaconsulting.search.anyteloremail"
+projects[anyteloremailjma][download][revision] = "8e02c9fd844891a4d763986dc04c7ac323695610"
+
+projects[noverwrite][type] = "library"
+projects[noverwrite][destination] = "extensions"
+projects[noverwrite][download][type] = "git"
+projects[noverwrite][download][url] = "https://github.com/TechToThePeople/noverwrite"
+projects[noverwrite][download][revision] = "bc226b9c237341f62db9887eb5da50da8fc694e1"
+
+projects[eventcount][type] = "library"
+projects[eventcount][destination] = "extensions"
+projects[eventcount][download][type] = "git"
+projects[eventcount][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.search.eventcount.git"
+projects[eventcount][download][revision] = "6ea8b1e0328b237e2a21259e60b734901c6808b0"
+
+projects[dbhealth][type] = "library"
+projects[dbhealth][destination] = "extensions"
+projects[dbhealth][download][type] = "git"
+projects[dbhealth][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.report.dbhealth.git"
+projects[dbhealth][download][revision] = "9420b91e4eea2b938e7419e47ae73148212a9345"
+
+projects[clickandpledge][type] = "library"
+projects[clickandpledge][destination] = "extensions"
+projects[clickandpledge][download][type] = "git"
+projects[clickandpledge][download][url] = "git://git.progressivetech.org/extensions/com.clickandpledge.payment.clickandpledge.git"
+projects[clickandpledge][download][revision] = "68f61cc1ed5cd7bd76e6e02c2172ea932a8abe32"
+
+projects[assessment][type] = "library"
+projects[assessment][destination] = "extensions"
+projects[assessment][download][type] = "git"
+projects[assessment][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.assessment.git"
+projects[assessment][download][revision] = "7bab7266edccc87408a53465bede7667ececb2ba"
+
+projects[supersearch][type] = "library"
+projects[supersearch][destination] = "extensions"
+projects[supersearch][download][type] = "git"
+projects[supersearch][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.search.supersearch.git"
+projects[supersearch][download][revision] = "993c6103108b80f486e733dba30cf34ecf610c69"
+
+projects[extendedreport][type] = "library"
+projects[extendedreport][destination] = "extensions"
+projects[extendedreport][download][type] = "git"
+projects[extendedreport][download][url] = "https://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport.git"
+projects[extendedreport][download][revision] = "19ffc06011b36d883fddf94e385da131b4fb3e47"
+
+projects[iats][type] = "library"
+projects[iats][destination] = "extensions"
+projects[iats][download][type] = "git"
+projects[iats][download][url] = "https://github.com/iATSPayments/com.iatspayments.civicrm.git"
+projects[iats][download][revision] = "ca8fdb5aa2e55e306ac7b47838f228ee13c6c435"
+
+projects[clickatell][type] = "library"
+projects[clickatell][destination] = "extensions"
+projects[clickatell][download][type] = "file"
+projects[clickatell][download][url] = "https://github.com/civicrm/civicrm-core/blob/4.4/tools/extensions/org.civicrm.sms.clickatell.zip?raw=true"
+
+projects[twilio][type] = "library"
+projects[twilio][destination] = "extensions"
+projects[twilio][download][type] = "git"
+projects[twilio][download][url] = "https://github.com/civicrm/org.civicrm.sms.twilio.git"
+projects[twilio][download][revision] = "7fd50d402d009f9e7879e37c8b6363e6ae02d532"
+
+projects[cividiscount][type] = "library"
+projects[cividiscount][destination] = "extensions"
+projects[cividiscount][download][type] = "file"
+projects[cividiscount][download][url] = "https://github.com/dlobo/org.civicrm.module.cividiscount/archive/v2.2.zip"
+
+projects[optionsimporter][type] = "library"
+projects[optionsimporter][destination] = "extensions"
+projects[optionsimporter][download][type] = "file"
+projects[optionsimporter][download][url] = "https://github.com/ixiam/com.ixiam.modules.optionsimporter/archive/1.0.zip"
+
+projects[uscounties][type] = "library"
+projects[uscounties][destination] = "extensions"
+projects[uscounties][download][type] = "git"
+projects[uscounties][download][url] = "https://github.com/agh1/com.aghstrategies.uscounties.git"
+projects[uscounties][download][revision] = "bb7943c3b05c8f1a7f1f732dfc04dd87576baf2c"
+
+projects[stripe][type] = "library"
+projects[stripe][destination] = "extensions"
+projects[stripe][download][type] = "git"
+projects[stripe][download][url] = "git://git.progressivetech.org/extensions/com.drastikbydesign.stripe"
+projects[stripe][download][revision] = "ba6423756b882a27d28c644aa019049044854a5f"
+
+projects[authnetecheck][type] = "library"
+projects[authnetecheck][destination] = "extensions"
+projects[authnetecheck][download][type] = "file"
+projects[authnetecheck][download][url] = "https://github.com/donordepot/com.donordepot.authnetecheck/archive/1.1.2.zip"
+
+projects[civisualize][type] = "library"
+projects[civisualize][destination] = "extensions"
+projects[civisualize][download][type] = "git"
+projects[civisualize][download][url] = "https://github.com/TechToThePeople/civisualize.git"
+projects[civisualize][download][revision] = "553e32ff0d279136157e6c05ccf30e4cf0d6375f"
+
+projects[civivolunteer][type] = "library"
+projects[civivolunteer][destination] = "extensions"
+projects[civivolunteer][download][type] = "git"
+projects[civivolunteer][download][url] = "https://github.com/civicrm/org.civicrm.volunteer.git"
+; Version 1.4.0
+projects[civivolunteer][download][revision] = "6ffa61816e976db5d102c52e67a130d3003dc4e2"
+
+projects[simpledonate][type] = "library"
+projects[simpledonate][destination] = "extensions"
+projects[simpledonate][download][type] = "git"
+projects[simpledonate][download][url] = "https://github.com/webaccess/com.webaccessglobal.simpledonate.git"
+projects[simpledonate][download][revision] = "a9d38c8f39d7bfe330c63436142a3b51b876f709"
+
+projects[zip2state][type] = "library"
+projects[zip2state][destination] = "extensions"
+projects[zip2state][download][type] = "git"
+projects[zip2state][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.zip2state.git"
+projects[zip2state][download][revision] = "9fa8fa1fd9096a1061dd33f685bde6574b26e760"
+
+projects[offlinerecurring][type] = "library"
+projects[offlinerecurring][destination] = "extensions"
+projects[offlinerecurring][download][type] = "git"
+projects[offlinerecurring][download][url] = "git://git.progressivetech.org/extensions/offlinerecurring.git"
+projects[offlinerecurring][download][revision] = "706ab16f8a8f0c87f58763c44c5067486d53d485"
+
+projects[merge][type] = "library"
+projects[merge][destination] = "extensions"
+projects[merge][download][type] = "git"
+projects[merge][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.merge.git"
+projects[merge][download][revision] = "55e868adda81b8de5832f659486584a12142990a"
+
+projects[cjcase][type] = "library"
+projects[cjcase][destination] = "extensions"
+projects[cjcase][download][type] = "git"
+projects[cjcase][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.search.cjcase.git"
+projects[cjcase][download][revision] = "5aee46ab6945e83ad1a1cfbf81b6a7b8acddffb2"
+
+projects[civirules][type] = "library"
+projects[civirules][destination] = "extensions"
+projects[civirules][download][type] = "git"
+projects[civirules][download][url] = "https://github.com/CiviCooP/org.civicoop.civirules.git"
+projects[civirules][download][revision] = "dba194992950371fc63b2d349cbd648cb94a4e94"
+
+;****************************************
+; Drupal themes 
+;****************************************
+
+projects[newsflash][type] = "theme"
+projects[newsflash][version] = "2.5"
+
+projects[bootstrap][type] = "theme"
+projects[bootstrap][version] = "3.0"
+
+projects[responsive][type] = "theme"
+projects[responsive][version] = "1.7"
+
+projects[basic][type] = "theme"
+projects[basic][version] = "4.2"
+
+projects[pb_custom_theme_elements][type] = "theme"
+projects[pb_custom_theme_elements][download][type] = "git"
+projects[pb_custom_theme_elements][download][url] = "git://git.progressivetech.org/powerbase/pb_custom_theme_elements.git"
+projects[pb_custom_theme_elements][download][revision] = "b719e32b3625813ad3c21d028842e2f37729f0b7"
+
+projects[powerbase][type] = "theme"
+projects[powerbase][download][type] = "git"
+projects[powerbase][download][url] = "git://git.progressivetech.org/powerbase/powerbase.git"
+projects[powerbase][download][revision] = "3cbd46dd0513f6968a3c232e83010598d5e9ea66"
+
+projects[iframe][type] = "theme"
+projects[iframe][download][type] = "git"
+projects[iframe][download][url] = "git://git.progressivetech.org/powerbase/iframe.git"
+projects[iframe][download][revision] = "e7fc6068964c08f7e685ed3702986cbcd8256878"
+
+
