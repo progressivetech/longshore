@@ -24,13 +24,14 @@ long_rerun_over_network "$@" && exit
 mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
 pass=$(grep password= "$mycnf" | cut -d= -f2)
 long_set_site_db_host "$site"
+long_set_site_platform "$site"
 long_set_site_memory "$site"
 long_set_site_contacts_count "$site"
 long_set_site_recent_logins_count "$site"
 sibling=$(hostname)
 
-printf "Site: %s\nPassword: %s\nDB: %s\nPHPMyAdmin URL: %s\nSibling: %s\nRecent Logins: %s\nContacts: %s\nPids: %s\nMemory: %s\n" \
-  "$site" "$pass"  "$LONG_SITE_DB_HOST" "$LONG_PHPMYADMIN_URL" "$sibling" \
+printf "Site: %s\nPassword: %s\nDB: %s\nPHPMyAdmin URL: %s\nPlatform: %s\nSibling: %s\nRecent Logins: %s\nContacts: %s\nPids: %s\nMemory: %s\n" \
+  "$site" "$pass"  "$LONG_SITE_DB_HOST" "$LONG_PHPMYADMIN_URL" "$LONG_SITE_PLATFORM" "$sibling" \
   "$LONG_SITE_RECENT_LOGINS_COUNT" "$LONG_SITE_CONTACTS_COUNT" "$LONG_SITE_PIDS" "$LONG_SITE_MEMORY"
 
 if [ -n "$update" ]; then

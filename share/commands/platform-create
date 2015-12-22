@@ -204,19 +204,21 @@ long_log "Moving platform into place." info
 # container can read it.
 chmod 0755 "$source_platform_path_temp"
 
-# If the platform doesn't already exist - move it into place and we are done. 
+# If the platform doesn't already exist - create it. 
+# NOTE: don't just move it into place, otherwise steps below that depend
+# on the temp path existing will fail.
 if [ ! -d "$source_platform_path" ]; then
-  mv "$source_platform_path_temp" "$source_platform_path"
-else
-  # It would be nice to do an atomic move, however, if the platform is being
-  # used by a running container, we can't just move it out of the way. So, we
-  # have to rsync and deal with the possibility that there may be a weird error
-  # while the sync'ing is happened. I learned about the proper rsync arguments
-  # by reading the output of `aubrsync -h`.
-  rsync -aHSx --devices --specials --delete-before \
-    "${source_platform_path_temp}/" \
-    "${source_platform_path}/" 
+  mkdir "$source_platform_path"
 fi
+
+# It would be nice to do an atomic move, however, if the platform is being
+# used by a running container, we can't just move it out of the way. So, we
+# have to rsync and deal with the possibility that there may be a weird error
+# while the sync'ing is happened. I learned about the proper rsync arguments
+# by reading the output of `aubrsync -h`.
+rsync -aHSx --devices --specials --delete-before \
+  "${source_platform_path_temp}/" \
+  "${source_platform_path}/" 
 
 if [ "$LONG_RUN_DB_UPDATES" = "1" ]; then
   # Now ensure all sites have db updates run.
