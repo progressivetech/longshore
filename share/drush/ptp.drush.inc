@@ -608,7 +608,7 @@ function ptp_create_help_menu() {
     'CiviCRM Community Forums' => 
       'https://civicrm.stackexchange.com/',
     'PowerBase FAQs' =>
-      'http://network.progressivetech.org/knowledge-base-topics/powerbase',
+      'http://network.progressivetech.org/tips',
     'Video Tutorials' =>
       'https://www.youtube.com/user/PowerOnPTP/playlists',
     'Change my password' =>
