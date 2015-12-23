@@ -47,7 +47,6 @@ if [ "$option" = "-rh" ]; then
 fi
 
 for site in $sites; do
-  ! long_container_exists "$site" && continue
   if [ -n "$skip_regexp" ]; then
     if echo "$site" | egrep "$skip_regexp" >/dev/null; then
       continue
