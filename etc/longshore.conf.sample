@@ -19,8 +19,8 @@ LONG_SIBLINGS=""
 LONG_DEBUG_EMAIL="jamie@progressivetech.org"
 LONG_DEFAULT_LOG_LEVEL=error
 
-LONG_NON_PRODUCTION_REGEXP="^(restore|clone|test|sandbox|demo|training[123]|robyn|josue|tomas|mark|alice|f|grits|bacon|spanish)"
-LONG_DEFAULT_PLATFORM=ourpowerbase-d7-c4.5
+LONG_NON_PRODUCTION_REGEXP="^(clone|sandbox|demo|training|henry|tomas|mark|alice|grits|bacon|granola)"
+LONG_DEFAULT_PLATFORM=ourpowerbase-d7-c4.6
 LONG_DEFAULT_DOMAIN=animal
 
 # When setting up web sites, should we enable https?
