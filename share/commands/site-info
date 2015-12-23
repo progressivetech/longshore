@@ -1,18 +1,20 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-info <site> [<-u>] [<-r>]
+long_usage_message="usage: $(basename $0) site-info <site> [<-u>] [<-r>] [<-rh>]
 Print all details about this site, including password. Optionally
 update the PTP database with this information. Optionally, set the
 PB_YEAR environment variable to get statistics for different years.
+Optionally, output in report format or report format with header.
 
-You can't pass both -u and -r. If you do, the first one specified
+You can't pass both -u and -r/-rh. If you do, the first one specified
 will be used.
 
 Arguments
   <site> - The site on which to report or --all for all sites.
   <-u> - If -u is passed, we will try to update the ptp database with 
   the login count, contacts count and hostname.
-  <-r> - If -r is passed, output will be columnar. "
+  <-r> - If -r is passed, output will be columnar. 
+  <-rh> - If -rh is passed, output will be columnar with header. "
 
 long_check_args "$2" "$#" 1
 
@@ -30,18 +32,23 @@ else
   year=$(date +%Y)
 fi
 
-if [ -n "$option" -a "$option" != '-u' -a "$option" != "-r" ]; then
-  long_die "I didn't understand the last argument. I was expecting -u or -r but got %s." 1 "$option"
+if [ -n "$option" -a "$option" != '-u' -a "$option" != "-r" -a "$option" != "-rh" ]; then
+  long_die "I didn't understand the last argument. I was expecting -u or -r or -rh but got %s." 1 "$option"
 fi
 
-if [ "$option" = "-r" ]; then
+if [ "$option" = "-rh" ]; then
   # Print the tabular header
   printf "Site\tDB\tPlatform\tSibling\tRecent Logins\tContacts\tContributions\tEmails sent\n"
 fi
 
 for site in $sites; do
   long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
-  long_rerun_over_network site-info "$site" "$option" && exit
+  if [ "$option" = "-rh" ]; then
+    # If we want headers, we have already output them above, don't do it again
+    # when running over the network.
+    option="-r"
+  fi
+  long_rerun_over_network site-info "$site" "$option" && continue 
 
   mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
   pass=$(grep password= "$mycnf" | cut -d= -f2)
