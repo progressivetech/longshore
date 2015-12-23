@@ -2469,6 +2469,43 @@ long_set_site_recent_logins_count() {
   rm "$temp"
 }
 
+# Count the total contributions on a given site for a given year (or current year). 
+long_set_site_contributions_sum() {
+  local site="$1"
+  local year="$2"
+
+  if [ -z "$year" ]; then
+    year=$(date +%Y)
+  fi
+
+  local temp=$(mktemp)
+  echo "SELECT SUM(total_amount) FROM civicrm_contribution c JOIN \
+    civicrm_option_value ov ON c.contribution_status_id = ov.value JOIN \
+    civicrm_option_group og ON ov.option_group_id = og.id \
+    WHERE receive_date LIKE '$year-%' AND og.name = 'contribution_status' AND ov.name = 'Completed'" \
+    >> "$temp"
+  LONG_SITE_CONTRIBUTIONS_SUM=$(long_execute_site_query "$site" "$temp" | tail -n1)
+  rm "$temp"
+}
+
+# Count the total contributions on a given site for a given year (or current year). 
+long_set_site_emails_count() {
+  local site="$1"
+  local year="$2"
+
+  if [ -z "$year" ]; then
+    year=$(date +%Y)
+  fi
+
+  local temp=$(mktemp)
+  echo "SELECT COUNT(*) FROM civicrm_mailing m JOIN \
+    civicrm_mailing_recipients r ON m.id = r.mailing_id \
+    WHERE scheduled_date LIKE '$year-%'" \
+    >> "$temp"
+  LONG_SITE_EMAILS_COUNT=$(long_execute_site_query "$site" "$temp" | tail -n1)
+  rm "$temp"
+}
+
 # Check if site is online
 long_is_site_reachable() {
   local site="$1"
