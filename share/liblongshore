@@ -2485,6 +2485,7 @@ long_set_site_contributions_sum() {
     WHERE receive_date LIKE '$year-%' AND og.name = 'contribution_status' AND ov.name = 'Completed'" \
     >> "$temp"
   LONG_SITE_CONTRIBUTIONS_SUM=$(long_execute_site_query "$site" "$temp" | tail -n1)
+  [ "$LONG_SITE_CONTRIBUTIONS_SUM" = "NULL" ] && $LONG_SITE_CONTRIBUTIONS_SUM=0
   rm "$temp"
 }
 

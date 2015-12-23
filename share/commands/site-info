@@ -48,6 +48,7 @@ for site in $sites; do
     # when running over the network.
     option="-r"
   fi
+  # FIXME: how do we get a different PB_YEAR value over the network?
   long_rerun_over_network site-info "$site" "$option" && continue 
 
   mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
