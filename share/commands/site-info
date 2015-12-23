@@ -21,9 +21,14 @@ long_check_args "$2" "$#" 1
 sites="$2"
 option="$3"
 
+# Don't skip non production sites by default
+skip_regexp=
 if [ "$sites" = "--all" ]; then
   long_set_sites
   sites="$LONG_SITES"
+
+  # IF we are using --all, then we do want to skip nonproduction sites
+  skip_regexp="$LONG_NON_PRODUCTION_REGEXP"
 fi
 
 if [ -n "$PB_YEAR" ]; then
@@ -42,6 +47,12 @@ if [ "$option" = "-rh" ]; then
 fi
 
 for site in $sites; do
+  ! long_container_exists "$site" && continue
+  if [ -n "$skip_regexp" ]; then
+    if echo "$site" | egrep "$skip_regexp" >/dev/null; then
+      continue
+    fi
+  fi
   long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
   if [ "$option" = "-rh" ]; then
     # If we want headers, we have already output them above, don't do it again

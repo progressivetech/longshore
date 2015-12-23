@@ -2443,10 +2443,16 @@ long_set_site_memory() {
   LONG_SITE_MEMORY=0
   local mem=0
   local pid=
+  local rss=
   for pid in $LONG_SITE_PIDS; do
     # -h means no header
-    mem=$(( $(ps -h -p "$pid" -o rss) / 1024 ))
-    LONG_SITE_MEMORY=$(( $LONG_SITE_MEMORY + $mem ))
+    rss=$(ps -h -p "$pid" -o rss)
+    if [ -n "$rss" ]; then
+      mem=$(( $rss / 1024 ))
+      LONG_SITE_MEMORY=$(( $LONG_SITE_MEMORY + $mem ))
+    else
+      LONG_SITE_MEMORY=0
+    fi
   done
 }
 
@@ -2485,7 +2491,7 @@ long_set_site_contributions_sum() {
     WHERE receive_date LIKE '$year-%' AND og.name = 'contribution_status' AND ov.name = 'Completed'" \
     >> "$temp"
   LONG_SITE_CONTRIBUTIONS_SUM=$(long_execute_site_query "$site" "$temp" | tail -n1)
-  [ "$LONG_SITE_CONTRIBUTIONS_SUM" = "NULL" ] && $LONG_SITE_CONTRIBUTIONS_SUM=0
+  [ "$LONG_SITE_CONTRIBUTIONS_SUM" = "NULL" ] && LONG_SITE_CONTRIBUTIONS_SUM=0
   rm "$temp"
 }
 
