@@ -37,7 +37,6 @@ if [ ! -f "$query" ]; then
 fi
 
 for site in $sites; do
-  long_log "Running query on %s." info "$site"
 
   long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 
@@ -50,11 +49,11 @@ for site in $sites; do
     long_die "Can't determine where to run this command because site doesn't have sibling (%s)." 1 "$site"
   fi
 
-
   me=$(hostname)
 
   if [ "$LONG_SITE_SIBLING" = "$me" ]; then
     # run locally
+    long_log "Running query on %s." info "$site"
     long_execute_site_query "$site" "$query"
   else
     # run over the network
