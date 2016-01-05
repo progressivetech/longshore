@@ -1,0 +1,73 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-transfer <site> <sibling> [<db>]
+Move a site from the current sibling to a new sibling.
+
+Arguments
+  <site> - The site to transfer.
+  <sibling> - The sibling to transfer the site to.
+  <db> - The database on the remote site to transfer the site to. If
+    empty, use the same database that it is currently on."
+
+long_check_args "$2" "$#" 2
+
+site="$2"
+target_sibling="$3"
+db_host="$4"
+
+# Run some sanity checks.
+if ! long_check_site_exists "$site"; then
+  long_die "Site doesn't exist (%s)." 1 "$site"
+fi
+
+# Ensure both that container is running and that the site is
+# hosted on the his sibling.
+if ! long_container_running "$site"; then
+  long_die "Please start the site before migrating"
+fi
+
+# Record existing platform
+long_set_site_platform "$site"
+platform="$LONG_SITE_PLATFORM"
+
+if [ -z "$db_host" ]; then
+  # Record existing database
+  long_set_site_db_host "$site"
+  db_host="$LONG_SITE_DB_HOST"
+fi
+
+# Empty sessions table for quicker restore and to ensure everyone is 
+# logged out for upgrade.
+long_prompt "Truncating sessions table"
+[ "$reply" = "y" ] && long_clear_sessions "$site"
+
+long_prompt "Entering maintenance mode..."
+[ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"
+
+# Make a backup 
+long_prompt "Making a backup..."
+if [ "$reply" = "y" ]; then
+  (longshore site-backup "$site") || long_die "Failed to backup site."
+fi
+
+long_prompt "Copying backup to new sibling..."
+if [ "$reply" = "y" ]; then
+  me=$(hostname)
+  scp "${LONG_SRV}/backups/${site}.daily.tar.gz" "${sibling}.mayfirst.org:${LONG_SRV}/ptp-backups/${me}/" || long_die "Failed to copy backup"
+fi
+
+long_prompt "Disabing site on old sibling..."
+if [ "$reply" = "y" ]; then
+  long_disable_site "$site"
+fi
+
+long_prompt "Provisioning site on new sibling..."
+if [ "$reply" = "y" ]; then
+  ssh -tt "${sibling}.mayfirst.org" "longshore site-provision '$site' '$db' '$platform'"
+  ssh -tt "${sibling}.mayfirst.org" "longshore site-drush '$site' '-y vset maintenance_mode 0'"
+fi
+
+long_prompt "Destroying local copy of site..."
+if [ "$reply" = "y" ]; then
+  long_site_destroy "$site"
+fi
