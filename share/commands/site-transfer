@@ -59,11 +59,11 @@ if [ "$reply" = "y" ]; then
   (longshore site-backup "$site") || long_die "Failed to backup site."
 fi
 
+me=$(hostname)
 backup_target_path="${LONG_SRV}/ptp-backups/${me}/${site}.daily.tar.gz"
 
 long_prompt "Copying backup to new sibling..."
 if [ "$reply" = "y" ]; then
-  me=$(hostname)
   scp "${LONG_SRV}/backups/${site}.daily.tar.gz" "${sibling}.mayfirst.org:${backup_target_path}" || long_die "Failed to copy backup"
 fi
 
