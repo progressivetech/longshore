@@ -17,7 +17,11 @@ db_host="$4"
 
 # Run some sanity checks.
 if ! long_check_site_exists "$site"; then
-  long_die "Site doesn't exist (%s)." 1 "$site"
+  # See if it is disabled. We could be re-running after having disabled
+  # it.
+  if [ ! -d "${LONG_SRV}/services/sites.disabled/${site}" ]; then
+    long_die "Site doesn't exist (%s)." 1 "$site"
+  fi
 fi
 
 # Ensure both that container is running and that the site is
