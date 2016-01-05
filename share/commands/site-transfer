@@ -59,10 +59,12 @@ if [ "$reply" = "y" ]; then
   (longshore site-backup "$site") || long_die "Failed to backup site."
 fi
 
+backup_target_path="${LONG_SRV}/ptp-backups/${me}/${site}.daily.tar.gz"
+
 long_prompt "Copying backup to new sibling..."
 if [ "$reply" = "y" ]; then
   me=$(hostname)
-  scp "${LONG_SRV}/backups/${site}.daily.tar.gz" "${sibling}.mayfirst.org:${LONG_SRV}/ptp-backups/${me}/" || long_die "Failed to copy backup"
+  scp "${LONG_SRV}/backups/${site}.daily.tar.gz" "${sibling}.mayfirst.org:${backup_target_path}" || long_die "Failed to copy backup"
 fi
 
 long_prompt "Disabing site on old sibling..."
@@ -72,11 +74,11 @@ fi
 
 long_prompt "Provisioning site on new sibling..."
 if [ "$reply" = "y" ]; then
-  ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-provision '$site' '$db' '$platform'"
+  ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-restore '$site' '$backup_target_path' $db' '$platform'"
   ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-drush '$site' '-y vset maintenance_mode 0'"
 fi
 
 long_prompt "Destroying local copy of site..."
 if [ "$reply" = "y" ]; then
-  long_site_destroy "$site"
+  long_destroy_site "$site"
 fi
