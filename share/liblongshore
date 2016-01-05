@@ -114,7 +114,7 @@ long_container_or_image_exists() {
   return "$?"
 }
 
-# Check if a conatiner with the given name is running or not.
+# Check if a container with the given name is running or not.
 # Return 0 if it is running and 1 if it isn't.
 long_container_running() {
   local name="$1"
@@ -1511,19 +1511,41 @@ long_destroy_site() {
 
   # Delete the data directory.
   long_log "Removing data directory" info
+
+  # It might be a disabled site or an active site. Pick the right directory.
+  local data_dir=
+  local site_was_disabled=n
   if [ -d "${LONG_SRV}/services/sites/${site}" ]; then
-    # Some files and directories may be owned by longshore-php, so reclaim
-    # onwership first.
-    sudo chown -R "$LONG_HOST_USER" "${LONG_SRV}/services/sites/${site}/drupal/files"
-    sudo chown -R "$LONG_HOST_USER" "${LONG_SRV}/services/sites/${site}/drupal/private"
-    rm -rf "${LONG_SRV}/services/sites/${site}"
+    data_dir="${LONG_SRV}/services/sites/${site}"
+  if [ -d "${LONG_SRV}/services/sites.disabled/${site}" ]; then
+    data_dir="${LONG_SRV}/services/sites.disabled/${site}" 
+    site_was_disabled=y
   fi
 
-  # Kill the IMAP user on the remote or local host.
-  $LONG_MANAGE_IMAP_USER_CMD delete "${site}-activities" 2>/dev/null
-  $LONG_MANAGE_IMAP_USER_CMD delete "${site}-returns" 2>/dev/null
+  if [ -d "$data_dir" ]; then
+    # Some files and directories may be owned by longshore-php, so reclaim
+    # onwership first.
+    sudo chown -R "$LONG_HOST_USER" "${data_dir}/drupal/files"
+    sudo chown -R "$LONG_HOST_USER" "${data_dir}/drupal/private"
+    rm -rf "${data_dir}"
+  fi
 
   long_clear_sibling_cache
+
+  if [ "$site_was_disabled" = "y" ]; then
+    # Regenerate the nginx list of disabled sites so this was is removed.
+    long_log "Regenerating disabled site list for nginx" info
+    long_generate_nginx_disabled_sites_config
+    long_nginx_reload
+  fi
+
+  # Kill the IMAP user on the remote or local host, provided this site 
+  # is not located on a different server now.
+  if ! check_site_exists "$site"; then
+    long_log "This site is not on other siblings so killing IMAP users." info
+    $LONG_MANAGE_IMAP_USER_CMD delete "${site}-activities" 2>/dev/null
+    $LONG_MANAGE_IMAP_USER_CMD delete "${site}-returns" 2>/dev/null
+  fi
 }
 
 # Disable a site container. 
