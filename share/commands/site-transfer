@@ -63,8 +63,8 @@ fi
 
 long_prompt "Provisioning site on new sibling..."
 if [ "$reply" = "y" ]; then
-  ssh -tt "${sibling}.mayfirst.org" "longshore site-provision '$site' '$db' '$platform'"
-  ssh -tt "${sibling}.mayfirst.org" "longshore site-drush '$site' '-y vset maintenance_mode 0'"
+  ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-provision '$site' '$db' '$platform'"
+  ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-drush '$site' '-y vset maintenance_mode 0'"
 fi
 
 long_prompt "Destroying local copy of site..."
