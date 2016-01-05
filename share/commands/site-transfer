@@ -12,7 +12,7 @@ Arguments
 long_check_args "$2" "$#" 2
 
 site="$2"
-target_sibling="$3"
+sibling="$3"
 db_host="$4"
 
 # Run some sanity checks.
