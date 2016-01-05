@@ -1542,7 +1542,7 @@ long_destroy_site() {
 
   # Kill the IMAP user on the remote or local host, provided this site 
   # is not located on a different server now.
-  if ! check_site_exists "$site"; then
+  if ! long_check_site_exists "$site"; then
     long_log "This site is not on other siblings so killing IMAP users." info
     $LONG_MANAGE_IMAP_USER_CMD delete "${site}-activities" 2>/dev/null
     $LONG_MANAGE_IMAP_USER_CMD delete "${site}-returns" 2>/dev/null
