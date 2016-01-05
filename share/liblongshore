@@ -2306,6 +2306,7 @@ long_sanitize_db_username() {
 }
 
 long_clear_sibling_cache() {
+  local sibling=
   rm -f "$LONG_SIBLING_CACHE" 
   for sibling in $LONG_SIBLINGS; do
     if ! long_is_host_reachable "${sibling}.mayfirst.org"; then
@@ -2319,6 +2320,7 @@ long_clear_sibling_cache() {
 
 long_generate_sibling_cache() {
   local target="$LONG_SIBLING_CACHE"
+  local sibling=
   # See if our cache is less than one day old
   if [ -f "$target" ]; then
     mod_ts=$(stat -c %Y "$target")
@@ -2415,6 +2417,7 @@ long_set_dbs() {
   local id=
   local pid=
   local mem=
+  local sibling=
   for sibling in $siblings; do
     if [ "$sibling" = "$me" ]; then
       dbs=$(ls "$LONG_SRV/services/databases")
