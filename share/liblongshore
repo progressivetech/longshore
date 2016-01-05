@@ -1517,6 +1517,7 @@ long_destroy_site() {
   local site_was_disabled=n
   if [ -d "${LONG_SRV}/services/sites/${site}" ]; then
     data_dir="${LONG_SRV}/services/sites/${site}"
+  fi
   if [ -d "${LONG_SRV}/services/sites.disabled/${site}" ]; then
     data_dir="${LONG_SRV}/services/sites.disabled/${site}" 
     site_was_disabled=y
