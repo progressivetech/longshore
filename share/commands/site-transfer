@@ -72,9 +72,9 @@ if [ "$reply" = "y" ]; then
   long_disable_site "$site"
 fi
 
-long_prompt "Provisioning site on new sibling..."
+long_prompt "Restoring site on new sibling..."
 if [ "$reply" = "y" ]; then
-  ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-restore '$site' '$backup_target_path' $db' '$platform'"
+  ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-restore '$site' '$backup_target_path' '$db' '$platform'"
   ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-drush '$site' '-y vset maintenance_mode 0'"
 fi
 
