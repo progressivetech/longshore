@@ -16,7 +16,7 @@ sibling="$3"
 db_host="$4"
 
 # Run some sanity checks.
-if ! long_check_site_exists "$site"; then
+if [ ! -d "${LONG_SRV}/services/sites/${site}" ]; then
   # See if it is disabled. We could be re-running after having disabled
   # it.
   if [ ! -d "${LONG_SRV}/services/sites.disabled/${site}" ]; then
@@ -24,10 +24,15 @@ if ! long_check_site_exists "$site"; then
   fi
 fi
 
-# Ensure both that container is running and that the site is
-# hosted on the his sibling.
+# We may want to continue even though ths site is not running, if
+# we are continuing after a failure on the first run. However, 
+# usually this is an error and it should stop the script from
+# continuing, so the default is to stop the script.
 if ! long_container_running "$site"; then
-  long_die "Please start the site before migrating"
+  long_prompt "Stopping because site is not running..."
+  if [ "$reply" = "y" ]; then
+    long_die "Please start the site before migrating"
+  fi
 fi
 
 # Record existing platform
