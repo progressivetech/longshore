@@ -1,42 +1,62 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) stats'
-Provides stats on running containers."
+long_usage_message="usage: $(basename $0) stats [<metric>]'
+Provides stats on running containers.
+
+Arguments:
+  <metric> - Optionally provide cpu-now, cpu-total, mem-now, 
+    mem-max, all (default).
+"
 
 long_check_args "$2" "$#" 0
+
+# Set the amount of time to sleep between collections.
+sleep=15
+metric="$2"
+
+if [ -z "$metric" ]; then
+  metric="all"
+fi
+
+allowed_metrics=":cpu-now:cpu-total:mem-now:mem-max:all:"
+
+if ! echo "$allowed_metrics" | grep ":${metric}:" >/dev/null; then
+  long_die "Only the following metrics are allowed:%s" 1 "$(echo "$allowed_metrics" | sed "s/:/ /g")"
+fi
 
 ids=$(docker ps --no-trunc -q)
 sys_base=/sys/fs/cgroup
 
-# Record initial numbers in temp file. Then we wait 5 seconds and
-# rerun to measure difference.
-first_run=$(mktemp)
+# First measure CPU - this is only needed when measuring CPU now.
+if [ "$metric" = "cpu-now" -o "$metric" = "all" ]; then
+  # Record initial numbers in temp file. Then we wait $sleep seconds and
+  # rerun to measure difference.
+  first_run=$(mktemp)
 
-# First measure CPU
-for id in $ids; do
-  if [ -d "${sys_base}/memory/system.slice" ]; then
-    cpu_base="${sys_base}/cpu/system.slice"
-    sysid="docker-${id}.scope"
-  else
-    sysid="$id"
-    cpu_base="${sys_base}/cpu/docker"
-  fi
+  for id in $ids; do
+    if [ -d "${sys_base}/memory/system.slice" ]; then
+      cpu_base="${sys_base}/cpu/system.slice"
+      sysid="docker-${id}.scope"
+    else
+      sysid="$id"
+      cpu_base="${sys_base}/cpu/docker"
+    fi
 
-  # Get CPU usage 
-  time=$(date +%s)
-  cpu_usage=$(cat "${cpu_base}/${sysid}/cpuacct.usage")
+    # Get CPU usage 
+    time=$(date +%s)
+    cpu_usage=$(cat "${cpu_base}/${sysid}/cpuacct.usage")
 
-  printf "%s:%s:%s\n" "$id" "$cpu_usage" "$time"  >> "$first_run"
-done
+    printf "%s:%s:%s\n" "$id" "$cpu_usage" "$time"  >> "$first_run"
+  done
 
-# Sleep 5 seconds and run again to see difference in CPU usage.
-long_log "First round collected. Sleeping 5 seconds to collect second round of data." "info"
-sleep 5
+  # Sleep 5 seconds and run again to see difference in CPU usage.
+  long_log "First round collected. Sleeping %s seconds to collect second round of data." "info" "$sleep"
+  sleep "$sleep" 
+fi
 
 # Print report to file, then we will run through columns for readable
 # output.
 report=$(mktemp)
-
 
 for id in $ids; do
   if [ -d "${sys_base}/memory/system.slice" ]; then
@@ -48,38 +68,81 @@ for id in $ids; do
     cpu_base="${sys_base}/cpu/docker"
     sysid="$id"
   fi
-  # Get CPU usage 
-  time=$(date +%s)
-  cpu_usage=$(cat "${cpu_base}/${sysid}/cpuacct.usage")
+  if [ "$metric" = "cpu-total" -o "$metric" = "cpu-now" -o "$metric" = "all" ]; then
+    # Get CPU usage - used for both cpu-total and cpu-now
+    cpu_usage=$(cat "${cpu_base}/${sysid}/cpuacct.usage")
+  fi
+  if [ "$metric" = "cpu-now" -o "$metric" = "all" ]; then
+    time=$(date +%s)
+    prev_cpu_usage=$(grep "^${id}:" "$first_run" | cut -d: -f2)
+    prev_time=$(grep "^${id}:" "$first_run" | cut -d: -f3)
 
-  prev_cpu_usage=$(grep "^${id}:" "$first_run" | cut -d: -f2)
-  prev_time=$(grep "^${id}:" "$first_run" | cut -d: -f3)
+    seconds_diff=$(( $time - $prev_time ))
+    cpu_usage_diff=$(( $cpu_usage - $prev_cpu_usage ))
+    cpu_usage_ave=$(( $cpu_usage_diff / $seconds_diff ))
+  fi
+  if [ "$metric" = "mem-now" -o "$metric" = "all" ]; then
+    mem_in_use=$(cat "${mem_base}/${sysid}/memory.usage_in_bytes")
+    mem_in_use=$(( $mem_in_use / 1024 / 1024 ))
+  fi
+  if [ "$metric" = "mem-max" -o "$metric" = "all" ]; then
+    mem_max_usage=$(cat "${mem_base}/${sysid}/memory.max_usage_in_bytes")
+    mem_max_usage=$(( $mem_max_usage / 1024 / 1024 ))
+  fi
+  if [ "$metric" = "all" ]; then
+    mem_limit=$(cat "${mem_base}/${sysid}/memory.limit_in_bytes")
+    mem_limit=$(( $mem_limit / 1024 / 1024 ))
 
-  seconds_diff=$(( $time - $prev_time ))
-  cpu_usage_diff=$(( $cpu_usage - $prev_cpu_usage ))
-  cpu_usage_ave=$(( $cpu_usage_diff / $seconds_diff ))
-
-  mem_in_use=$(cat "${mem_base}/${sysid}/memory.usage_in_bytes")
-  mem_in_use=$(( $mem_in_use / 1024 / 1024 ))
-  mem_max_usage=$(cat "${mem_base}/${sysid}/memory.max_usage_in_bytes")
-  mem_max_usage=$(( $mem_max_usage / 1024 / 1024 ))
-  mem_limit=$(cat "${mem_base}/${sysid}/memory.limit_in_bytes")
-  mem_limit=$(( $mem_limit / 1024 / 1024 ))
-
-  mem_failcnt=$(cat "${mem_base}/${sysid}/memory.failcnt")
+    mem_failcnt=$(cat "${mem_base}/${sysid}/memory.failcnt")
+  fi
 
   # Get the name of the container
   name=$(docker ps --filter "id=$id" | egrep -o ' [^ ]*\s*$' | tr -d ' ' | tail -n1)
-  printf "%s %s %s %s %s %s %s\n" "$cpu_usage_ave" "$cpu_usage" "$mem_in_use" "$mem_max_usage" "$mem_failcnt" \
-    "$mem_limit" "$name" >> "$report"
+
+  case "$metric" in
+    "all")
+      printf "%s %s %s %s %s %s %s\n" "$cpu_usage_ave" "$cpu_usage" "$mem_in_use" "$mem_max_usage" "$mem_failcnt" \
+        "$mem_limit" "$name" >> "$report"
+      ;;
+    "cpu-now")
+      printf "%s %s\n" "$cpu_usage_ave" "$name" >> "$report"
+      ;;
+    "cpu-total")
+      printf "%s %s\n" "$cpu_usage" "$name" >> "$report"
+      ;;
+    "mem-now")
+      printf "%s %s\n" "$mem_in_use" "$name" >> "$report"
+      ;;
+    "mem-max")
+      printf "%s %s\n" "$mem_max_usage" "$name" >> "$report"
+      ;;
+  esac
+
 done
 
 # Add headers and sort the report
 sorted=$(mktemp)
-printf "Cpu-use-now Cpu-use-total Mem-in-use Max-mem-used Mem-failures Mem-limit Container\n" >> "$sorted"
+case "$metric" in
+  "all")
+    printf "cpu-now cpu-total mem-now max-mem mem-failures mem-limit container\n" >> "$sorted"
+    ;;
+  "cpu-now")
+    printf "cpu-now container\n" >> "$sorted"
+    ;;
+  "cpu-total")
+    printf "cpu-total container\n" >> "$sorted"
+    ;;
+  "mem-now")
+    printf "mem-now container\n" >> "$sorted"
+    ;;
+  "mem-max")
+    printf "mem-max container\n" >> "$sorted"
+    ;;
+esac
+
 sort -n "$report" >> "$sorted"
 
 column -t -s' ' "$sorted"
 rm "$report"
 rm "$sorted"
-rm "$first_run"
+[ -n "$first_run" ] && rm "$first_run"
