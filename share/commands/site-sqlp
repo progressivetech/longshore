@@ -1,0 +1,25 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-sqlp <site> <thread-id>
+Either output a list of current threads (without <thread-id>) or kill
+the thread represented by thread id <thread-id>.
+
+Arguments
+  <site> - The site database to run agaist.
+  <thread-id> - Optionally, pass the SQL thread id to kill."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+declare -i thread_id
+thread_id="$3"
+
+long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+
+if [ -z "$thread_id" ]; then
+  (longshore site-sqlq "$site" "SHOW PROCESSLIST")
+else
+  (longshore site-sqlq "$site" "KILL '$thread_id'")
+fi
+
