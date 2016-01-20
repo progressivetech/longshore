@@ -21,7 +21,7 @@ thread_id="$3"
 long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 
 if [ "$thread_id" -eq "0" ]; then
-  (longshore site-sqlq "$site" "SHOW PROCESSLIST")
+  (longshore site-sqlq "$site" "SHOW PROCESSLIST") | column -t
 else
   (longshore site-sqlq "$site" "KILL '$thread_id'")
 fi
