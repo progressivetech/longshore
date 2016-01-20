@@ -1,8 +1,11 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-sqlp <site> <thread-id>
-Either output a list of current threads (without <thread-id>) or kill
+long_usage_message="usage: $(basename $0) site-sqlt <site> <thread-id>
+Either output a list of current MySQL threads (without <thread-id>) or kill
 the thread represented by thread id <thread-id>.
+
+This command is useful for debugging slow database problems because it can
+reveal queries that are running for a long time.
 
 Arguments
   <site> - The site database to run agaist.
@@ -17,7 +20,7 @@ thread_id="$3"
 
 long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 
-if [ -z "$thread_id" ]; then
+if [ "$thread_id" -eq "0" ]; then
   (longshore site-sqlq "$site" "SHOW PROCESSLIST")
 else
   (longshore site-sqlq "$site" "KILL '$thread_id'")
