@@ -2496,7 +2496,7 @@ long_set_site_recent_logins_count() {
   local site="$1"
   local temp=$(mktemp)
   # Limit to last two weeks.
-  printf 'SELECT COUNT(DISTINCT users.uid) FROM users JOIN sessions USING(uid) WHERE uid != 0 AND name != "civicron" AND timestamp > UNIX_TIMESTAMP() - 14 * 86400' >> "$temp"
+  printf 'SELECT COUNT(DISTINCT(uid)) FROM users WHERE uid != 0 AND name != "civicron" AND login > UNIX_TIMESTAMP() - 14 * 86400;' >> "$temp"
   LONG_SITE_RECENT_LOGINS_COUNT=$(long_execute_site_query "$site" "$temp" | tail -n1)
   rm "$temp"
 }
