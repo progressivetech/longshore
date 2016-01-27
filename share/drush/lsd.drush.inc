@@ -102,73 +102,117 @@ function drush_lsd_set_paths() {
   // Now CiviCRM.
   _civicrm_init();
 
-  // All sites have the same settings.
-  $abs_root_path = '/var/www/powerbase';
-  $rel_site_path ='sites/default'; 
-  $rel_civicrm_files_path = "${rel_site_path}/files/civicrm";
-  $abs_site_path = $abs_root_path . '/' . $rel_site_path;
-
-  $keys = array(
-    'imageUploadURL' => array(
-      'value' => "${rel_civicrm_files_path}/persist/contribute/",
-      'group_name' => 'URL Preferences',
-    ),
-    'userFrameworkResourceURL' => array(
-      'value' => CIVICRM_UF_BASEURL . '/sites/all/modules/civicrm',
-      'group_name' => 'URL Preferences',
-    ),
-    'uploadDir' => array(
-      'value' => "${rel_civicrm_files_path}/upload",
-      'group_name' => 'Directory Preferences',
-    ),
-    'customPHPPathDir' => array(
-      'value' => "${abs_site_path}/custom-civicrm/php",
-      'group_name' => 'Directory Preferences',
-    ),
-    'extensionsDir' => array(
-      'value' => "${abs_root_path}/sites/all/extensions",
-      'group_name' => 'Directory Preferences',
-    ),
-    'extensionsURL' => array(
-      'value' => "sites/all/extensions",
-      'group_name' => 'URL Preferences',
-    ),
-    'customTemplateDir' => array(
-      'value' => "${abs_site_path}/custom-civicrm/templates",
-      'group_name' => 'Directory Preferences',
-    ),
-  );
   // We only need to refresh the cache if we reset an extensions setting.
   $freshen_extensions_cache = FALSE;
-  while(list($k,$v) = each($keys)) {
-    // Check if it exists and needs changing.
-    $sql = 'SELECT id, value FROM civicrm_setting WHERE name = %1 AND group_name = %2';
-    $params = array(
-      1 => array($k, 'String'), 2 => array($v['group_name'], 'String')
-    );
-    $dao = CRM_Core_DAO::executeQuery($sql, $params);
-    $dao->fetch();
 
-    if(!$dao->id) {
-      // Setting doesn't exist, create it.
-      CRM_Core_BAO_Setting::setItem($v['value'], $v['group_name'], $k);
-      if(preg_match("/^extensions/", $k)) {
-        $freshen_extensions_cache = TRUE;
-      }
-    }
-    elseif($dao->value != serialize($v['value'])) {
-      // Setting is set incorrectly, fix it.
-      $sql = "UPDATE civicrm_setting SET value = %0 WHERE id = %1";
+  $abs_root_path = '/var/www/powerbase';
+  $rel_site_path ='sites/default'; 
+  $abs_site_path = $abs_root_path . '/' . $rel_site_path;
+
+  // Fork - depending on CiviCRM version.
+  $code_ver = CRM_Utils_System::version();
+  if(version_compare($code_ver, '4.6', '<=')) {
+    // Use the old method. This should get ripped out after 4.6 upgrade.
+
+    $rel_civicrm_files_path = "${rel_site_path}/files/civicrm";
+
+    $keys = array(
+      'imageUploadURL' => array(
+        'value' => "${rel_civicrm_files_path}/persist/contribute/",
+        'group_name' => 'URL Preferences',
+      ),
+      'userFrameworkResourceURL' => array(
+        'value' => CIVICRM_UF_BASEURL . '/sites/all/modules/civicrm',
+        'group_name' => 'URL Preferences',
+      ),
+      'uploadDir' => array(
+        'value' => "${rel_civicrm_files_path}/upload",
+        'group_name' => 'Directory Preferences',
+      ),
+      'customPHPPathDir' => array(
+        'value' => "${abs_site_path}/custom-civicrm/php",
+        'group_name' => 'Directory Preferences',
+      ),
+      'extensionsDir' => array(
+        'value' => "${abs_root_path}/sites/all/extensions",
+        'group_name' => 'Directory Preferences',
+      ),
+      'extensionsURL' => array(
+        'value' => "sites/all/extensions",
+        'group_name' => 'URL Preferences',
+      ),
+      'customTemplateDir' => array(
+        'value' => "${abs_site_path}/custom-civicrm/templates",
+        'group_name' => 'Directory Preferences',
+      ),
+    );
+    
+    while(list($k,$v) = each($keys)) {
+      // Check if it exists and needs changing.
+      $sql = 'SELECT id, value FROM civicrm_setting WHERE name = %1 AND group_name = %2';
       $params = array(
-        0 => array(serialize($v['value']), 'String'),
-        1 => array($dao->id, 'Integer')
+        1 => array($k, 'String'), 2 => array($v['group_name'], 'String')
       );
-      CRM_Core_DAO::executeQuery($sql, $params);
-      if(preg_match("/^extensions/", $k)) {
-        $freshen_extensions_cache = TRUE;
+      $dao = CRM_Core_DAO::executeQuery($sql, $params);
+      $dao->fetch();
+
+      if(!$dao->id) {
+        // Setting doesn't exist, create it.
+        CRM_Core_BAO_Setting::setItem($v['value'], $v['group_name'], $k);
+        if(preg_match("/^extensions/", $k)) {
+          $freshen_extensions_cache = TRUE;
+        }
+      }
+      elseif($dao->value != serialize($v['value'])) {
+        // Setting is set incorrectly, fix it.
+        $sql = "UPDATE civicrm_setting SET value = %0 WHERE id = %1";
+        $params = array(
+          0 => array(serialize($v['value']), 'String'),
+          1 => array($dao->id, 'Integer')
+        );
+        CRM_Core_DAO::executeQuery($sql, $params);
+        if(preg_match("/^extensions/", $k)) {
+          $freshen_extensions_cache = TRUE;
+        }
       }
     }
   }
+  else {
+    // Version 4.7 and above.
+    // Only set for the ones in which we alter from the default.
+    $want_settings = array(
+      'extensionsDir' => "${abs_root_path}/sites/all/extensions",
+      'extensionsURL' => "sites/all/extensions",
+      'customTemplateDir' => "${abs_site_path}/custom-civicrm/templates",
+      'customPHPPathDir' => "${abs_site_path}/custom-civicrm/php",
+    );
+
+    // Get all settings and only update if they are different.
+    try {
+      $update_params = array();
+      $results = civicrm_api3('Setting', 'get', array());
+      $current_settings = $results['values'];
+      while(list($k, $v) = each($want_settings)) {
+        if($current_settings[$k] != $v) {
+          // Update it.
+          drush_log(dt("Updating @key to @value", array('@key' => $k, '@value' => $v)));
+          $update_params[$k] = $v;
+          if(preg_match("/^extensions/", $k)) {
+            $freshen_extensions_cache = TRUE;
+          }
+        }
+      }
+      if(count($update_params) > 0) {
+        civicrm_api3('Setting', 'create', $update_params);
+      }
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      drush_log(dt("Failed to get or set Settings."), 'error');
+      drush_log($e->getMessage(), 'error');
+      return FALSE;
+    }
+  }
+
   if ($freshen_extensions_cache) {
     lsd_extensions_freshen();
   }

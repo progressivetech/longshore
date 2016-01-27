@@ -48,27 +48,10 @@ if [ "$new_platform" = "$old_platform" ]; then
   [ "$reply" != "y" ] && long_die "Not continuing." 0
 fi
 
-# Remove reportbase - it is no longer needed and has been removed
-# from the 4.6 platform. NOTE: this should be removed after the 4.6 
-# upgrade.
-if [ "$new_platform" = "ourpowerbase-d7-c4.6" ]; then
-  long_prompt "Disable/Uninstall reportbase"
-  if [ "$reply" = "y" ]; then
-    long_exec_drush_cmd "$site" \
-      "php-eval '_civicrm_init(); civicrm_api3(\"extension\", \"disable\", array(\"keys\" => array(\"nz.co.fuzion.reportbase\")));'"
-    long_exec_drush_cmd "$site" \
-      "php-eval '_civicrm_init(); civicrm_api3(\"extension\", \"uninstall\", array(\"keys\" => array(\"nz.co.fuzion.reportbase\")));'"
-  fi
-
-  # This action seems to have been in Drupal 6 and was not properly cleaned up.
-  long_prompt "Remove orphaned action"
-  if [ "$reply" = "y" ]; then
-    sqlfile=$(mktemp)
-    echo "DELETE FROM actions WHERE callback = 'user_block_ip_action'" > "$sqlfile"
-    long_execute_site_query "$site" "$sqlfile"
-    rm "$sqlfile"
-  fi
-fi
+# Remove Settings for which we use the default CiviCRM
+# values.
+#if [ "$new_platform" = "ourpowerbase-d7-c4.7" ]; then
+#fi
 
 # Empty sessions table for quicker restore and to ensure everyone is 
 # logged out for upgrade.
