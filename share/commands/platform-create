@@ -143,8 +143,8 @@ if [ -z "$source_platform_path_temp" ]; then
   long_log "Resetting TRG directory" info
   dm_reset_dirs "$TRG"
 
-  # Figure out the current version from civicrm-version.php
-  DM_VERSION=$(grep version_no $SRC/xml/version.xml | egrep -o '[0-9.]+')
+  # Figure out the current version from civicrm-version.xml
+  DM_VERSION=$(grep version_no $SRC/xml/version.xml | sed 's#version_no##g' | tr -d '<>/ ')
   long_log "Running dm_generate_version (%s)" info "$DM_VERSION"
   cp $SRC/drupal/civicrm.config.php.drupal $TRG/civicrm.config.php
   dm_generate_version "$TRG/civicrm-version.php" Drupal
