@@ -111,7 +111,7 @@ function drush_lsd_set_paths() {
 
   // Fork - depending on CiviCRM version.
   $code_ver = CRM_Utils_System::version();
-  if(version_compare($code_ver, '4.6', '<=')) {
+  if(version_compare($code_ver, '4.7', '<')) {
     // Use the old method. This should get ripped out after 4.6 upgrade.
 
     $rel_civicrm_files_path = "${rel_site_path}/files/civicrm";
@@ -156,7 +156,7 @@ function drush_lsd_set_paths() {
       $dao = CRM_Core_DAO::executeQuery($sql, $params);
       $dao->fetch();
 
-      if(!$dao->id) {
+      if(isset($dao->id)) {
         // Setting doesn't exist, create it.
         CRM_Core_BAO_Setting::setItem($v['value'], $v['group_name'], $k);
         if(preg_match("/^extensions/", $k)) {
