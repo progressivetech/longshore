@@ -97,7 +97,8 @@ for id in $ids; do
   fi
 
   # Get the name of the container
-  name=$(docker ps --filter "id=$id" | egrep -o ' [^ ]*\s*$' | tr -d ' ' | tail -n1)
+  long_get_container_name
+  name="$LONG_CONTAINER_NAME"
 
   case "$metric" in
     "all")

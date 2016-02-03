@@ -2568,3 +2568,9 @@ long_clear_sessions() {
   long_execute_site_query "$site" "$temp"
   rm "$temp"
 }
+
+# Get the name of a container for it's ID
+long_get_container_name() {
+  local id="$1"
+  LONG_CONTAINER_NAME=$(docker ps --filter "id=$id" | egrep -o ' [^ ]*\s*$' | tr -d ' ' | tail -n1)
+}

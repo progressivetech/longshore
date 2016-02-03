@@ -1,0 +1,49 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) diag <test> <container>
+Run one of our diagnostic tests on a container or all containers.
+REMEMBER: this runs on containers not sites!
+
+Arguments
+  <test> - the test to run. Currently only one test: rw
+    which ensures that the filesystem is in read/write
+    mode.
+  <container> - the container to run on. Can be any site
+    or database or --all or empty to run on all containers."
+
+long_check_args "$2" "$#" 1
+
+test="$2"
+containers="$3"
+
+if [ "$test" != "rw" ]; then
+  long_die "rw is the only supported test we have."
+fi
+
+if [ -z "$containers" -o "$containers" = "--all" ]; then
+  containers=$(docker ps -q)
+else
+  # Convert to ids so we are consistent
+  containers=$(docker ps --filter=name="$container" -q)
+fi
+
+temp=$(mktemp --dry-run)
+for container in $containers; do
+  long_get_container_name "$container"
+  if ! long_container_running "$LONG_CONTAINER_NAME"; then
+    long_log "The container (%s) is not running" error "$LONG_CONTAINER_NAME"
+    continue
+  fi
+  if [ "$test" = "rw" ]; then
+    if docker exec "$container" touch "$temp"; then
+      long_log "The container %s is writable." info "$LONG_CONTAINER_NAME"
+      docker exec "$container" rm "$temp"
+    else
+      long_log "ERROR: The container %s is NOT writable." error "$LONG_CONTAINER_NAME"
+    fi
+  fi
+done
+
+
+
+
