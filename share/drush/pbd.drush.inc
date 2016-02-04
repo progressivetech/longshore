@@ -121,6 +121,7 @@ function drush_pbd_configure() {
   pbd_configure_wkhtmltopdf();
   pbd_set_max_file_size();
   pbd_configure_google_recaptcha();
+  pbd_disable_security_update_alert();
 
   // Should only be run once because it contains settings
   // that a group may want to change and that we don't
@@ -702,6 +703,28 @@ function pbd_enable_waitlist_participant_status_types() {
 
 
 }
+
+/**
+ * Don't warn groups about updates.
+ *
+ * This is sometimes false and we get alerts and handle the updates.
+ **/
+function pbd_disable_security_update_alert() {
+  _civicrm_init();
+  try {
+    $params = array('securityUpdateAlert' => 1);
+    $results = civicrm_api3('Setting', 'create', $params);
+    civicrm_api3('Setting', 'create', $params);
+    drush_log("Update secuirity Update Alert value.");
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    drush_log(dt("Failed to update Security Alert Value."), 'error');
+    drush_log($e->getMessage(), 'error');
+    return FALSE;
+  }
+  return TRUE;
+}
+
 /**
  * Remove country from address formats
  *
