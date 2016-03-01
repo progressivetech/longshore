@@ -97,7 +97,7 @@ for id in $ids; do
   fi
 
   # Get the name of the container
-  long_get_container_name
+  long_get_container_name "$id"
   name="$LONG_CONTAINER_NAME"
 
   case "$metric" in
