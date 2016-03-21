@@ -1,21 +1,53 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-cc <site>
-Really clear all caches, including js/css and templates. 
+long_usage_message="usage: $(basename $0) site-cc <site> [cache]
+Really clear all caches, including js/css, templates and
+flood table for blocked logins. 
 
 Arguments
-  <site> - The site you want to clear the cache for, e.g. ptp"
+  <site> - The site you want to clear the cache for, e.g. ptp
+  <cache> - Optionally only clear the specificed cache, values 
+    can be drush (for all drush controlled caches), menu (
+    for the CiviCRM menu), files (for all css/js/template 
+    files, and flood, for the drupal flood table (user login
+    blocks for incorrect password)."
 
 long_check_args "$2" "$#" 1
 
 site="$2"
+cache="$3"
+
+if [ -z "$cache" ]; then
+  cache=all
+fi
+
+if [ "$cache" != "drush" -a \
+  "$cache" != "menu" -a \
+  "$cache" != "files" -a \
+  "$cache" != "flood" -a \
+  "$cache" != "all" ]; then
+  long_die "I don't know how to clear that cache."
+fi
 
 long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 long_rerun_over_network "$@" && exit
-long_exec_drush_cmd "$site" "cc all"
-long_exec_drush_cmd "$site" "php-eval '_civicrm_init(); CRM_Core_Invoke::rebuildMenuAndCaches();'"
-long_exec_in_container "$site" "rm -rf \
-  /var/www/powerbase/sites/default/files/css/* \
-  /var/www/powerbase/sites/default/files/js/* \
-  /var/www/powerbase/sites/default/files/civicrm/templates_c/en_US/*"
+
+if [ "$cache" == "all" -o "$cache" == "drush" ]; then
+  long_exec_drush_cmd "$site" "cc all"
+fi
+if [ "$cache" == "all" -o "$cache" == "menu" ]; then
+  long_exec_drush_cmd "$site" "php-eval '_civicrm_init(); CRM_Core_Invoke::rebuildMenuAndCaches();'"
+fi
+if [ "$cache" == "all" -o "$cache" == "files" ]; then
+  long_exec_in_container "$site" "rm -rf \
+    /var/www/powerbase/sites/default/files/css/* \
+    /var/www/powerbase/sites/default/files/js/* \
+    /var/www/powerbase/sites/default/files/civicrm/templates_c/en_US/*"
+fi
+if [ "$cache" == "all" -o "$cache" == "flood" ]; then
+  temp=$(mktemp)
+  printf 'TRUNCATE TABLE flood;' > "$temp"
+  long_execute_site_query "$site" "$temp"
+  rm "$temp"
+fi
 
