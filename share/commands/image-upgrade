@@ -11,13 +11,20 @@ Arguments
 long_check_args "$2" "$#" 1
 
 itypes="$2"
+possible_itypes="my-jessie ptp-mysql ptp-php ptp-powerbase"
 
 if [ "$itypes" = "all" ]; then
   # There seems to be no point in upgrading my-jessie, since those changes
   # aren't propagated to the containers it is built on... however, it also
   # doesn't hurt so I'm keeping it.
-  itypes="my-jessie ptp-mysql ptp-php ptp-powerbase"
+  itypes="$possible_itypes"
 fi
+
+for itype in $itypes; do
+  if ! echo "$possible_itypes" | egrep "(^| )$itype( |\$)" > /dev/null; then
+    long_die "Unknown image type %s." 1 "$itype"
+  fi
+done
 
 for itype in $itypes; do
   long_log "Checking for upgrade in %s image." info "$itype"
