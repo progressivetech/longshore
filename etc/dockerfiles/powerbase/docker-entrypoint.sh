@@ -18,6 +18,10 @@ if [ "$LONG_LIVE" = "n" ]; then
   printf "error_reporting = E_ALL\n" >> '/etc/php5/fpm/conf.d/99-powerbase-dev.ini'
   printf "html_errors = On\n" >> '/etc/php5/fpm/conf.d/99-powerbase-dev.ini'
   printf "log_errors = On\n" >> '/etc/php5/fpm/conf.d/99-powerbase-dev.ini'
+
+  # And we ensure the civix is installed
+  wget -O /usr/local/bin/civix https://download.civicrm.org/civix/civix.phar
+  chmod 755 /usr/local/bin/civix
 fi
 
 # Allow us to overwrite the DNS caching server at runtime.
