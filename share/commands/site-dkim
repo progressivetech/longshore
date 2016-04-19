@@ -1,0 +1,31 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-dkim <site> <domain> [<selector>]
+Generate a DKIM key and add the appropriate DNS txt record.
+
+Arguments
+  <site> - The site you want to generate and configure the dkim record fo for, e.g. ptp
+  <domaon> - The domain used by the group to send emails (e.g. progressivetech.org)
+  <selector> - Optionally provide the selector. Defaults to pb1. Pass selector if you
+    want to create multiple DKIM records so users can send from multiple domains."
+
+long_check_args "$2" "$#" 2
+
+site="$2"
+domain="$3"
+selector="$4"
+
+if [ -z "$selector" ]; then
+  selector=pb1
+fi
+
+long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+long_generate_dkim_key "$domain" "$selector"
+
+if [ -n "$LONG_SITE_DKIM_TXT" ]; then
+  fqdn="${selector}.domainkey.${site}.ourpowerbase.net"
+  long_create_dkim_dns "$fqdn" "$LONG_SITE_DKIM_TXT"
+else
+  long_die "Not configuring DNS for empty DKIM txt record."
+fi
+

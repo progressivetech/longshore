@@ -2574,3 +2574,66 @@ long_get_container_name() {
   local id="$1"
   LONG_CONTAINER_NAME=$(docker ps --filter "id=$id" | egrep -o ' [^ ]*\s*$' | tr -d ' ' | tail -n1)
 }
+
+# Generate DKIM keys
+long_generate_dkim_key() {
+  local domain="$1"
+  local selector="$2"
+
+  LONG_SITE_DKIM_TXT=
+  long_log "Generating DKIM key for '%s' and '%s'" info "$domain" "$selector"
+  if [ -z "$LONG_GENERATE_DKIM_CMD" ]; then
+    long_die "LONG_GENERATE_DKIM_CMD is not defined. Please add it to your longshore.conf file."
+  fi
+  local out=$($LONG_GENERATE_DKIM_CMD "$domain" "$selector")
+  if [ "$?" -ne "0" ]; then 
+    long_log "Failed to generate DKIM (%s and %s)." error "$domain" "$selector"
+    return
+  fi
+  LONG_SITE_DKIM_TXT="$out" 
+}
+
+long_create_dkim_dns() {
+  local fqdn="$1"
+  local txt="$2"
+  local api_login=pb-api-user
+  local url="https://members.mayfirst.org/cp/api.php"
+  local hosting_order_id=1000002
+  local service_id=9
+  local dns_ttl=600
+  local red_api_password_path=~/.red-api-password
+  local api_password=$([ -s "$red_api_password_path" ] && cat "$red_api_password_path")
+
+  # Sanity checking.
+  if [ "$LONG_LIVE" != "y" ]; then
+    # Don't die, this isn't a fatal error.
+    long_log "Not setting DNS in dev instance." info
+    return
+  fi
+  exists=$(dig +short -t txt "$fqdn")
+  if [ "$?" != 0 ]; then
+    long_die "Error checking dns (%s). Output: %s" 1 "$fqdn" "$exists"
+  fi
+  
+  [ -z "$api_password" ] && long_die "Please put your red api password in %s." 1 "$red_api_password_path"
+  [ -z "$LONG_IP_ADDR" ] && long_die "The host IP address is not set in longshore.conf"
+
+  if [ -n "$exists" ]; then
+    long_log "The DNS dkim record has already been created." info
+  else
+    post="action=insert&output=text&object=item&set:service_id=${service_id}&set:hosting_order_id=${hosting_order_id}&set:dns_fqdn=${fqdn}&set:dns_type=text&set:dns_ttl=${dns_ttl}&set:dns_text=${txt}&user_name=$api_login&user_pass=$api_password&output_format=text"
+  fi
+
+  out=$(wget -q --post-data="$post" -O- "$url")
+  if [ "$?" -ne "0" ]; then
+    long_die "Failed to use wget when setting the DNS entry."
+  fi
+
+  echo "$out" | grep '"is_error":0' > /dev/null
+
+  if [ "$?" -ne "0" ]; then
+    echo "$out"
+    printf "Command: wget -q -O- --post-data=%s %s\n" "$post" "$url"
+    long_die "Failed to create DNS record."
+  fi
+}

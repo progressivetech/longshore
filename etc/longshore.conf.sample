@@ -74,6 +74,14 @@ LONG_MANAGE_IMAP_USER_CMD=/bin/true
 # in CiviCRM.
 LONG_IMAP_HOST=civimail.ourpowerbase.net
 
+# The command used to generate DKIM keys. Set to /bin/true to
+# disable configuring DKIM. Or set to: sudo /usr/local/bin/longshore-dkim-generator
+# to set it up locally (be sure to add sudo privs for the longshore user)
+# or set to "ssh longshore@marti.mayfirst.org sudo /usr/local/bin/longshore-dkim-generator"
+# to enable remote execution on a remote server (be sure to configure ssh
+# access on the remote server).
+LONG_GENERATE_DKIM_CMD=/bin/true
+
 # If the host supports it, you can set a default memory limit for each
 # container (you have to edit /etc/default/grub and add GRUB_CMDLINE_LINUX="cgroup_enable=memory"
 LONG_DOCKER_MEMORY_LIMIT="-m 1GB"
