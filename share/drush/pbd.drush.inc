@@ -1705,6 +1705,15 @@ function pbd_activate_cron_jobs() {
   if(!empty($job) && $job->id) {
     CRM_Core_DAO::setFieldValue( 'CRM_Core_DAO_Job', $job->id, 'run_frequency', 'Hourly' );
   }
+
+  // fetch activities on each run rather than hourly
+  // https://support.ourpowerbase.net/ticket/1806
+  $params = array('api_action' => 'fetch_activities', 'run_frequency' => 'Hourly');
+  $defaults = array();
+  $job = CRM_Core_BAO_Job::retrieve( $params, $defaults );
+  if(!empty($job) && $job->id) {
+    CRM_Core_DAO::setFieldValue( 'CRM_Core_DAO_Job', $job->id, 'run_frequency', 'Always' );
+  }
 }
 
 function pbd_change_debugging($status) {
