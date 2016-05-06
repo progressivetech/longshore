@@ -3778,6 +3778,7 @@ function pbd_import_engage_data() {
  *
  **/
 function pbd_ensure_civicrm_news_removed_from_dashboard() {
+  _civicrm_init();
   $sql = "SELECT id FROM civicrm_dashboard WHERE url LIKE 'civicrm/dashlet/blog%' OR url LIKE 'civicrm/dashlet/getting-started%'";
   $dao = CRM_Core_DAO::executeQuery($sql);
   // It's already been deleted, so return
