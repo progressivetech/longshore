@@ -3773,28 +3773,28 @@ function pbd_import_engage_data() {
  * from the CiviCRM web site (using http) and then displays the posts
  * on your dashboard. This is a security problem. This function
  * removes it from your dashboard (but it still is available via
- * /civicrm/dashboard/blog).
+ * /civicrm/dashboard/blog). In addition, 4.6.something added a 
+ * Getting Started one.
  *
  **/
 function pbd_ensure_civicrm_news_removed_from_dashboard() {
-  $sql = "SELECT id FROM civicrm_dashboard WHERE url LIKE 'civicrm/dashlet/blog%'";
+  $sql = "SELECT id FROM civicrm_dashboard WHERE url LIKE 'civicrm/dashlet/blog%' OR url LIKE 'civicrm/dashlet/getting-started%'";
   $dao = CRM_Core_DAO::executeQuery($sql);
   // It's already been deleted, so return
   if($dao->N == 0) {
     return;
   }
-  $dao->fetch();
+  while($dao->fetch()) {
+    // first delete all instances of this dashboard item
+    $sql = "DELETE FROM civicrm_dashboard_contact WHERE dashboard_id = %0";
+    $params = array(0 => array($dao->id, 'Integer'));
+    CRM_Core_DAO::executeQuery($sql, $params);
 
-  // first delete all instances of this dashboard item
-  $sql = "DELETE FROM civicrm_dashboard_contact WHERE dashboard_id = %0";
-  $params = array(0 => array($dao->id, 'Integer'));
-  CRM_Core_DAO::executeQuery($sql, $params);
-
-  // Now delete the dashboard item so nobody will try to add it in the future
-  $sql = "DELETE FROM civicrm_dashboard WHERE id = %0";
-  $params = array(0 => array($dao->id, 'Integer'));
-  CRM_Core_DAO::executeQuery($sql, $params);
-
+    // Now delete the dashboard item so nobody will try to add it in the future
+    $sql = "DELETE FROM civicrm_dashboard WHERE id = %0";
+    $params = array(0 => array($dao->id, 'Integer'));
+    CRM_Core_DAO::executeQuery($sql, $params);
+  }
 }
 
 /**
