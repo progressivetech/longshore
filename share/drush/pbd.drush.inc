@@ -1146,11 +1146,18 @@ function pbd_get_templates() {
   // use msg_title as array key to help with dupe checking when adding
   $base_dir = __dir__ . '/templates';
   return array(
-    'Powerbase Mail Template v1' => array(
-      'msg_title' => 'Powerbase Mail Template v1',
-      'msg_subject' => 'Please change this in your mailing ',
+    'Powerbase Responsive Email One Column' => array(
+      'msg_title' => 'Powerbase Responsive Email One Column',
+      'msg_subject' => '',
       'msg_text' => '',
-      'msg_html' => file_get_contents($base_dir . '/email-standard-template.html'),
+      'msg_html' => file_get_contents($base_dir . '/powerbase-responsive-one-column.html'),
+      'is_active' => 1,
+    ),
+    'Powerbase Responsive Email Two Column' => array(
+      'msg_title' => 'Powerbase Responsive Email Two Column',
+      'msg_subject' => '',
+      'msg_text' => '',
+      'msg_html' => file_get_contents($base_dir . '/powerbase-responsive-two-column.html'),
       'is_active' => 1,
     ),
     'Powerbase Thank You Letter Template v1' => array(
