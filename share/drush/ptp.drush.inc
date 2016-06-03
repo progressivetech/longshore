@@ -647,7 +647,7 @@ function ptp_strip_nbsp(&$value, $key) {
 function ptp_check_sumfields_triggers() {
   if(function_exists('sumfields_get_update_trigger')) {
     if(!sumfields_get_update_trigger($table = 'civicrm_contribution')) {
-      echo "Problem!\n";
+      echo "\n\n+++++Problem!+++++\n\n";
     }
   }
 }
