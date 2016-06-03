@@ -640,4 +640,14 @@ function ptp_strip_nbsp(&$value, $key) {
   $value = str_replace('&nbsp;', '', $value);
 }
 
-
+/**
+ * Report if a site has sumfields installed and does not
+ * have the contribution triggers installed.
+ **/
+function ptp_check_sumfields_triggers() {
+  if(function_exists('sumfields_get_update_trigger')) {
+    if(!sumfields_get_update_trigger($table = 'civicrm_contribution')) {
+      echo "Problem!\n";
+    }
+  }
+}
