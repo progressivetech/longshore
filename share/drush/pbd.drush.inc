@@ -242,22 +242,6 @@ function pbd_add_partner_greeting_options() {
     }
   }
 }
-/**
- * FIXME: why are we not using civicrm.drush.inc for this?
- **/
-function drush_pbd_update_addresses() {
-  $start = drush_get_option('start', 1);
-  $end = drush_get_option('end', 1000);
-  $geocode = drush_get_option('geocode',false);
-  $parse = drush_get_option('parse',false);
-  if(!$geocode && !$parse) {
-    drush_print(dt("You must pass either --geocode or --parse or both"));
-    return;
-  }
-  drush_print(dt("Starting on record @start and ending on record @end", array('@start' => $start, '@end' => $end)));
-  _update_addresses($geocode, $parse, $start, $end);
-
-}
 
 /**
  * FIXME: I think both of these commands are now
@@ -831,149 +815,6 @@ function pbd_enable_pb_components() {
     drush_log($e->getMessage(), 'error');
     return;
   }
-}
-
-function _update_addresses( $geocode = false, $parse = false, $start = null, $end = null ) {
-  _civicrm_init();
-  require_once 'CRM/Core/Config.php';
-  $config = CRM_Core_Config::singleton( );
-  if( $geocode && empty( $config->geocodeMethod ) ) {
-    drush_print(dt("You are trying to geocode, but geocoding does not seem to be ".
-      "configured in your database."));
-    return;
-  }
-  // build where clause.
-  $clause = array( '( c.id = a.contact_id )' );
-  if ( $start ) {
-      $clause[] = "( c.id >= $start )";
-  }
-  if ( $end ) {
-      $clause[] = "( c.id <= $end )";
-  }
-  if ( $geocode ) {
-      $clause[] = '( a.geo_code_1 is null OR a.geo_code_1 = 0 )';
-      $clause[] = '( a.geo_code_2 is null OR a.geo_code_2 = 0 )';
-      $clause[] = '( a.country_id is not null )';
-  }
-  $whereClause = implode( ' AND ', $clause );
-
-  $query = "
-SELECT     c.id,
-         a.id as address_id,
-         a.street_address,
-         a.city,
-         a.postal_code,
-         s.name as state,
-         o.name as country
-FROM       civicrm_contact  c
-INNER JOIN civicrm_address        a ON a.contact_id = c.id
-LEFT  JOIN civicrm_country        o ON a.country_id = o.id
-LEFT  JOIN civicrm_state_province s ON a.state_province_id = s.id
-WHERE      {$whereClause}
-ORDER BY a.id
-";
-  drush_log("Update Addresses Query: $query");
-  $totalGeocoded = $totalAddresses = $totalAddressParsed = 0;
-
-  $dao =& CRM_Core_DAO::executeQuery( $query, CRM_Core_DAO::$_nullArray );
-
-  if ( $geocode ) {
-      require_once( str_replace('_', DIRECTORY_SEPARATOR, $config->geocodeMethod ) . '.php' );
-  }
-
-  require_once 'CRM/Core/DAO/Address.php';
-  require_once 'CRM/Core/BAO/Address.php';
-
-  $unparseableContactAddress = array( );
-  while ( $dao->fetch( ) ) {
-      $totalAddresses++;
-      $params = array( 'street_address'    => $dao->street_address,
-                       'postal_code'       => $dao->postal_code,
-                       'city'              => $dao->city,
-                       'state_province'    => $dao->state,
-                       'country'           => $dao->country );
-
-      $addressParams = array( );
-
-      // process geocode.
-      if ( $geocode ) {
-          // loop through the address removing more information
-          // so we can get some geocode for a partial address
-          // i.e. city -> state -> country
-
-          $maxTries = 5;
-          do {
-              if ( defined( 'THROTTLE_REQUESTS' ) &&
-                   THROTTLE_REQUESTS ) {
-                  usleep( 50000 );
-              }
-
-             // eval( $config->geocodeMethod . '::format( $params, true );' );
-              $geo = $config->geocodeMethod;
-              $geo::format( $params, true );
-              array_shift( $params );
-              $maxTries--;
-          } while ( ( ! isset( $params['geo_code_1'] ) ) &&
-                    ( $maxTries > 1 ) );
-
-          if ( isset( $params['geo_code_1'] ) &&
-               $params['geo_code_1'] != 'null' ) {
-              $totalGeocoded++;
-              $addressParams['geo_code_1'] = $params['geo_code_1'];
-              $addressParams['geo_code_2'] = $params['geo_code_2'];
-          }
-      }
-
-      // parse street address
-      if ( $parse ) {
-          $parsedFields = CRM_Core_BAO_Address::parseStreetAddress( $dao->street_address );
-          $success = true;
-          // consider address is automatically parseable,
-          // when we should found street_number and street_name
-          if ( ! CRM_Utils_Array::value( 'street_name', $parsedFields ) ||
-               ! CRM_Utils_Array::value( 'street_number', $parsedFields ) ) {
-              $success = false;
-          }
-
-          // do check for all elements.
-          if ( $success ) {
-              $totalAddressParsed++;
-          } else if ( $dao->street_address ) {
-              //build contact edit url,
-              //so that user can manually fill the street address fields if the street address is not parsed, CRM-5886
-              $url = CRM_Utils_System::url( 'civicrm/contact/add', "reset=1&action=update&cid={$dao->id}"  );
-              $unparseableContactAddress[] = " Contact ID: " . $dao->id . " " . $url ;
-              // reset element values.
-              $parsedFields = array_fill_keys( array_keys($parsedFields), '' );
-          }
-          $addressParams = array_merge( $addressParams, $parsedFields );
-      }
-
-      // finally update address object.
-      if ( !empty( $addressParams ) ) {
-          $address = new CRM_Core_DAO_Address( );
-          $address->id = $dao->address_id;
-          $address->copyValues( $addressParams );
-          $address->save( );
-          $address->free( );
-      }
-  }
-
-  drush_print( dt("Addresses Evaluated: $totalAddresses\n" ));
-  if ( $geocode ) {
-      drush_print(dt( "Addresses Geocoded : $totalGeocoded\n" ));
-  }
-  if ( $parse ) {
-      drush_print( dt( "Street Address Parsed : $totalAddressParsed\n" ));
-      if ( $unparseableContactAddress ) {
-          drush_print( dt( "<br />\nFollowing is the list of contacts whose address is not parsed :<br />\n"));
-          foreach ( $unparseableContactAddress as $contactLink ) {
-              drush_print(dt("%1<br />\n", array( 1 => $contactLink ) ));
-          }
-      }
-  }
-
-  return;
 }
 
 /*
@@ -3698,7 +3539,8 @@ function pbd_enable_default_extensions() {
     'net.ourpowerbase.report.advancedfundraising',
     'com.aghstrategies.uscounties',
     'eu.tttp.noverwrite',
-    'net.ourpowerbase.sumfields'
+    'net.ourpowerbase.sumfields',
+    'de.systopia.osm'
   );
   $uninstall_extensions = array();
   _civicrm_init();
