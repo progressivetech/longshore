@@ -1,10 +1,10 @@
 _longshore_complete() {
-  local cur opts
   COMPREPLY=()
-  cur="${COMP_WORDS[COMP_CWORD]}"
-  prev="${COMP_WORDS[COMP_CWORD-1]}"
-  commands="$(ls /srv/longshore/share/commands)"
-  sites=$(longshore site-list 2>/dev/null)
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local prev="${COMP_WORDS[COMP_CWORD-1]}"
+  local commands="$(ls /srv/longshore/share/commands)"
+  local sites=$(longshore site-list 2>/dev/null)
+  local opts=""
   if [ "$prev" = "longshore" ]; then
     opts="$commands"
   elif [ "$prev" = "platform-create" ] || [ "$prev" = "site-import" ]; then
