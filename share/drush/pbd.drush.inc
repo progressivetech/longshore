@@ -523,7 +523,8 @@ function pbd_one_time_configuration() {
   pbd_disable_communications_status();
   pbd_adjust_custom_data_groups();
   pbd_ensure_petition_profile_exists();
-  pbd_delete_all_tags();
+  // This causes problems on migrated CiviCRM installs.
+  // pbd_delete_all_tags();
   pbd_add_image_upload_menu();
   pbd_set_default_dateformat_full();
   pbd_configure_default_cicero_mappings();
