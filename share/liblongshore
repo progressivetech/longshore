@@ -1216,19 +1216,26 @@ long_import_backup() {
 }
 
 # Drop all tables in a database. Useful when importing a backup over an existing
-# database to ensure no stale temp tables or other tables are left around
+# database to ensure no stale temp tables or other tables are left around. Pass
+# civicrm_only as second argument to only drop tables that start with civicrm_.
 long_drop_tables() {
   local site="$1"
+  local civicrm_only="$2"
 
   get_tables_temp=$(mktemp)
   drop_tables_temp=$(mktemp)
-  echo "SELECT TABLE_NAME, TABLE_TYPE FROM information_schema.TABLES WHERE TABLE_TYPE NOT LIKE 'SYSTEM VIEW'" > "$get_tables_temp"
-  # The drupal blocked_ips table is needed for the drush command sql-query to
-  # function properly.
-  long_execute_site_query "$site" "$get_tables_temp" | \
-    grep -v ^TABLE_NAME | grep -v ^blocked_ips |
-    while read table table_type; do
 
+  # The drupal blocked_ips table is needed for the drush command sql-query to function.
+  local exclude="(TABLE_NAME|blocked_ips)"
+
+  # By defalt include all tables in DROP statement.
+  local include="."
+  if [ -n "$civicrm_only" ]; then
+    include="^civicrm_"
+  fi
+
+  echo "SELECT TABLE_NAME, TABLE_TYPE FROM information_schema.TABLES WHERE TABLE_TYPE NOT LIKE 'SYSTEM VIEW'" > "$get_tables_temp"
+  long_execute_site_query "$site" "$get_tables_temp" | egrep -v "^$exclude" | egrep "$include" | while read table table_type; do
     entity=TABLE
     if [ "$table_type" == "VIEW" ]; then
       entity=VIEW
@@ -1246,6 +1253,8 @@ long_drop_tables() {
     else
       long_log "Not deleting the tables" info
       # die here to avoid importing a sql file
+      rm "$get_tables_temp"
+      rm "$drop_tables_temp"
       long_die "Dying. Bye."
     fi
   fi
