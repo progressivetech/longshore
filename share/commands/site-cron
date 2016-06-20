@@ -26,7 +26,6 @@ fi
 for site in $sites; do
   # Temporary hack to stop crons on southernvision
   if [ "$site" = "southernvision" ]; then
-    printf "Not running on southervision"
     continue
   fi
   # This command never has more arguments than site-cron and the site. And
