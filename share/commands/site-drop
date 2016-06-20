@@ -1,0 +1,19 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-drop <site> [civicrm-only]
+The all tables in the given site's database. Optionally, only drop the 
+CiviCRM tables (ones starting with civicrm_). 
+
+Arguments
+  <site> - The site you want to import the db over, e.g. ptp
+  civicrm-only - Optionally, specify that only CiviCRM tables should be dropped."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+civicrm_only="$3"
+
+long_container_running "$site" || long_die "The site '%s' isn't running." 1 "$site"
+# If tables exist in the database, the user will be prompted before continuing
+# by the long_drop_tables function.
+long_drop_tables "$site" "$civicrm_only"
