@@ -921,37 +921,7 @@ function pbd_lock_down_user_registration() {
 function pbd_add_message_templates() {
   _civicrm_init();
   $templates = pbd_get_templates();
-  
-  // Delete existing duplicates
-  // See https://support.ourpowerbase.net/ticket/1120
-  // This query should find all templates that have identical title, subjects, text and html
-  // and return the ID of one of them. If there is more than two, we need to repeat until
-  // all the dupes are gone.
-  $sql = "SELECT a.id FROM civicrm_msg_template a JOIN civicrm_msg_template b ON 
-    a.msg_title = b.msg_title AND 
-    (a.msg_subject = b.msg_subject OR (a.msg_subject IS NULL AND b.msg_subject IS NULL)) AND 
-    a.msg_html = b.msg_html AND 
-    (a.msg_text = b.msg_text OR (a.msg_text IS NULL AND b.msg_text IS NULL)) AND 
-    a.id != b.id AND (a.msg_title = 'Powerbase Mail Template v1' OR 
-    a.msg_title = 'Powerbase Thank You Letter Template v1')
-    GROUP BY a.msg_title;";
-  while(1) {
-    $dao = CRM_Core_DAO::executeQuery($sql);
-    if($dao->N == 0) {
-      break;
-    }
-    while($dao->fetch()) {
-
-    }
-    $params = array('id' => $dao->id);
-    try{
-      civicrm_api3('messageTemplate', 'delete', $params);
-    }
-    catch (CiviCRM_API3_Exception $e) {
-     drush_log(dt("Failed to delete dupe template."), 'error');
-      drush_log($e->getMessage(), 'error');
-    }
-  }
+ 
   // Get existing templates so we don't add duplicates
   $params = array('rowCount' => 0);
   try {
