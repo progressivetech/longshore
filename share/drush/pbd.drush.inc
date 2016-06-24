@@ -1002,6 +1002,13 @@ function pbd_get_templates() {
       'msg_html' => file_get_contents($base_dir . '/powerbase-responsive-two-column.html'),
       'is_active' => 1,
     ),
+    'Powerbase Responsive Email One Column No Graphics' => array(
+      'msg_title' => 'Powerbase Responsive Email One Column No Graphics',
+      'msg_subject' => '',
+      'msg_text' => '',
+      'msg_html' => file_get_contents($base_dir . '/powerbase-responsive-one-column-no-graphics.html'),
+      'is_active' => 1,
+    ),
     'Powerbase Thank You Letter Template v1' => array(
       'msg_title' => 'Powerbase Thank You Letter Template v1',
       'msg_subject' => '',
