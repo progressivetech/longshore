@@ -920,8 +920,16 @@ function pbd_lock_down_user_registration() {
 
 function pbd_add_message_templates() {
   _civicrm_init();
-  $templates = pbd_get_templates();
- 
+  // Get templates to add.
+  $add_templates = pbd_get_templates();
+
+  // Set templates to disable. 
+  $disable_templates = array(
+    'Sample CiviMail Newsletter Template', 
+    'Sample Responsive Design Newsletter - Single Column Template', 
+    'Sample Responsive Design Newsletter - Two Column Template',
+    'Powerbase Mail Template v1',
+  );
   // Get existing templates so we don't add duplicates
   $params = array('rowCount' => 0);
   try {
@@ -935,13 +943,23 @@ function pbd_add_message_templates() {
 
   $existing_templates = $existing_result['values'];
 
+  // Now keep track of what to add and what to disable.
+  $disable_ids = array();
   while(list(,$values) = each($existing_templates)) {
     $title = $values['msg_title'];
-    if(array_key_exists($title,$templates)) {
-      unset($templates[$title]);
+    if(array_key_exists($title,$add_templates)) {
+      // Remove from list of templates to add below.
+      unset($add_templates[$title]);
+    }
+    if(in_array($title, $disable_templates) && $values['is_active'] == 1) {
+      // Disable this one.
+      $params = array('id' => $values['id'], 'is_active' => 0);
+      civicrm_api3('messageTemplate', 'update', $params);
     }
   }
-  while(list(,$params) = each($templates)) {
+
+  // Now add templates...
+  while(list(,$params) = each($add_templates)) {
     drush_log(dt("Adding @t",array('@t'=>$params['msg_title'])), 'notice');
     try {
       $existing_result = civicrm_api3('messageTemplate', 'create', $params);
