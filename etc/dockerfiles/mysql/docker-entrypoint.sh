@@ -46,7 +46,7 @@ EOSQL
   # down to the default.
   if [ "$LONG_LIVE" = "n" ]; then
     printf "Not running on live system\n"
-    sed -i "s/innodb_buffer_pool_size =/; innodb_buffer_pool_size =/" /etc/mysql/conf.d/ptp.cnf
+    sed -i "s/^innodb_buffer_pool_size =/; innodb_buffer_pool_size =/" /etc/mysql/conf.d/ptp.cnf
   else
     printf "Running on live system\n"
   fi
