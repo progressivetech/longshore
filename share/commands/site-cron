@@ -24,10 +24,6 @@ else
   sites="$LONG_SITES"
 fi
 for site in $sites; do
-  # Temporary hack to stop crons on southernvision
-  if [ "$site" = "southernvision" ]; then
-    continue
-  fi
   # This command never has more arguments than site-cron and the site. And
   # if we just pass "$@" like we do for the other commands, we will lose
   # the <site> if this command was called without a site argument.
