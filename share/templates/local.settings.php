@@ -30,3 +30,6 @@ define('STRIPE_SUBMISSION_METHOD', 'php');
 // Turn off all security/update settings
 $civicrm_setting["CiviCRM Preferences"]["securityUpdateAlert"] = "1";
 $civicrm_setting["CiviCRM Preferences"]["versionAlert"] = "1";
+
+// Ensure pages can be embedded via iframes by disabling drupal protection
+$conf['x_frame_options'] = '';
