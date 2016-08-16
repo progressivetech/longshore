@@ -54,7 +54,5 @@ done
 
 if [ -n "$site" ]; then
   # Now check drupal modules.
-  long_log "Enabling update module." info
-  long_exec_drush_cmd "$site" "-y en update"
-  long_exec_drush_cmd "$site" "pm-update"
+  long_exec_drush_cmd "$site" "ptp-update-report"
 fi
