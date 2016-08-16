@@ -49,6 +49,9 @@ function ptp_drush_command() {
   $items['ptp-fix-stripe-schema'] =
     array('description' => "Update stripe schema if necessary."
   );
+  $items['ptp-update-report'] =
+    array('description' => "Print out report of modules and themes that need to be updated."
+  );
   return $items;
 }
 
@@ -655,4 +658,51 @@ function ptp_check_sumfields_triggers() {
       echo "\n\n+++++Problem!+++++\n\n";
     }
   }
+}
+
+/**
+ * Command hook: report on modules/themes needing updates.
+ */
+function drush_ptp_update_report() {
+  module_enable(array('update'));
+  update_refresh();
+  $updates_needed = array();
+	if (!$available = update_get_available(TRUE)) {
+		drush_log("No update data.", 'error');
+	}
+	else {
+		module_load_include('inc', 'update', 'update.compare');
+		$data = update_calculate_project_data($available);
+		foreach($data as $project) {
+      $versions = "(" .  $project['existing_version'] . " => " .
+        $project['recommended'] . ")";
+			$name = $project['name'];
+			switch ($project['status']) {
+				case UPDATE_UNKNOWN:
+				case UPDATE_FETCH_PENDING:
+				case UPDATE_NOT_FETCHED:
+				case UPDATE_NOT_CHECKED:
+					if($name != 'civicrm') {
+						$updates_needed[$name] = "Didn't get update";
+					}
+					break;
+				case UPDATE_NOT_SECURE:
+					$updates_needed[$name] = "Security Update Needed ($versions)";
+					break;
+				case UPDATE_REVOKED:
+				case UPDATE_NOT_SUPPORTED:
+					break;
+					$updates_needed[$name] = "No longer supported";
+				case UPDATE_MAX_FETCH_ATTEMPTS:
+					$updates_needed[$name] = "Too many update requests";
+					break;
+				case UPDATE_NOT_CURRENT:
+					$updates_needed[$name] = "Update needed ($versions)";
+				default:
+					break;
+			}
+		}
+  }
+  module_disable(array('update'));
+	print_r($updates_needed);
 }
