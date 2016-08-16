@@ -137,7 +137,7 @@ function drush_pbd_configure() {
 }
 
 /**
- * Enable settings appropriate for a dev site. 
+ * Enable settings appropriate for a dev site.
  *
  **/
 function pbd_configure_dev_site() {
@@ -176,11 +176,11 @@ function pbd_configure_wkhtmltopdf() {
  */
 function pbd_set_max_file_size() {
   // The number is in MB. Our php.ini file should allow up to 30MB.
-  $config["maxFileSize"] = 20; 
+  $config["maxFileSize"] = 20;
   CRM_Core_BAO_ConfigSetting::add($config);
 }
 /**
- * Send CiviCRM errors to watchdog so users can access them. This is 
+ * Send CiviCRM errors to watchdog so users can access them. This is
  * particularly important for SMS errors.
  */
 function pbd_enable_user_framework_logging() {
@@ -208,10 +208,10 @@ function pbd_add_partner_greeting_options() {
   // the key is the option group name and the value is the option group value
   $new_greetings = array(
     'email_greeting' => 'Dear {partner.contact_and_partner_first_name}',
-    'postal_greeting' => 'Dear {partner.contact_and_partner_first_name}', 
+    'postal_greeting' => 'Dear {partner.contact_and_partner_first_name}',
     'addressee' => '{partner.contact_and_partner_full_name}'
   );
-  
+
   // Find the option groups that *don't* have this value
   $sql = "SELECT g.id FROM civicrm_option_group g LEFT JOIN civicrm_option_value v " .
     "ON g.id = v.option_group_id AND v.name LIKE '%{partner.contact_and_partner_%' ".
@@ -227,7 +227,7 @@ function pbd_add_partner_greeting_options() {
       drush_log($msg);
       // We have a match - we have to insert this value for this option group
       $params = array(
-        'option_group_id' => $dao->id, 
+        'option_group_id' => $dao->id,
         'name' => $new_greetings[$option_group],
         'label' => $new_greetings[$option_group],
       );
@@ -353,7 +353,7 @@ function drush_pbd_test_smart_groups() {
     $total_duration = 0;
     while($dao->fetch()) {
       $group_ids[$dao->id] = $dao->title;
-    } 
+    }
   }
   while(list($id, $title) = each($group_ids)) {
     $start = time();
@@ -379,11 +379,11 @@ function drush_pbd_test_smart_groups() {
       $lockName = "civicrm.group." . $id;
       $lock = new CRM_Core_Lock($lockName);
     }
-    if (!$lock->isAcquired()) { 
+    if (!$lock->isAcquired()) {
       drush_log(dt("Lock exists, not rebuilding."), 'error');
       continue;
     }
-    CRM_Contact_BAO_GroupContactCache::load($group, $force); 
+    CRM_Contact_BAO_GroupContactCache::load($group, $force);
     $end = time();
     $duration = $end - $start;
     $total_duration += $duration;
@@ -490,7 +490,7 @@ function pbd_one_time_configuration() {
 
   $one_time = TRUE;
 
-  # All new sites get the newsflash theme until we finalize the 
+  # All new sites get the newsflash theme until we finalize the
   # new powerbase one..
   variable_set('theme_default','newsflash');
 
@@ -721,7 +721,7 @@ function pbd_remove_country_from_address_formats() {
       $params = array('return' => $field);
       $results = civicrm_api3('Setting', 'get', $params);
       $values = array_pop($results['values']);
-      $new = str_replace('{contact.country}', '', $values[$field]); 
+      $new = str_replace('{contact.country}', '', $values[$field]);
       $params = array($field => $new);
       civicrm_api3('Setting', 'create', $params);
     }
@@ -737,11 +737,11 @@ function pbd_remove_country_from_address_formats() {
  * Disable communication style
  *
  * This is a new field in 4.5 that allows you to set a contact to
- * "formal" or "informal" - we decided it is just clutter, so we 
+ * "formal" or "informal" - we decided it is just clutter, so we
  * disable it by disabling all the available options.
  */
 function pbd_disable_communication_style() {
-  $sql = "UPDATE civicrm_option_value v JOIN civicrm_option_group g ON 
+  $sql = "UPDATE civicrm_option_value v JOIN civicrm_option_group g ON
     v.option_group_id = g.id SET v.is_active = 0 WHERE g.name = 'communication_style'";
   CRM_Core_DAO::executeQuery($sql);
 }
@@ -758,11 +758,11 @@ function pbd_make_drupal_user_profile_reserved() {
 
 /**
  * Change one side of certain relationships to differentiate them.
- * 
+ *
  * It's impossible to differentiate sides to the spouse, partner
  * and sibling relationships, yet that is helpful because it's often
  * one side of the relationship that we're most interested in.
- * 
+ *
  * This function updates the A side of spouse, partner and sibling from
  * "X of" to "X is" and keeps the B side "X of"
  */
@@ -788,7 +788,7 @@ function pbd_is_localhost($host) {
  *
  **/
 function pbd_enable_pb_components() {
-  _civicrm_init(); 
+  _civicrm_init();
   $params = array(
     'enable_components' => array(
       'CiviContribute',
@@ -923,10 +923,10 @@ function pbd_add_message_templates() {
   // Get templates to add.
   $add_templates = pbd_get_templates();
 
-  // Set templates to disable. 
+  // Set templates to disable.
   $disable_templates = array(
-    'Sample CiviMail Newsletter Template', 
-    'Sample Responsive Design Newsletter - Single Column Template', 
+    'Sample CiviMail Newsletter Template',
+    'Sample Responsive Design Newsletter - Single Column Template',
     'Sample Responsive Design Newsletter - Two Column Template',
     'Powerbase Mail Template v1',
   );
@@ -1009,7 +1009,7 @@ function pbd_get_templates() {
 }
 
 function pbd_set_blocks_for_theme($theme) {
-  // Set default names for regions. Note: in the database, setting the 
+  // Set default names for regions. Note: in the database, setting the
   // region to -1 disables it.
   $regions = array(
     'left_sidebar' => 'left_sidebar',
@@ -1035,12 +1035,12 @@ function pbd_set_blocks_for_theme($theme) {
     $regions['footer'] = -1;
   }
 
-  // responsive_bartik / powerbase 
+  // responsive_bartik / powerbase
   if($theme == 'powerbase') {
     $regions['left_sidebar'] = 'sidebar_first';
   }
 
-  // Iterate over every standard block and define 
+  // Iterate over every standard block and define
   // how it should be displayed.
   $blocks = array(
     0 => array(
@@ -1330,7 +1330,7 @@ function pbd_create_drupal_roles() {
     'delete in CiviContribute',
     'administer payment processors'
   );
-  
+
   $codeVer = CRM_Utils_System::version();
   // We introduced edit message templates in 4.5, which means
   // regular users no longer need admin privs
@@ -1429,7 +1429,7 @@ function pbd_grant_anonymous_and_authenticated_role_access($one_time = FALSE) {
   // Unset some permissions that should only be set on the first time
   // we run (so they can be un-checked on a site-by-site basis
   if(!$one_time) {
-    // Some sites use ACLs to more minutely provide access to 
+    // Some sites use ACLs to more minutely provide access to
     // custom data
     $key = array_search('access all custom data', $default_anon_perms);
     if($key) {
@@ -1440,7 +1440,7 @@ function pbd_grant_anonymous_and_authenticated_role_access($one_time = FALSE) {
   $default_auth_perms = $default_anon_perms;
   $default_auth_perms[] = 'access Contact Dashboard';
   // ensure we are not setting permissions that don't exist
- 
+
   $module_perms = user_permission_get_modules();
   $available_perms = array_keys($module_perms);
   $problem_anon_perms = array_diff($default_anon_perms,$available_perms);
@@ -1509,7 +1509,7 @@ function pbd_activate_cron_jobs() {
     }
   }
   // Parameters should be set for update_email_resetdate. Make sure we don't have the default
-  // broken parameters. 
+  // broken parameters.
   $params = array('api_action' => 'update_email_resetdate', 'parameters' => 'minDays, maxDays=Consider mailings that have completed between minDays and maxDays');
   $defaults = array();
   $job = CRM_Core_BAO_Job::retrieve( $params, $defaults );
@@ -1517,7 +1517,7 @@ function pbd_activate_cron_jobs() {
     CRM_Core_DAO::setFieldValue( 'CRM_Core_DAO_Job', $job->id, 'parameters', "minDays=0\nmaxDays=10\n" );
   }
   // Parameters should be set for update_greeting (note: we are *only* updating addressee automatically). If we don't
-  // have any parameters, it won't run. 
+  // have any parameters, it won't run.
   $params = array('api_action' => 'update_greeting');
   $defaults = array();
   $job = CRM_Core_BAO_Job::retrieve( $params, $defaults );
@@ -1762,7 +1762,7 @@ function pbd_adjust_display_preferences() {
 
 function pbd_fix_contact_edit_options() {
   _civicrm_init();
-  
+
   // Get the id of the option group
   $results = civicrm_api("OptionGroup","get", array ('version' => 3,'name' => 'contact_edit_options' ));
 
@@ -1916,7 +1916,7 @@ function pbd_remove_formal_title() {
   // Get value for Formal Title
   $sql = "SELECT value FROM civicrm_option_value v JOIN civicrm_option_group g ON v.option_group_id =
     g.id WHERE v.name = 'Formal Title' AND g.name = 'contact_edit_options'";
-  $dao = CRM_Core_DAO::executeQuery($sql);  
+  $dao = CRM_Core_DAO::executeQuery($sql);
   $dao->fetch();
   if(!empty($dao->value)) {
     $existing = explode(CRM_Core_DAO::VALUE_SEPARATOR, CRM_Core_BAO_Setting::getItem('CiviCRM Preferences','contact_edit_options'));
@@ -3078,7 +3078,7 @@ function pbd_return_entity($entity, $params, $key = 'name') {
  */
 function pbd_enable_modules() {
   $modules_wanted = array(
-    'themekey', 'imce', 'civicrm_imce', 'opb',
+    'themekey', 'imce', 'opb',
     'civicrm_cicero', 'ctools', 'views', 'views_ui',
     'webform_civicrm',
     'webform','options_element',
@@ -3248,7 +3248,7 @@ function pbd_ensure_pb_email_footer_exists($settings) {
 function pbd_add_include_exclude_search_menu() {
   _civicrm_init();
   $label = 'Include/Exclude Search';
-  
+
   require_once 'CRM/Core/BAO/Navigation.php';
   $menus = CRM_Core_BAO_Navigation::getNavigationList();
   $exists_array = preg_grep("#$label#", $menus);
@@ -3618,7 +3618,7 @@ function pbd_import_engage_data() {
  * from the CiviCRM web site (using http) and then displays the posts
  * on your dashboard. This is a security problem. This function
  * removes it from your dashboard (but it still is available via
- * /civicrm/dashboard/blog). In addition, 4.6.something added a 
+ * /civicrm/dashboard/blog). In addition, 4.6.something added a
  * Getting Started one.
  *
  **/
@@ -3647,7 +3647,7 @@ function pbd_ensure_civicrm_news_removed_from_dashboard() {
  * Configure google recaptcha
  *
  * If values are present in the environment, add them to CiviCRM.
- * Sites should evaluate whether they want to invite Google into 
+ * Sites should evaluate whether they want to invite Google into
  * their CRM by enabling it for a profile.
  **/
 function pbd_configure_google_recaptcha() {
