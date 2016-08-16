@@ -674,8 +674,12 @@ function drush_ptp_update_report() {
 		module_load_include('inc', 'update', 'update.compare');
 		$data = update_calculate_project_data($available);
 		foreach($data as $project) {
+      $recommended = NULL;
+      if(array_key_exists('recommended', $project) ) {
+        $recommended = $project['recommended'];
+      }
       $versions = "(" .  $project['existing_version'] . " => " .
-        $project['recommended'] . ")";
+        $recommended . ")";
 			$name = $project['name'];
 			switch ($project['status']) {
 				case UPDATE_UNKNOWN:
