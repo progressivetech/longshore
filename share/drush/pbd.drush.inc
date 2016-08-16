@@ -66,7 +66,6 @@ function drush_pbd_configure() {
 
   /* Drupal Settings */
   pbd_enable_modules();
-  pbd_configure_imce();
   pbd_configure_autologout();
   pbd_configure_jquery_update();
   pbd_create_drupal_roles();
@@ -843,75 +842,6 @@ function pbd_update_greetings() {
     $sql = "UPDATE civicrm_contact SET $display_field = $display_value, $id_field = 1 WHERE $id_field IS NULL";
     CRM_Core_DAO::executeQuery( $sql );
   }
-}
-
-function pbd_configure_imce() {
-  $profile = array(
-    'name' => 'Powerbase',
-    'usertab' => 1,
-    'filesize' => 2,
-    'quota' => 0,
-    'tuquota' => 0,
-    'extensions' => "jpg png gif jpeg",
-    'dimensions' => "1200x1200",
-    'filenum' => 0,
-    'directories' => array(
-      0 => array(
-        'name' => '.',
-        'subnav' => 1,
-        'browse' => 1,
-        'upload' => 1,
-        'thumb' => 1,
-        'delete' => 1,
-        'resize' => 1
-      )
-    ),
-    'thumbnails' => array(
-      0 => array(
-        'name' => "Small",
-        'dimensions' => "90x90",
-        'prefix' => "small_",
-        'suffix' => ''
-      ),
-      1 => array(
-        'name' => "Medium",
-        'dimensions' => "120x120",
-        'prefix' => "medium_",
-        'suffix' => '',
-      ),
-      2 => array(
-        'name' => "Large",
-        'dimensions' => "180x180",
-        'prefix' => "large_",
-        'suffix' => ''
-      )
-    )
-  );
-  // update the 2nd profile (first is built-in)
-  $path = drupal_get_path('module','imce');
-  require_once("$path/inc/imce.admin.inc");
-  imce_update_profiles(2, $profile);
-
-  // now make sure the powerbase user and powerbase admin
-  // roles have access to the profile
-  $pb_rids = array();
-  $pb_roles = array('Powerbase user', 'Powerbase Administrator', 'Administrator');
-  while(list(,$role) = each($pb_roles)) {
-    $role_obj = user_role_load_by_name($role);
-    if(!empty($role_obj->rid)) {
-      $pb_rids[] = $role_obj->rid;
-    }
-    $pid_index = 'public_pid';
-  }
-  // $imce_roles = variable_get('imce_roles_profiles', array());
-  $imce_roles = imce_sorted_roles();
-  while(list(,$rid) = each($pb_rids)) {
-    $imce_roles[$rid][$pid_index] = 2;
-  }
-  variable_set('imce_roles_profiles',$imce_roles);
-
-  // lastly, turn on absolute URLs so images/urls work in mailings
-  variable_set('imce_settings_absurls', 1);
 }
 
 function pbd_lock_down_user_registration() {
@@ -3078,7 +3008,7 @@ function pbd_return_entity($entity, $params, $key = 'name') {
  */
 function pbd_enable_modules() {
   $modules_wanted = array(
-    'themekey', 'imce', 'opb',
+    'themekey', 'opb',
     'civicrm_cicero', 'ctools', 'views', 'views_ui',
     'webform_civicrm',
     'webform','options_element',

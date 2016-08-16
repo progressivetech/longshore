@@ -41,6 +41,9 @@ for project in $(grep  type "$makefile_path"  | grep git | cut -d[ -f2 | tr -d '
       continue
     fi
     cd code
+    if [ "$project" = "opb" ]; then
+      git checkout "7.x-1.x"
+    fi
     commit=$(git log | head -n1 | cut -d\  -f2)
     if [ "$commit" != "$revision" ]; then
       long_log "Project %s needs update from %s to %s" error "$project" "$revision" "$commit"
