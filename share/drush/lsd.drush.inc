@@ -57,8 +57,10 @@ function drush_lsd_civicrm_install() {
 
   //  _civicrm_install_db and _civicrm_generate_settings_file are defined
   //  in civicrm.drush.inc from the civicrm module.
+  $load_generated_data = FALSE;
   _civicrm_install_db($db_spec['username'], $db_spec['password'],
-    $db_spec['host'], $db_spec['database'], $db_spec['modPath'], $lang);
+    $db_spec['host'], $db_spec['database'], $db_spec['modPath'], $lang,
+    $load_generated_data);
 
   _civicrm_generate_settings_file($db_spec['username'], $db_spec['password'],
     $db_spec['host'], $db_spec['database'], $db_spec['modPath']);
