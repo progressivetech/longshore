@@ -1334,6 +1334,7 @@ long_configure_site() {
   # But wait, there's more. Some sites want to disabled authnet email receipt settings
   # see: https://support.ourpowerbase.net/ticket/1014.
   # So far, that's elpueblo and texasenvironment.
+  # REMOVE WITH 4.7
   if [ "$site" = "elpueblo" -o "$site" = "texasenvironment" ]; then
     echo '$civicrm_setting["CiviCRM Preferences"]["authnet_email_receipt_override"] = FALSE;' >> "${drupal}/local.settings.php"
   fi
