@@ -1,15 +1,15 @@
 <?php
 
 /**
- * @file 
+ * @file
  *
  * Provisioning functions used by longshore to setup Drupal/CiviCRM sites.
  * This file handles only the basic functions needed for a working Drupal
- * and CiviCRM installation. 
+ * and CiviCRM installation.
  *
  * See also:
  *  * ptp.drush.inc: The PTP drush file ensures all sites have a PTP user
- *    entered and report statistics to the PTP site. 
+ *    entered and report statistics to the PTP site.
  *  * pbd.drush.inc: The PBD drush file configures a site to be a PowerBase
  *    with all required modules and extensions installed and all
  *    configuration options in place.
@@ -36,7 +36,7 @@ function lsd_drush_command() {
   $items['lsd-set-paths'] = array(
     'description' => 'Ensure all Drupal and CiviCRM paths and URLs are set correctly.',
   );
-  $items['lsd-extensions-update'] = 
+  $items['lsd-extensions-update'] =
     array('description' => "Do database updates for all extensions.");
 
   return $items;
@@ -46,12 +46,12 @@ function lsd_drush_command() {
  * Implementation of command 'lsd-civicrm-install'
  *
  * Unfortunately, drush won't let us run the civicrm-install command
- * if civicrm is not enabled. 
+ * if civicrm is not enabled.
  */
 function drush_lsd_civicrm_install() {
   $db_spec = lsd_install_prep();
 
-  // Setting lang to empty avoids having the installer try to untar the 
+  // Setting lang to empty avoids having the installer try to untar the
   // language files (which we handle via drush make).
   $lang = '';
 
@@ -84,10 +84,10 @@ function drush_lsd_civicrm_settings() {
 /**
  * Implementation of command lsd-set-paths.
  *
- * Ensure all basic drupal and civicrm paths and urls are set 
+ * Ensure all basic drupal and civicrm paths and urls are set
  */
 function drush_lsd_set_paths() {
-  // First, drupal paths. 
+  // First, drupal paths.
   $settings = array(
     'file_public_path' => 'sites/default/files',
     'file_private_path' => 'sites/default/private',
@@ -106,7 +106,7 @@ function drush_lsd_set_paths() {
   $freshen_extensions_cache = FALSE;
 
   $abs_root_path = '/var/www/powerbase';
-  $rel_site_path ='sites/default'; 
+  $rel_site_path ='sites/default';
   $abs_site_path = $abs_root_path . '/' . $rel_site_path;
 
   // Fork - depending on CiviCRM version.
@@ -146,7 +146,7 @@ function drush_lsd_set_paths() {
         'group_name' => 'Directory Preferences',
       ),
     );
-    
+
     while(list($k,$v) = each($keys)) {
       // Check if it exists and needs changing.
       $sql = 'SELECT id, value FROM civicrm_setting WHERE name = %1 AND group_name = %2';
@@ -231,7 +231,7 @@ function lsd_install_prep() {
 
   // We are using the same db credentials as Drupal - so we first have to
   // retrieve those values via the db_spec.
- 
+
   // The function drush_civicrm_get_db_spec is defined in civicrm.drush.inc.
   $db_spec = drush_civicrm_get_db_spec();
 
@@ -249,7 +249,7 @@ function lsd_install_prep() {
   $crmPath = "${modPath}/civicrm";
 
   // Set some include paths. This is handled in the civicrm_setup function in
-  // install/civicrm.php - but that function also messes with directory 
+  // install/civicrm.php - but that function also messes with directory
   // permissions so I'd rather not call it.
   $pkgPath = $crmPath . DIRECTORY_SEPARATOR . 'packages';
   set_include_path(
@@ -278,12 +278,12 @@ function drush_lsd_extensions_update() {
     'title' => ts('Database Upgrades'),
     'queue' => $queue,
     'errorMode'=> CRM_Queue_Runner::ERROR_ABORT,
-    'onEnd' => NULL, 
-    'onEndUrl' => NULL 
+    'onEnd' => NULL,
+    'onEndUrl' => NULL
   ));
 
   CRM_Core_Error::debug_log_message('CRM_Admin_Page_ExtensionsUpgrade: Start upgrades');
-  $out = $runner->runAll(); 
+  $out = $runner->runAll();
   if($out !== TRUE) {
     $out = print_r($out, TRUE);
     drush_log("Failed to run database updates on extensions.", 'error');
