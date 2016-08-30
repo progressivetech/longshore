@@ -537,8 +537,21 @@ function pbd_one_time_configuration() {
   pbd_add_web_location_type();
   pbd_add_constituent_type_fields_to_profiles();
   pbd_add_first_tag();
+  pbd_configure_ckeditor();
 
   pbd_set_setting('one-time-configuration-set', 1);
+}
+
+/**
+ * Put in default ckeditor configuration.
+ * Technically this should only go in sites that are 4.7 or higher
+ * but there is no harm in having it land in 4.6 sites.
+ **/
+function pbd_configure_ckeditor() {
+  $base_dir = __dir__ . '/templates';
+  $source = $base_dir . '/crm-ckeditor-config.js';
+  $dest = "/var/www/powerbase/sites/default/files/civicrm/persist/crm-ckeditor-config.js";
+  copy($source, $dest);
 }
 
 /**
