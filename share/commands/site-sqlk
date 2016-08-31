@@ -1,0 +1,34 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-sqlk <site> [<sec>]
+Kill all MySQL queries running for longer than 120 seconds or <sec> if passed.
+
+Arguments
+  <site> - The site database to run agaist.
+  <sec> - Optionally, pass the seconds to trigger on (or 7200 if left out)."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+declare -i seconds 
+seconds="$3"
+
+if [ -z "$seconds" ]; then
+  seconds=7200
+fi
+
+long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+
+declare -i time
+longshore site-sqlt "$site" | egrep '[0-9]' | while read pid user host db command time therest; do
+  [ "$command" = "Sleep" ] && continue
+  if [ -n "$time" ] && [ "$time" -gt "$seconds" ] && [ -n "$pid" ]; then
+    if [[ "$pid" =~ ^[0-9]+$ ]]; then
+      # Silently email the passed contact
+      msg=$(printf "The database %s has a process running for %s seconds. Kill with: longshore site-sqlt %s %s.\n" $db $time $db $pid)
+      echo $msg
+      #echo "$line" | mail -s "mysql process killer" $MF_MYSQL_PROCESS_KILLER_EMAIL
+    fi
+  fi
+done
