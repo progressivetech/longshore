@@ -33,7 +33,7 @@ for site in $sites; do
       if [[ "$pid" =~ ^[0-9]+$ ]]; then
         # Silently email the passed contact
         msg=$(printf "The database %s has a process running for %s seconds. Kill with: longshore site-sqlt %s %s.\n" $db $time $db $pid)
-        echo "$msg" | mail -s "long running mysql process" jamie@progressivetech.org support@progressivetech.org jamie@mayfirst.org alice@progressivetech.org tomas@progressivetech.org 
+        echo "$msg" | mail -s "long running mysql process" $LONG_DEBUG_EMAIL 
       fi
     fi
   done
