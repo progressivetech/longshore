@@ -27,8 +27,7 @@ longshore site-sqlt "$site" | egrep '[0-9]' | while read pid user host db comman
     if [[ "$pid" =~ ^[0-9]+$ ]]; then
       # Silently email the passed contact
       msg=$(printf "The database %s has a process running for %s seconds. Kill with: longshore site-sqlt %s %s.\n" $db $time $db $pid)
-      echo $msg
-      #echo "$line" | mail -s "mysql process killer" $MF_MYSQL_PROCESS_KILLER_EMAIL
+      echo "$msg" | mail -s "long running mysql process" jamie@progressivetech.org support@progressivetech.org jamie@mayfirst.org alice@progressivetech.org tomas@progressivetech.org 
     fi
   fi
 done
