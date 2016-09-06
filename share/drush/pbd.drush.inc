@@ -114,7 +114,6 @@ function drush_pbd_configure() {
   pbd_turn_off_version_check();
   pbd_turn_off_empowered_by_civicrm_footer();
   pbd_ensure_civicrm_news_removed_from_dashboard();
-  pbd_set_viewable_contact_tabs();
   pbd_add_partner_greeting_options();
   pbd_enable_user_framework_logging();
   pbd_configure_wkhtmltopdf();
@@ -164,14 +163,7 @@ function pbd_configure_dev_site() {
  **/
 function pbd_configure_wkhtmltopdf() {
   require_once "CRM/Core/BAO/ConfigSetting.php";
-  $config['wkhtmltopdfPath'] = '/usr/bin/xvfb-run -- wkhtmltopdf';
-  $codeVer = CRM_Utils_System::version();
-  if(version_compare($codeVer, '4.7', '>=')) {
-    civicrm_api3('setting', 'create', $config);
-  }
-  else {
-    CRM_Core_BAO_ConfigSetting::add($config);
-  }
+  pbd_setting('wkhtmltopdfPath', '/usr/bin/xvfb-run -- wkhtmltopdf');
 }
 
 /**
@@ -181,14 +173,7 @@ function pbd_configure_wkhtmltopdf() {
  */
 function pbd_set_max_file_size() {
   // The number is in MB. Our php.ini file should allow up to 30MB.
-  $config["maxFileSize"] = 20;
-  $codeVer = CRM_Utils_System::version();
-  if(version_compare($codeVer, '4.7', '>=')) {
-    civicrm_api3('setting', 'create', $config);
-  }
-  else {
-    CRM_Core_BAO_ConfigSetting::add($config);
-  }
+  pbd_setting("maxFileSize", 20);
 }
 
 /**
@@ -197,15 +182,7 @@ function pbd_set_max_file_size() {
  */
 function pbd_enable_user_framework_logging() {
   _civicrm_init();
-  $params = Array ( 'userFrameworkLogging' => 1);
-  $codeVer = CRM_Utils_System::version();
-  if(version_compare($codeVer, '4.7', '>=')) {
-    civicrm_api3('setting', 'create', $params);
-  }
-  else {
-    require_once "CRM/Core/BAO/ConfigSetting.php";
-    CRM_Core_BAO_ConfigSetting::add($params);
-  }
+  pbd_setting('userFrameworkLogging', 1);
 }
 
 /**
@@ -464,7 +441,7 @@ function drush_pbd_update_assessments() {
  **/
 function pbd_set_setting($key, $value) {
   $group = 'PowerBase Drush';
-  CRM_Core_BAO_Setting::setItem($value, $group, $key);
+  pbd_setting($key, $value, $group);
 }
 
 /**
@@ -473,10 +450,18 @@ function pbd_set_setting($key, $value) {
  **/
 function pbd_get_setting($key, $default = NULL) {
   $group = 'PowerBase Drush';
-  $ret = CRM_Core_BAO_Setting::getItem($group, $key);
+  $codeVer = CRM_Utils_System::version();
+  if(version_compare($codeVer, '4.7', '>=')) {
+    $params['name'] = $key;
+    $ret = civicrm_api3('Setting', 'getvalue', $params);
+  }
+  else {
+    $ret = CRM_Core_BAO_Setting::getItem($group, $key);
+  }
   if(empty($ret)) return $default;
   return $ret;
 }
+
 /**
  * Do one time configuration setup for PowerBase sites.
  *
@@ -708,18 +693,15 @@ function pbd_enable_waitlist_participant_status_types() {
  * This is sometimes false and we get alerts and handle the updates.
  **/
 function pbd_disable_security_update_alert() {
-  _civicrm_init();
-  try {
-    $params = array('securityUpdateAlert' => 1);
-    $results = civicrm_api3('Setting', 'create', $params);
-    civicrm_api3('Setting', 'create', $params);
-    drush_log("Update secuirity Update Alert value.");
+  $codeVer = CRM_Utils_System::version();
+  if(version_compare($codeVer, '4.7', '<')) {
+    $name = 'securityUpdateAlert';
   }
-  catch (CiviCRM_API3_Exception $e) {
-    drush_log(dt("Failed to update Security Alert Value."), 'error');
-    drush_log($e->getMessage(), 'error');
-    return FALSE;
+  else {
+    $name = 'securityAlert';
   }
+  $params = array($name => 1);
+  civicrm_api3('Setting', 'create', $params);
   return TRUE;
 }
 
@@ -1506,27 +1488,16 @@ function pbd_change_debugging($status) {
 }
 
 function pbd_set_optin_defaults() {
-  _civicrm_init();
-  require_once "CRM/Core/BAO/Setting.php";
-  CRM_Core_BAO_Setting::setItem('0', 'Mailing Preferences','profile_add_to_group_double_optin');
-  CRM_Core_BAO_Setting::setItem('0', 'Mailing Preferences', 'profile_double_optin');
+  pbd_setting('profile_add_to_group_double_optin', '0', 'Mailing Preferences');
+  pbd_setting('profile_double_optin', '0', 'Mailing Preferences');
 }
 
 function pbd_default_geo_settings() {
   _civicrm_init();
   $mapProvider = 'Google';
   $geoProvider = 'Google';
-  $codeVer = CRM_Utils_System::version();
-  if(version_compare($codeVer, '4.7', '>=')) {
-    civicrm_api3('setting', 'create', array('mapProvider' => $mapProvider));
-    civicrm_api3('setting', 'create', array('geoProvider' => $geoProvider));
-  }
-  else {
-    require_once "CRM/Core/BAO/ConfigSetting.php";
-    $config['mapProvider'] = $mapProvider;
-    $config['geoProvider'] = $geoProvider;
-    CRM_Core_BAO_ConfigSetting::add($config);
-  }
+  pbd_setting('mapProvider', $mapProvider);
+  pbd_setting('geoProvider', $geoProvider);
 }
 
 /**
@@ -1850,27 +1821,7 @@ function pbd_fix_contact_edit_options() {
       $ids[] = $dao->value;
     }
     // now ensure the right ones are checked
-    require_once "CRM/Core/BAO/Setting.php";
-    $new_value = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $ids) . CRM_Core_DAO::VALUE_SEPARATOR;
-    CRM_Core_BAO_Setting::setItem($new_value, 'CiviCRM Preferences','contact_edit_options');
-  }
-}
-
-// For already initialized sites, remove formal title.
-function pbd_remove_formal_title() {
-  // Get value for Formal Title
-  $sql = "SELECT value FROM civicrm_option_value v JOIN civicrm_option_group g ON v.option_group_id =
-    g.id WHERE v.name = 'Formal Title' AND g.name = 'contact_edit_options'";
-  $dao = CRM_Core_DAO::executeQuery($sql);
-  $dao->fetch();
-  if(!empty($dao->value)) {
-    $existing = explode(CRM_Core_DAO::VALUE_SEPARATOR, CRM_Core_BAO_Setting::getItem('CiviCRM Preferences','contact_edit_options'));
-    $formal_title_key = array_search($dao->value, $existing);
-    if($formal_title_key) {
-      unset($existing[$formal_title_key]);
-      $new_value = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $existing) . CRM_Core_DAO::VALUE_SEPARATOR;
-      CRM_Core_BAO_Setting::setItem($new_value, 'CiviCRM Preferences','contact_edit_options');
-    }
+    pbd_setting('contact_edit_options', $ids, 'CiviCRM Preferences');
   }
 }
 
@@ -1890,53 +1841,29 @@ function pbd_fix_user_dashboard_options() {
       $ids[] = $dao->value;
     }
     $codeVer = CRM_Utils_System::version();
-    if(version_compare($codeVer, '4.7', '>=')) {
-      civicrm_api3('setting', 'create', array('user_dashboard_options' => $ids));
+    if(version_compare($codeVer, '4.7', '<')) {
+      // We need a different format for the values if we're using the pre 4.7 method.
+      $ids = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $ids) . CRM_Core_DAO::VALUE_SEPARATOR;
     }
-    else {
-      // now ensure the right ones are checked
-      require_once "CRM/Core/BAO/Setting.php";
-      $new_value = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $ids) . CRM_Core_DAO::VALUE_SEPARATOR;
-      CRM_Core_BAO_Setting::setItem($new_value, 'CiviCRM Preferences','user_dashboard_options');
-    }
+    pbd_setting('user_dashboard_options', $ids, 'CiviCRM Preferences');
   }
 }
 
 function pbd_turn_off_version_check() {
-  _civicrm_init();
-  $params = Array ( 'versionCheck' => 0);
   $codeVer = CRM_Utils_System::version();
-  if(version_compare($codeVer, '4.7', '>=')) {
-    civicrm_api3('setting', 'create', $params);
-  }
-  else {
-    CRM_Core_BAO_ConfigSetting::add($params);
+  if(version_compare($codeVer, '4.7', '<')) {
+    // In 4.7 this is a cron job that can be left disabled.
+    pbd_setting('versionCheck', 0);
   }
 }
 
 function pbd_turn_off_empowered_by_civicrm_footer() {
-  _civicrm_init();
-  $params = Array ( 'empoweredBy' => 0);
-  $codeVer = CRM_Utils_System::version();
-  if(version_compare($codeVer, '4.7', '>=')) {
-    civicrm_api3('setting', 'create', $params);
-  }
-  else {
-    CRM_Core_BAO_ConfigSetting::add($params);
-  }
+  pbd_setting('empoweredBy', 0);
 }
 
 function pbd_turn_off_pdf_receipt() {
-  _civicrm_init();
   // this setting means do not attach pdf receipt...
-  $params = Array ( 'doNotAttachPDFReceipt' => 0);
-  $codeVer = CRM_Utils_System::version();
-  if(version_compare($codeVer, '4.7', '>=')) {
-    civicrm_api3('setting', 'create', $params);
-  }
-  else {
-    CRM_Core_BAO_ConfigSetting::add($params);
-  }
+  pbd_setting('doNotAttachPDFReceipt', 0);
 }
 
 function pbd_disable_communications_status() {
@@ -3516,7 +3443,7 @@ function pbd_enable_default_extensions() {
     while(list(,$ext) = each($uninstall_extensions)) {
       $params['keys'][] = $ext;
     }
-    if(count($params['keys'] > 0)) {
+    if(!empty($params['keys'])) {
       drush_log(dt("Uninstalling extensions"));
       civicrm_api3('Extension', 'disable', $params);
       civicrm_api3('Extension', 'uninstall', $params);
@@ -3537,7 +3464,7 @@ function pbd_enable_default_extensions() {
         $params['keys'][] = $ext;
       }
     }
-    if(count($params['keys'] > 0)) {
+    if(!empty($params['keys'])) {
       drush_log(dt("Installing extensions"));
       civicrm_api3('Extension', 'install', $params);
     }
@@ -3621,25 +3548,49 @@ function pbd_ensure_civicrm_news_removed_from_dashboard() {
 function pbd_configure_google_recaptcha() {
   $secret = getenv('LONG_GOOGLE_RECAPTCHA_SECRET_KEY');
   $site = getenv('LONG_GOOGLE_RECAPTCHA_SITE_KEY');
-  $codeVer = CRM_Utils_System::version();
   if($secret) {
     drush_log(dt("Configuring Google Captcha"), 'notice');
-    $config['recaptchaPrivateKey'] = $secret;
-    if(version_compare($codeVer, '4.7', '>=')) {
-      civicrm_api3('setting', 'create', $config);
-    }
-    else {
-      CRM_Core_BAO_ConfigSetting::add($config);
-    }
+    pbd_setting('recaptchaPrivateKey', $secret);
   }
   if($site) {
-    $config['recaptchaPublicKey'] = $site;
-    if(version_compare($codeVer, '4.7', '>=')) {
-      civicrm_api3('setting', 'create', $config);
+    pbd_setting('recaptchaPublicKey', $site);
+  }
+}
+
+/**
+ * Add settings properly based on version
+ *
+ * Rip out everything except the api call after we upgrade to 4.7
+ *
+ * 4.7 introduced a new method for adding settings.
+ * Previously, we used either:
+ *   CRM_Core_BAO_ConfigSetting::add($config);
+ * or
+ *   CRM_Core_BAO_Setting::setItem($value, $group, $key);
+ *
+ * If version is earlier than 4.7 and $group is specified
+ * then use the setItem method, otherwise use the add method.
+ */
+function pbd_setting($key, $value, $group = NULL) {
+  $codeVer = CRM_Utils_System::version();
+  $params = array($key => $value);
+  if(version_compare($codeVer, '4.7', '>=')) {
+    civicrm_api3('setting', 'create', $params);
+  }
+  else {
+    if($group) {
+      require_once "CRM/Core/BAO/Setting.php";
+      if(is_array($value)) {
+        // arrays have to be converted to strings first.
+        $value = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $value) . CRM_Core_DAO::VALUE_SEPARATOR;
+      }
+      CRM_Core_BAO_Setting::setItem($value, $group, $key);
     }
     else {
-      CRM_Core_BAO_ConfigSetting::add($config);
+      require_once "CRM/Core/BAO/ConfigSetting.php";
+      CRM_Core_BAO_ConfigSetting::add($params);
     }
   }
 }
+
 ?>
