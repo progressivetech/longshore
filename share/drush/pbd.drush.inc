@@ -389,13 +389,7 @@ function drush_pbd_test_smart_groups() {
     $group->find(TRUE);
     $force = TRUE;
     // Check to see if lock exists
-    if(version_compare($codeVer, '4.6', '>=')) {
-      $lock = Civi\Core\Container::singleton()->get('lockManager')->acquire("data.core.group.{$id}");
-    }
-    else {
-      $lockName = "civicrm.group." . $id;
-      $lock = new CRM_Core_Lock($lockName);
-    }
+    $lock = Civi\Core\Container::singleton()->get('lockManager')->acquire("data.core.group.{$id}");
     if (!$lock->isAcquired()) {
       drush_log(dt("Lock exists, not rebuilding."), 'error');
       continue;
@@ -1289,15 +1283,9 @@ function pbd_create_drupal_roles() {
     'administer dedupe rules',
     'administer reserved reports',
     'delete in CiviContribute',
-    'administer payment processors'
+    'administer payment processors',
+    'administer CiviCRM'
   );
-
-  $codeVer = CRM_Utils_System::version();
-  // We introduced edit message templates in 4.5, which means
-  // regular users no longer need admin privs
-  if(version_compare($codeVer, '4.5', '>=')) {
-    $user_exceptions[] = 'administer CiviCRM';
-  }
 
   // Ensure they are deleted if they have been granted in the past
   if(FALSE !== ($role_obj = user_role_load_by_name('Powerbase User'))) {
