@@ -11,7 +11,7 @@ Arguments:
 long_check_args "$2" "$#" 0
 
 # Set the amount of time to sleep between collections.
-sleep=15
+sleep=45
 metric="$2"
 
 if [ -z "$metric" ]; then
