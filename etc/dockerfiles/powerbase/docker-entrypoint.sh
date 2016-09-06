@@ -22,6 +22,12 @@ if [ "$LONG_LIVE" = "n" ]; then
   # And we ensure the civix is installed
   wget -O /usr/local/bin/civix https://download.civicrm.org/civix/civix.phar
   chmod 755 /usr/local/bin/civix
+
+  # And activate  Jamie's private x509 cert
+  if [ ! -f "/usr/local/share/ca-certificates/jamie.crt" ]; then
+    mv /root/jamie.crt /usr/local/share/ca-certificates/
+    dpkg-reconfigure ca-certificates
+  fi
 fi
 
 # Allow us to overwrite the DNS caching server at runtime.

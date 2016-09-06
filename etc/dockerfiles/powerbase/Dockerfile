@@ -65,6 +65,9 @@ COPY esmtprc /etc/esmtprc
 
 COPY ./docker-entrypoint.sh /entrypoint.sh
 
+# Copy over jamie's x509 cert. It will only be activated on dev sites.
+COPY ./jamie.crt /root/
+
 EXPOSE 9000
 
 ENTRYPOINT ["/entrypoint.sh"]
