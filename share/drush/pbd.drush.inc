@@ -165,7 +165,13 @@ function pbd_configure_dev_site() {
 function pbd_configure_wkhtmltopdf() {
   require_once "CRM/Core/BAO/ConfigSetting.php";
   $config['wkhtmltopdfPath'] = '/usr/bin/xvfb-run -- wkhtmltopdf';
-  CRM_Core_BAO_ConfigSetting::add($config);
+  $codeVer = CRM_Utils_System::version();
+  if(version_compare($codeVer, '4.7', '>=')) {
+    civicrm_api3('setting', 'create', $config);
+  }
+  else {
+    CRM_Core_BAO_ConfigSetting::add($config);
+  }
 }
 
 /**
@@ -176,17 +182,30 @@ function pbd_configure_wkhtmltopdf() {
 function pbd_set_max_file_size() {
   // The number is in MB. Our php.ini file should allow up to 30MB.
   $config["maxFileSize"] = 20;
-  CRM_Core_BAO_ConfigSetting::add($config);
+  $codeVer = CRM_Utils_System::version();
+  if(version_compare($codeVer, '4.7', '>=')) {
+    civicrm_api3('setting', 'create', $config);
+  }
+  else {
+    CRM_Core_BAO_ConfigSetting::add($config);
+  }
 }
+
 /**
  * Send CiviCRM errors to watchdog so users can access them. This is
  * particularly important for SMS errors.
  */
 function pbd_enable_user_framework_logging() {
   _civicrm_init();
-  require_once "CRM/Core/BAO/ConfigSetting.php";
   $params = Array ( 'userFrameworkLogging' => 1);
-  CRM_Core_BAO_ConfigSetting::add($params);
+  $codeVer = CRM_Utils_System::version();
+  if(version_compare($codeVer, '4.7', '>=')) {
+    civicrm_api3('setting', 'create', $params);
+  }
+  else {
+    require_once "CRM/Core/BAO/ConfigSetting.php";
+    CRM_Core_BAO_ConfigSetting::add($params);
+  }
 }
 
 /**
@@ -370,7 +389,6 @@ function drush_pbd_test_smart_groups() {
     $group->find(TRUE);
     $force = TRUE;
     // Check to see if lock exists
-    $codeVer = CRM_Utils_System::version();
     if(version_compare($codeVer, '4.6', '>=')) {
       $lock = Civi\Core\Container::singleton()->get('lockManager')->acquire("data.core.group.{$id}");
     }
@@ -1521,10 +1539,17 @@ function pbd_default_geo_settings() {
   _civicrm_init();
   $mapProvider = 'Google';
   $geoProvider = 'Google';
-  require_once "CRM/Core/BAO/ConfigSetting.php";
-  $config['mapProvider'] = $mapProvider;
-  $config['geoProvider'] = $geoProvider;
-  CRM_Core_BAO_ConfigSetting::add($config);
+  $codeVer = CRM_Utils_System::version();
+  if(version_compare($codeVer, '4.7', '>=')) {
+    civicrm_api3('setting', 'create', array('mapProvider' => $mapProvider));
+    civicrm_api3('setting', 'create', array('geoProvider' => $geoProvider));
+  }
+  else {
+    require_once "CRM/Core/BAO/ConfigSetting.php";
+    $config['mapProvider'] = $mapProvider;
+    $config['geoProvider'] = $geoProvider;
+    CRM_Core_BAO_ConfigSetting::add($config);
+  }
 }
 
 /**
@@ -1887,30 +1912,54 @@ function pbd_fix_user_dashboard_options() {
     while($dao->fetch()) {
       $ids[] = $dao->value;
     }
-    // now ensure the right ones are checked
-    require_once "CRM/Core/BAO/Setting.php";
-    $new_value = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $ids) . CRM_Core_DAO::VALUE_SEPARATOR;
-    CRM_Core_BAO_Setting::setItem($new_value, 'CiviCRM Preferences','user_dashboard_options');
+    $codeVer = CRM_Utils_System::version();
+    if(version_compare($codeVer, '4.7', '>=')) {
+      civicrm_api3('setting', 'create', array('user_dashboard_options' => $ids));
+    }
+    else {
+      // now ensure the right ones are checked
+      require_once "CRM/Core/BAO/Setting.php";
+      $new_value = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $ids) . CRM_Core_DAO::VALUE_SEPARATOR;
+      CRM_Core_BAO_Setting::setItem($new_value, 'CiviCRM Preferences','user_dashboard_options');
+    }
   }
 }
 
 function pbd_turn_off_version_check() {
   _civicrm_init();
   $params = Array ( 'versionCheck' => 0);
-  CRM_Core_BAO_ConfigSetting::add($params);
+  $codeVer = CRM_Utils_System::version();
+  if(version_compare($codeVer, '4.7', '>=')) {
+    civicrm_api3('setting', 'create', $params);
+  }
+  else {
+    CRM_Core_BAO_ConfigSetting::add($params);
+  }
 }
 
 function pbd_turn_off_empowered_by_civicrm_footer() {
   _civicrm_init();
   $params = Array ( 'empoweredBy' => 0);
-  CRM_Core_BAO_ConfigSetting::add($params);
+  $codeVer = CRM_Utils_System::version();
+  if(version_compare($codeVer, '4.7', '>=')) {
+    civicrm_api3('setting', 'create', $params);
+  }
+  else {
+    CRM_Core_BAO_ConfigSetting::add($params);
+  }
 }
 
 function pbd_turn_off_pdf_receipt() {
   _civicrm_init();
   // this setting means do not attach pdf receipt...
   $params = Array ( 'doNotAttachPDFReceipt' => 0);
-  CRM_Core_BAO_ConfigSetting::add($params);
+  $codeVer = CRM_Utils_System::version();
+  if(version_compare($codeVer, '4.7', '>=')) {
+    civicrm_api3('setting', 'create', $params);
+  }
+  else {
+    CRM_Core_BAO_ConfigSetting::add($params);
+  }
 }
 
 function pbd_disable_communications_status() {
@@ -3486,7 +3535,6 @@ function pbd_enable_default_extensions() {
   try{
     // Uninstall first.
     $uninstall_extensions = array();
-    $code_version = CRM_Utils_System::version();
     $params['keys'] = array();
     while(list(,$ext) = each($uninstall_extensions)) {
       $params['keys'][] = $ext;
@@ -3596,14 +3644,25 @@ function pbd_ensure_civicrm_news_removed_from_dashboard() {
 function pbd_configure_google_recaptcha() {
   $secret = getenv('LONG_GOOGLE_RECAPTCHA_SECRET_KEY');
   $site = getenv('LONG_GOOGLE_RECAPTCHA_SITE_KEY');
+  $codeVer = CRM_Utils_System::version();
   if($secret) {
     drush_log(dt("Configuring Google Captcha"), 'notice');
     $config['recaptchaPrivateKey'] = $secret;
-    CRM_Core_BAO_ConfigSetting::add($config);
+    if(version_compare($codeVer, '4.7', '>=')) {
+      civicrm_api3('setting', 'create', $config);
+    }
+    else {
+      CRM_Core_BAO_ConfigSetting::add($config);
+    }
   }
   if($site) {
     $config['recaptchaPublicKey'] = $site;
-    CRM_Core_BAO_ConfigSetting::add($config);
+    if(version_compare($codeVer, '4.7', '>=')) {
+      civicrm_api3('setting', 'create', $config);
+    }
+    else {
+      CRM_Core_BAO_ConfigSetting::add($config);
+    }
   }
 }
 ?>
