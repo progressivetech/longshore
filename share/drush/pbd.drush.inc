@@ -209,17 +209,6 @@ function pbd_enable_user_framework_logging() {
 }
 
 /**
- * Set which tabs are on by default when viewing a contact
- **/
-function pbd_set_viewable_contact_tabs() {
-  // Enable all tabs
-  $key = 'contact_view_options';
-  $values = $groupValues = CRM_Core_OptionGroup::values($key);
-  $value = CRM_Utils_Array::implodePadded(array_keys($values));
-  CRM_Core_BAO_Setting::setItem($value, CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, $key);
-}
-
-/**
  * Add contact_and_partner_first_name option to all greetings.
  */
 function pbd_add_partner_greeting_options() {
