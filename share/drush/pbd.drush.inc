@@ -66,6 +66,7 @@ function drush_pbd_configure() {
 
   /* Drupal Settings */
   pbd_enable_modules();
+  pbd_configure_themekey();
   pbd_configure_autologout();
   pbd_configure_jquery_update();
   pbd_create_drupal_roles();
@@ -2967,6 +2968,45 @@ function pbd_return_entity($entity, $params, $key = 'name') {
     return array();
   }
   return array_pop($results['values']);
+}
+
+/**
+ * Setup default themekey rules.
+ */
+function pbd_configure_themekey() {
+  $existing = db_query("SELECT status FROM {system} WHERE type = 'module' AND name = 'themekey'")->fetchObject();
+  // Only configure if themekey is enabled.
+  if($existing->status == 1) {
+    // We have default settings for the major changes we often use. By default, we set
+    // the theme to the default theme, making it easy to change once we have a new
+    // custom theme.
+    $settings = array(
+      '(civicrm/profile/edit|civicrm/profile/view|civicrm/profile/create)',
+      '(civicrm/mailing/subscribe|civicrm/mailing/unsubscribe|civicrm/mailing/optout|civicrm/mailing/resubscribe)',
+      '(civicrm/contribute/transact|civicrm/pcp|civicrm/contribute/campaign|civicrm/contribute/unsubscribe|civicrm/contribute/updatebilling|civicrm/contribute/updaterecur)',
+      '(civicrm/event/info|civicrm/event/register|civicrm/event/confirm|civicrm/mailing/forward|civicrm/event/ical|civicrm/event/view_cart|event/cart_checkout)',
+    );
+    $weight_query = db_query("SELECT MAX(weight) AS weight FROM {themekey_properties}")->fetchObject();
+    $weight = empty($weight_query->weight) ? 1 : $weight_query->weight;
+    foreach($settings as $value) {
+      $status = db_query("SELECT id FROM {themekey_properties} WHERE value = :value",
+        array(':value' => $value))->fetchObject();
+      if(empty($status->id)) {
+        // Insert it
+        db_insert("themekey_properties")
+          ->fields(array(
+            'property' => 'drupal:get_q',
+            'operator' => '~',
+            'value' => $value,
+            'weight' => $weight,
+            'theme' => 'default',
+            'enabled' => 1,
+            'wildcards' => serialize(array()),
+            'module' => 'themekey'
+          ))->execute();
+      }
+    }
+  }
 }
 
 /**
