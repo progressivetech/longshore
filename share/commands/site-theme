@@ -86,24 +86,7 @@ function ${name}_preprocess_page(&\$variables) {
 EOF
 
 cat > "${theme_path}/$name.css" <<EOF
-.navbar-default {
-  background-color: white;
-  border-color: white;
-}
-
-#navbar {
-  margin-left: 0px;
-  margin-right: 0px;
-  width: 100%;
-  margin-top: 0px;
-  border: none;
-}
-
-#navbar .logo {
-  display: block;
-  height: auto;
-  max-width: 100% !important;
-}
+/** See https://support.ourpowerbase.net/wiki/create-custom-theme **/
 EOF
 
 long_prompt "Your theme ($name) has been created. Would you like to edit the css file now?"
