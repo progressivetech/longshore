@@ -13,14 +13,6 @@ function pbd_drush_command() {
   $items = array();
   $items['pbd-configure'] =
     array('description' => "Ensure all PowerBase site are configured consisently.");
-  $items['pbd-update-addresses'] =
-    array('description' => "Run UpdateAddress.php",
-      'options' =>
-        array(
-          '--start' => 'Number to start on (1 by default)',
-          '--end' => 'Number to end on (1000 by default)',
-        )
-    );
   $items['pbd-enable-debugging'] =
     array( 'description' => "Enable CiviCRM Debugging.");
   $items['pbd-disable-debugging'] =
@@ -35,6 +27,13 @@ function pbd_drush_command() {
     array( 'description' => "Rebuild all smart groups to find ones that are broken.");
   $items['pbd-update-assessments'] =
     array( 'description' => "Update all assessments (depends on net.ourpowerbase.assess extension).");
+  $items['pbd-prepare-theme'] =
+    array(
+      'description' => "Setup a new theme to work as custom theme (remove blocks, configure theme, etc.)",
+      'options' => array(
+        'name' => 'The name of the theme to prepare.'
+      )
+    );
   return $items;
 }
 
@@ -428,6 +427,39 @@ function drush_pbd_update_assessments() {
   }
 }
 
+/**
+ * Prepare a new theme.
+ *
+ * When creating a new theme, a number of steps have to be taken to enable
+ * it to work properly as a custom theme.
+ */
+function drush_pbd_prepare_theme() {
+  // Start with enabling it.
+  $name = drush_get_option('name');
+  theme_enable(array($name));
+  // Save theme settings.
+  $settings = array(
+    'toggle_logo' => 1,
+    'toggle_name' => 0,
+    'toggle_slogan' => 0,
+    'toggle_node_user_picture' => 0,
+    'toggle_comment_user_verification' => 0,
+    'toggle_favicon' => 0,
+    'toggle_main_menu' => 0,
+    'toggle_secondary_menu' => 0,
+    'default_logo' => 0,
+    'logo_path' => "sites/default/themes/${name}/${name}-logo.png"
+  );
+  variable_set('theme_' . $name . '_settings', $settings);
+
+  // Now let's kill the blocks.
+  db_update("block")
+    ->fields(array('status' => 0, 'region' => -1))
+    ->condition('theme', $name, '=')
+    ->condition('region', 'content', '!=')
+    ->execute();
+
+}
 /*
  * ***************************************************************
  *

@@ -89,6 +89,8 @@ cat > "${theme_path}/$name.css" <<EOF
 /** See https://support.ourpowerbase.net/wiki/create-custom-theme **/
 EOF
 
+long_exec_drush_cmd "$site" "pbd-prepare-theme --name=$name"
+
 long_prompt "Your theme ($name) has been created. Would you like to edit the css file now?"
 if [ "$reply" = "y" ]; then
   editor "${theme_path}/$name.css"
