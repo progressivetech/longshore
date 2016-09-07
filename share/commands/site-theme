@@ -45,7 +45,7 @@ homepage="http://${site}.org/"
 cat > "${theme_path}/${name}.info" <<EOF
 name = $name 
 description = $name Subtheme
-base theme = powerbase 
+base theme = civiresponsive 
 core = 7.x
 engine = phptemplate
 
@@ -66,6 +66,7 @@ regions[footer]         = 'Footer'
 regions[page_top]       = 'Page top'
 regions[page_bottom]    = 'Page bottom'
 
+settings[bootstrap_cdn] = ''
 EOF
 
 # optional template.php page
