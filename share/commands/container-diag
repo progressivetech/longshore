@@ -1,49 +1,68 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) diag <test> <container>
+long_usage_message="usage: $(basename $0) container-diag <test> [<container>|<pid>]
 Run one of our diagnostic tests on a container or all containers.
 REMEMBER: this runs on containers not sites!
 
 Arguments
-  <test> - the test to run. Currently only one test: rw
-    which ensures that the filesystem is in read/write
-    mode.
+  <test> - the test to run.  rw ensures that the filesystem is 
+    in read/write mode. pid returns the name of the container
+    with the given pid (in which case the next argument should
+    be the pid).
   <container> - the container to run on. Can be any site
     or database or --all or empty to run on all containers."
 
 long_check_args "$2" "$#" 1
 
 test="$2"
-containers="$3"
 
-if [ "$test" != "rw" ]; then
-  long_die "rw is the only supported test we have."
+if [ "$test" != "rw" -a "$test" != "pid" ]; then
+  long_die "rw and pid are the only supported tests we have."
 fi
 
-if [ -z "$containers" -o "$containers" = "--all" ]; then
-  containers=$(docker ps -q)
+if [ "$test" = "pid" ]; then
+  pid="$3"
+  [ -d "/proc/${pid}" ] || long_die "The pid is not running."
+  [ -f "/proc/${pid}/cgroup" ] || long_die "No cgroup file in /proc."
+  # Some kernels separate docker with a dash (4.6) and others with a slash
+  # (4.3)
+  out=$(egrep -o "docker.[0-9a-f]{12}" "/proc/${pid}/cgroup" | head -n1)
+  [ -z "$out" ] && long_die "Doesn't seem to be a docker pid."
+  # Extract the id of the docker container
+  id=$(echo "$out" | sed -E "s/docker.//")
+  long_get_container_name "$id"
+  [ -z "$LONG_CONTAINER_NAME" ] && long_die "Doesn't seem to be a running container."
+  name="$LONG_CONTAINER_NAME"
+  printf "Container: %s\n" "$name"
+
 else
-  # Convert to ids so we are consistent
-  containers=$(docker ps --filter=name="$container" -q)
-fi
 
-temp=$(mktemp --dry-run)
-for container in $containers; do
-  long_get_container_name "$container"
-  if ! long_container_running "$LONG_CONTAINER_NAME"; then
-    long_log "The container (%s) is not running" error "$LONG_CONTAINER_NAME"
-    continue
+  containers="$3"
+
+  if [ -z "$containers" -o "$containers" = "--all" ]; then
+    containers=$(docker ps -q)
+  else
+    # Convert to ids so we are consistent
+    containers=$(docker ps --filter=name="$container" -q)
   fi
-  if [ "$test" = "rw" ]; then
-    if docker exec "$container" touch "$temp"; then
-      long_log "The container %s is writable." info "$LONG_CONTAINER_NAME"
-      docker exec "$container" rm "$temp"
-    else
-      long_log "ERROR: The container %s is NOT writable." error "$LONG_CONTAINER_NAME"
+
+  temp=$(mktemp --dry-run)
+  for container in $containers; do
+    long_get_container_name "$container"
+    if ! long_container_running "$LONG_CONTAINER_NAME"; then
+      long_log "The container (%s) is not running" error "$LONG_CONTAINER_NAME"
+      continue
     fi
-  fi
-done
-
+    if [ "$test" = "rw" ]; then
+      if docker exec "$container" touch "$temp"; then
+        long_log "The container %s is writable." info "$LONG_CONTAINER_NAME"
+        docker exec "$container" rm "$temp"
+      else
+        long_log "ERROR: The container %s is NOT writable." error "$LONG_CONTAINER_NAME"
+      fi
+    fi
+  done
+fi
 
 
 
