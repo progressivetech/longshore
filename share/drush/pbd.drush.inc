@@ -3496,7 +3496,6 @@ function pbd_configure_default_cicero_mappings() {
 function pbd_enable_default_extensions() {
   $default_extensions = array(
     'net.ourpowerbase.geocoder.yahooboss',
-    'biz.jmaconsulting.search.anyteloremail',
     'net.ourpowerbase.search.eventcount',
     'net.ourpowerbase.engage',
     'net.ourpowerbase.report.dbhealth',
@@ -3506,7 +3505,9 @@ function pbd_enable_default_extensions() {
     'net.ourpowerbase.sumfields',
     'de.systopia.osm'
   );
-  $uninstall_extensions = array();
+  $uninstall_extensions = array(
+    'biz.jmaconsulting.search.anyteloremail',
+  );
   _civicrm_init();
   try{
     // Uninstall first.
