@@ -3511,7 +3511,6 @@ function pbd_enable_default_extensions() {
   _civicrm_init();
   try{
     // Uninstall first.
-    $uninstall_extensions = array();
     $params['keys'] = array();
     while(list(,$ext) = each($uninstall_extensions)) {
       $params['keys'][] = $ext;
