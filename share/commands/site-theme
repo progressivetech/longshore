@@ -18,6 +18,10 @@ long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 
 long_rerun_over_network "$@" && exit
 
+# If the site is not running we can't setup the theme.
+if ! long_container_running "$site"; then
+  long_die "Not running for %s because it is not running." 1 "$site"
+fi
 
 # If the theme name is ommitted, use the name of the site.
 [ -z "$name" ] && name="$site"

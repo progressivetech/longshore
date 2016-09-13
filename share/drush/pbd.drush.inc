@@ -434,7 +434,10 @@ function drush_pbd_update_assessments() {
  * it to work properly as a custom theme.
  */
 function drush_pbd_prepare_theme() {
-  // Start with enabling it.
+  // Clear the cache so the theme is visible.
+  drupal_theme_rebuild();
+  system_rebuild_theme_data();
+  // Enable it.
   $name = drush_get_option('name');
   theme_enable(array($name));
   // Save theme settings.
