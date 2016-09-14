@@ -436,9 +436,14 @@ function drush_pbd_update_assessments() {
 function drush_pbd_prepare_theme() {
   // Clear the cache so the theme is visible.
   drupal_theme_rebuild();
-  system_rebuild_theme_data();
-  // Enable it.
+  $themes = system_rebuild_theme_data();
   $name = drush_get_option('name');
+  // Ensure the theme is here (e.g. typo)
+  if(!array_key_exists($name, $themes)) {
+    drush_log("That theme does not exist in the filesystem.", 'error');
+    return;
+  }
+  // Enable it.
   theme_enable(array($name));
   // Save theme settings.
   $settings = array(
