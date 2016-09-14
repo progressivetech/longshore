@@ -3514,7 +3514,6 @@ function pbd_enable_default_extensions() {
     'de.systopia.osm'
   );
   $uninstall_extensions = array(
-    'biz.jmaconsulting.search.anyteloremail',
   );
   _civicrm_init();
   try{
