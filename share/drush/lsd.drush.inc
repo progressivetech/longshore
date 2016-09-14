@@ -187,6 +187,7 @@ function drush_lsd_set_paths() {
       'extensionsURL' => "sites/all/extensions",
       'customTemplateDir' => "${abs_site_path}/custom-civicrm/templates",
       'customPHPPathDir' => "${abs_site_path}/custom-civicrm/php",
+      'userFrameworkResourceURL' => CIVICRM_UF_BASEURL . '/sites/all/modules/civicrm'
     );
 
     // Get all settings and only update if they are different.
