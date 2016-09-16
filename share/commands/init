@@ -84,17 +84,6 @@ if ! stat /srv/longshore/bin | grep "Uid" | grep "$LONG_HOST_USER" >/dev/null; t
   fi
 fi
 
-# Ensure the file that needs to be run as sudo is installed and up-to-date
-source="${LONG_SHARE}/templates/longshore-create-base-image" 
-target="/usr/local/sbin/longshore-create-base-image"
-if  [ ! -f "$target" ] || ! diff -q "$source" "$target" >/dev/null; then
-  long_prompt "Updating longshore-create-base-image"
-  if [ "$reply" = "y" ]; then
-    cp "$source" "$target" 
-    chmod 755 "$target"
-  fi
-fi
-
 # Ensure cron job to preserver premissions for backup is installed and up-to-date
 source="${LONG_SHARE}/templates/longshore-fix-perms" 
 target="/etc/cron.d/longshore-fix-perms"
