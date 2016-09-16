@@ -353,7 +353,7 @@ long_create_image() {
 # Create the base image
 long_create_base_image() {
   long_log "Creating base image" info
-  sudo /usr/local/sbin/longshore-create-base-image
+  sudo ${LONG_SRV}/bin/longshore-create-base-image
 }
 
 # Delete, if necessary, the image
@@ -1981,7 +1981,7 @@ long_recreate_container() {
 
   if [ "$image" != "ptp-php" -a "$image" != "ptp-mysql" -a "$image" != "ptp-powerbase" ]; then
     long_log "I don't know how to handle a container made from the image %s" error "$image"
-    continue
+    return
   fi
 
   if long_container_running "$container"; then
