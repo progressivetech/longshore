@@ -4,7 +4,7 @@
 # Exit on error (-e)
 temp=$(mktemp -d)
 echo "Running debootstrap"
-debootstrap --variant=minbase --include=apt-utils,less,vim,locales,libterm-readline-gnu-perl jessie "$temp" http://http.us.debian.org/debian/ 
+debootstrap --variant=minbase --include=apt-utils,less,ping,ip,vim,locales,libterm-readline-gnu-perl,dnsutils jessie "$temp" http://http.us.debian.org/debian/ 
 echo "deb http://security.debian.org/ jessie/updates main" > "$temp/etc/apt/sources.list.d/security.list"
 echo "deb http://ftp.us.debian.org/debian/ jessie-updates main" > "$temp/etc/apt/sources.list.d/update.list"
 echo "Upgrading"
