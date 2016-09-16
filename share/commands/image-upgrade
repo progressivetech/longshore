@@ -1,22 +1,19 @@
 #!/bin/bash
 
 long_usage_message="usage: $(basename $0) image-upgrade <type>
-Check all images for upgrades. If there are upgrades, run the
-upgrade, commit the changes and log.
+Check all images for upgrades. If there are upgrades, force the
+rebuild of the image.
 
 Arguments
-  <type> - The image type you want to upgrade (ptp-mysql, etc.) or 'all'
-    to create all images" 
+  <type> - The image type you want to upgrade (ptp-mysql, etc.) or '--all'
+    to create all images"
 
 long_check_args "$2" "$#" 1
 
 itypes="$2"
 possible_itypes="my-jessie ptp-mysql ptp-php ptp-powerbase"
 
-if [ "$itypes" = "all" ]; then
-  # There seems to be no point in upgrading my-jessie, since those changes
-  # aren't propagated to the containers it is built on... however, it also
-  # doesn't hurt so I'm keeping it.
+if [ "$itypes" = "--all" ]; then
   itypes="$possible_itypes"
 fi
 
@@ -33,14 +30,10 @@ for itype in $itypes; do
   # we just deleted.
   docker rm upgrade > /dev/null
   if [ -n "$packages" ]; then
-    # Run the upgrade.
-    long_log "Found packages needing to be upgraded in %s image; upgrading." info "$itype"
-    docker run --name upgrade "$itype" bash -c 'apt-get -qq update && apt-get -qq -y dist-upgrade' > /dev/null
-    # Commit changes
-    docker commit upgrade "$itype":latest
-    docker rm upgrade >/dev/null
-    machine_time=$(date +%s)
-    human_time=$(date --iso-8601=minutes)
+    # Re-build the image
+    long_log "Found packages needing to be upgraded in %s image; rebuilding." info "$itype"
+    LONG_FORCE=1
+    long_create_image "$itype"
   fi
 done
 
@@ -48,5 +41,7 @@ done
 long_log "Removing dangling images." info
 danglers=$(docker images -q --filter "dangling=true")
 if [ -n "$danglers" ]; then
-  docker rmi "$danglers"
+  for dangler in $danglers; do
+    docker rmi "$dangler"
+  done
 fi

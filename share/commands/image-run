@@ -1,0 +1,21 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) image-run <type>
+Launch a bash shell in a given image for testing purposes.
+
+Arguments
+  <type> - The image type you want to run (ptp-mysql, etc.)"
+
+long_check_args "$2" "$#" 1
+
+itype="$2"
+possible_itypes="my-jessie ptp-mysql ptp-php ptp-powerbase"
+
+if ! echo "$possible_itypes" | egrep "(^| )$itype( |\$)" > /dev/null; then
+  long_die "Unknown image type %s." 1 "$itype"
+fi
+
+long_log "Running %s image. Type exit when done." info "$itype"
+docker run -it --name longshore_runner "$itype" bash
+docker rm longshore_runner > /dev/null
+

@@ -317,6 +317,21 @@ long_create_image() {
   local image_tag="$1"
   local image_path="$2"
 
+  # If image_page is left out, auto-calculate it
+  if [ -z "$image_path" ]; then
+    if [ "$image_tag" = "ptp-mysql" ]; then
+      image_path="${LONG_ETC}/dockerfiles/mysql"
+    elif [ "$image_tag" = "ptp-php" ]; then
+      image_path="${LONG_ETC}/dockerfiles/php"
+    elif [ "$image_tag" = "ptp-powerbase" ]; then
+      image_path="${LONG_ETC}/dockerfiles/powerbase"
+    elif [ "$image_tag" = "my-jessie" ]; then
+      image_path=""
+    else
+      long_die "I don't know how to make an image of that type (%s)." 1 "$itype"
+    fi
+  fi
+
   # By default don't create the image
   local create_image=0
   if ! long_image_exists "$image_tag"; then

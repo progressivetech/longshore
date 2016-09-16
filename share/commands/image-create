@@ -1,32 +1,23 @@
 #!/bin/bash
 
 long_usage_message="usage: $(basename $0) image-create <type>
-Create an image. 
+Create an image if it doesn't already exist. See also 
+image-rebuild which rebuilds images that need updates.
 
 Arguments
-  <type> - The image type you want to create (ptp-mysql, etc.) or 'all'
-    to create all images" 
+  <type> - The image type you want to create (ptp-mysql, etc.) or '--all'
+    to create all images
+Pass MF_FORCE=1 to force the building of an existing image." 
 
 long_check_args "$2" "$#" 1
 
 itypes="$2"
 
-if [ "$itypes" = "all" ]; then
+if [ "$itypes" = "--all" ]; then
   itypes="my-jessie ptp-mysql ptp-php ptp-powerbase"
 fi
 
 for itype in $itypes; do
-  # Create a mysql image.
-  if [ "$itype" = "ptp-mysql" ]; then
-    long_create_image ptp-mysql ${LONG_ETC}/dockerfiles/mysql
-  elif [ "$itype" = "ptp-php" ]; then
-    long_create_image  ptp-php ${LONG_ETC}/dockerfiles/php
-  elif [ "$itype" = "ptp-powerbase" ]; then
-    long_create_image  ptp-powerbase ${LONG_ETC}/dockerfiles/powerbase
-  elif [ "$itype" = "my-jessie" ]; then
-    long_create_image my-jessie 
-  else
-    long_die "I don't know how to make an image of that type (%s)." 1 "$itype"
-  fi
+  long_create_image $itype 
 done
 
