@@ -68,6 +68,11 @@ COPY ./docker-entrypoint.sh /entrypoint.sh
 # Copy over jamie's x509 cert. It will only be activated on dev sites.
 COPY ./jamie.crt /root/
 
+# Enable all certificates from the ca-certificates bundle to ensure that
+# PowerBase can make secure external calls to places like Google Maps,
+# Yahoo and payment processors
+RUN sed -i 's/^!//g' /etc/ca-certificates.conf && update-ca-certificates
+
 EXPOSE 9000
 
 ENTRYPOINT ["/entrypoint.sh"]
