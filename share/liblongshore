@@ -353,8 +353,8 @@ long_create_image() {
 # Create the base image
 long_create_base_image() {
   long_log "Creating base image" info
-  # Adjust output based on LONG_LOG
-  if [ "$LONG_LOG" = "error" ]; then 
+  # Adjust output based on LONG_LOG_LEVEL
+  if [ "$LONG_LOG_LEVEL" = "error" ]; then 
     sudo ${LONG_SRV}/bin/longshore-create-base-image >/dev/null
   else
     sudo ${LONG_SRV}/bin/longshore-create-base-image
