@@ -80,6 +80,11 @@ long_prompt "Launching new container with new platform"
 long_prompt "Reload nginx"
 [ "$reply" = "y" ] && long_nginx_reload 
 
+# For the upgrade, force LONG_LOG_LEVEL to info to ensure we get the most
+# information possible on a failure.
+old_log_level="$LONG_LOG_LEVEL"
+LONG_LOG_LEVEL=info
+
 # Run the upgrade in a loop - so if there is a failure we can
 # restore the database and try again.
 while [ 1 ]; do 
@@ -104,6 +109,9 @@ while [ 1 ]; do
     break
   fi
 done
+
+# Reset to previous log level.
+LONG_LOG_LEVEL="$old_log_level"
 
 long_prompt "Removing maintenance mode..."
 [ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"
