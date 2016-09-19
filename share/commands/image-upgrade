@@ -43,6 +43,6 @@ danglers=$(docker images -q --filter "dangling=true")
 if [ -n "$danglers" ]; then
   for dangler in $danglers; do
     # We don't care about errors in images that could not be deleted because they are in use.
-    docker rmi "$dangler" 2>&1 | grep -v "conflict: unable to delete"
+    docker rmi "$dangler" 2>&1 | egrep -v "(conflict: unable to delete|Conflict, cannot delete|Error: failed to remove one or more images)"
   done
 fi
