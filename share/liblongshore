@@ -345,7 +345,12 @@ long_create_image() {
       # This is a special condition
       long_create_base_image
     else
-      docker $LONG_DOCKER_LOG_ARG build -t "$image_tag" "$image_path"
+      # This sub-command seems to ignore the -l error flag.
+      if [ "$LONG_LOG_LEVEL" = "error" ]; then
+        docker build -t "$image_tag" "$image_path" >/dev/null
+      else
+        docker build -t "$image_tag" "$image_path"
+      fi
     fi
   fi
 }
