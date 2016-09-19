@@ -110,7 +110,7 @@ long_container_or_image_exists() {
   local name="$1"
   [ -z "$name" ] && return 1
   # This command returns 1 if the container doesn't exist and 0 if it does.
-  docker inspect "$name" 2>/dev/null 1>/dev/null
+  docker "$LONG_DOCKER_LOG_ARG" inspect "$name" 2>/dev/null 1>/dev/null
   return "$?"
 }
 
@@ -119,7 +119,7 @@ long_container_or_image_exists() {
 long_container_running() {
   local name="$1"
   [ -z "$name" ] && return 1
-  container_running=$(docker inspect -f {{.State.Running}} "$name")
+  container_running=$(docker "$LONG_DOCKER_LOG_ARG" inspect -f {{.State.Running}} "$name")
   [ "$container_running" = "true" ] && return 0
   return 1
 }
@@ -345,7 +345,7 @@ long_create_image() {
       # This is a special condition
       long_create_base_image
     else
-      docker build -t "$image_tag" "$image_path"
+      docker "$LONG_DOCKER_LOG_ARG" build -t "$image_tag" "$image_path"
     fi
   fi
 }
@@ -353,7 +353,12 @@ long_create_image() {
 # Create the base image
 long_create_base_image() {
   long_log "Creating base image" info
-  sudo ${LONG_SRV}/bin/longshore-create-base-image
+  # Adjust output based on LONG_LOG
+  if [ "$LONG_LOG" = "error" ]; then 
+    sudo ${LONG_SRV}/bin/longshore-create-base-image >/dev/null
+  else
+    sudo ${LONG_SRV}/bin/longshore-create-base-image
+  fi
 }
 
 # Delete, if necessary, the image
@@ -361,7 +366,7 @@ long_delete_image() {
   local tag="$1"
   if long_image_exists "$tag"; then
     long_log "Deleting  image (%s)" info "$tag"
-    docker rmi "$tag"
+    docker "$LONG_DOCKER_LOG_ARG" rmi "$tag"
   fi
 }
 
@@ -388,7 +393,7 @@ long_container_up() {
       long_set_site_db_host "$name"
       long_container_up mysql "$LONG_SITE_DB_HOST"
     fi
-    docker start "$label" || long_die "Failed to start the container %s" 1 "$label"
+    docker "$LONG_DOCKER_LOG_ARG" start "$label" || long_die "Failed to start the container %s" 1 "$label"
   fi
 }
 
@@ -498,7 +503,7 @@ long_create_db() {
 long_up_long_enough() {
   local site="$1"
   local seconds="$2"
-  local site_up_iso=$(docker inspect -f {{.State.StartedAt}} "$site")
+  local site_up_iso=$(docker "$LONG_DOCKER_LOG_ARG" inspect -f {{.State.StartedAt}} "$site")
 
   # We have to account for a changing time/date format in docker (see
   # https://stackoverflow.com/questions/20979320/convert-iso8601-date-to-epoch-format-unix-timestamp)
@@ -636,6 +641,16 @@ long_set_site_base_url() {
   LONG_SITE_BASE_URL="${protocol}${site}.${LONG_DEFAULT_DOMAIN}"
 }
 
+# Given the longshore logging setting, set a variable for
+# docker output
+long_set_docker_log_arg() {
+  if [ "$LONG_LOG" = "error" ]; then
+    LONG_DOCKER_LOG_ARG="-l error"
+  else
+    LONG_DOCKER_LOG_ARG="-l info"
+  fi
+}
+
 # Create civicrm settings file.
 long_create_civicrm_settings() {
   local site="$1"
@@ -689,10 +704,10 @@ long_exec_drush_cmd() {
 # Launch an interactive bash shell in the given site as wwww-data
 long_enter_site() {
   local site="$1"
-  docker exec -i -t "$site" su -l -s "/bin/bash" www-data
-
-
+  docker "$LONG_DOCKER_LOG_ARG" exec -i -t "$site" su -l -s "/bin/bash" www-data
 }
+
+
 # Execute the given command in the given container as www-data. 
 long_exec_in_container() {
   local site="$1"
@@ -704,7 +719,7 @@ long_exec_in_container() {
   if [ "$dir" = "$LONG_SITE_TMP" ]; then
     cmd="/var/www/powerbase/sites/default/private/temp/$(basename $cmd)"
   fi
-  docker exec "$site" su -l -c "$cmd" www-data
+  docker "$LONG_DOCKER_LOG_ARG" exec "$site" su -l -c "$cmd" www-data
 }
 
 # Low lever mysql container creation. Call long_create_container instead
@@ -743,7 +758,7 @@ long_create_mysql_container() {
 
   long_log "Creating mysql container (%s)." info "$name"
 
-  docker create --name "$name" \
+  docker "$LONG_DOCKER_LOG_ARG" create --name "$name" \
     -v "${dir}/mysql":/var/lib/mysql \
     -v "${dir}/my.cnf:/root/.my.cnf" \
     -v "${dir}/logs:/var/log/mysql" \
@@ -802,7 +817,7 @@ long_create_phpmyadmin_container() {
   fi
 
   # Docker
-  docker create --name phpmyadmin \
+  docker "$LONG_DOCKER_LOG_ARG" create --name phpmyadmin \
     -v "${dir}/src:/var/www/phpmyadmin" \
     $link \
     $publish \
@@ -993,7 +1008,7 @@ long_create_site_container() {
   local ip=$(ip addr show dev docker0 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
   
   # Docker
-  docker create --name "$site" \
+  docker "$LONG_DOCKER_LOG_ARG" create --name "$site" \
     --add-host "dockerhost:$ip" \
     -v "${LONG_SRV}/platforms/${platform}:/var/www/powerbase" \
     -v "${dir}/drupal:/var/www/powerbase/sites/default" \
@@ -1030,7 +1045,7 @@ long_create_container() {
     if long_container_running "$name"; then
       long_die "The container %s is running. Please stop it first."
     fi
-    docker rm "$name"
+    docker "$LONG_DOCKER_LOG_ARG" rm "$name"
   fi
 
   # NOTE: These functions not only create the docker containers, but also
@@ -1120,13 +1135,13 @@ long_set_site_platform() {
   # first one listed should always be the platform. It will return the 
   # full path to the platform - so we use basename to reduce it to just
   # the platform name.
-  local platform_path=$(docker inspect -f '{{.HostConfig.Binds}}' "$site" | egrep -o "/srv/longshore/platforms/ourpowerbase-[a-z0-9.-]*")
+  local platform_path=$(docker "$LONG_DOCKER_LOG_ARG" inspect -f '{{.HostConfig.Binds}}' "$site" | egrep -o "/srv/longshore/platforms/ourpowerbase-[a-z0-9.-]*")
   LONG_SITE_PLATFORM=$(basename "$platform_path")
 }
 
 long_set_site_db_host() {
   local site="$1"
-  LONG_SITE_DB_HOST=$(docker inspect -f '{{.HostConfig.Links}}' "$site"|  egrep -o "/db[0-9]{2}:" | tr -d '/:')
+  LONG_SITE_DB_HOST=$(docker "$LONG_DOCKER_LOG_ARG" inspect -f '{{.HostConfig.Links}}' "$site"|  egrep -o "/db[0-9]{2}:" | tr -d '/:')
 }
 
 # Install drupal from scratch.
@@ -1302,7 +1317,7 @@ long_setup_site() {
   # to be running the mail container.
   
   if [ "$LONG_LIVE" = "n" ]; then
-    docker exec "$site" /bin/sed -i 's/^hostname=bulk.ourpowerbase.net:25$/hostname=smtp:25/' \
+    docker "$LONG_DOCKER_LOG_ARG" exec "$site" /bin/sed -i 's/^hostname=bulk.ourpowerbase.net:25$/hostname=smtp:25/' \
       /etc/esmtprc
   fi
 
@@ -1508,7 +1523,7 @@ long_destroy_site() {
 
   if long_container_running "$site"; then
     long_log "Stopping container." info
-    docker stop "$site"
+    docker "$LONG_DOCKER_LOG_ARG" stop "$site"
   fi
 
   # Kill the database.
@@ -1531,7 +1546,7 @@ long_destroy_site() {
 
   long_log "Deleting container" info
   if long_container_exists "$site"; then
-    docker rm "$site"
+    docker "$LONG_DOCKER_LOG_ARG" rm "$site"
   fi
 
   # Delete the data directory.
@@ -1580,7 +1595,7 @@ long_disable_site() {
 
   if long_container_running "$site"; then
     # Stop the container.
-    docker stop "$site"
+    docker "$LONG_DOCKER_LOG_ARG" stop "$site"
   fi
 
   # Ensure disabled sites directory exists.
@@ -1930,11 +1945,11 @@ long_needs_upgrade() {
   local container="$1"
 
   # Figure out when the container was created
-  local container_created=$(docker inspect -f {{.Created}} "$container")
+  local container_created=$(docker "$LONG_DOCKER_LOG_ARG" inspect -f {{.Created}} "$container")
 
   # Figure out when the image was created.
-  local image=$(docker inspect -f {{.Config.Image}} "$container")
-  local image_created=$(docker inspect -f {{.Created}} "$image")
+  local image=$(docker "$LONG_DOCKER_LOG_ARG" inspect -f {{.Config.Image}} "$container")
+  local image_created=$(docker "$LONG_DOCKER_LOG_ARG" inspect -f {{.Created}} "$image")
 
   # Depending on the version of Docker, we have to strip off time zone
   # handling so date's strtotime function can work properly
@@ -1957,7 +1972,7 @@ long_needs_upgrade() {
 # Print out the packages that need to be upgraded.
 long_print_upgradable_packages() {
   local container="$1"
-  packages=$(docker exec "$container" bash -c 'apt-get -qq update && apt-get -qq -s dist-upgrade' | awk '/^Inst/ { print $2 }' | tr '\n' ' ')
+  packages=$(docker "$LONG_DOCKER_LOG_ARG" exec "$container" bash -c 'apt-get -qq update && apt-get -qq -s dist-upgrade' | awk '/^Inst/ { print $2 }' | tr '\n' ' ')
   printf "$packages"
 }
 
@@ -1977,7 +1992,7 @@ long_recreate_container() {
   local container="$1"
 
   # Get the image so we know what kind of container we are dealing with.
-  local image=$(docker inspect -f {{.Config.Image}} "$container" | cut -d: -f1)
+  local image=$(docker "$LONG_DOCKER_LOG_ARG" inspect -f {{.Config.Image}} "$container" | cut -d: -f1)
 
   if [ "$image" != "ptp-php" -a "$image" != "ptp-mysql" -a "$image" != "ptp-powerbase" ]; then
     long_log "I don't know how to handle a container made from the image %s" error "$image"
@@ -1986,7 +2001,7 @@ long_recreate_container() {
 
   if long_container_running "$container"; then
     long_log "Stopping container %s" info "$container"
-    docker stop "$container"
+    docker "$LONG_DOCKER_LOG_ARG" stop "$container"
   fi
 
   # Before we remove the container, we need to get the database host and
@@ -2001,7 +2016,7 @@ long_recreate_container() {
   fi
 
   long_log "Removing container %s" info "$container"
-  docker rm "$container"
+  docker "$LONG_DOCKER_LOG_ARG" rm "$container"
 
   long_log "Recreating container (image: %s) %s" info "$image" "$container"
   if [ "$image" = "ptp-powerbase" ]; then
@@ -2450,7 +2465,7 @@ long_set_dbs() {
         dbs=$(ls "$LONG_SRV/services/databases/$db/mysql" | egrep -v '^(ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)' | tr "\n" " ")
         count=$(echo "$dbs" | wc -w)
         # Get Id for this db
-        id=$(docker inspect -f {{.Id}} "$db")
+        id=$(docker "$LONG_DOCKER_LOG_ARG" inspect -f {{.Id}} "$db")
         mem=0
         for pid in $(grep "$id" /proc/*/cgroup 2>/dev/null | cut -d/ -f3| sort | uniq); do
           mem=$(( $mem + $(( $(ps -h -p "$pid" -o rss) / 1024 )) ))
@@ -2477,7 +2492,7 @@ long_set_dbs() {
 # Set the site ID
 long_set_site_id() {
   local site="$1"
-  LONG_SITE_ID=$(docker inspect -f {{.Id}} "$site")
+  LONG_SITE_ID=$(docker "$LONG_DOCKER_LOG_ARG" inspect -f {{.Id}} "$site")
 }
 
 # Set a variable to hold all PIDs for this site
@@ -2597,7 +2612,7 @@ long_clear_sessions() {
 # Get the name of a container for it's ID
 long_get_container_name() {
   local id="$1"
-  LONG_CONTAINER_NAME=$(docker ps --filter "id=$id" | egrep -o ' [^ ]*\s*$' | tr -d ' ' | tail -n1)
+  LONG_CONTAINER_NAME=$(docker "$LONG_DOCKER_LOG_ARG" ps --filter "id=$id" | egrep -o ' [^ ]*\s*$' | tr -d ' ' | tail -n1)
 }
 
 # Generate DKIM keys

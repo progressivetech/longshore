@@ -42,6 +42,7 @@ long_log "Removing dangling images." info
 danglers=$(docker images -q --filter "dangling=true")
 if [ -n "$danglers" ]; then
   for dangler in $danglers; do
-    docker rmi "$dangler"
+    # We don't care about errors in images that could not be deleted because they are in use.
+    docker rmi "$dangler" 2>&1 | grep -v "conflict: unable to delete"
   done
 fi

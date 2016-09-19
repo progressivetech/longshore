@@ -56,6 +56,9 @@ LONG_LOG_LEVEL=${LONG_LOG_LEVEL:-$LONG_DEFAULT_LOG_LEVEL}
 # Get the bash library
 source ${LONG_SHARE}/liblongshore
 
+# Set the LONG_DOCKER_LOG variable based on the LONG_LOG one.
+long_set_docker_log_arg
+
 if [ ! -f "${LONG_SHARE}/commands/${command}" ]; then
   printf "That command (%s) doesn't exist.\n" "$command"
   command=help
