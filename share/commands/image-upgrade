@@ -1,16 +1,29 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) image-upgrade <type>
+long_usage_message="usage: $(basename $0) image-upgrade <type> [<action>]
 Check all images for upgrades. If there are upgrades, force the
-rebuild of the image.
+rebuild of the image (if action is default upgrade) or print packages
+that are out of date if action is print.
 
 Arguments
   <type> - The image type you want to upgrade (ptp-mysql, etc.) or '--all'
-    to create all images"
+    to create all images
+  <action> - Indicate whether you want to upgrade (default) or just print
+    packages that are out of date."
 
 long_check_args "$2" "$#" 1
 
 itypes="$2"
+action="$3"
+
+if [ -z "$action" ]; then
+  action=upgrade
+fi
+
+if [ "$action" != "upgrade" -a "$action" != "print" ]; then
+  long_die "Action should be either upgrade or print, not %s." "$action"
+fi
+
 possible_itypes="my-jessie ptp-mysql ptp-php ptp-powerbase"
 
 if [ "$itypes" = "--all" ]; then
@@ -26,9 +39,17 @@ done
 for itype in $itypes; do
   long_log "Checking for upgrade in %s image." info "$itype"
   packages=$(docker run --name upgrade "$itype" bash -c 'apt-get -qq update && apt-get -qq -s dist-upgrade' | awk '/^Inst/ { print $2 }')
+
   # Output to /dev/null to avoid docker printing the name of container
   # we just deleted.
   docker rm upgrade > /dev/null
+
+  if [ "$action" = "print" ]; then
+    [ -z "$packages" ] && packages="No packages to upgrade."
+    printf "%s\n" "$packages"
+    continue
+  fi
+
   if [ -n "$packages" ]; then
     # Re-build the image
     long_log "Found packages needing to be upgraded in %s image; rebuilding." info "$itype"
@@ -43,6 +64,6 @@ danglers=$(docker images -q --filter "dangling=true")
 if [ -n "$danglers" ]; then
   for dangler in $danglers; do
     # We don't care about errors in images that could not be deleted because they are in use.
-    docker rmi "$dangler" 2>&1 | egrep -v "(conflict: unable to delete|Conflict, cannot delete|Error: failed to remove one or more images)"
+    docker $LONG_DOCKER_LOG_ARG rmi "$dangler" 2>&1 | egrep -v "(conflict: unable to delete|Conflict, cannot delete|Error: failed to remove one or more images|Deleted: )"
   done
 fi
