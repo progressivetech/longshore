@@ -680,8 +680,9 @@ long_create_civicrm_settings() {
 
 # Execute the given drush command in the given container as the www-data user.
 long_exec_drush_cmd() {
-  site="$1"
-  cmd="$2"
+  local site="$1"
+  local cmd="$2"
+  local envvars="$3"
 
   # Set drush quiet setting. Default is not to be quiet.
   quiet=-v
@@ -693,12 +694,12 @@ long_exec_drush_cmd() {
   local file=$(mktemp "${LONG_SITE_TMP}/drupal.XXXXXXX");
   chmod 755 "$file"
   printf "#!/bin/bash\n" > "$file"
-  printf "export LONG_LIVE=$LONG_LIVE\n" >> "$file"
-  printf "export LONG_SHARE=$LONG_SHARE\n" >> "$file"
-  if [ -n "$LONG_GOOGLE_RECAPTCHA_SECRET_KEY" -a -n "$LONG_GOOGLE_RECAPTCHA_SITE_KEY" ]; then
-    # These two values are used by ptp.drush.inc to configure recaptcha keys.
-    printf "export LONG_GOOGLE_RECAPTCHA_SECRET_KEY=$LONG_GOOGLE_RECAPTCHA_SECRET_KEY\n" >> "$file"
-    printf "export LONG_GOOGLE_RECAPTCHA_SITE_KEY=$LONG_GOOGLE_RECAPTCHA_SITE_KEY\n" >> "$file"
+  if [ -n "$envvars" ]; then
+    for var in $envvars; do
+      if [ -n "${!var}" ]; then
+        printf "export ${var}=${!var}\n" >> "$file"
+      fi
+    done
   fi
   printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
   printf "drush $quiet $2\n" >> "$file"
@@ -1339,7 +1340,7 @@ long_configure_site() {
 
   # Set PTP configurations. 
   long_log "Running drush ptp-configure" info
-  long_exec_drush_cmd "$site" "ptp-configure"
+  long_exec_drush_cmd "$site" "ptp-configure" "LONG_LIVE"
 
   # Ensure CIVICRM_MAIL_SMARTY is configured so we can use smarty in our
   # mail templates.
@@ -1362,8 +1363,6 @@ long_configure_site() {
   local local_settings="${drupal}/local.settings.php"
   cat "${LONG_SHARE}/templates/local.settings.php" | sed \
     -e "s/LONG_ERROR_REPORTING/$LONG_ERROR_REPORTING/" \
-    -e "s/LONG_YAHOO_BOSS_API_KEY/$LONG_YAHOO_BOSS_API_KEY/" \
-    -e "s/LONG_YAHOO_BOSS_API_SECRET/$LONG_YAHOO_BOSS_API_SECRET/" \
     > "${drupal}/local.settings.php"
 
   # But wait, there's more. Some sites want to disabled authnet email receipt settings
@@ -1376,7 +1375,9 @@ long_configure_site() {
 
   long_configure_imap "$site"
   long_log "Running drush pbd-configure" info
-  long_exec_drush_cmd "$site" "-y pbd-configure"
+
+  local envvars="LONG_GOOGLE_RECAPTCHA_SECRET_KEY LONG_GOOGLE_RECAPTCHA_SITE_KEY LONG_GOOGLE_MAP_GEO_API_KEY"
+  long_exec_drush_cmd "$site" "-y pbd-configure" "$envvars"
 }
 
 # Ensure there are the required IMAP users installed on the IMAP server

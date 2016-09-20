@@ -119,7 +119,10 @@ function drush_pbd_configure() {
   pbd_configure_wkhtmltopdf();
   pbd_set_max_file_size();
   pbd_configure_google_recaptcha();
+  pbd_configure_google_geo_map();
   pbd_disable_security_update_alert();
+  pbd_configure_additional_fonts();
+  pbd_disable_external_extension_repository();
 
   // Should only be run once because it contains settings
   // that a group may want to change and that we don't
@@ -3503,7 +3506,6 @@ function pbd_configure_default_cicero_mappings() {
  **/
 function pbd_enable_default_extensions() {
   $default_extensions = array(
-    'net.ourpowerbase.geocoder.yahooboss',
     'net.ourpowerbase.search.eventcount',
     'net.ourpowerbase.engage',
     'net.ourpowerbase.report.dbhealth',
@@ -3514,6 +3516,7 @@ function pbd_enable_default_extensions() {
     'de.systopia.osm'
   );
   $uninstall_extensions = array(
+    'net.ourpowerbase.geocoder.yahooboss',
   );
   _civicrm_init();
   try{
@@ -3637,6 +3640,26 @@ function pbd_configure_google_recaptcha() {
 }
 
 /**
+ * Configure google geo/map api
+ *
+ */
+function pbd_configure_google_geo_map() {
+  $key = getenv('LONG_GOOGLE_MAP_GEO_API_KEY');
+  $live = getenv('LONG_LIVE');
+  if($key && $live == 'y') {
+    drush_log(dt("Configuring Google Geo/Mapping key"), 'notice');
+    pbd_setting('geoAPIKey', $key);
+    pbd_setting('mapAPIKey', $key);
+  }
+  else {
+    // These are IP restricted, so disable on dev sites to avoid errors.
+    drush_log(dt("Unsetting Google Geo/Mapping key"), 'notice');
+    pbd_setting('geoAPIKey', '');
+    pbd_setting('mapAPIKey', '');
+  }
+}
+
+/**
  * Add settings properly based on version
  *
  * Rip out everything except the api call after we upgrade to 4.7
@@ -3670,6 +3693,29 @@ function pbd_setting($key, $value, $group = NULL) {
       CRM_Core_BAO_ConfigSetting::add($params);
     }
   }
+}
+
+/**
+ * Ensure extra fonts are available for certain multi-lingual sites.
+ */
+function pbd_configure_additional_fonts() {
+  $fonts = array(
+    "batang" => "Batang",
+    "dotum" => "Dotum",
+    "hline" => "Hline",
+    "gulim" => "Gulim",
+  );
+  pbd_setting('additional_fonts', $fonts, "CiviCRM Preferences");
+}
+
+/**
+ * Disable external extension repos
+ *
+ * We don't want users to be able to install any extension,
+ * just the ones we provide.
+ **/
+function pbd_disable_external_extension_repository() {
+  pbd_setting('ext_repo_url', FALSE, "Extension Preferences");
 }
 
 ?>

@@ -14,20 +14,7 @@
  *    configuration options in place.
  */
 
-// Switching depending on where we are running. This allows different
-// settings depending on whether we are running in a dev/testing environment
-// or a live environment.
-if ( getenv('LONG_LIVE') == 'y' ) {
-  // Indicate that we use the smtp method which relays mail
-  // through a predefined mail server
-  define('PTP_OUTGOING_MAIL','smtp');
-} else {
-  // On local installs, send mail locally
-  // (local mail server should handle relaying
-  // mail appropriately to avoid accidentally spamming
-  // the world when developing)
-  define('PTP_OUTGOING_MAIL','mail');
-}
+
 
 /**
  * Implementation of hook_drush_command().
@@ -440,7 +427,7 @@ function ptp_set_outbound_mail_settings() {
     // For training, demo or clone sites, redirect to the database.
     // We don't want to send email on these sites ever.
     $new['outBound_option'] = 5;  // 5 is redirect to db
-  } elseif(PTP_OUTGOING_MAIL == 'smtp' ) {
+  } elseif ( getenv('LONG_LIVE') == 'y' ) {
     $new['outBound_option'] = 0;  // 0 is for smtp
     $new['smtpServer'] = 'bulk.ourpowerbase.net';
     $new['smtpPort'] = '25';
