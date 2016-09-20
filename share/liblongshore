@@ -1376,7 +1376,7 @@ long_configure_site() {
   long_configure_imap "$site"
   long_log "Running drush pbd-configure" info
 
-  local envvars="LONG_GOOGLE_RECAPTCHA_SECRET_KEY LONG_GOOGLE_RECAPTCHA_SITE_KEY LONG_GOOGLE_MAP_GEO_API_KEY"
+  local envvars="LONG_GOOGLE_RECAPTCHA_SECRET_KEY LONG_GOOGLE_RECAPTCHA_SITE_KEY LONG_GOOGLE_MAP_GEO_API_KEY LONG_LIVE"
   long_exec_drush_cmd "$site" "-y pbd-configure" "$envvars"
 }
 
