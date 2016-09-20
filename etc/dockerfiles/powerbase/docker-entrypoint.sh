@@ -26,7 +26,7 @@ if [ "$LONG_LIVE" = "n" ]; then
   # And activate  Jamie's private x509 cert
   if [ ! -f "/usr/local/share/ca-certificates/jamie.crt" ]; then
     mv /root/jamie.crt /usr/local/share/ca-certificates/
-    dpkg-reconfigure ca-certificates
+    update-ca-certificates 
   fi
 fi
 

@@ -339,7 +339,7 @@ long_create_image() {
     create_image=1
   fi
 
-  if [ "$create_image" -eq "1" -o "$LONG_FORCE" == "1" ]; then
+  if [ "$create_image" -eq "1" -o "$LONG_FORCE" = "1" ]; then
     long_log "Creating image (%s)" info "$image_tag"
     if [ "$image_tag" = "my-jessie" ]; then
       # This is a special condition
@@ -1044,7 +1044,7 @@ long_create_container() {
   fi
 
   # Delete the container if force is specified.
-  if [ "$LONG_FORCE" = 1 ]; then
+  if [ "$LONG_FORCE" = "1" ]; then
     # If the container is running, that is an error. This command won't
     # start a container after creating it, so we shouldn't stop a container
     # either.
