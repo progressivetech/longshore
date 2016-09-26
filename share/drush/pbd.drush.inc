@@ -1233,7 +1233,13 @@ function pbd_set_blocks_for_theme($theme) {
         ->execute();
     }
     db_query($sql, $params);
-    drush_cache_clear_block();
+    // Seems to be bug in some versions of drush
+    if(function_exists('drush_cache_clear_block')) {
+      drush_cache_clear_block();
+    }
+    else {
+      cache_clear_all(NULL, 'cache_block');
+    }
   }
 }
 
@@ -2149,9 +2155,22 @@ function pbd_delete_all_tags() {
   CRM_Core_DAO::executeQuery( $sql );
 }
 
+// Wrapper for pm_module_list/drush_module_list.
+// pm_module_list is drush 5.0. drush_module_list
+// is later versions.
+function pbd_module_list() {
+  if(function_exists('pm_module_list')) {
+    return pm_module_list();
+  }
+  else {
+    return drush_module_list();
+  }
+
+}
+
 function pbd_disable_modules() {
   $disable = array('update', 'contextual','dashboard','file','image','overlay','rdf','search','shortcut','toolbar','bartik','seven');
-  $modules_enabled = pm_module_list();
+  $modules_enabled = pbd_module_list();
   $modules_to_disable = array();
   while(list(,$module) = each($disable)) {
     if(in_array($module, $modules_enabled)) {
@@ -3067,7 +3086,7 @@ function pbd_enable_modules() {
 
   drush_log(dt("Checking which modules are already enabled."));
 
-  $modules_already_enabled = pm_module_list();
+  $modules_already_enabled = pbd_module_list();
   $modules_to_enable = array();
   while(list(,$module) = each($modules_wanted)) {
     if(!in_array($module, $modules_already_enabled)) {
