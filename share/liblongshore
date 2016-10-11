@@ -349,7 +349,7 @@ long_create_image() {
       if [ "$LONG_LOG_LEVEL" = "error" ]; then
         docker build -t "$image_tag" "$image_path" >/dev/null
       else
-        docker build -t "$image_tag" "$image_path"
+        docker build -t "$image_tag" "$image_path" > "$LONG_DOCKER_REDIRECT"
       fi
     fi
   fi
@@ -398,7 +398,7 @@ long_container_up() {
       long_set_site_db_host "$name"
       long_container_up mysql "$LONG_SITE_DB_HOST"
     fi
-    docker $LONG_DOCKER_LOG_ARG start "$label" || long_die "Failed to start the container %s" 1 "$label"
+    docker $LONG_DOCKER_LOG_ARG start "$label" > "$LONG_DOCKER_REDIRECT" || long_die "Failed to start the container %s" 1 "$label"
   fi
 }
 
@@ -725,7 +725,7 @@ long_exec_in_container() {
   if [ "$dir" = "$LONG_SITE_TMP" ]; then
     cmd="/var/www/powerbase/sites/default/private/temp/$(basename $cmd)"
   fi
-  docker $LONG_DOCKER_LOG_ARG exec "$site" su -l -c "$cmd" www-data
+  docker $LONG_DOCKER_LOG_ARG exec "$site" su -l -c "$cmd" www-data > "$LONG_DOCKER_REDIRECT"
 }
 
 # Low lever mysql container creation. Call long_create_container instead
@@ -772,7 +772,7 @@ long_create_mysql_container() {
     -e "MYSQL_UID=$UID" \
     -p "127.0.0.1:${LONG_DB_PORT}:3306" \
     $LONG_DOCKER_MEMORY_LIMIT \
-    ptp-mysql:latest mysqld || long_die "Failed to create the container %s" 1 "$name"
+    ptp-mysql:latest mysqld > "$LONG_DOCKER_REDIRECT" || long_die "Failed to create the container %s" 1 "$name"
 
   # Since db containers are linked to other containers, the other containers
   # will fail to start if the db containers are not started. So, always
@@ -829,7 +829,7 @@ long_create_phpmyadmin_container() {
     $publish \
     -e "LONG_LIVE=$LONG_LIVE" \
     $LONG_DOCKER_MEMORY_LIMIT \
-    ptp-php:latest php5-fpm  || long_die "Failed to create the phpmyadmin container"
+    ptp-php:latest php5-fpm > "$LONG_DOCKER_REDIRECT"  || long_die "Failed to create the phpmyadmin container"
 }
 
 # Build out the required directories and permissions
@@ -1024,7 +1024,7 @@ long_create_site_container() {
     $LONG_DOCKER_MEMORY_LIMIT \
     $link \
     $publish \
-    ptp-powerbase:latest php5-fpm || long_die "Failed to create the container %s" 1 "$site"
+    ptp-powerbase:latest php5-fpm > "$LONG_DOCKER_REDIRECT" || long_die "Failed to create the container %s" 1 "$site"
 
   long_clear_sibling_cache
 }
@@ -1324,7 +1324,7 @@ long_setup_site() {
   
   if [ "$LONG_LIVE" = "n" ]; then
     docker $LONG_DOCKER_LOG_ARG exec "$site" /bin/sed -i 's/^hostname=bulk.ourpowerbase.net:25$/hostname=smtp:25/' \
-      /etc/esmtprc
+      /etc/esmtprc > "$LONG_DOCKER_REDIRECT"
   fi
 
 }

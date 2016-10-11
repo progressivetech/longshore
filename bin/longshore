@@ -59,6 +59,18 @@ source ${LONG_SHARE}/liblongshore
 # Set the LONG_DOCKER_LOG variable based on the LONG_LOG one.
 long_set_docker_log_arg
 
+# Temporary work-around for docker log-related memory leak.
+#
+# LONG_DOCKER_REDIRECT should be /dev/tty to allow docker to log all activity
+# (docker seems to detect that the output it a terminal and starts capturing
+# the output). 
+#
+# Temporily setting it to /dev/null due to
+# https://github.com/docker/docker/issues/9139 as explained by
+# http://tinystruggles.com/2015/05/30/debugging-adventure-docker0.html and
+# documented in https://support.ourpowerbase.net/ticket/2016
+LONG_DOCKER_REDIRECT=/dev/null
+
 if [ ! -f "${LONG_SHARE}/commands/${command}" ]; then
   printf "That command (%s) doesn't exist.\n" "$command"
   command=help
