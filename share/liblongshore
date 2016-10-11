@@ -764,7 +764,7 @@ long_create_mysql_container() {
 
   long_log "Creating mysql container (%s)." info "$name"
 
-  docker $LONG_DOCKER_LOG_ARG create --name "$name" \
+  docker $LONG_DOCKER_LOG_ARG create --log-driver "$LONG_DEFAULT_LOG_DRIVER" --name "$name" \
     -v "${dir}/mysql":/var/lib/mysql \
     -v "${dir}/my.cnf:/root/.my.cnf" \
     -v "${dir}/logs:/var/log/mysql" \
@@ -823,7 +823,7 @@ long_create_phpmyadmin_container() {
   fi
 
   # Docker
-  docker $LONG_DOCKER_LOG_ARG create --name phpmyadmin \
+  docker $LONG_DOCKER_LOG_ARG create --log-driver "$LONG_DEFAULT_LOG_DRIVER" --name phpmyadmin \
     -v "${dir}/src:/var/www/phpmyadmin" \
     $link \
     $publish \
@@ -1014,7 +1014,7 @@ long_create_site_container() {
   local ip=$(ip addr show dev docker0 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
   
   # Docker
-  docker $LONG_DOCKER_LOG_ARG create --name "$site" \
+  docker $LONG_DOCKER_LOG_ARG create --log-driver "$LONG_DEFAULT_LOG_DRIVER" --name "$site" \
     --add-host "dockerhost:$ip" \
     -v "${LONG_SRV}/platforms/${platform}:/var/www/powerbase" \
     -v "${dir}/drupal:/var/www/powerbase/sites/default" \
