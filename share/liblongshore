@@ -92,7 +92,7 @@ long_debug() {
   local debug_msg="$1"
   local debug_subject="$2"
   if [ -z "$PS1" ]; then
-    echo "$debug_msg" | mail -s "$debug_subject" "$LONG_DEBUG_EMAIL"
+    echo "$debug_msg" | mail -s "$debug_subject" "$LONG_WARNING_EMAIL"
   else
     echo "$debug_subject" >&2
     echo "$deubg_msg" >&2

@@ -16,7 +16,9 @@ LONG_ETC=/srv/longshore/etc
 #LONG_SIBLINGS="nicolas juana olivera chico"
 LONG_SIBLINGS=""
 
-LONG_DEBUG_EMAIL="jamie@progressivetech.org"
+LONG_WARNING_EMAIL="pb-alert-warning@progressivetech.org"
+LONG_CRITICAL_EMAIL="pb-alert-critical@progressivetech.org"
+
 LONG_DEFAULT_LOG_LEVEL=error
 # Change to json or journald when https://support.ourpowerbase.net/ticket/2016
 # is resolved.
