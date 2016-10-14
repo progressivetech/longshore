@@ -5,7 +5,7 @@ Generate a DKIM key and add the appropriate DNS txt record.
 
 Arguments
   <site> - The site you want to generate and configure the dkim record fo for, e.g. ptp
-  <domaon> - The domain used by the group to send emails (e.g. progressivetech.org)
+  <domain> - The domain used by the group to send emails (e.g. progressivetech.org)
   <selector> - Optionally provide the selector. Defaults to pb1. Pass selector if you
     want to create multiple DKIM records so users can send from multiple domains."
 
