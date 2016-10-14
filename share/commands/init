@@ -105,6 +105,16 @@ if  [ ! -f "$target" ] || ! diff -q "$source" "$target" >/dev/null; then
   fi
 fi
 
+# Ensure that our tweak to nginx to allow longer client headers in in place.
+source="${LONG_SHARE}/templates/large-client-header-buffers.conf"
+target="/etc/nginx/conf.d/large-client-header-buffers.conf"
+if  [ ! -f "$target" ] || ! diff -q "$source" "$target" >/dev/null; then
+  long_prompt "Updating large-client-header-buffers.conf"
+  if [ "$reply" = "y" ]; then
+    cp "$source" "$target" 
+    chmod 644 "$target"
+  fi
+fi
 # Ensure that docker group owns /etc/nginx/sites-enabled and it is writable 
 # so any docker enabled user can write to it..
 group_owner=$(stat -c '%G' /etc/nginx/sites-enabled)
