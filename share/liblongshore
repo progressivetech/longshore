@@ -2016,8 +2016,17 @@ long_recreate_container() {
     long_set_site_db_host "$container"
     long_set_site_platform "$container"
     if [ -z "$LONG_SITE_DB_HOST" -o -z "$LONG_SITE_PLATFORM" -o "$LONG_SITE_DB_HOST" = "<no value>" ]; then
-      # Die before we actually delete this container.
-      long_die "Failed to get database host or platform for %s container." 1 "$container"
+      # If the container's db has just been re-created then it will no 
+      # longer show the old container's name. So, one more attempt by
+      # looking at the settings.php file
+      local dir="${LONG_SRV}/services/sites/${container}/drupal/settings.php"
+      if [ -f "$dir" ]; then
+        LONG_SITE_DB_HOST=$(egrep "^[ ]+'host' => 'db[0-9][0-9]'" | egrep -o 'db[0-9][0-9]')
+      fi
+      if [ -z "$LONG_SITE_DB_HOST" -o -z "$LONG_SITE_PLATFORM" -o "$LONG_SITE_DB_HOST" = "<no value>" ]; then
+        # Die before we actually delete this container.
+        long_die "Failed to get database host or platform for %s container." 1 "$container"
+      fi
     fi
   fi
 
