@@ -30,7 +30,17 @@ CKEDITOR.editorConfig = function( config ) {
 
         config.extraPlugins = 'colorbutton,font,justify';
 
-				config.font_names = 'Linux Libertine O;' + config.font_names;
-				config.font_names = 'Linux Biolinum O;' + config.font_names;
+        // Default list taken from CKEditor source code
+        // http://docs.ckeditor.com/source/plugin39.html#CKEDITOR-config-cfg-font_names
+				config.font_names = 'Arial/Arial, Helvetica, sans-serif;' +
+            'Comic Sans MS/Comic Sans MS, cursive;' +
+            'Courier New/Courier New, Courier, monospace;' +
+            'Georgia/Georgia, serif;' +
+            'Lucida Sans Unicode/Lucida Sans Unicode, Lucida Grande, sans-serif;' +
+            'Tahoma/Tahoma, Geneva, sans-serif;' +
+            'Times New Roman/Times New Roman, Times, serif;' +
+            'Trebuchet MS/Trebuchet MS, Helvetica, sans-serif;' +
+            'Verdana/Verdana, Geneva, sans-serif;' +
+            'Libertine/Linux Libertine O;Biolinum/Linux Biolinum O;'; // Added by PTP
 
 };
