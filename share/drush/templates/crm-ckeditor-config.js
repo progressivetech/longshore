@@ -28,7 +28,7 @@ CKEDITOR.editorConfig = function( config ) {
 
         config.skin = 'moono';
 
-        config.extraPlugins = 'colorbutton,font,justify';
+        config.extraPlugins = 'colorbutton,font,justify,indentblock';
 
         // Default list taken from CKEditor source code
         // http://docs.ckeditor.com/source/plugin39.html#CKEDITOR-config-cfg-font_names
