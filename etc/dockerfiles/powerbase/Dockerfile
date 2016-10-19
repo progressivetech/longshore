@@ -19,7 +19,6 @@ RUN apt-get update && \
     fonts-linuxlibertine \
     wkhtmltopdf \
     xauth \
-    drush \
     wget \
     mysql-client \
     esmtp-run \
@@ -34,6 +33,9 @@ RUN apt-get update && \
     bc \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
+
+# Download most recent version of drush
+RUN cd /usr/local/bin && wget -q -O drush https://s3.amazonaws.com/files.drush.org/drush.phar && chmod 755 drush
 
 # Listen on 127.0.0.1 
 RUN sed -i 's#listen = /var/run/php5-fpm.sock#listen = 9000#' /etc/php5/fpm/pool.d/www.conf
