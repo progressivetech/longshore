@@ -15,7 +15,7 @@ user=$(whoami)
 # Define packages we need to have installed.
 install=
 wants="docker.io sudo nginx debootstrap drush wget dnsutils mysql-client \
-  composer nodejs npm parallel"
+  composer nodejs npm parallel curl"
 if [ -n "$LONG_TLS_KEY_PATH" ]; then
   wants="$wants openssl"
 fi

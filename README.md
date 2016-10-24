@@ -26,7 +26,11 @@ However, that documentation assumes a dedicated logical volume. Below are direct
 
 Also note: previous versions of docker had the dm.datadev and dm.metadatadev options. New versions have replaced those options with dm.thinpooldev.
 
-First, create a logical volume for docker data and for docker meta data.
+You must install the package thin-provisioning-tools:
+
+    apt-get install thin-provisioning-tools
+
+Next, create a logical volume for docker data and for docker meta data.
 
     lvcreate --wipesignatures y --size 50GB -n docker vg_turkey0
     lvcreate --wipesignatures y --size 2GB -n dockermeta vg_turkey0
