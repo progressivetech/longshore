@@ -34,6 +34,14 @@ function pbd_drush_command() {
         'name' => 'The name of the theme to prepare.'
       )
     );
+  $items['pbd-subscription-links'] =
+    array(
+      'description' => "Output the cancel, update, etc links for a given contact.",
+      'options' => array(
+        'id' => 'The contact id of the person you want the links for.'
+      )
+    );
+
   return $items;
 }
 
@@ -430,6 +438,45 @@ function drush_pbd_update_assessments() {
   }
 }
 
+/**
+ * For the given contact id, output all subscription links.
+ *
+ * These are the links that a user can follow to update their
+ * own subscription (recurring contribution).
+ */
+function drush_pbd_subscription_links() {
+  _civicrm_init();
+  $id = drush_get_option('id');
+
+  $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
+  $in_progress_id = array_search('In Progress', $contributionStatus);
+
+  $params = array(
+    0 => array($in_progress_id, 'Integer'),
+    1 => array($id, 'Integer')
+  );
+
+  // Try to find an in-progress recurring contribution matching this id.
+  $sql = "SELECT c.id AS id FROM civicrm_contribution c
+    JOIN civicrm_contribution_recur r ON c.contribution_recur_id = r.id
+    WHERE r.contribution_status_id = %0 AND r.contact_id = %1";
+  $dao = CRM_Core_DAO::executeQuery($sql, $params);
+  $dao->fetch();
+  if($dao->N == 0) {
+    drush_log("Failed to find a matching recurring contribution record for that id.", 'error');
+    return;
+  }
+  $contribution_id = $dao->id;
+  $entity = 'contribution';
+  $paymentObject = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity($contribution_id, 'contribute', 'obj');
+  $update_url = $paymentObject->subscriptionURL($contribution_id, $entity, 'update');
+  $cancel_url = $paymentObject->subscriptionURL($contribution_id, $entity, 'cancel');
+  $billing_url = $paymentObject->subscriptionURL($contribution_id, $entity, 'billing');
+  echo "Update: $update_url\n";
+  echo "Cancel: $cancel_url\n";
+  echo "Billing: $billing_url\n";
+
+}
 /**
  * Prepare a new theme.
  *
