@@ -3665,17 +3665,10 @@ function pbd_configure_google_recaptcha() {
 function pbd_configure_google_geo_map() {
   $key = getenv('LONG_GOOGLE_MAP_GEO_API_KEY');
   $live = getenv('LONG_LIVE');
-  if($key && $live == 'y') {
-    drush_log(dt("Configuring Google Geo/Mapping key"), 'notice');
-    pbd_setting('geoAPIKey', $key);
-    pbd_setting('mapAPIKey', $key);
-  }
-  else {
-    // These are IP restricted, so disable on dev sites to avoid errors.
-    drush_log(dt("Unsetting Google Geo/Mapping key"), 'notice');
-    pbd_setting('geoAPIKey', '');
-    pbd_setting('mapAPIKey', '');
-  }
+  drush_log(dt("Configuring Google Geo/Mapping key"), 'notice');
+  pbd_setting('geoAPIKey', $key);
+  pbd_setting('mapAPIKey', $key);
+
 }
 
 /**
