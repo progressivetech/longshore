@@ -3584,9 +3584,6 @@ function pbd_enable_default_extensions() {
     'net.ourpowerbase.sumfields',
     'de.systopia.osm'
   );
-  $uninstall_extensions = array(
-    'net.ourpowerbase.geocoder.yahooboss',
-  );
   _civicrm_init();
   try{
     // Uninstall first.
