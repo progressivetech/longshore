@@ -74,7 +74,6 @@ function drush_pbd_configure() {
   /* Drupal Settings */
   pbd_enable_modules();
   pbd_configure_themekey();
-  pbd_configure_autologout();
   pbd_configure_jquery_update();
   pbd_create_drupal_roles();
   pbd_grant_anonymous_and_authenticated_role_access();
@@ -615,7 +614,7 @@ function pbd_one_time_configuration() {
   pbd_add_constituent_type_fields_to_profiles();
   pbd_add_first_tag();
   pbd_configure_ckeditor();
-
+  pbd_configure_autologout();
   pbd_set_setting('one-time-configuration-set', 1);
 }
 
@@ -3404,28 +3403,13 @@ function pbd_configure_jquery_update() {
 }
 
 /**
- * Confgure the autologout module to be enabled
- * (why can't we just enable it like all other modules?)
- * and configure the single session business which is
- * off by default).
+ * Confgure the autologout module default time.
+ *
+ * This is run once on install and can be changed via the UI. 
  **/
 function pbd_configure_autologout() {
   $autologout_timeout = 7200;
   $autologout_redirect_url = 'civicrm';
-
-  // We can make exceptions.
-  $exceptions = array(
-    // Exception requested by Hadassah 2016-11-01
-    'participatorybudgeting' => 7200 * 2,
-  );
-  
-  global $base_url;
-  $site = substr(strrchr($base_url, '/'), 1);
-  while(list($k,$v) = each($exceptions)) {
-    if(preg_match("/^$k\./", $site)) {
-      $autologout_timeout = $v;
-    }
-  }
 
   variable_set('autologout_timeout', $autologout_timeout);
   variable_set('autologout_redirect_url', $autologout_redirect_url);
