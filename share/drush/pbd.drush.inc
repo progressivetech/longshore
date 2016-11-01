@@ -885,15 +885,6 @@ function pbd_enable_pb_components() {
       'CiviCampaign'
     )
   );
-  global $base_url;
-  $domain = substr(strrchr($base_url, '/'), 1);
-  if($base_url == 'cj.ourpowerbase.net') {
-    // They are the only group running CiviCase
-    // And we are calling this function after upgrading to 4.4
-    // because the component ids are changed up.
-    $params['enable_components'][] = 'CiviCase';
-  }
-
   try {
     civicrm_api3('Setting', 'create', $params);
   }
