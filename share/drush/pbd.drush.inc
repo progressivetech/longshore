@@ -3423,7 +3423,10 @@ function pbd_configure_autologout() {
   $autologout_redirect_url = 'civicrm';
 
   // We can make exceptions.
-  $exceptions = array();
+  $exceptions = array(
+    // Exception requested by Hadassah 2016-11-01
+    'participatorybudgeting' => 7200 * 2,
+  );
 
   global $base_url;
   $site = substr(strrchr($base_url, '/'), 1);
