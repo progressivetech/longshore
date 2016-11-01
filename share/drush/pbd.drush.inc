@@ -3427,12 +3427,12 @@ function pbd_configure_autologout() {
     // Exception requested by Hadassah 2016-11-01
     'participatorybudgeting' => 7200 * 2,
   );
-
+  
   global $base_url;
   $site = substr(strrchr($base_url, '/'), 1);
   while(list($k,$v) = each($exceptions)) {
     if(preg_match("/^$k\./", $site)) {
-      $timeout = $v;
+      $autologout_timeout = $v;
     }
   }
 
@@ -3585,6 +3585,7 @@ function pbd_enable_default_extensions() {
     'de.systopia.osm'
   );
   _civicrm_init();
+  $uninstall_extensions = array();
   try{
     // Uninstall first.
     $params['keys'] = array();
