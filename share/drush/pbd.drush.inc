@@ -447,6 +447,10 @@ function drush_pbd_subscription_links() {
   _civicrm_init();
   $id = drush_get_option('id');
 
+  if(empty($id)) {
+    drush_log(dt("Please pass the contact id via the id parameter."), 'error');
+    return false;
+  }
   $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
   $in_progress_id = array_search('In Progress', $contributionStatus);
 
@@ -456,9 +460,12 @@ function drush_pbd_subscription_links() {
   );
 
   // Try to find an in-progress recurring contribution matching this id.
-  $sql = "SELECT c.id AS id FROM civicrm_contribution c
+  $sql = "SELECT c.id AS id, first_name, last_name FROM civicrm_contribution c
     JOIN civicrm_contribution_recur r ON c.contribution_recur_id = r.id
-    WHERE r.contribution_status_id = %0 AND r.contact_id = %1";
+    JOIN civicrm_contact co ON r.contact_id = co.id
+    WHERE r.contribution_status_id = %0 AND r.contact_id = %1
+    AND is_deceased = 0 
+    ORDER BY r.id DESC LIMIT 1";
   $dao = CRM_Core_DAO::executeQuery($sql, $params);
   $dao->fetch();
   if($dao->N == 0) {
@@ -471,9 +478,10 @@ function drush_pbd_subscription_links() {
   $update_url = $paymentObject->subscriptionURL($contribution_id, $entity, 'update');
   $cancel_url = $paymentObject->subscriptionURL($contribution_id, $entity, 'cancel');
   $billing_url = $paymentObject->subscriptionURL($contribution_id, $entity, 'billing');
-  echo "Update: $update_url\n";
-  echo "Cancel: $cancel_url\n";
-  echo "Billing: $billing_url\n";
+  drush_log("Name: " . $dao->first_name . " " . $dao->last_name, "ok");
+  drush_log("Update: $update_url", "ok");
+  drush_log("Cancel: $cancel_url", "ok");
+  drush_log("Billing: $billing_url", "ok");
 
 }
 /**
