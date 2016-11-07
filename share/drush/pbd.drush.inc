@@ -213,6 +213,7 @@ function drush_pbd_configure_once() {
   pbd_make_drupal_user_profile_reserved();
   pbd_differentiate_sides_to_equal_relationships();
   pbd_disable_communication_style();
+  pbd_disable_event_details();
   pbd_remove_country_from_address_formats();
   pbd_enable_waitlist_participant_status_types();
   pbd_add_web_signup_group();
@@ -1988,6 +1989,22 @@ function pbd_turn_off_empowered_by_civicrm_footer() {
 function pbd_turn_off_pdf_receipt() {
   // this setting means do not attach pdf receipt...
   pbd_setting('doNotAttachPDFReceipt', 0);
+}
+
+function pbd_disable_event_details() {
+  _civicrm_init();
+  $results = civicrm_api("CustomGroup","get", array ('version' => 3, 'name' => 'event_details'));
+  if($results['is_error'] == 0) {
+    $values = array_pop($results['values']);
+    $id = $values['id'];
+    if(!empty($id)) {
+      $params = array(
+        'id' => $id,
+        'is_active' => 0
+      );
+      $result = civicrm_api3("CustomGroup","update", $params);
+    }
+  }
 }
 
 function pbd_disable_communications_status() {
