@@ -702,7 +702,7 @@ long_exec_drush_cmd() {
     done
   fi
   printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
-  printf "drush $quiet $2\n" >> "$file"
+  printf "drush $quiet $cmd\n" >> "$file"
   long_exec_in_container "$site" "$file"
   rm "$file"
 }
@@ -1327,6 +1327,25 @@ long_setup_site() {
       /etc/esmtprc
   fi
 
+}
+# There are some site configurations that should be set once to the default
+# and then not changed, in case the site was to make their own customizations.
+long_configure_site_once() {
+  local site="$1"
+  local force="$2"
+
+  # Populate the $LONG_SITE_TMP_VAR variable which is used to execute
+  # commands in the container.
+  long_init_site_tmp_var "$site"
+
+  # Set PTP configurations. 
+  if [ "$force" = "force" ]; then
+    long_log "Running drush ptp-configure-once --force" info
+    long_exec_drush_cmd "$site" "pbd-configure-once --force" "LONG_LIVE"
+  else
+    long_log "Running drush ptp-configure-once" info
+    long_exec_drush_cmd "$site" "pbd-configure-once" "LONG_LIVE"
+  fi
 }
 
 # Once the site is setup, ensure that it is configured in the PTP/PowerBase

@@ -13,6 +13,13 @@ function pbd_drush_command() {
   $items = array();
   $items['pbd-configure'] =
     array('description' => "Ensure all PowerBase site are configured consisently.");
+  $items['pbd-configure-once'] =
+    array(
+      'description' => "Configuration items that should only be run once on initial setup.",
+      'options' => array(
+        'force' => "Run even if we have already run the one time options."
+      ),
+    );
   $items['pbd-enable-debugging'] =
     array( 'description' => "Enable CiviCRM Debugging.");
   $items['pbd-disable-debugging'] =
@@ -131,10 +138,6 @@ function drush_pbd_configure() {
   pbd_configure_additional_fonts();
   pbd_disable_external_extension_repository();
 
-  // Should only be run once because it contains settings
-  // that a group may want to change and that we don't
-  // want to override.
-  pbd_one_time_configuration();
 
   // This should go last so we can reset settigs set above (like
   // preprocess variables).
@@ -145,9 +148,82 @@ function drush_pbd_configure() {
 }
 
 /**
- * Enable settings appropriate for a dev site.
- *
+ * Code to run once to ensure all PowerBase sites are consistently
+ * configured. This function should be run once. If may overwrite
+ * customizations made by a group.
  **/
+function drush_pbd_configure_once() {
+  _civicrm_init();
+  $force = drush_get_option('force', NULL);
+  // Should only be run once because it contains settings
+  // that a group may want to change and that we don't
+  // want to override.
+  drush_log(dt("Performing one-time configuration."), 'notice');
+  if(1 == pbd_get_setting('one-time-configuration-set')) {
+    if(!is_null($force)) {
+      drush_log(dt("Forcing one-time configuration even though it has already been set."), 'notice');
+    }
+    else {
+      drush_log(dt("One-time configuration has already been done, skipping."), 'notice');
+      return TRUE;
+    }
+  }
+
+  $one_time = TRUE;
+
+  # All new sites get the newsflash theme until we finalize the
+  # new powerbase one..
+  variable_set('theme_default','newsflash');
+
+  // Ensure all the civicrm components we need are enabled
+  pbd_enable_pb_components();
+
+  pbd_grant_anonymous_and_authenticated_role_access($one_time);
+
+  // _civicrm_init no longer creates config singleton.
+  // This is necessary in order to have a fully functional
+  // database.
+  $config = CRM_Core_Config::singleton();
+
+  // Only allow user creation by admin
+  pbd_lock_down_user_registration();
+
+  // Enable civicrm_enage module and load our custom data
+  // this must happen after campaign component is enabled
+  drush_pm_enable('civicrm_engage');
+
+  drush_log("Importing civicrm_engage data", 'notice');
+  pbd_import_engage_data();
+
+  variable_set('site_frontpage','civicrm');
+
+  pbd_disable_create_new_household_menu();
+  pbd_disable_modules();
+  pbd_set_default_civicrm_option_lists();
+  pbd_adjust_display_preferences();
+  pbd_disable_communications_status();
+  pbd_adjust_custom_data_groups();
+  pbd_ensure_petition_profile_exists();
+  // This causes problems on migrated CiviCRM installs.
+  // pbd_delete_all_tags();
+  pbd_add_image_upload_menu();
+  pbd_set_default_dateformat_full();
+  pbd_configure_default_cicero_mappings();
+  pbd_unset_default_header();
+  pbd_make_drupal_user_profile_reserved();
+  pbd_differentiate_sides_to_equal_relationships();
+  pbd_disable_communication_style();
+  pbd_remove_country_from_address_formats();
+  pbd_enable_waitlist_participant_status_types();
+  pbd_add_web_signup_group();
+  pbd_add_web_location_type();
+  pbd_add_constituent_type_fields_to_profiles();
+  pbd_add_first_tag();
+  pbd_configure_ckeditor();
+  pbd_configure_autologout();
+  pbd_set_setting('one-time-configuration-set', 1);
+}
+ 
 function pbd_configure_dev_site() {
   drush_log(dt("Configuring dev site settings."));
 
@@ -561,72 +637,6 @@ function pbd_get_setting($key, $default = NULL) {
 }
 
 /**
- * Do one time configuration setup for PowerBase sites.
- *
- **/
-function pbd_one_time_configuration() {
-  drush_log(dt("Performing one-time configuration."), 'notice');
-  if(1 == pbd_get_setting('one-time-configuration-set')) {
-    drush_log(dt("One-time configuration has already been done, skipping."), 'notice');
-    return TRUE;
-  }
-
-  $one_time = TRUE;
-
-  # All new sites get the newsflash theme until we finalize the
-  # new powerbase one..
-  variable_set('theme_default','newsflash');
-
-  // Ensure all the civicrm components we need are enabled
-  pbd_enable_pb_components();
-
-  pbd_grant_anonymous_and_authenticated_role_access($one_time);
-
-  // _civicrm_init no longer creates config singleton.
-  // This is necessary in order to have a fully functional
-  // database.
-  $config = CRM_Core_Config::singleton();
-
-  // Only allow user creation by admin
-  pbd_lock_down_user_registration();
-
-  // Enable civicrm_enage module and load our custom data
-  // this must happen after campaign component is enabled
-  drush_pm_enable('civicrm_engage');
-
-  drush_log("Importing civicrm_engage data", 'notice');
-  pbd_import_engage_data();
-
-  variable_set('site_frontpage','civicrm');
-
-  pbd_disable_create_new_household_menu();
-  pbd_disable_modules();
-  pbd_set_default_civicrm_option_lists();
-  pbd_adjust_display_preferences();
-  pbd_disable_communications_status();
-  pbd_adjust_custom_data_groups();
-  pbd_ensure_petition_profile_exists();
-  // This causes problems on migrated CiviCRM installs.
-  // pbd_delete_all_tags();
-  pbd_add_image_upload_menu();
-  pbd_set_default_dateformat_full();
-  pbd_configure_default_cicero_mappings();
-  pbd_unset_default_header();
-  pbd_make_drupal_user_profile_reserved();
-  pbd_differentiate_sides_to_equal_relationships();
-  pbd_disable_communication_style();
-  pbd_remove_country_from_address_formats();
-  pbd_enable_waitlist_participant_status_types();
-  pbd_add_web_signup_group();
-  pbd_add_web_location_type();
-  pbd_add_constituent_type_fields_to_profiles();
-  pbd_add_first_tag();
-  pbd_configure_ckeditor();
-  pbd_configure_autologout();
-  pbd_set_setting('one-time-configuration-set', 1);
-}
-
-/**
  * Put in default ckeditor configuration.
  * Technically this should only go in sites that are 4.7 or higher
  * but there is no harm in having it land in 4.6 sites.
@@ -645,11 +655,21 @@ function pbd_configure_ckeditor() {
  * add one test tag to avoid that problem.
  **/
 function pbd_add_first_tag() {
-  $result = civicrm_api3('Tag', 'create', array(
-    'sequential' => 1,
-    'name' => "example-tag",
-    'description' => "First tag for default install. If you are using tags, please delete. If you are not using tags, keep this around because certain features fail if no tags are present.",
-  ));
+  try {
+    civicrm_api3('Tag', 'create', array(
+      'sequential' => 1,
+      'name' => "example-tag",
+      'description' => "First tag for default install. If you are using tags, please delete. If you are not using tags, keep this around because certain features fail if no tags are present.",
+    ));
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    if($e->getErrorCode() == 'already exists') {
+      return TRUE;
+    }
+    drush_log(dt("Failed to add first tag."), 'error');
+    drush_log($e->getMessage(), 'error');
+    return FALSE;
+  }
 }
 /**
  * Add constituent types to reserved org and ind profiles.
@@ -708,6 +728,9 @@ function pbd_add_constituent_type_fields_to_profiles() {
 
   }
   catch (CiviCRM_API3_Exception $e) {
+    if($e->getErrorCode() == 'already exists') {
+      return TRUE;
+    }
     drush_log(dt("Failed to add constituent type fields to reserved profiles."), 'error');
     drush_log($e->getMessage(), 'error');
     return FALSE;
@@ -729,6 +752,9 @@ function pbd_add_web_location_type() {
     civicrm_api3('LocationType', 'create', $params);
   }
   catch (CiviCRM_API3_Exception $e) {
+    if($e->getErrorCode() == 'already exists') {
+      return TRUE;
+    }
     drush_log(dt("Failed to add Web location type."), 'error');
     drush_log($e->getMessage(), 'error');
     return FALSE;
@@ -753,6 +779,9 @@ function pbd_add_web_signup_group() {
     civicrm_api3('Group', 'create', $params);
   }
   catch (CiviCRM_API3_Exception $e) {
+    if($e->getErrorCode() == 'already exists') {
+      return TRUE;
+    }
     drush_log(dt("Failed to add Web Signup Group."), 'error');
     drush_log($e->getMessage(), 'error');
     return FALSE;
@@ -1963,18 +1992,17 @@ function pbd_turn_off_pdf_receipt() {
 
 function pbd_disable_communications_status() {
   _civicrm_init();
-
   $results = civicrm_api("CustomField","get", array ('version' => 3, 'column_name' => 'communication_status'));
   if($results['is_error'] == 0) {
     $values = array_pop($results['values']);
     $id = $values['id'];
-
-    $params = array(
-      'version' => 3,
-      'id' => $id,
-      'is_active' => 0
-    );
-    $result = civicrm_api("CustomField","update", $params);
+    if(!empty($id)) {
+      $params = array(
+        'id' => $id,
+        'is_active' => 0
+      );
+      $result = civicrm_api3("CustomField","update", $params);
+    }
   }
 }
 
@@ -3339,7 +3367,6 @@ function pbd_add_image_upload_menu() {
   $menus = CRM_Core_BAO_Navigation::getNavigationList();
   $exists_array = preg_grep("/$label/", $menus);
   if(count($exists_array)) {
-    drush_print(dt("Already added."));
     return;
   }
   $menu_array = preg_grep('/Customize Data and Screens/', $menus);
@@ -3369,9 +3396,7 @@ function pbd_add_image_upload_menu() {
  **/
 function pbd_set_default_dateformat_full() {
   _civicrm_init();
-  require_once "CRM/Core/BAO/ConfigSetting.php";
-  $config['dateformatFull'] = '%B %E, %Y';
-  CRM_Core_BAO_ConfigSetting::add($config);
+  pbd_setting('dateformatFull', '%B %E, %Y');
 }
 
 /**
