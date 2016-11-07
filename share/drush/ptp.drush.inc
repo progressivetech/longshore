@@ -39,6 +39,9 @@ function ptp_drush_command() {
   $items['ptp-update-report'] =
     array('description' => "Print out report of modules and themes that need to be updated."
   );
+  $items['ptp-fix-missing'] =
+    array('description' => "Delete modules and themes that were installed but no longer are present."
+  );
   return $items;
 }
 
@@ -643,6 +646,22 @@ function ptp_check_sumfields_triggers() {
   if(function_exists('sumfields_get_update_trigger')) {
     if(!sumfields_get_update_trigger($table = 'civicrm_contribution')) {
       echo "\n\n+++++Problem!+++++\n\n";
+    }
+  }
+}
+
+/**
+ * Command hook: fix missing modules and themes.
+ */
+function drush_ptp_fix_missing() {
+  $sql = "SELECT name FROM system WHERE type = 'module'";
+  $result = db_query($sql);
+  while($name = $result->fetch()->name) {
+    $filename = NULL;
+    $show_error = FALSE;
+    if(!drupal_get_filename('module', $name, $filename, $show_error)) {
+      $sql = "DELETE FROM system WHERE name = :name";
+      db_query($sql, array(':name' => $name));
     }
   }
 }
