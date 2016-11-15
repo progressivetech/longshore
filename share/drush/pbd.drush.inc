@@ -137,7 +137,7 @@ function drush_pbd_configure() {
   pbd_disable_security_update_alert();
   pbd_configure_additional_fonts();
   pbd_disable_external_extension_repository();
-
+  pbd_set_smart_group_refresh_mode();
 
   // This should go last so we can reset settigs set above (like
   // preprocess variables).
@@ -3777,6 +3777,26 @@ function pbd_setting($key, $value, $group = NULL) {
       require_once "CRM/Core/BAO/ConfigSetting.php";
       CRM_Core_BAO_ConfigSetting::add($params);
     }
+  }
+}
+
+/**
+ * On a per group basis, set deterministic refresh mode.
+ *
+ * Smart Group Refresh mode is set to opportunistic by default. That means
+ * the smart group cache is flushed whenever a contact changes to ensure
+ * it is always up to date. That can cause some locking though. So we 
+ * can optionally set it to deterministic which means it is flushed
+ * once per cron job instead. If you add a group to this list you
+ * *must* also enable the cron job via the web UI. Otherwise, it will
+ * never get flushed.
+ */
+function pbd_set_smart_group_refresh_mode() {
+  $sites = array('texasenvironment');
+  if(in_array(ptp_get_subdomain(), $sites)) {
+    $params = array('smart_group_cache_refresh_mode' => 'deterministic');
+    drush_log("Setting smart group cache to deterministic.", 'info');
+    civicrm_api3('Setting', 'create', $params);
   }
 }
 
