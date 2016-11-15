@@ -3792,7 +3792,7 @@ function pbd_setting($key, $value, $group = NULL) {
  * Otherwise, it will never get flushed.
  */
 function pbd_set_smart_group_refresh_mode() {
-  $sites = array('texasenvironment');
+  $sites = array('texasenvironment', 'isaiah');
   if(in_array(ptp_get_subdomain(), $sites)) {
     $params = array('smart_group_cache_refresh_mode' => 'deterministic');
     drush_log("Setting smart group cache to deterministic.", 'info');
