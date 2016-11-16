@@ -3788,7 +3788,9 @@ function pbd_setting($key, $value, $group = NULL) {
  * it is always up to date. That can cause some locking though. So we 
  * can optionally set it to deterministic which means it is flushed
  * once per cron job instead. If you add a group to this list you
- * *must* also create the cron job via the web UI (Job.group_cache_flush). 
+ * *must* also:
+ *  * create the cron job via the web UI (Job.group_cache_flush). 
+ *  * In Search Preferences, set cache time to one minute 
  * Otherwise, it will never get flushed.
  */
 function pbd_set_smart_group_refresh_mode() {
