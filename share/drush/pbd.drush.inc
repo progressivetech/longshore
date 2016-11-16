@@ -222,6 +222,8 @@ function drush_pbd_configure_once() {
   pbd_add_first_tag();
   pbd_configure_ckeditor();
   pbd_configure_autologout();
+  pbd_enable_remote_profile_submissions();_
+
   pbd_set_setting('one-time-configuration-set', 1);
 }
  
@@ -3823,6 +3825,16 @@ function pbd_configure_additional_fonts() {
  **/
 function pbd_disable_external_extension_repository() {
   pbd_setting('ext_repo_url', FALSE, "Extension Preferences");
+}
+
+/**
+ * Enable remote_profile_submissions by default.
+ *
+ * Starting in 4.7 this is disabled. Most groups want a signup
+ * form on their home page.
+ */
+function pbd_enable_remote_profile_submissions() {
+  setting('remote_profile_submissions', TRUE);
 }
 
 ?>
