@@ -222,7 +222,7 @@ function drush_pbd_configure_once() {
   pbd_add_first_tag();
   pbd_configure_ckeditor();
   pbd_configure_autologout();
-  pbd_enable_remote_profile_submissions();_
+  pbd_enable_remote_profile_submissions();
 
   pbd_set_setting('one-time-configuration-set', 1);
 }
