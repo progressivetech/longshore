@@ -3834,7 +3834,7 @@ function pbd_disable_external_extension_repository() {
  * form on their home page.
  */
 function pbd_enable_remote_profile_submissions() {
-  setting('remote_profile_submissions', TRUE);
+  pbd_setting('remote_profile_submissions', TRUE);
 }
 
 ?>
