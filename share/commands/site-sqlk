@@ -27,7 +27,7 @@ for site in $sites; do
   long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 
   declare -i time
-  longshore site-sqlt "$site" | egrep '[0-9]' | while read pid user host db command time therest; do
+  /srv/longshore/bin/longshore site-sqlt "$site" | egrep '[0-9]' | while read pid user host db command time therest; do
     [ "$command" = "Sleep" ] && continue
     if [ -n "$time" ] && [ "$time" -gt "$seconds" ] && [ -n "$pid" ]; then
       if [[ "$pid" =~ ^[0-9]+$ ]]; then
