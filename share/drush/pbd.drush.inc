@@ -223,6 +223,7 @@ function drush_pbd_configure_once() {
   pbd_configure_ckeditor();
   pbd_configure_autologout();
   pbd_enable_remote_profile_submissions();
+  pbd_set_state_province_limit();
 
   pbd_set_setting('one-time-configuration-set', 1);
 }
@@ -3801,6 +3802,19 @@ function pbd_set_smart_group_refresh_mode() {
     $params = array('smart_group_cache_refresh_mode' => 'deterministic');
     drush_log("Setting smart group cache to deterministic.", 'info');
     civicrm_api3('Setting', 'create', $params);
+  }
+}
+
+/**
+ * Ensure we limit list of state provinces to the relevant countries.
+ */
+function pbd_set_state_province_limit() {
+  $key = 'provinceLimit';
+  $results = civicrm_api3('setting', 'get', $params);
+  if(empty($results['values'][$key])) {
+    // Set to the US
+    $params[$key] = 1228;
+    civicrm_api3('setting', 'create', $params);
   }
 }
 
