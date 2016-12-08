@@ -831,7 +831,7 @@ function pbd_disable_security_update_alert() {
   else {
     $name = 'securityAlert';
   }
-  $params = array($name => 1);
+  $params = array($name => 0);
   civicrm_api3('Setting', 'create', $params);
   return TRUE;
 }
