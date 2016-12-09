@@ -656,7 +656,9 @@ function drush_ptp_check_sumfields() {
       drush_log("Missing Contribution Trigger", 'error');
       if (drush_get_option('fix', FALSE)) {
         drush_log("Fixing", 'error');
-        civicrm_api3('SumFields', 'gendata', array());
+        if(!sumfields_generate_data_based_on_current_data()) {
+          drush_log("There was an error saving the data.");
+        }
       }
     }
   }
