@@ -650,6 +650,9 @@ function drush_ptp_check_sumfields() {
   _civicrm_init();
   if(function_exists('sumfields_get_update_trigger')) {
     if(!sumfields_get_update_trigger($table = 'civicrm_contribution')) {
+      // Ignore if it has never been setup
+      $status = sumfields_get_setting('generate_schema_and_data', FALSE);
+      if(empty($status)) return;
       drush_log("Missing Contribution Trigger", 'error');
       if (drush_get_option('fix', FALSE)) {
         drush_log("Fixing", 'error');
