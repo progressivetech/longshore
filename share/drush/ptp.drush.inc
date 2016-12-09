@@ -643,6 +643,7 @@ function ptp_strip_nbsp(&$value, $key) {
  * have the contribution triggers installed.
  **/
 function ptp_check_sumfields_triggers() {
+  _civicrm_init();
   if(function_exists('sumfields_get_update_trigger')) {
     if(!sumfields_get_update_trigger($table = 'civicrm_contribution')) {
       echo "\n\n+++++Problem!+++++\n\n";
