@@ -123,6 +123,8 @@ projects[jquery_update][version] = "3.0-alpha3"
 
 projects[hybridauth][type] = "module"
 projects[hybridauth][version] = "2.15"
+; Patch included make file to use more recent library.
+projects[hybridauth][patch][] = "hybridauth.patch"
 
 ; **************
 ; custom modules
@@ -151,13 +153,6 @@ projects[arrange_fields][type] = "module"
 projects[arrange_fields][download][type] = "git"
 projects[arrange_fields][download][url] = "git://git.progressivetech.org/powerbase/arrange_fields.git"
 projects[arrange_fields][download][revision] = "997b5358ef0309a801e948a9ecbcb19a6da3349b"
-
-; libraries
-projects[hybridauthlibrary][type] = "library"
-projects[hybridauthlibrary][directory_name] = "hybridauth"
-projects[hybridauthlibrary][download][type] = "file"
-projects[hybridauthlibrary][download][subtree] = "hybridauth-2.8.2/hybridauth"
-projects[hybridauthlibrary][download][url] = "https://github.com/hybridauth/hybridauth/archive/v2.8.2.zip"
 
 ; The following are civicrm module extensions, being stored in
 ; sites/all/libraries and symlinked to respective organizations custom-civicrm/extensions
