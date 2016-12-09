@@ -646,7 +646,7 @@ function drush_ptp_check_sumfields() {
   _civicrm_init();
   if(function_exists('sumfields_get_update_trigger')) {
     if(!sumfields_get_update_trigger($table = 'civicrm_contribution')) {
-      echo "\n\n+++++Problem!+++++\n\n";
+      drush_log("Missing Contribution Trigger", 'error');
     }
   }
 }
