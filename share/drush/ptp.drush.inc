@@ -200,8 +200,8 @@ function ptp_insert_ind_contact() {
       ->fetchField();
     if(!empty($uid)) {
       $msg = dt(
-        "Error: user with %email email address already exists (uid: %uid).",
-        array('%email' => $target_super_user_email, '%uid' => $uid)
+        "Error: user with @email email address already exists (uid: @uid).",
+        array('@email' => $target_super_user_email, '@uid' => $uid)
       );
       drush_log($msg, 'error');
       return;
@@ -653,13 +653,16 @@ function drush_ptp_check_sumfields() {
       // Ignore if it has never been setup
       $status = sumfields_get_setting('generate_schema_and_data', FALSE);
       if(empty($status)) return;
-      drush_log("Missing Contribution Trigger", 'error');
+      $site = ptp_get_subdomain();
+      drush_log(dt("@site: Missing Contribution Trigger", array('@site' => $site)), 'error');
       if (drush_get_option('fix', FALSE)) {
-        drush_log("Fixing", 'error');
         sumfields_save_setting('generate_schema_and_data', 'scheduled:'. date('Y-m-d H:i:s'));
         $returnValues = array();
         if(!sumfields_gen_data($returnValues)) {
-          drush_log("There was an error saving the data.");
+          drush_log(dt("@site: There was an error fixing the data.", array('@site' => $site)), 'error');
+        }
+        else {
+          drush_log(dt("@site: Data fixed", array('@site' => $site)), 'error');
         }
       }
     }
