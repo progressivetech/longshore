@@ -14,7 +14,7 @@ sites="$2"
 declare -i seconds 
 seconds="$3"
 
-if [ -z "$seconds" ]; then
+if [ "$seconds" -eq "0" ]; then
   seconds=7200
 fi
 
