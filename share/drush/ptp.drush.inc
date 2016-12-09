@@ -34,8 +34,12 @@ function ptp_drush_command() {
     array('description' => "Ensure all PTP general settings are properly configured."
   );
   $items['ptp-check-sumfields'] =
-    array('description' => "Report if any summary fields contribution triggers are missing."
-  );
+    array(
+      'description' => "Report if any summary fields contribution triggers are missing.",
+      'options' => array(
+        'fix' => "Pass --fix if you want problem sites to be auto-fixed."
+      ),
+    );
   $items['ptp-update-report'] =
     array('description' => "Print out report of modules and themes that need to be updated."
   );
@@ -647,6 +651,10 @@ function drush_ptp_check_sumfields() {
   if(function_exists('sumfields_get_update_trigger')) {
     if(!sumfields_get_update_trigger($table = 'civicrm_contribution')) {
       drush_log("Missing Contribution Trigger", 'error');
+      if (drush_get_option('fix', FALSE)) {
+        drush_log("Fixing", 'error');
+        civicrm_api3('SumFields', 'gendata', array());
+      }
     }
   }
 }
