@@ -33,8 +33,8 @@ function ptp_drush_command() {
   $items['ptp-configure'] =
     array('description' => "Ensure all PTP general settings are properly configured."
   );
-  $items['ptp-fix-stripe-schema'] =
-    array('description' => "Update stripe schema if necessary."
+  $items['ptp-check-sumfields'] =
+    array('description' => "Report if any summary fields contribution triggers are missing."
   );
   $items['ptp-update-report'] =
     array('description' => "Print out report of modules and themes that need to be updated."
@@ -642,7 +642,7 @@ function ptp_strip_nbsp(&$value, $key) {
  * Report if a site has sumfields installed and does not
  * have the contribution triggers installed.
  **/
-function ptp_check_sumfields_triggers() {
+function drush_ptp_check_sumfields() {
   _civicrm_init();
   if(function_exists('sumfields_get_update_trigger')) {
     if(!sumfields_get_update_trigger($table = 'civicrm_contribution')) {
