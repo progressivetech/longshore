@@ -656,7 +656,9 @@ function drush_ptp_check_sumfields() {
       drush_log("Missing Contribution Trigger", 'error');
       if (drush_get_option('fix', FALSE)) {
         drush_log("Fixing", 'error');
-        if(!sumfields_generate_data_based_on_current_data()) {
+        sumfields_save_setting('generate_schema_and_data', 'scheduled:'. date('Y-m-d H:i:s'));
+        $returnValues = array();
+        if(!sumfields_gen_data($returnValues)) {
           drush_log("There was an error saving the data.");
         }
       }
