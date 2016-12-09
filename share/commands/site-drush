@@ -4,40 +4,47 @@ long_usage_message="usage: $(basename $0) site-drush <site> <command>
 Run the specified drush command in the context of the specified site.
 
 Arguments
-  <site> - The site database to login to.
+  <site> - The site database to login to or --all to run on all.
   <command> - The drush command to execute, together with all arguments.
   e.g. drush 'cache-clear all'"
 
 long_check_args "$2" "$#" 2
 
-site="$2"
+sites="$2"
 
 # Accept all arguments as the drush command
 shift 2
 cmd="$@"
 
-long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+if [ "$sites" = "--all" ]; then
+  long_set_sites
+  sites="$LONG_SITES"
+fi
 
 me=$(hostname)
-# We can't use the re-run over network helper function because the command has to
-# be fully quoted. So, re-implementing here.
-long_set_site_sibling "$site"
-if [ -z "$LONG_SITE_SIBLING" ]; then
-  # This could mean the site name was mis-typed.
-  long_log "Can't determine where to run this command because site doesn't have sibling (%s)." error "$site"
-  continue
-fi
-if [ "$LONG_SITE_SIBLING" = "$me" ]; then
-  # Run locally.
-  # If the site is not running we can't run a command.
-  if ! long_container_running "$site"; then
-    long_log "Not executing command for %s because it is not running." info "$site"
-  else
-    long_exec_drush_cmd "$site" "$cmd"
+for site in $sites; do
+  long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+
+  # We can't use the re-run over network helper function because the command has to
+  # be fully quoted. So, re-implementing here.
+  long_set_site_sibling "$site"
+  if [ -z "$LONG_SITE_SIBLING" ]; then
+    # This could mean the site name was mis-typed.
+    long_log "Can't determine where to run this command because site doesn't have sibling (%s)." error "$site"
+    continue
   fi
-else
-  # Run over the network.
-  cmd=$(echo "$cmd" | sed "s#'#\\\'#g")
-  cmd=$(echo "$cmd" | sed 's#"#\\\"#g')
-  ssh -q -t "${LONG_SITE_SIBLING}.mayfirst.org" "LONG_LOG_LEVEL=$LONG_LOG_LEVEL /srv/longshore/bin/longshore site-drush '$site' '$cmd'" 
-fi
+  if [ "$LONG_SITE_SIBLING" = "$me" ]; then
+    # Run locally.
+    # If the site is not running we can't run a command.
+    if ! long_container_running "$site"; then
+      long_log "Not executing command for %s because it is not running." info "$site"
+    else
+      long_exec_drush_cmd "$site" "$cmd"
+    fi
+  else
+    # Run over the network.
+    cmd=$(echo "$cmd" | sed "s#'#\\\'#g")
+    cmd=$(echo "$cmd" | sed 's#"#\\\"#g')
+    ssh -q -t "${LONG_SITE_SIBLING}.mayfirst.org" "LONG_LOG_LEVEL=$LONG_LOG_LEVEL /srv/longshore/bin/longshore site-drush '$site' '$cmd'" 
+  fi
+done
