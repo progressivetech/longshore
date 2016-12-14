@@ -46,9 +46,135 @@ function ptp_drush_command() {
   $items['ptp-fix-missing'] =
     array('description' => "Delete modules and themes that were installed but no longer are present."
   );
+  $items['ptp-import-options'] =
+    array(
+      'description' => "Import options pass via file.",
+      'options' => array(
+        'location' => t("The location/address of the CSV file to import."),
+        'action' => t("Either replace, add or new - depending on whether options should replace or add to an existing set or create a new one."),
+        'name' => t("The name of the option group - this is the key that will be used to identify existing option groups."),
+        'title' => t("The friendly name - only needed if action is new.")
+      )
+    );
   return $items;
 }
 
+/**
+ * Import the given CSV file as options.
+ *
+ **/
+function drush_ptp_import_options() {
+  _civicrm_init();
+
+  $location = drush_get_option('location', NULL);
+  $action = drush_get_option('action', NULL);
+  $name = drush_get_option('name', NULL);
+  $title = drush_get_option('title', NULL);
+
+  // Sanity checking.
+  if(empty($location) || preg_match('/^https:/', $location)) {
+    drush_log(dt("Please pass a location that starts with https:", 'error'));
+    return FALSE;
+  }
+  $expected_actions = array('replace', 'add', 'new');
+  if(!in_array($action, $expected_actions)) {
+    drush_log(dt("Please pass replace, add or new as the action.", 'error'));
+    return FALSE;
+  }
+
+  if($action == 'replace' || $action == 'add') {
+    if(empty($name)) {
+      drush_log(dt("The name is required if replace'ing or add'ing.", 'error'));
+      return FALSE;
+    }
+  }
+  else {
+    if(empty($title)) {
+      drush_log(dt("The title is required if creating a new option group.", 'error'));
+      return FALSE;
+    }
+  }
+
+  // If this is a new option group and no name is passed, auto-generate
+  // one based on the title.
+  if($action == 'new' && empty($name)) {
+    $name = ptp_label_to_name($title);
+  }
+
+  // Now get and validate the CSV file.
+  $lines = file($location);
+  if(FALSE === $lines) {
+    drush_log(dt("Failed to get the file."), 'error');
+    return FALSE;
+  }
+  $options = array();
+  foreach($lines as $line) {
+    $out = str_getcsv(trim($line));
+    if(empty($out)) {
+      drush_log(dt("One of the rows in your CSV file didn't parse properly. Are you sure it is comma delimited?"), 'error');
+      return FALSE;
+    }
+    $option_label = $out[0];
+    $option_value = $out[1];
+    $option_name = ptp_label_to_name($option_label);
+    if(array_key_exists($option_name, $options)) {
+      drush_log(dt("I found two labels that create the same name (when you remove all non-alpha numeric charactes). Please revise labels. Sorry I am too lazy to do this for you."), 'error');
+      return FALSE;
+    }
+    $options[] = array('label' => $option_label, 'name' => $option_name, 'value' => $option_value);
+  }
+  // Ready, let's do it. Start by finding an option group.
+  $option_group_id = NULL;
+  try {
+    // Create
+    $params = array(
+      'name' => $name,
+    );
+    $results = civicrm_api3('OptionGroup', 'get', $params);
+
+    $count = $results['count'];
+    // If we are add'ing or replace'ing, we should have a result. If we
+    // are new'ing then we should not have a result.
+    if($action == 'new') {
+      if($count > 0) {
+        drush_log(dt("An option group with the same name already exists (@name).", array('@name' => $name)), 'error');
+        return FALSE;
+      }
+      // Otherwise, we should create it.
+      $params = array(
+        'name' => $name,
+        'title' => $title,
+        'is_active' => 1
+      );
+      $results = civicrm_api3('OptionGroup', 'create', $params);
+      $option_group_id = $results['id'];
+    }
+    elseif($action == 'replace' || $action == 'add') {
+      if($count == 0) {
+        drush_log(dt("I can't find that option group (@name).", array('@name' => $name)), 'error');
+        return FALSE;
+      }
+      $option_group_id = $results['id'];
+    }
+
+    drush_log(dt("Creating options for option_group_id @option_group_id.", array('@option_group_id' => $option_group_id)));
+    while(list(, $option) = each($options)) {
+      $params = array(
+        'option_group_id' => $option_group_id,
+        'label' => $option['label'],
+        'name' => $option['name'],
+        'value' => $option['value'],
+        'is_active' => 1
+      );
+      civicrm_api3('OptionValue', 'create', $params);
+    }
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    drush_log(dt("We hit a snag."), 'error');
+    drush_log($e->getMessage());
+    return FALSE;
+  }
+}
 /**
  * Store statistics about a given site in the PTP database.
  *
@@ -735,3 +861,14 @@ function drush_ptp_update_report() {
   module_disable(array('update'));
 	print_r($updates_needed);
 }
+
+/**
+ * Convert a given string to a name with onl alpha numberic and 
+ * undescore characters.
+ */
+function ptp_label_to_name($label) {
+  $name = strtolower($label);
+  // Replace anything that is not a number or letter with an underscore.
+  return preg_replace('[^a-z0-9]', '_', $name);
+}
+
