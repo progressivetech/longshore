@@ -15,6 +15,7 @@ RUN apt-get update && \
     php5-mysql \
     php5-curl \
     php5-gd \
+    php5-imagick \
     liboauth-php \
     fonts-linuxlibertine \
     wkhtmltopdf \
