@@ -50,10 +50,10 @@ function ptp_drush_command() {
     array(
       'description' => "Import options pass via file.",
       'options' => array(
-        'location' => t("The location/address of the CSV file to import."),
-        'action' => t("Either replace, add or new - depending on whether options should replace or add to an existing set or create a new one."),
-        'name' => t("The name of the option group - this is the key that will be used to identify existing option groups."),
-        'title' => t("The friendly name - only needed if action is new.")
+        'location' => dt("The location/address of the CSV file to import."),
+        'action' => dt("Either replace, add or new - depending on whether options should replace or add to an existing set or create a new one."),
+        'name' => dt("The name of the option group - this is the key that will be used to identify existing option groups."),
+        'title' => dt("The friendly name - only needed if action is new.")
       )
     );
   return $items;
