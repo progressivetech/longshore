@@ -39,12 +39,12 @@ for site in $sites; do
     if ! long_container_running "$site"; then
       long_log "Not executing command for %s because it is not running." info "$site"
     else
-      long_exec_drush_cmd "$site" "$cmd"
+      long_exec_drush_cmd "$site" "$cmd" 'LONG_LIVE'
     fi
   else
     # Run over the network.
     cmd=$(echo "$cmd" | sed "s#'#\\\'#g")
     cmd=$(echo "$cmd" | sed 's#"#\\\"#g')
-    ssh -q -t "${LONG_SITE_SIBLING}.mayfirst.org" "LONG_LOG_LEVEL=$LONG_LOG_LEVEL /srv/longshore/bin/longshore site-drush '$site' '$cmd'" 
+    ssh -q -t "${LONG_SITE_SIBLING}.mayfirst.org" "LONG_LOG_LEVEL=$LONG_LOG_LEVEL /srv/longshore/bin/longshore site-drush '$site' '$cmd' 'LONG_LIVE'" 
   fi
 done
