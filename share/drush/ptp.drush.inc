@@ -65,7 +65,7 @@ function ptp_drush_command() {
 
 function drush_ptp_set_outbound_mail_settings() {
   _civicrm_init();
-  ptp_set_outbound_mail_settings('bulk.mayfirst.org');
+  ptp_set_outbound_mail_settings('bulk.ourpowerbase.net');
 }
 
 /**
