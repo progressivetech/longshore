@@ -56,7 +56,16 @@ function ptp_drush_command() {
         'title' => dt("The friendly name - only needed if action is new.")
       )
     );
+  $items['ptp-set-outbound-mailing'] = 
+    array(
+      'description' => dt("Temporary for re-setting to bulk.mayfirst.org for upgade purposes.")
+    );
   return $items;
+}
+
+function drush_ptp_set_outbound_mailing() {
+  _civicrm_init();
+  ptp_set_outbound_mail_settings('bulk.mayfirst.org');
 }
 
 /**
@@ -552,7 +561,7 @@ function ptp_update_contact($search_params, $first_name, $last_name, $email) {
 /**
  * Set outbound email settings.
  */
-function ptp_set_outbound_mail_settings() {
+function ptp_set_outbound_mail_settings($host = 'bulk.ourpowerbase.net') {
   // Set the outbound email settings
   drush_log(dt("Setting outbound mail settings."));
   $sub = ptp_get_subdomain();
@@ -562,7 +571,7 @@ function ptp_set_outbound_mail_settings() {
     $new['outBound_option'] = 5;  // 5 is redirect to db
   } elseif ( getenv('LONG_LIVE') == 'y' ) {
     $new['outBound_option'] = 0;  // 0 is for smtp
-    $new['smtpServer'] = 'bulk.ourpowerbase.net';
+    $new['smtpServer'] = $host;
     $new['smtpPort'] = '25';
     $new['smtpAuth'] = 0;  // 0 is no auth
   } else {
