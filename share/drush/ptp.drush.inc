@@ -56,14 +56,14 @@ function ptp_drush_command() {
         'title' => dt("The friendly name - only needed if action is new.")
       )
     );
-  $items['ptp-set-outbound-mailing'] = 
+  $items['ptp-set-outbound-mail-settings'] = 
     array(
       'description' => dt("Temporary for re-setting to bulk.mayfirst.org for upgade purposes.")
     );
   return $items;
 }
 
-function drush_ptp_set_outbound_mailing() {
+function drush_ptp_set_outbound_mail_settings() {
   _civicrm_init();
   ptp_set_outbound_mail_settings('bulk.mayfirst.org');
 }
