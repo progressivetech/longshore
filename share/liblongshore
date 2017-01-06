@@ -2126,10 +2126,10 @@ long_check_remote_git_clean() {
   local site="$1"
   local host="$2"
   long_log "Check if remote site (%s) git repo is clean." info "$site"
-  local out=$(ssh "${user}@${host}.mayfirst.org" "/srv/longshore/bin/longshore site-gitify '$site'")
+  (ssh "${user}@${host}.mayfirst.org" "/srv/longshore/bin/longshore site-gitify '$site'")
 
-  if [ -n "$out" ]; then
-    long_log "Doesn't seem like the remote source git repo is clean for %s.\n%s" error "$site" "$out"
+  if [ "$?" -ne "0" ]; then
+    long_log "Doesn't seem like the remote source git repo is clean for %s." error "$site"
     return 1
   else
     long_log "The remote source git repo is clean.\n" info
@@ -2181,7 +2181,6 @@ long_gitify_site() {
   if [ "$?" = "0" ]; then
     # The repository is already setup properly. Now determine whether or
     # not it is clean and return the appropriate code.
-    long_log "Git repo already exists for %s" info "$site"
     long_check_git_clean "$site"
     return "$?"
   fi
