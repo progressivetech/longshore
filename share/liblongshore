@@ -404,7 +404,7 @@ long_container_up() {
 
 # Reload nginx to pickup new configurations
 long_nginx_reload() {
-  sudo /etc/init.d/nginx reload
+  sudo /etc/init.d/nginx reload > /dev/null
 }
 
 # Get the port for this mysql container, or assign a new one.
