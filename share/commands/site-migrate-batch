@@ -1,0 +1,213 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-migrate-batch [<action>] [<platform>] [<startdate>]
+Migrate many sites to a new platform in automated fashion
+with log entries sent to logger. Typical use case: run with the create action
+first to generate a batch file that will upgrade sites over a 5 day period.
+The batch file lists one site per line with a timestamp of the day it should
+be migrated and the platform it should be migrated to.
+
+Arguments
+  <action> - Defaults to run, which will run the migrations. Optionally
+    set to create to create the batch file.
+  <platform> - Platform to migrate to.
+  <startdate> - ISO formatted date to start upgrades."
+
+long_check_args "$2" "$#" 0
+
+action="$2"
+platform="$3"
+startdate="$4"
+
+path="$HOME/.longshore.batch.migrate"
+
+[ -z "$action" ] && action=run
+
+if [ ! -f "$path" ]; then
+  touch "$path"
+fi
+
+if [ "$action" = "create" ]; then
+  if [ -z "$platform" ]; then
+    long_die "You must pass the migration platform as the first argument."
+  fi
+
+  if [ ! -d "${LONG_SRV}/platforms/${platform}" ]; then
+    long_die "Can't find the new platform (%s)." 1 "$platform"
+  fi
+
+  if [ -z "$startdate" ]; then
+    long_die "Please pass start date"
+  fi
+
+  startts=$(date -d "$startdate" +%s)
+  if [ "$?" -ne "0" ]; then
+    long_die "Looks like an invalid date."
+  fi
+
+  # Allow start date to be today, but no earlier.
+  nowish=$(( $(date +%s) - 86400 ))
+  if [ "$startts" -lt "$nowish" ]; then
+    long_die "Start day is in the past."
+  fi
+
+  long_prompt "Creating batch file."
+  [ "$reply" != "y" ] && long_die "Not continuing." 0
+  long_set_sites $(hostname)
+  count=$(echo $LONG_SITES |wc -w)
+  index=0
+  # Try to get the bulk down mon-thu, with a few remainders on friday.
+  perday=$(( $count / 4 ))
+  truncate -s 0 "$path"
+  for site in $LONG_SITES; do
+    if [ "$index" -gt "$perday" ]; then
+      # Add a day.
+      startts=$(( $startts + 86400 ))
+      index=0
+    fi
+    printf "%s:%s:%s\n" $(date -d "@$startts" +%Y-%m-%d) "$site" "$platform" >> "$path"
+    index=$(( $index + 1 ))
+  done
+  long_die "Batch file created (%s)." 0 "$path"
+fi
+
+# Get list of sites to upgrade today.
+today=$(date +%Y-%m-%d)
+sites=$(grep "^$today" "$path" | cut -d: -f2)
+# Change line breaks to spaces to make it easier to read.
+sites_display=$(echo $sites | sed "s/\n/  /g")
+
+if [ -z "$sites" ]; then
+  long_die "No sites to migrate today." 
+fi
+
+long_log "Sites to migrate: %s." info "$sites_display"
+long_prompt "Starting migration..."
+
+# Reduce noise, turn off all output (all log messages will go to logger).
+LONG_LOG_LEVEL=error
+
+for site in $sites; do
+  new_platform=$(grep ":$site:" "$path" | cut -d: -f3)
+  new_version=$(echo "$new_platform" | egrep -o "[0-9]+\.[0-9]+\.[0-9]+$")
+  printf "\n____Migrating %s to platform %s running %s.____\n" "$site" "$new_platform" "$new_version"
+  # Run some sanity checks.
+  if ! long_check_site_exists "$site"; then
+    long_log "upgrade:%s: Site doesn't exist." error "$site"
+    continue
+  fi
+
+  if ! long_container_running "$site"; then
+    long_log "upgrade:%s: Please start the site before migrating" error "$site"
+    continue
+  fi
+
+  # Record existing platform
+  long_set_site_platform "$site"
+  old_platform="$LONG_SITE_PLATFORM"
+
+  # Record existing database
+  long_set_site_db_host "$site"
+  db_host="$LONG_SITE_DB_HOST"
+
+  if [ -z "$db_host" ]; then
+    long_log "upgrade:%s: Can't determine current database host." error "$site"
+    continue
+  fi
+
+  if [ -z "$old_platform" ]; then
+    long_log "upgrade:%s: Can't determine current platform." error "$site"
+    continue
+  fi
+
+  if [ "$new_platform" = "$old_platform" ]; then
+    long_log "upgrade:%s: Site is already running that platform." error "$site"
+    continue
+  fi
+
+  # Empty sessions table for quicker restore and to ensure everyone is 
+  # logged out for upgrade.
+  if ! long_clear_sessions "$site"; then
+    long_log "upgrade:%s Failed to clear sessions." error "$site"
+    continue
+  fi
+  long_log "upgrade:%s: Sessions cleared." info "$site"
+  printf "."
+
+  printf ".b."
+  # Make a backup so we can restore in case of error. If backup fails exit
+  # with error.
+  if ! (LONG_LOG_LEVEL=error longshore site-backup "$site" "preupgrade"); then
+    long_log "upgrade:%s Failed to backup site." error "$site"
+    continue
+  fi
+  long_log "upgrade:%s: Backed up site." info "$site"
+  printf "."
+
+  if ! long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"; then
+    long_log "upgrade:%s Failed to set maintenance mode." error "$site"
+    continue
+  fi
+  long_log "upgrade:%s: Maintenance mode entered." info "$site"
+  printf "."
+
+  if ! docker stop "$site" 2>/dev/null 1>/dev/null; then
+    long_log "upgrade:%s Failed to stop docker container" error "$site"
+    continue
+  fi
+  if ! docker rm "$site" 2>/dev/null 1>/dev/null; then
+    long_log "upgrade:%s Failed to remove docker container" error "$site"
+    continue
+  fi
+  long_log "upgrade:%s Stopped and removed docker container." info "$site"
+  printf "."
+
+  # Send to /dev/null because even with --quiet docker emits some info.
+  if ! long_container_up site "$site" "$db_host" "$new_platform" > /dev/null; then
+    long_log "upgrade:%s Failed to bring up new container" error "$site"
+    continue
+  fi
+  long_log "upgrade:%s Launched new container with new platform" info "$site"
+  printf "."
+
+  if ! long_nginx_reload; then
+    long_log "upgrade:%s Failed to reload nginx" error "$site"
+    continue
+  fi
+  long_log "upgrade:%s Reloaded nginx" info "$site"
+  printf "."
+
+  printf ".db."
+  if ! long_exec_drush_cmd "$site" "-y civicrm-upgrade-db"; then
+    long_log "upgrade:%s Failed to upgrade database." error "$site"
+    continue
+  fi
+  long_log "upgrade:%s Upgraded database" info "$site"
+  printf "."
+
+  # Confirm that the udpate was successful.
+  temp=$(mktemp)
+  printf "SELECT version FROM civicrm_domain WHERE id = 1\n" > "$temp"
+  post_upgrade_version=$(long_execute_site_query "$site" "$temp" | tail -n1) 
+  if [ "$post_upgrade_version" != "$new_version" ]; then
+    long_log "upgrade:%s Failed confirm post upgrade database version" error "$site"
+    continue
+  fi
+  long_log "upgrade:%s Confirmed post upgrade database version" info "$site"
+
+
+  if ! long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"; then
+    long_log "upgrade:%s Failed to remove maintenance mode" error "$site"
+    continue
+  fi
+  long_log "upgrade:%s Removed maintenance mode" info "$site"
+  printf "."
+
+  if ! long_configure_site "$site"; then
+    long_log "upgrade:%s Failed to configure site" error "$site"
+    continue
+  fi
+  long_log "upgrade:%s Ran site-configure." info "$site"
+  printf ". Done!\n"
+done
+printf "\n"
