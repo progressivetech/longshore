@@ -57,7 +57,7 @@ if [ "$action" = "create" ]; then
   count=$(echo $LONG_SITES |wc -w)
   index=0
   # Try to get the bulk down mon-thu, with a few remainders on friday.
-  perday=$(( $count / 4 ))
+  perday=$(( $count / 5 ))
   truncate -s 0 "$path"
   for site in $LONG_SITES; do
     if [ "$index" -gt "$perday" ]; then
