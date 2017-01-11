@@ -7,7 +7,7 @@ _longshore_complete() {
   local opts=""
   if [ "$prev" = "longshore" ]; then
     opts="$commands"
-  elif [ "$prev" = "platform-create" ] || [ "$prev" = "site-import" ]; then
+  elif [ "$prev" = "platform-create" ] ; then
     # Standard completion (filename-completion)
     COMPREPLY=() 
     return
