@@ -28,6 +28,9 @@ if [ "$LONG_LIVE" = "n" ]; then
     mv /root/jamie.crt /usr/local/share/ca-certificates/
     update-ca-certificates 
   fi
+
+  # And relay email to the smtp server, not bulk.mayfirst.org.
+  sed -i "s/bulk\.ourpowerbase\.net/smtp/" /etc/esmtprc
 fi
 
 # Allow us to overwrite the DNS caching server at runtime.
