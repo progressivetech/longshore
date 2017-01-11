@@ -745,13 +745,13 @@ function ptp_create_help_menu() {
     'CiviCRM Community Forums' =>
       'https://civicrm.stackexchange.com/',
     'PowerBase FAQs' =>
-      'http://network.progressivetech.org/tips',
+      'https://network.progressivetech.org/tips',
     'Video Tutorials' =>
       'https://www.youtube.com/user/PowerOnPTP/playlists',
     'Change my password' =>
       'user',
     'About' =>
-      'http://ourpowerbase.net/',
+      'https://ourpowerbase.net/',
   );
   while(list($label, $url) = each($submenus)) {
     $params = array(
