@@ -741,7 +741,7 @@ function ptp_create_help_menu() {
     'Upcoming Trainings' =>
       'https://ptp.ourpowerbase.net/civicrm/event/ical?reset=1&list=1&html=1',
     'CiviCRM - The Book' =>
-      'http://book.civicrm.org/user/',
+      'https://docs.civicrm.org/user/en/stable/',
     'CiviCRM Community Forums' =>
       'https://civicrm.stackexchange.com/',
     'PowerBase FAQs' =>
@@ -751,7 +751,7 @@ function ptp_create_help_menu() {
     'Change my password' =>
       'user',
     'About' =>
-      'http://ourpowerbase.net/about/',
+      'http://ourpowerbase.net/',
   );
   while(list($label, $url) = each($submenus)) {
     $params = array(
