@@ -170,6 +170,18 @@ projects[petitionemail][download][type] = "git"
 projects[petitionemail][download][url] = "git://git.progressivetech.org/extensions/cc.tadpole.petitionemail"
 projects[petitionemail][download][revision] = "24d66cd4b2d34364fa44b6fc8f4e06ced1986e33"
 
+projects[simplepetitionemail][type] = "library"
+projects[simplepetitionemail][destination] = "extensions"
+projects[simplepetitionemail][download][type] = "git"
+projects[simplepetitionemail][download][url] = "https://github.com/aghstrategies/com.aghstrategies.petitionemail"
+projects[simplepetitionemail][download][revision] = "ae66556e2779b1d5226a66a14fd2eae99111ec0d"
+
+projects[statelegemail][type] = "library"
+projects[statelegemail][destination] = "extensions"
+projects[statelegemail][download][type] = "git"
+projects[statelegemail][download][url] = "https://github.com/aghstrategies/com.aghstrategies.statelegemail"
+projects[statelegemail][download][revision] = "0f7f96125db730a2d07e550515ab9ab28c452733"
+
 projects[advancedfundraising][type] = "library"
 projects[advancedfundraising][destination] = "extensions"
 projects[advancedfundraising][download][type] = "git"
