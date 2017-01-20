@@ -168,7 +168,7 @@ projects[petitionemail][type] = "library"
 projects[petitionemail][destination] = "extensions"
 projects[petitionemail][download][type] = "git"
 projects[petitionemail][download][url] = "git://git.progressivetech.org/extensions/cc.tadpole.petitionemail"
-projects[petitionemail][download][revision] = "24d66cd4b2d34364fa44b6fc8f4e06ced1986e33"
+projects[petitionemail][download][revision] = "8a539456220c7854c19c63ed800ac6db7dcfe037"
 
 projects[simplepetitionemail][type] = "library"
 projects[simplepetitionemail][destination] = "extensions"
