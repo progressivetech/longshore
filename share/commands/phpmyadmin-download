@@ -1,6 +1,6 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) <url> <md5>
+long_usage_message="usage: $(basename $0) <url> <sha256>
 Download the latest version of phpMyAdmin (if needed).
 
 Arguments:
