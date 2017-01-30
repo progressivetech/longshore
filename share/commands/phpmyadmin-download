@@ -5,7 +5,7 @@ Download the latest version of phpMyAdmin (if needed).
 
 Arguments:
  <url> the URL of the latest version
- <md5> the md5 hash for the lastest version"
+ <sha256> the sha256 hash for the lastest version"
 
 long_check_args "$2" "$#" 1
 
@@ -38,9 +38,9 @@ elif [ "$?" = 1 ]; then
     long_die "I lost the file I was downloading."
   fi
   long_log "Checking checksum" "info"
-  if ! echo "$checksum  $filename" | md5sum -c > /dev/null; then
+  if ! echo "$checksum  $filename" | sha256sum -c > /dev/null; then
     cd && rm -rf "$temp"
-    long_die "Failed md5 checksum"
+    long_die "Failed sha256 checksum"
   fi
   long_log "Unzipping" "info"
   if ! unzip -q "${filename}"; then
