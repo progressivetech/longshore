@@ -10,7 +10,7 @@ api = "2"
 ;****************************************
 
 core = "7.x" 
-projects[drupal][version] = "7.53"
+projects[drupal][version] = "7.54"
 
 ;****************************************
 ; CiviCRM Core
@@ -20,7 +20,7 @@ projects[drupal][version] = "7.53"
 projects[civicrm][type] = "module" 
 projects[civicrm][directory_name] = "civicrm" 
 projects[civicrm][download][type] = "git" 
-projects[civicrm][download][revision] = "bf212dbc295f0c1304b18da41137cee8f6e13103"
+projects[civicrm][download][revision] = "ee0cc75d037934f81e7a27a0954b5760a97baccf"
 projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
 
 ; Packages
@@ -129,6 +129,7 @@ projects[hybridauth][patch][] = "/srv/longshore/etc/makefiles/hybridauth.patch"
 ; **************
 ; custom modules
 ; *************
+; fixme - should switch to new extension: https://github.com/twomice/com.joineryhq.activityical
 projects[civicrm_activity_ical][type] = "module"
 projects[civicrm_activity_ical][download][type] = "git"
 projects[civicrm_activity_ical][download][url] = "git://git.progressivetech.org/powerbase/civicrm_activity_ical.git"
@@ -186,7 +187,7 @@ projects[advancedfundraising][type] = "library"
 projects[advancedfundraising][destination] = "extensions"
 projects[advancedfundraising][download][type] = "git"
 projects[advancedfundraising][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.report.advancedfundraising"
-projects[advancedfundraising][download][revision] = "3aeb52e599bac20177a73081ba028ea4a8422d43"
+projects[advancedfundraising][download][revision] = "edffb4867110616aaf1b81fa3a800f800eef2cc9"
 
 projects[badgeup][type] = "library"
 projects[badgeup][destination] = "extensions"
@@ -216,7 +217,7 @@ projects[civimobile][type] = "library"
 projects[civimobile][destination] = "extensions"
 projects[civimobile][download][type] = "git"
 projects[civimobile][download][url] = "https://github.com/webaccess/com.webaccessglobal.module.civimobile"
-projects[civimobile][download][revision] = "95cb2b98e8c78f4135435c557b8572703e139368"
+projects[civimobile][download][revision] = "7d6e4e01163131362435ffd8422b1873a57636e9"
 
 projects[yahooboss][type] = "library"
 projects[yahooboss][destination] = "extensions"
@@ -228,7 +229,7 @@ projects[noverwrite][type] = "library"
 projects[noverwrite][destination] = "extensions"
 projects[noverwrite][download][type] = "git"
 projects[noverwrite][download][url] = "https://github.com/TechToThePeople/noverwrite"
-projects[noverwrite][download][revision] = "bc226b9c237341f62db9887eb5da50da8fc694e1"
+projects[noverwrite][download][revision] = "d46604429233ddcb12b8f559a5b940689871d245"
 
 projects[eventcount][type] = "library"
 projects[eventcount][destination] = "extensions"
@@ -269,14 +270,14 @@ projects[supersearchvsea][download][revision] = "661c2cd556d9ab850c2e7b3c6ec4036
 projects[extendedreport][type] = "library"
 projects[extendedreport][destination] = "extensions"
 projects[extendedreport][download][type] = "git"
-projects[extendedreport][download][url] = "git://git.progressivetech.org/extensions/nz.co.fuzion.extendedreport"
-projects[extendedreport][download][revision] = "bd7d2ce771a6ba05e503c32b6bf185c1e3a44f47"
+projects[extendedreport][download][url] = "git://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport.git"
+projects[extendedreport][download][revision] = "41be43308faed7e99d52a1366af1aa2a522ecb3a"
 
 projects[iats][type] = "library"
 projects[iats][destination] = "extensions"
 projects[iats][download][type] = "git"
-projects[iats][download][url] = "https://github.com/progressivetech/com.iatspayments.civicrm.git"
-projects[iats][download][revision] = "c800671118cd8f4e9448dcf85eeca830ebd16293"
+projects[iats][download][url] = "https://github.com/iATSPayments/com.iatspayments.civicrm.git"
+projects[iats][download][revision] = "669f8827dbd8930e1a4d9c60fa8ef235e7e5347b"
 
 projects[clickatell][type] = "library"
 projects[clickatell][destination] = "extensions"
@@ -294,7 +295,7 @@ projects[cividiscount][type] = "library"
 projects[cividiscount][destination] = "extensions"
 projects[cividiscount][download][type] = "git"
 projects[cividiscount][download][url] = "https://github.com/dlobo/org.civicrm.module.cividiscount"
-projects[cividiscount][download][revision] = "2b19535127159b66138f3759197c86e868870811"
+projects[cividiscount][download][revision] = "a9c8ab4e746834347f7ac73698f6c40fc4ca4daf"
 
 projects[uscounties][type] = "library"
 projects[uscounties][destination] = "extensions"
@@ -318,14 +319,14 @@ projects[civisualize][type] = "library"
 projects[civisualize][destination] = "extensions"
 projects[civisualize][download][type] = "git"
 projects[civisualize][download][url] = "https://github.com/TechToThePeople/civisualize.git"
-projects[civisualize][download][revision] = "e0a2cfe811187a7ce46238540bf341199777f5f3"
+projects[civisualize][download][revision] = "32a1b7366c0f9223b7b604c6fcb964fd28ed35d7"
 
 projects[civivolunteer][type] = "library"
 projects[civivolunteer][destination] = "extensions"
 projects[civivolunteer][download][type] = "git"
 projects[civivolunteer][download][url] = "https://github.com/civicrm/org.civicrm.volunteer.git"
 ; Version 2.1.1
-projects[civivolunteer][download][revision] = "e0b2494d83bf286df1c75183ce5d595a28ea98b8"
+projects[civivolunteer][download][revision] = "ec72ea770bf7cc1f748fa4a70490e2524da07051"
 
 ; required for civivolunteer
 projects[angularprofiles][type] = "library"
@@ -362,13 +363,13 @@ projects[civirules][type] = "library"
 projects[civirules][destination] = "extensions"
 projects[civirules][download][type] = "git"
 projects[civirules][download][url] = "https://github.com/CiviCooP/org.civicoop.civirules.git"
-projects[civirules][download][revision] = "bc4181a9d0a25f61ab55cae0fa3acc78722c4d7a"
+projects[civirules][download][revision] = "02a1d4bf38d8ca6039d961b30783d71acad87636"
 
 projects[normalize][type] = "library"
 projects[normalize][destination] = "extensions"
 projects[normalize][download][type] = "git"
 projects[normalize][download][url] = "https://github.com/cividesk/com.cividesk.normalize.git"
-projects[normalize][download][revision] = "f1131c392adbcb58af9666241a81bb9e472f2b76"
+projects[normalize][download][revision] = "cd61551fe2a0f8aef52a548b4d5e9397090ebe38"
 
 projects[ptp][type] = "library"
 projects[ptp][destination] = "extensions"
@@ -380,13 +381,7 @@ projects[osm][type] = "library"
 projects[osm][destination] = "extensions"
 projects[osm][download][type] = "git"
 projects[osm][download][url] = "https://github.com/systopia/de.systopia.osm"
-projects[osm][download][revision] = "bdc0a565f002e920adf86625e5cf1a36736f6ba1"
-
-projects[optionsimporter][type] = "library"
-projects[optionsimporter][destination] = "extensions"
-projects[optionsimporter][download][type] = "git"
-projects[optionsimporter][download][url] = "https://github.com/ixiam/com.ixiam.modules.optionsimporter/"
-projects[optionsimporter][download][revision] = "8ecd76c8a97bbd485ab9494069e11c12bd6b5c37"
+projects[osm][download][revision] = "3a2745d58347689bece2a538cb600e9184181d0a"
 
 projects[mosaico][type] = "library"
 projects[mosaico][destination] = "extensions"
