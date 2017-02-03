@@ -56,11 +56,30 @@ function ptp_drush_command() {
         'title' => dt("The friendly name - only needed if action is new.")
       )
     );
+  $items['ptp-enter-demo-data'] = 
+    array(
+      'description' => dt("Create demo data."),
+      'options' => array(
+        'type' => dt("Either contributions or memberships"),
+        'count' => dt("How many to create"),
+        'start' => dt("The start date."),
+        'end' => dt("The end date")
+      )
+    );
+
   $items['ptp-set-outbound-mail-settings'] = 
     array(
       'description' => dt("Temporary for re-setting to bulk.mayfirst.org for upgade purposes.")
     );
   return $items;
+}
+
+function drush_ptp_enter_demo_data() {
+  $type = drush_get_option('type', NULL);
+  $count = drush_get_option('count', NULL);
+  $start = drush_get_option('start', NULL);
+  $end = drush_get_option('end', NULL);
+
 }
 
 function drush_ptp_set_outbound_mail_settings() {
