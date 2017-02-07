@@ -389,6 +389,20 @@ projects[mosaico][directory_name] = "uk.co.vedaconsulting.mosaico"
 projects[mosaico][download][type] = "file"
 projects[mosaico][download][url] = "https://dist.civicrm.org/extension/uk.co.vedaconsulting.mosaico/latest/uk.co.vedaconsulting.mosaico-latest.zip"
 
+; Required for mosaico.
+projects[flexmailer][type] = "library"
+projects[flexmailer][destination] = "extensions"
+projects[flexmailer][download][type] = "git"
+projects[flexmailer][download][url] = "https://github.com/civicrm/org.civicrm.flexmailer"
+projects[flexmailer][download][revision] = "22ade1c6a6e284c55ae33c69af5c8e66313a2b76"
+
+; Required for mosaico.
+projects[flexmailer][type] = "library"
+projects[flexmailer][destination] = "extensions"
+projects[flexmailer][download][type] = "git"
+projects[flexmailer][download][url] = "https://github.com/civicrm/org.civicrm.flexmailer"
+projects[flexmailer][download][revision] = "22ade1c6a6e284c55ae33c69af5c8e66313a2b76"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
