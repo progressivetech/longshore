@@ -98,7 +98,7 @@ projects[autologout][type] = "module"
 projects[autologout][version] = "4.4"
 
 projects[civicrm_cicero][type] = "module"
-projects[civicrm_cicero][version] = "1.11"
+projects[civicrm_cicero][version] = "1.12"
 
 projects[cd_sunlight][type] = "module"
 projects[cd_sunlight][version] = "1.0-beta7"
