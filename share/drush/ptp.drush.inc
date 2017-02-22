@@ -66,12 +66,57 @@ function ptp_drush_command() {
         'end' => dt("The end date")
       )
     );
-
   $items['ptp-set-outbound-mail-settings'] = 
     array(
       'description' => dt("Temporary for re-setting to bulk.mayfirst.org for upgade purposes.")
     );
+  $items['ptp-recreate-multilingual-view'] =
+    array(
+      'description' => dt("Re-create a multilingual view if the base tables change."),
+      'options' => array(
+        'locale' => dt("Enter locale, e.g. eo_US or es_MX."),
+        'table' => dt("Enter the table, e.g. civicrm_price_field_value")
+      )
+    );
   return $items;
+}
+
+// Temp solution for: https://issues.civicrm.org/jira/browse/CRM-19851
+function drush_ptp_recreate_multilingual_view() {
+  _civicrm_init();
+  $locale = drush_get_option('locale', NULL);
+  $table = drush_get_option('table', NULL);
+
+  if(empty($locale)) {
+    drush_log(dt("Please pass locale."), 'error');
+    return FALSE;
+  }
+  if(empty($table)) {
+    drush_log(dt("Please pass table."), 'error');
+    return FALSE;
+  }
+
+  $class = 'CRM_Core_I18n_SchemaStructure';
+  $dao = new CRM_Core_DAO();
+	$columns =& $class::columns();
+	$cols = array();
+	$dao->query("DESCRIBE {$table}", FALSE);
+	while ($dao->fetch()) {
+		// view non-internationalized columns directly
+		if (!in_array($dao->Field, array_keys($columns[$table])) and
+			!preg_match('/_[a-z][a-z]_[A-Z][A-Z]$/', $dao->Field)
+		) {
+			$cols[] = $dao->Field;
+		}
+	}
+	// view intrernationalized columns through an alias
+	foreach ($columns[$table] as $column => $_) {
+		$cols[] = "{$column}_{$locale} {$column}";                           
+	}                                                                      
+	$sql = "CREATE OR REPLACE VIEW {$table}_{$locale} AS SELECT " . implode(', ', $cols) . "
+FROM {$table}";
+	$dao->executeQuery($sql);
+
 }
 
 function drush_ptp_enter_demo_data() {
