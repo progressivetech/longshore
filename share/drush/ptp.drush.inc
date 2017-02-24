@@ -749,7 +749,6 @@ function ptp_create_help_menu() {
   if(version_compare($code_ver, '4.6.9', '<')) {
     $menu_name = "Help";
   }
-  drush_log(dt("Using menu name @menu_name", array('@menu_name' => $menu_name)));
   // Get list of menus
   $menus = CRM_Core_BAO_Navigation::getNavigationList();
 
