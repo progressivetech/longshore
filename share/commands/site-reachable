@@ -18,9 +18,13 @@ if [ -n "$quiet" -a "$quiet" != "-q" ]; then
   long_die "I didn't understand the last argument (%s). I was expecting -q." 1 "$noreport"
 fi
 
+check_phpmyadmin=no
+
 if [ -z "$sites" -o "$sites" = "--all" ]; then
   long_set_sites
   sites="$LONG_SITES"
+  # Check phpmyadmin URLs too.
+  check_phpmyadmin=yes
 fi
 
 retry_interval=120
@@ -28,6 +32,25 @@ total_count=0
 online_count=0
 offline_count=0
 retry_sites=
+
+long_set_phpmyadmin_urls
+
+for url in $LONG_PHPMYADMIN_URLS; do
+  total_count=$(( $total_count + 1 ))
+  if [ -f "$LONG_NGINX_TLS_PATH" ]; then
+    url="https://${url}"
+  else
+    url="http://${url}"
+  fi
+  if ! long_does_page_have_text "$url" "<title>phpMyAdmin</title>"; then
+    offline_count=$(( $offline_count + 1 ))
+    long_log "Site %s is OFFLINE!!!" error "$url"
+  else
+    online_count=$(( $online_count + 1 ))
+    long_log "Site %s is online" info "$url"
+  fi
+done
+
 for site in $sites; do
   total_count=$(( $total_count + 1 ))
   # Ensure anonymous access to the page generates a login box.

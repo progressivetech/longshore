@@ -2612,24 +2612,52 @@ long_set_site_emails_count() {
   rm "$temp"
 }
 
-# Check if site is online
-long_is_site_reachable() {
-  local site="$1"
-  local timeout="$2"
+# Check if web page contains the given text.
+long_does_page_have_text() {
+  local url="$1"
+  local text="$2"
+  local timeout="$3"
 
   # If no timeout is specified use 10 seconds as the default.
   if [ -z "$timeout" ]; then
     timeout=10
   fi
+
+  if ! curl -s --max-time "$timeout" "$url" | grep "$text" >/dev/null; then
+    return 1
+  else
+    return 0
+  fi
+
+}
+
+# Set the phpmyadmin URL for all siblings
+long_set_phpmyadmin_urls() {
+  local sibling
+  local url
+  LONG_PHPMYADMIN_URLS="$LONG_PHPMYADMIN_URL"
+  for sibling in $LONG_SIBLINGS; do
+    url=$(ssh -q "${sibling}.mayfirst.org" "grep ^LONG_SIBLING $LONG_ETC/longshore.conf" | cut -d= -f2)
+    LONG_PHPMYADMIN_URLS="${LONG_PHPMYADMIN_URLS} $url"
+  done
+}
+
+# Check if site is online
+long_is_site_reachable() {
+  local site="$1"
+
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
     local protocol=https
   else
     local protocol=http
   fi
-  if ! curl -s --max-time "$timeout" "${protocol}://${site}.${LONG_DEFAULT_DOMAIN}" | grep "You don&#039;t seem to have access to this page" >/dev/null; then
+  local url="${protocol}://${site}.${LONG_DEFAULT_DOMAIN}"
+  local text="You don&#039;t seem to have access to this page"
+  if ! long_does_page_have_text "$url" "$text"; then
     return 1
+  else
+    return 0
   fi
-  return 0
 }
 
 # Truncate the sessions table to ensure nobody is logged in and to
