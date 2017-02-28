@@ -2637,7 +2637,7 @@ long_set_phpmyadmin_urls() {
   local url
   LONG_PHPMYADMIN_URLS="$LONG_PHPMYADMIN_URL"
   for sibling in $LONG_SIBLINGS; do
-    url=$(ssh -q "${sibling}.mayfirst.org" "grep ^LONG_SIBLING $LONG_ETC/longshore.conf" | cut -d= -f2)
+    url=$(ssh -q "${sibling}.mayfirst.org" "grep ^LONG_PHPMYADMIN_URL= $LONG_ETC/longshore.conf" | cut -d= -f2 | tr -d '"')
     LONG_PHPMYADMIN_URLS="${LONG_PHPMYADMIN_URLS} $url"
   done
 }
