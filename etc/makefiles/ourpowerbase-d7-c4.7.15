@@ -403,6 +403,12 @@ projects[flexmailer][download][type] = "git"
 projects[flexmailer][download][url] = "https://github.com/civicrm/org.civicrm.flexmailer"
 projects[flexmailer][download][revision] = "22ade1c6a6e284c55ae33c69af5c8e66313a2b76"
 
+projects[exportpermission][type] = "library"
+projects[exportpermission][destination] = "extensions"
+projects[exportpermission][download][type] = "git"
+projects[exportpermission][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.exportpermission.git"
+projects[exportpermission][download][revision] = "0127f72bcf0053c51a58813778a47351ceaf7bba"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
