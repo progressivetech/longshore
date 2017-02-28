@@ -47,7 +47,8 @@ elif [ "$?" = 1 ]; then
     cd && rm -rf "$temp"
     long_die "Failed to unzip the download."
   fi
-  cd phpMyAdmin*
+  rm "$filename"
+  cd $(basename "$filename" .zip)
   long_log "Copying" "info"
   rsync -a --exclude config.inc.php --exclude 'servers.list' --delete ./ "${dest}/"
   cd && rm -rf "$temp"
