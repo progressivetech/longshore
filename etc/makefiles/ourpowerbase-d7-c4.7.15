@@ -283,7 +283,7 @@ projects[clickatell][type] = "library"
 projects[clickatell][destination] = "extensions"
 projects[clickatell][download][type] = "git"
 projects[clickatell][download][url] = "git://git.progressivetech.org/extensions/org.civicrm.sms.clickatell"
-projects[clickatell][download][revision] = "334bb79afca8412258b58055f6dfdfdb82c3e88a"
+projects[clickatell][download][revision] = "82d244c7b5884eee44b945acc17b36c806d05d55"
 
 projects[twilio][type] = "library"
 projects[twilio][destination] = "extensions"
