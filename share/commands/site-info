@@ -93,8 +93,10 @@ for site in $sites; do
       "$LONG_SITE_RECENT_LOGINS_COUNT" "$LONG_SITE_CONTACTS_COUNT" "$LONG_SITE_CONTRIBUTIONS_SUM" "$LONG_SITE_EMAILS_COUNT";
   else
     # On screen output.
-    printf "Site: %s\nPassword: %s\nDB: %s\nPHPMyAdmin URL: %s\nPlatform: %s\nSibling: %s\nPids: %s\nMemory: %s\n" \
-      "$site" "$pass"  "$LONG_SITE_DB_HOST" "$LONG_PHPMYADMIN_URL" "$LONG_SITE_PLATFORM" "$sibling" \
+    long_sanitize_db_username "$site" >/dev/null
+    db_user="$LONG_DBUSER"
+    printf "Site: %s\nDB User: %s\nPassword: %s\nDB: %s\nPHPMyAdmin URL: %s\nPlatform: %s\nSibling: %s\nPids: %s\nMemory: %s\n" \
+      "$site" "$db_user" "$pass"  "$LONG_SITE_DB_HOST" "$LONG_PHPMYADMIN_URL" "$LONG_SITE_PLATFORM" "$sibling" \
       "$LONG_SITE_PIDS" "$LONG_SITE_MEMORY"
 
     if [ "$full_output" = "y" ]; then
