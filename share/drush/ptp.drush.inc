@@ -66,6 +66,10 @@ function ptp_drush_command() {
         'end' => dt("The end date")
       )
     );
+  $items['ptp-reset-drupal-email-address'] = 
+    array(
+      'description' => dt("If the drupal email address is set to a progressivetech.org address, reset it to the CiviCRM default from address.")
+    );
   $items['ptp-set-outbound-mail-settings'] = 
     array(
       'description' => dt("Temporary for re-setting to bulk.mayfirst.org for upgade purposes.")
@@ -79,6 +83,32 @@ function ptp_drush_command() {
       )
     );
   return $items;
+}
+
+function drush_ptp_reset_drupal_email_address() {
+	_civicrm_init();
+	$site_mail = variable_get('site_mail');
+	if(preg_match('/@progressivetech.org/', trim($site_mail))) {
+	  echo "match: " . $site_mail . "\n";
+		// First try the default "From email addresses".
+		$skipFatal = TRUE;
+		$backupEmailValues = CRM_Core_BAO_Domain::getNameAndEmail($skipFatal);
+
+		// getNameAndEmail returns an array with two empty values if no match
+		// is found - and that is not considered "empty" by php.
+		if ($backupEmailValues[1] == '') {
+			$backupEmailValues = NULL;
+		}
+		if (empty($backupEmailValues)) {
+			// If those are not set, try the system wide domain email address.
+			$results = civicrm_api3('Domain', 'getsingle', array());
+			$backupEmailValues = array(
+				0 => $results['name'],
+				1 => $results['domain_email'],
+			);
+		}
+	  echo "And the other setting is: " . $backupEmailValues[1] . "\n";
+	}
 }
 
 // Temp solution for: https://issues.civicrm.org/jira/browse/CRM-19851
