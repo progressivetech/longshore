@@ -107,7 +107,11 @@ function drush_ptp_reset_drupal_email_address() {
 				1 => $results['domain_email'],
 			);
 		}
-	  echo "And the other setting is: " . $backupEmailValues[1] . "\n";
+	  if(!empty($backupEmailValues[1])) {
+	    echo "And the other setting is: " . $backupEmailValues[1] . "\n";
+	    variable_set('site_mail', $backupEmailValues[1]);
+
+    }
 	}
 }
 
