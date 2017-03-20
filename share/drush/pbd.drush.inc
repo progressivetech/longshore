@@ -3696,6 +3696,12 @@ function pbd_import_engage_data() {
  **/
 function pbd_ensure_civicrm_news_removed_from_dashboard() {
   _civicrm_init();
+
+  // Turn off CiviCRM community messages by setting the URL to empty. Note:
+  // if we set it to '' - then CiviCRM resets it to the default.
+  pbd_setting('communityMessagesUrl', ' ');
+
+  // Now remove the news from the Dashboard.
   $sql = "SELECT id FROM civicrm_dashboard WHERE url LIKE 'civicrm/dashlet/blog%' OR url LIKE 'civicrm/dashlet/getting-started%'";
   $dao = CRM_Core_DAO::executeQuery($sql);
   // It's already been deleted, so return
