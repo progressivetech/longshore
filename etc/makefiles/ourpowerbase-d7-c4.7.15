@@ -417,7 +417,7 @@ projects[newsflash][type] = "theme"
 projects[newsflash][version] = "2.5"
 
 projects[bootstrap][type] = "theme"
-projects[bootstrap][version] = "3.10"
+projects[bootstrap][version] = "3.12"
 
 projects[responsive][type] = "theme"
 projects[responsive][version] = "1.7"
@@ -438,7 +438,7 @@ projects[powerbase][download][revision] = "acc9a64a260fe546909d0009b0533afb4be96
 projects[civiresponsive][type] = "theme"
 projects[civiresponsive][download][type] = "git"
 projects[civiresponsive][download][url] = "git://git.progressivetech.org/powerbase/civiresponsive.git"
-projects[civiresponsive][download][revision] = "22a1cba962c31bb932a1fa3e70d2861123c5542c"
+projects[civiresponsive][download][revision] = "8b81f66761880c1f0de9e7bfd1a5e7f277d2f78c"
 
 projects[iframe][type] = "theme"
 projects[iframe][download][type] = "git"
