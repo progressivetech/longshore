@@ -12,7 +12,19 @@ site="$2"
 
 long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 
+long_set_site_sibling "$site"
+
+# Sometimes sites are installed on more than one sibling and we want to
+# delete them from just one sibling.
+site_count=$(echo "$LONG_SITE_SIBLING" | wc -l)
 me=$(hostname)
+
+# However, if the site is only on one sibling and it's not us... we should
+# warn the user.
+if [ "$site_count" -eq 1 ] && [ "$LONG_SITE_SIBLING" != "$me" ]; then
+  long_die "Site is only on %s, please delete from that sibling instead." 1 "$LONG_SITE_SIBLING"
+fi
+
 long_prompt "You are about to delete all data related to the site '%s' on sibling %s." "$site" "$me"
 if [ "$reply" = "y" ]; then
   long_destroy_site "$site"
