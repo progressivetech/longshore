@@ -68,7 +68,7 @@ projects[themekey][type] = "module"
 projects[themekey][version] = "3.4"
 
 projects[webform_civicrm][type] = "module"
-projects[webform_civicrm][version] = "4.16"
+projects[webform_civicrm][version] = "4.17"
 
 projects[options_element][type] = "module"
 projects[options_element][version] = "1.12"
@@ -119,7 +119,7 @@ projects[password_policy][type] = "module"
 projects[password_policy][version] = "1.10"
 
 projects[jquery_update][type] = "module"
-projects[jquery_update][version] = "3.0-alpha3"
+projects[jquery_update][version] = "3.0-alpha5"
 
 projects[hybridauth][type] = "module"
 projects[hybridauth][version] = "2.15"
