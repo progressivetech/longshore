@@ -32,6 +32,7 @@ RUN apt-get update && \
     ttf-baekmuk \
     openssh-client \
     bc \
+    libssl1.0-dev \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
@@ -75,6 +76,10 @@ COPY ./jamie.crt /root/
 # PowerBase can make secure external calls to places like Google Maps,
 # Yahoo and payment processors
 RUN sed -i 's/^!//g' /etc/ca-certificates.conf && update-ca-certificates
+
+# Copy over wkhtmltopdf that is compiled with patched qt library so 
+# line breaks work.
+COPY wkhtmltopdf.0.12.4 /usr/bin/wkhtmltopdf
 
 EXPOSE 9000
 
