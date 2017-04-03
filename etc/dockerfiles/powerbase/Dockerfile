@@ -32,7 +32,7 @@ RUN apt-get update && \
     ttf-baekmuk \
     openssh-client \
     bc \
-    libssl1.0-dev \
+    libssl-dev \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
