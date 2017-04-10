@@ -408,7 +408,7 @@ projects[exportpermission][type] = "library"
 projects[exportpermission][destination] = "extensions"
 projects[exportpermission][download][type] = "git"
 projects[exportpermission][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.exportpermission.git"
-projects[exportpermission][download][revision] = "0127f72bcf0053c51a58813778a47351ceaf7bba"
+projects[exportpermission][download][revision] = "f911d2247d1ede61b3973a063e7a2b6dcfafa2d8"
 
 ;****************************************
 ; Drupal themes 
