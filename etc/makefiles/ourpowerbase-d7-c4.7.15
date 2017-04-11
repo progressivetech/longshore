@@ -439,7 +439,7 @@ projects[powerbase][download][revision] = "acc9a64a260fe546909d0009b0533afb4be96
 projects[civiresponsive][type] = "theme"
 projects[civiresponsive][download][type] = "git"
 projects[civiresponsive][download][url] = "git://git.progressivetech.org/powerbase/civiresponsive.git"
-projects[civiresponsive][download][revision] = "8b81f66761880c1f0de9e7bfd1a5e7f277d2f78c"
+projects[civiresponsive][download][revision] = "4505ea93e13b01febd67642c437f39126d7fa05a"
 
 projects[iframe][type] = "theme"
 projects[iframe][download][type] = "git"
