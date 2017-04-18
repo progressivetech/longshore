@@ -21,7 +21,9 @@ if [ "$LONG_LIVE" = "n" ]; then
 
   # And we ensure the civix is installed. Sometimes download.civicrm.org is not 
   # available - we don't want to hang forever, so timeout after 30 seconds.
+  set +e
   wget --tries=2 --timeout=30 -O /usr/local/bin/civix https://download.civicrm.org/civix/civix.phar
+  set -e
   chmod 755 /usr/local/bin/civix
 
   # And activate  Jamie's private x509 cert
