@@ -19,8 +19,9 @@ if [ "$LONG_LIVE" = "n" ]; then
   printf "html_errors = On\n" >> '/etc/php5/fpm/conf.d/99-powerbase-dev.ini'
   printf "log_errors = On\n" >> '/etc/php5/fpm/conf.d/99-powerbase-dev.ini'
 
-  # And we ensure the civix is installed
-  wget -O /usr/local/bin/civix https://download.civicrm.org/civix/civix.phar
+  # And we ensure the civix is installed. Sometimes download.civicrm.org is not 
+  # available - we don't want to hang forever, so timeout after 30 seconds.
+  wget --tries=2 --timeout=30 -O /usr/local/bin/civix https://download.civicrm.org/civix/civix.phar
   chmod 755 /usr/local/bin/civix
 
   # And activate  Jamie's private x509 cert
