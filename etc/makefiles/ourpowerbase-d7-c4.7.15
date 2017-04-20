@@ -270,9 +270,8 @@ projects[supersearchvsea][download][revision] = "661c2cd556d9ab850c2e7b3c6ec4036
 projects[extendedreport][type] = "library"
 projects[extendedreport][destination] = "extensions"
 projects[extendedreport][download][type] = "git"
-;projects[extendedreport][download][url] = "git://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport.git"
-projects[extendedreport][download][url] = "git://git.progressivetech.org/extensions/nz.co.fuzion.extendedreport"
-projects[extendedreport][download][revision] = "8c41a6792ed6db8964f9e618faebe338c1739cc3"
+projects[extendedreport][download][url] = "git://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport.git"
+projects[extendedreport][download][revision] = "efe1d7af91b61e1f193625821719fc7be05a80fc"
 
 projects[iats][type] = "library"
 projects[iats][destination] = "extensions"
