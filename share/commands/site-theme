@@ -33,7 +33,11 @@ fi
 path="${LONG_SRV}/services/sites/${site}/drupal"
 theme_path="$path/themes/$name"
 if [  -d "$theme_path" ]; then
-  long_prompt "A theme with that name already exists. Do you want to edit the css file?"
+  long_prompt "A theme with that name already exists. Do you want to run pbd-prepare-theme on it?"
+  if [ "$reply" = "y" ]; then
+    long_exec_drush_cmd "$site" "pbd-prepare-theme --name=$name"
+  fi
+  long_prompt "Do you want to edit the css file?"
   if [ "$reply" = "y" ]; then
     editor "${theme_path}/$name.css"
     exit
