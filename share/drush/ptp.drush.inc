@@ -56,16 +56,6 @@ function ptp_drush_command() {
         'title' => dt("The friendly name - only needed if action is new.")
       )
     );
-  $items['ptp-enter-demo-data'] = 
-    array(
-      'description' => dt("Create demo data."),
-      'options' => array(
-        'type' => dt("Either contributions or memberships"),
-        'count' => dt("How many to create"),
-        'start' => dt("The start date."),
-        'end' => dt("The end date")
-      )
-    );
   $items['ptp-reset-drupal-email-address'] = 
     array(
       'description' => dt("If the drupal email address is set to a progressivetech.org address, reset it to the CiviCRM default from address.")
@@ -150,14 +140,6 @@ function drush_ptp_recreate_multilingual_view() {
 	$sql = "CREATE OR REPLACE VIEW {$table}_{$locale} AS SELECT " . implode(', ', $cols) . "
 FROM {$table}";
 	$dao->executeQuery($sql);
-
-}
-
-function drush_ptp_enter_demo_data() {
-  $type = drush_get_option('type', NULL);
-  $count = drush_get_option('count', NULL);
-  $start = drush_get_option('start', NULL);
-  $end = drush_get_option('end', NULL);
 
 }
 
