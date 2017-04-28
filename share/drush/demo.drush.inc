@@ -225,8 +225,6 @@ function demo_memberships() {
     $sql = "UPDATE civicrm_activity SET activity_date_time = %0 WHERE source_record_id = %1";
     $sql_params = array(0 => array($join_date, 'String'), array($membership_id, 'Integer'));
     CRM_Core_DAO::executeQuery($sql, $sql_params );
-    echo "$sql\n";
-    print_r($sql_params);
 
 		// Lastly create the line item to connect the dots
 		$params = array(
