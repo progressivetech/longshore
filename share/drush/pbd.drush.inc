@@ -966,18 +966,23 @@ function pbd_lock_down_user_registration() {
   variable_set('user_register',0);
 }
 
-function pbd_add_message_templates() {
+function pbd_add_message_templates($add_templates = NULL, $disable_templates = NULL) {
   _civicrm_init();
   // Get templates to add.
-  $add_templates = pbd_get_templates();
+  if(is_null($add_templates)) {
+    $add_templates = pbd_get_templates();
+  }
 
-  // Set templates to disable.
-  $disable_templates = array(
-    'Sample CiviMail Newsletter Template',
-    'Sample Responsive Design Newsletter - Single Column Template',
-    'Sample Responsive Design Newsletter - Two Column Template',
-    'Powerbase Mail Template v1',
-  );
+  if(is_null($disable_templates)) {
+    // Set templates to disable.
+    $disable_templates = array(
+      'Sample CiviMail Newsletter Template',
+      'Sample Responsive Design Newsletter - Single Column Template',
+      'Sample Responsive Design Newsletter - Two Column Template',
+      'Powerbase Mail Template v1',
+    );
+  }
+
   // Get existing templates so we don't add duplicates
   $params = array('rowCount' => 0);
   try {

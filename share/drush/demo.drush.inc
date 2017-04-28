@@ -11,7 +11,7 @@
 /**
  * Implementation of hook_drush_command().
  */
-function ptp_drush_command() {
+function demo_drush_command() {
   $items['demo-data'] = 
     array(
       'description' => dt("Create demo data."),
@@ -29,12 +29,109 @@ function drush_demo_data() {
     demo_contributions();
 		demo_membership_type();
 		demo_memberships();
+    demo_site_name();
+    demo_email_templates();
   }
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("Failed to create demo data in the database."), 'error');
     drush_log($e->getMessage(), 'error');
     return;
   }
+}
+
+function demo_email_templates() {
+  // use msg_title as array key to help with dupe checking when adding
+  $base_dir = __dir__ . '/templates';
+  $templates = array(
+    'Powerbase Simple Responsive' => array(
+      'msg_title' => 'Powerbase Simple Responsive',
+      'msg_subject' => '',
+      'msg_text' => '',
+      'msg_html' => file_get_contents($base_dir . '/powerbase-simple-responsive.html'),
+      'is_active' => 1,
+    ),
+  );
+  $disable_templates = array(
+    'Powerbase Responsive Email One Column',
+    'Powerbase Responsive Email One Column No Graphics',
+    'Powerbase Responsive Email Two Column',
+    'Powerbase Thank You Letter Template v1'
+  );
+  pbd_add_message_templates($templates, $disable_templates);
+}
+
+function demo_site_name() {
+  // Drupal is easy.
+  $name = 'PowerBase Training and Demo';
+  $email = 'support@progressivetech.org';
+  $contact_id = 1;
+  $domain_id = 1;
+  variable_set('site_name', $name);
+
+  // CiviCRM is hard...
+  //
+  $defaultLocationType = CRM_Core_BAO_LocationType::getDefault();
+  $params = array(
+    'name' => $name,
+    'entity_id' => $domain_id,
+    'entity_table' => CRM_Core_BAO_Domain::getTableName(),
+    'email_name' => $name,
+    'email_address' => $email,
+    'email' => array(
+      1 => array(
+        'email' => $email,
+        'location_type_id' => $defaultLocationType->id,
+      ),
+    ),
+  );
+  $domain = CRM_Core_BAO_Domain::edit($params, $domain_id);
+
+  $params += array('contact_id' => $contact_id);
+  $contactParams = array(
+    'sort_name' => $domain->name,
+    'display_name' => $domain->name,
+    'legal_name' => $domain->name,
+    'organization_name' => $domain->name,
+    'contact_id' => $contact_id,
+    'contact_type' => 'Organization',
+  );
+
+  CRM_Contact_BAO_Contact::add($contactParams);
+  CRM_Core_BAO_Location::create($params, TRUE);
+
+  CRM_Core_BAO_Domain::edit($params, $domain_id);
+
+  //set domain from email address, CRM-3552
+  $emailName = '"' . $params['email_name'] . '" <' . $params['email_address'] . '>';
+
+  $emailParams = array(
+    'label' => $emailName,
+    'description' => '',
+    'is_active' => 1,
+    'is_default' => 1,
+  );
+
+  $groupParams = array('name' => 'from_email_address');
+
+  $optionValues = array();
+  $default_from_address_option_value_id = NULL;
+  CRM_Core_OptionValue::getValues($groupParams, $optionValues);
+  foreach ($optionValues as $Id => $value) {
+    if ($value['is_default'] && $value['is_active']) {
+      $default_from_address_option_value_id = $Id;
+    }
+  }
+
+  //add from email address.
+  $action = CRM_Core_Action::ADD;
+  $grpId = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', 'from_email_address', 'id', 'name');
+  $fieldValues = array('option_group_id' => $grpId);
+  $emailParams['weight'] = CRM_Utils_Weight::getDefaultWeight('CRM_Core_DAO_OptionValue', $fieldValues);
+
+  //reset default within domain.
+  $emailParams['reset_default_for'] = array('domain_id' => CRM_Core_Config::domainID());
+
+  CRM_Core_OptionValue::addOptionValue($emailParams, $groupParams, $action, $default_from_address_option_value_id);
 }
 
 function demo_membership_type() {
@@ -109,7 +206,6 @@ function demo_memberships() {
 				"payment_instrument_id" => 4,
 				"financial_type_id" => 2 // Member dues 
 		);
-		$contact_id++;
 		$result = civicrm_api3('Contribution', 'create', $params);
 		$contribution_id = $result['id'];
 
@@ -123,6 +219,15 @@ function demo_memberships() {
 		$result = civicrm_api3('membership', 'create', $params);
 		$membership_id = $result['id'];
 
+    // The membership activity date (which controls the membership dashboard
+    // that shows when memberships came in) is improperly set to todays
+    // date. Let's change it to the actual date
+    $sql = "UPDATE civicrm_activity SET activity_date_time = %0 WHERE source_record_id = %1";
+    $sql_params = array(0 => array($join_date, 'String'), array($membership_id, 'Integer'));
+    CRM_Core_DAO::executeQuery($sql, $sql_params );
+    echo "$sql\n";
+    print_r($sql_params);
+
 		// Lastly create the line item to connect the dots
 		$params = array(
 			"entity_table" => "civicrm_membership",
@@ -135,7 +240,7 @@ function demo_memberships() {
 			"contribution_id" => $contribution_id,
 		);
 		$result = civicrm_api3('LineItem', 'create', $params);
-
+		$contact_id++;
 	}
 }
 
@@ -242,7 +347,7 @@ function demo_random_date_in_last_year() {
   $max_epoch = strtotime("today");
 
   $rand_epoch = rand($min_epoch, $max_epoch);
-	return date('Y-m-d', $rand_epoch);
+	return date('Y-m-d H:i:s', $rand_epoch);
 }
 
 function demo_random_donation_amount() {
