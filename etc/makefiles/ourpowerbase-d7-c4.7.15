@@ -409,6 +409,12 @@ projects[exportpermission][download][type] = "git"
 projects[exportpermission][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.exportpermission.git"
 projects[exportpermission][download][revision] = "f911d2247d1ede61b3973a063e7a2b6dcfafa2d8"
 
+projects[mailchimp][type] = "library"
+projects[mailchimp][destination] = "extensions"
+projects[mailchimp][download][type] = "git"
+projects[mailchimp][download][url] = "https://github.com/veda-consulting/uk.co.vedaconsulting.mailchimp.git"
+projects[mailchimp][download][revision] = "36486f5442ecf6cbd1996c627140583d63bbebc9"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
