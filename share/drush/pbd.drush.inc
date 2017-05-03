@@ -647,8 +647,8 @@ function pbd_get_setting($key, $default = NULL) {
  **/
 function pbd_configure_ckeditor() {
   $base_dir = __dir__ . '/templates';
-  $source = $base_dir . '/crm-ckeditor-config.js';
-  $dest = "/var/www/powerbase/sites/default/files/civicrm/persist/crm-ckeditor-config.js";
+  $source = $base_dir . '/crm-ckeditor-default.js';
+  $dest = "/var/www/powerbase/sites/default/files/civicrm/persist/crm-ckeditor-default.js";
   copy($source, $dest);
 }
 
