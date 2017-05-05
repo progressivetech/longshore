@@ -20,7 +20,7 @@ projects[drupal][version] = "7.54"
 projects[civicrm][type] = "module" 
 projects[civicrm][directory_name] = "civicrm" 
 projects[civicrm][download][type] = "git" 
-projects[civicrm][download][revision] = "067888aef8c3f620011cb0d23953648d11f018c1"
+projects[civicrm][download][revision] = "0adc3ea5c232b6ffa9a0a3ca8983050b0affcdae"
 projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
 
 ; Packages
@@ -414,6 +414,12 @@ projects[mailchimp][destination] = "extensions"
 projects[mailchimp][download][type] = "git"
 projects[mailchimp][download][url] = "https://github.com/veda-consulting/uk.co.vedaconsulting.mailchimp.git"
 projects[mailchimp][download][revision] = "36486f5442ecf6cbd1996c627140583d63bbebc9"
+
+projects[notificationlog][type] = "library"
+projects[notificationlog][destination] = "extensions"
+projects[notificationlog][download][type] = "git"
+projects[notificationlog][download][url] = "https://github.com/eileenmcnaughton/nz.co.fuzion.notificationlog"
+projects[notificationlog][download][revision] = "a44ceff5256507c5ee52d1c0df2828294f74e667"
 
 ;****************************************
 ; Drupal themes 
