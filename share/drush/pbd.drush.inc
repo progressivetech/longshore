@@ -543,7 +543,7 @@ function drush_pbd_subscription_links() {
   $sql = "SELECT c.id AS id, first_name, last_name, r.contribution_status_id FROM civicrm_contribution c
     JOIN civicrm_contribution_recur r ON c.contribution_recur_id = r.id
     JOIN civicrm_contact co ON r.contact_id = co.id
-    WHERE r.contribution_status_id = %0 AND r.contact_id = %1
+    WHERE r.contact_id = %1
     AND is_deceased = 0 
     ORDER BY r.id DESC LIMIT 1";
   $dao = CRM_Core_DAO::executeQuery($sql, $params);
