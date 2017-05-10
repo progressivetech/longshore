@@ -15,28 +15,115 @@ function demo_drush_command() {
   $items['demo-data'] = 
     array(
       'description' => dt("Create demo data."),
+      'options' => array(
+        'seed' => "A short string to prepend to the passwords that will be generated."
+      ),  
     );
   return $items;
 }
 
 
 function drush_demo_data() {
-	_civicrm_init();
+  $seed = drush_get_option('seed', NULL);
+
+  if(!$seed) {
+    drush_log(dt("Please pass --seed='something' to pass a string to seed the password string with. Replace something with something better."), 'error');
+    return;
+  }
+
+  _civicrm_init();
   try {
     demo_contacts();
-		demo_campaign();
+    demo_campaign();
     demo_contribution_page();
     demo_contributions();
-		demo_membership_type();
-		demo_memberships();
+    demo_membership_type();
+    demo_memberships();
     demo_site_name();
     demo_email_templates();
+    demo_interest_participation_status();
+    demo_insert_logins($seed);
   }
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("Failed to create demo data in the database."), 'error');
     drush_log($e->getMessage(), 'error');
     return;
   }
+}
+
+function demo_insert_logins($seed) {
+  // Always re-create users, even if they exist.
+  $sql = "SELECT uid FROM users WHERE uid > 1";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  drush_log("Deleting " . $dao->N . " user(s)");
+  while($dao->fetch()) {
+    user_delete($dao->uid);
+  }  
+  $password = "${seed}-" . date('Y');
+  drush_log("Adding users with names: fun1, fun2, adv1, adv2 etc and password: ${password}");
+  $i = 1;
+  $userversion = drush_user_get_class();
+  $user = array(
+    'pass' => $password,
+    'access' => '0',
+    'status' => 1,
+  );
+
+  $uids = array();
+  while($i < 31) {
+    $user['name'] = 'fun' . $i;
+    $user['mail'] = $user['name'] . '@example.net';
+    $account = $userversion->create($user);
+    if($account->id()) {
+      $uids['fun'][] = $account->id();
+    }
+    $user['name'] = 'adv' . $i;
+    $user['mail'] = $user['name'] . '@example.net';
+    $account = $userversion->create($user);
+    if($account->id()) {
+      $uids['adv'][] = $account->id();
+    }
+    $i++;
+  }  
+  while(list($type, $collection) = each($uids)) {
+    while(list(, $uid) = each($collection)) {
+      if($type == 'fun') {
+        $role_name = 'PowerBase User';
+      }
+      elseif($type == 'adv') {
+        $role_name = 'PowerBase Administrator';
+      }
+      else {
+        drush_log("Unknown type: $type", 'error');
+        return;
+      }
+      if ($role = user_role_load_by_name($role_name)) {
+        user_multiple_role_edit(array($uid), 'add_role', $role->rid);
+      }  
+    }
+  }  
+  
+
+
+}
+
+function demo_interest_participation_status() {
+  $result = civicrm_api3('ParticipantStatusType', 'get', array(
+    'sequential' => 1,
+    'name' => "Interested",
+  ));
+  if($result['count'] == "0") {
+    drush_log(dt("Not adding interested participant status, already there."), 'error');
+    return;
+  }
+  $result = civicrm_api3('ParticipantStatusType', 'create', array(
+    'name' => 'Interested',
+    'label' => 'Interested',
+    'is_reserved' => '0',
+    'is_active' => '1',
+    'is_counted' => '0',
+    'class' => 'Positive'
+  ));
 }
 
 function demo_email_templates() {
@@ -136,88 +223,88 @@ function demo_site_name() {
 
 function demo_membership_type() {
 
-	$results = civicrm_api3('MembershipType', 'get', array());
-	if($results['count'] >= 1) {
-		drush_log(dt("Not adding membership type, already there."), 'error');
-		return;
-	}
+  $results = civicrm_api3('MembershipType', 'get', array());
+  if($results['count'] >= 1) {
+    drush_log(dt("Not adding membership type, already there."), 'error');
+    return;
+  }
 
-	// Enter Member Organization first.
-	$member_organization_name = 'Demo Organizing Project';
-	$results = civicrm_api3('Contact', 'get', array('organization_name' => $member_organization_name));
-	if($results['count'] == 1) {
-		drush_log(dt("Not adding member org contact, already there."), 'error');
-		return;
-	}
+  // Enter Member Organization first.
+  $member_organization_name = 'Demo Organizing Project';
+  $results = civicrm_api3('Contact', 'get', array('organization_name' => $member_organization_name));
+  if($results['count'] == 1) {
+    drush_log(dt("Not adding member org contact, already there."), 'error');
+    return;
+  }
 
-	$params = array(
-		'contact_type' => 'Organization',
-		'organization_name' => $member_organization_name
-	);
-	$result = civicrm_api3('Contact', 'create', $params);
-	$member_contact_id = $result['id'];
+  $params = array(
+    'contact_type' => 'Organization',
+    'organization_name' => $member_organization_name
+  );
+  $result = civicrm_api3('Contact', 'create', $params);
+  $member_contact_id = $result['id'];
  
-	$params = array(
- 		"domain_id" => "1",
-		"name" => "Demo Organizing Member",
-		"description" => "Member of the Demo Organizing Project",
-		"member_of_contact_id" => $member_contact_id,
-		"financial_type_id" => "2",
-		"minimum_fee" => "5.00",
-		"duration_unit" => "year",
-		"duration_interval" => "1",
-		"period_type" => "rolling",
-		"visibility" => "Public",
-		"weight" => "1",
-		"is_active" => "1"
-	);
-	civicrm_api3('MembershipType', 'create', $params);
+  $params = array(
+     "domain_id" => "1",
+    "name" => "Demo Organizing Member",
+    "description" => "Member of the Demo Organizing Project",
+    "member_of_contact_id" => $member_contact_id,
+    "financial_type_id" => "2",
+    "minimum_fee" => "5.00",
+    "duration_unit" => "year",
+    "duration_interval" => "1",
+    "period_type" => "rolling",
+    "visibility" => "Public",
+    "weight" => "1",
+    "is_active" => "1"
+  );
+  civicrm_api3('MembershipType', 'create', $params);
 }
 
 function demo_memberships() {
-	$results = civicrm_api3('Membership', 'get', array());
-	if($results['count'] >= 1) {
-		drush_log(dt("Not adding memberships, already there."), 'error');
-		return;
-	}
+  $results = civicrm_api3('Membership', 'get', array());
+  if($results['count'] >= 1) {
+    drush_log(dt("Not adding memberships, already there."), 'error');
+    return;
+  }
 
 
-	// We're going to add 50 members for contacts with ids 800 - 850
+  // We're going to add 50 members for contacts with ids 800 - 850
   // They are all going to $10 to be members. We have to create
   // a contribution record, and membership record and a line item
   // to link them together.
 
-	$contact_id = 800;
+  $contact_id = 800;
   while($contact_id < 851) {
-  	// First the contribution. Let's keep it simple - everyone pays by check.
-		$join_date = demo_random_date_in_last_year();
-		$params = array(
-				"contact_id" => $contact_id,
-				"currency" => "USD",
-				"receive_date" => $join_date,
-				"total_amount" => '10',
-				"fee_amount" => "",
-				"net_amount" => "",
-				"trxn_id" => "",
-				"is_test" => "0",
-				"is_pay_later" => "0",
-				"contribution_status_id" => 1,
-				"check_number" => rand(100,5000),
-				"payment_instrument_id" => 4,
-				"financial_type_id" => 2 // Member dues 
-		);
-		$result = civicrm_api3('Contribution', 'create', $params);
-		$contribution_id = $result['id'];
+    // First the contribution. Let's keep it simple - everyone pays by check.
+    $join_date = demo_random_date_in_last_year();
+    $params = array(
+        "contact_id" => $contact_id,
+        "currency" => "USD",
+        "receive_date" => $join_date,
+        "total_amount" => '10',
+        "fee_amount" => "",
+        "net_amount" => "",
+        "trxn_id" => "",
+        "is_test" => "0",
+        "is_pay_later" => "0",
+        "contribution_status_id" => 1,
+        "check_number" => rand(100,5000),
+        "payment_instrument_id" => 4,
+        "financial_type_id" => 2 // Member dues 
+    );
+    $result = civicrm_api3('Contribution', 'create', $params);
+    $contribution_id = $result['id'];
 
-		// Now the membership record.
-		$params = array(
-	 		"contact_id" => $contact_id,
+    // Now the membership record.
+    $params = array(
+       "contact_id" => $contact_id,
       "membership_type_id" => "1",
       "join_date" => $join_date,
       "start_date" => $join_date,
-		);	
-		$result = civicrm_api3('membership', 'create', $params);
-		$membership_id = $result['id'];
+    );  
+    $result = civicrm_api3('membership', 'create', $params);
+    $membership_id = $result['id'];
 
     // The membership activity date (which controls the membership dashboard
     // that shows when memberships came in) is improperly set to todays
@@ -226,20 +313,20 @@ function demo_memberships() {
     $sql_params = array(0 => array($join_date, 'String'), array($membership_id, 'Integer'));
     CRM_Core_DAO::executeQuery($sql, $sql_params );
 
-		// Lastly create the line item to connect the dots
-		$params = array(
-			"entity_table" => "civicrm_membership",
-			"entity_id" => $membership_id,
-			"label" => "Demo Organizing Member",
-			"qty" => "1.00",
-			"unit_price" => "10.00",
-			"line_total" => "10.00",
-			"financial_type_id" => "2",
-			"contribution_id" => $contribution_id,
-		);
-		$result = civicrm_api3('LineItem', 'create', $params);
-		$contact_id++;
-	}
+    // Lastly create the line item to connect the dots
+    $params = array(
+      "entity_table" => "civicrm_membership",
+      "entity_id" => $membership_id,
+      "label" => "Demo Organizing Member",
+      "qty" => "1.00",
+      "unit_price" => "10.00",
+      "line_total" => "10.00",
+      "financial_type_id" => "2",
+      "contribution_id" => $contribution_id,
+    );
+    $result = civicrm_api3('LineItem', 'create', $params);
+    $contact_id++;
+  }
 }
 
 function demo_contacts() {
@@ -252,7 +339,7 @@ function demo_contacts() {
     drush_log(dt("Not running, more than 3 contacts already entered."), 'error');
     return;
   }
-	if (($handle = fopen(__dir__  . "/contacts.csv", "r")) !== FALSE) {
+  if (($handle = fopen(__dir__  . "/contacts.csv", "r")) !== FALSE) {
     // Until skipping geo coding is fixed...
     // https://support.ourpowerbase.net/ticket/2292
     $params = array(
@@ -261,7 +348,7 @@ function demo_contacts() {
     );
     civicrm_api3('Setting', 'create', $params); 
     $i = 0;
-		while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
       $i++;
       if($i === 1) {
         // First row is the header, skip
@@ -278,11 +365,11 @@ function demo_contacts() {
         'contact_type' => 'Individual'
       );
       $params['last_name'] = trim(ucwords(strtolower(array_shift($name))));
-			$remaining_names = explode(' ', $name[0]);
+      $remaining_names = explode(' ', $name[0]);
       $params['first_name'] = trim(ucwords(strtolower(array_pop($remaining_names))));
 
-     	// City State Zip is in format: CITY, STATE ZIP
-		  $street_address = $data[9];
+       // City State Zip is in format: CITY, STATE ZIP
+      $street_address = $data[9];
       $city_state_zip = explode(',', $data[10]);
       $city = trim(array_shift($city_state_zip));
       $state_zip = explode(' ', trim($city_state_zip[0]));
@@ -290,7 +377,7 @@ function demo_contacts() {
       $postal_code = $state_zip[0];
 
       $params['api.address.create'] = array(
-				'street_address' => $street_address,
+        'street_address' => $street_address,
         'city' => $city,
         'state_province_id' => 'North Carolina',
         'postal_code' => $postal_code,
@@ -305,9 +392,9 @@ function demo_contacts() {
         'location_type_id' => 1
       );
 
-    	civicrm_api3('Contact', 'create', $params);
-	  }
-	  fclose($handle);
+      civicrm_api3('Contact', 'create', $params);
+    }
+    fclose($handle);
     $params = array(
       'geoProvider' => "Google",
       'mapProvider' => "Google",
@@ -323,20 +410,20 @@ function demo_campaign() {
     drush_log(dt("Not adding campaign, already there."), 'error');
     return;
   }    
-	$params = array(
-		"name" => "Lead_Poisoning",
-		"title" => "Lead Poisoning Abatement",
-		"start_date" => "2011-09-01",
-		"campaign_type_id" => "3",
-		"status_id" => "2",
-		"is_active" => "1",
-		"created_id" => "3",
-		"created_date" => date('Y-m-d'),
-		"last_modified_id" => "3",
-		"last_modified_date" => date('Y-m-d')
-	);
+  $params = array(
+    "name" => "Lead_Poisoning",
+    "title" => "Lead Poisoning Abatement",
+    "start_date" => "2011-09-01",
+    "campaign_type_id" => "3",
+    "status_id" => "2",
+    "is_active" => "1",
+    "created_id" => "3",
+    "created_date" => date('Y-m-d'),
+    "last_modified_id" => "3",
+    "last_modified_date" => date('Y-m-d')
+  );
 
-	$results = civicrm_api3('Campaign', 'create', $params);
+  $results = civicrm_api3('Campaign', 'create', $params);
 }
 
 function demo_random_date_in_last_year() {
@@ -345,17 +432,17 @@ function demo_random_date_in_last_year() {
   $max_epoch = strtotime("today");
 
   $rand_epoch = rand($min_epoch, $max_epoch);
-	return date('Y-m-d H:i:s', $rand_epoch);
+  return date('Y-m-d H:i:s', $rand_epoch);
 }
 
 function demo_random_donation_amount() {
-	// Donations aren't that random...
-	$possible = array(
-		'10', '10', '10', '25', '25', '25', '25', '25', '25', '25', '25' ,'25', 
-		'50', '50', '50', '50', '50', '50', '50', '50', '50', '50', '50', '50',
-		'50', '50', '50', '50', '50', '75', '75', '75', '75', '100','100', '100',
-		'100', '100', '100', '500', '500', '1000');
-	return $possible[array_rand($possible)]; 
+  // Donations aren't that random...
+  $possible = array(
+    '10', '10', '10', '25', '25', '25', '25', '25', '25', '25', '25' ,'25', 
+    '50', '50', '50', '50', '50', '50', '50', '50', '50', '50', '50', '50',
+    '50', '50', '50', '50', '50', '75', '75', '75', '75', '100','100', '100',
+    '100', '100', '100', '500', '500', '1000');
+  return $possible[array_rand($possible)]; 
 }
 
 function demo_contributions() {
@@ -365,10 +452,10 @@ function demo_contributions() {
     return;
   }
 
-	$campaign_id = civicrm_api3('Campaign', 'getvalue', array('return' => 'id'));
-	$contribution_page_id = civicrm_api3('ContributionPage', 'getvalue', array('return' => 'id'));
+  $campaign_id = civicrm_api3('Campaign', 'getvalue', array('return' => 'id'));
+  $contribution_page_id = civicrm_api3('ContributionPage', 'getvalue', array('return' => 'id'));
 
-	// We assume we have contacts in the database and that the contact ids
+  // We assume we have contacts in the database and that the contact ids
   // span consecutively from 100 - 600. 
   // We will create contributions for those 500 contacts.
   $start = 100;
@@ -376,55 +463,55 @@ function demo_contributions() {
   $i = $start;
  
   while($i < $end) {
-		if ($i % 100 == 0) {
-			drush_log(dt("Adding $i Contribution", array('@i' => $i)), 'ok');
-		}
-	
-		// One out of three are checks, the rest credit cards.
+    if ($i % 100 == 0) {
+      drush_log(dt("Adding $i Contribution", array('@i' => $i)), 'ok');
+    }
+  
+    // One out of three are checks, the rest credit cards.
     if(rand(1, 3) == 3) {
-			// Check
-			$trxn_id = NULL;
-			$payment_instrument_id = 4;
-			$check_number = rand(1,4000);
-		  $contribution_status_id = 1;
-		}
-		else {
-			// Credit cardd.
-			$trxn_id = substr(md5(rand()), 0, 12);
-			$payment_instrument_id = 1;
-			$check_number = NULL;
+      // Check
+      $trxn_id = NULL;
+      $payment_instrument_id = 4;
+      $check_number = rand(1,4000);
+      $contribution_status_id = 1;
+    }
+    else {
+      // Credit cardd.
+      $trxn_id = substr(md5(rand()), 0, 12);
+      $payment_instrument_id = 1;
+      $check_number = NULL;
 
-			// One out of ten are failed
-			if(rand(1, 10) == 10) {
-				$contribution_status_id = 4;
-			}
-			else {
-				$contribution_status_id = 1;
-			}
-		}
+      // One out of ten are failed
+      if(rand(1, 10) == 10) {
+        $contribution_status_id = 4;
+      }
+      else {
+        $contribution_status_id = 1;
+      }
+    }
 
-		$params = array(
-			"contact_id" => $i,
-			"currency" => "USD",
-			"receive_date" => demo_random_date_in_last_year(),
-			"non_deductible_amount" => "0.00",
-			"total_amount" => demo_random_donation_amount(),
-			"fee_amount" => "",
-			"net_amount" => "",
-			"trxn_id" => $trxn_id,
-			"is_test" => "0",
-			"is_pay_later" => "0",
-			"contribution_status_id" => $contribution_status_id,
-			"check_number" => $check_number,
-			"contribution_campaign_id" => $campaign_id,
-			"contribution_page_id" => $contribution_page_id,
-			"contribution_recur_id" => "",
-			"payment_instrument_id" => $payment_instrument_id,
-			"financial_type_id" => 1 // Donation.
-		);
-		civicrm_api3('Contribution', 'create', $params);
-		$i++;
-	}
+    $params = array(
+      "contact_id" => $i,
+      "currency" => "USD",
+      "receive_date" => demo_random_date_in_last_year(),
+      "non_deductible_amount" => "0.00",
+      "total_amount" => demo_random_donation_amount(),
+      "fee_amount" => "",
+      "net_amount" => "",
+      "trxn_id" => $trxn_id,
+      "is_test" => "0",
+      "is_pay_later" => "0",
+      "contribution_status_id" => $contribution_status_id,
+      "check_number" => $check_number,
+      "contribution_campaign_id" => $campaign_id,
+      "contribution_page_id" => $contribution_page_id,
+      "contribution_recur_id" => "",
+      "payment_instrument_id" => $payment_instrument_id,
+      "financial_type_id" => 1 // Donation.
+    );
+    civicrm_api3('Contribution', 'create', $params);
+    $i++;
+  }
 }
 
 function demo_contribution_page() {
@@ -435,40 +522,40 @@ function demo_contribution_page() {
   }
   // First the contribution page
   $params = array(
-		"title" => "Donate to Neighbors for Justice",
-		"intro_text" => "\r\n\tHere's your chance to put your money where your mouth is. Your contribution makes it possible for us to continue working for environmental safety and justice in our community.\n",
-		"financial_type_id" => "3",
-		"is_credit_card_only" => "0",
-		"is_monetary" => "1",
-		"is_recur" => "0",
-		"is_confirm_enabled" => "1",
-		"is_recur_interval" => "0",
-		"is_recur_installments" => "1",
-		"adjust_recur_start_date" => "0",
-		"is_pay_later" => "1",
-		"pay_later_text" => "I will send payment by check",
-		"pay_later_receipt" => "Send a check to our office at 123 4th Street, Anytown, XX",
-		"is_partial_payment" => "0",
-		"is_allow_other_amount" => "1",
-		"min_amount" => "1.00",
-		"thankyou_title" => "Thanks for Your Donation",
-		"thankyou_text" => "\r\n\tYour donation is an investment in this community. We will use your contribution towards keeping our community safe.",
-		"is_email_receipt" => "1",
-		"receipt_from_name" => "Your Friendly Organizer",
-		"receipt_from_email" => "info@example.org",
-		"receipt_text" => "Thanks for your generous contribution.",
-		"is_active" => "1",
-		"amount_block_is_active" => "1",
-		"start_date" => date('Y-m-d'),
-		"created_date" => date('Y-m-d'),
-		"currency" => "USD",
-		"campaign_id" => "1",
-		"is_share" => "1",
-		"is_billing_required" => "0",
-		"contribution_type_id" => "3"
-	);
+    "title" => "Donate to Neighbors for Justice",
+    "intro_text" => "\r\n\tHere's your chance to put your money where your mouth is. Your contribution makes it possible for us to continue working for environmental safety and justice in our community.\n",
+    "financial_type_id" => "3",
+    "is_credit_card_only" => "0",
+    "is_monetary" => "1",
+    "is_recur" => "0",
+    "is_confirm_enabled" => "1",
+    "is_recur_interval" => "0",
+    "is_recur_installments" => "1",
+    "adjust_recur_start_date" => "0",
+    "is_pay_later" => "1",
+    "pay_later_text" => "I will send payment by check",
+    "pay_later_receipt" => "Send a check to our office at 123 4th Street, Anytown, XX",
+    "is_partial_payment" => "0",
+    "is_allow_other_amount" => "1",
+    "min_amount" => "1.00",
+    "thankyou_title" => "Thanks for Your Donation",
+    "thankyou_text" => "\r\n\tYour donation is an investment in this community. We will use your contribution towards keeping our community safe.",
+    "is_email_receipt" => "1",
+    "receipt_from_name" => "Your Friendly Organizer",
+    "receipt_from_email" => "info@example.org",
+    "receipt_text" => "Thanks for your generous contribution.",
+    "is_active" => "1",
+    "amount_block_is_active" => "1",
+    "start_date" => date('Y-m-d'),
+    "created_date" => date('Y-m-d'),
+    "currency" => "USD",
+    "campaign_id" => "1",
+    "is_share" => "1",
+    "is_billing_required" => "0",
+    "contribution_type_id" => "3"
+  );
  
-	$result = civicrm_api3('ContributionPage', 'create', $params);
+  $result = civicrm_api3('ContributionPage', 'create', $params);
 }
 
 
