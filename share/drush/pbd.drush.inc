@@ -540,7 +540,7 @@ function drush_pbd_subscription_links() {
   );
 
   // Try to find an in-progress recurring contribution matching this id.
-  $sql = "SELECT c.id AS id, first_name, last_name FROM civicrm_contribution c
+  $sql = "SELECT c.id AS id, first_name, last_name, r.contribution_status_id FROM civicrm_contribution c
     JOIN civicrm_contribution_recur r ON c.contribution_recur_id = r.id
     JOIN civicrm_contact co ON r.contact_id = co.id
     WHERE r.contribution_status_id = %0 AND r.contact_id = %1
@@ -558,7 +558,7 @@ function drush_pbd_subscription_links() {
   $update_url = $paymentObject->subscriptionURL($contribution_id, $entity, 'update');
   $cancel_url = $paymentObject->subscriptionURL($contribution_id, $entity, 'cancel');
   $billing_url = $paymentObject->subscriptionURL($contribution_id, $entity, 'billing');
-  drush_log("Name: " . $dao->first_name . " " . $dao->last_name, "ok");
+  drush_log("Name: " . $dao->first_name . " " . $dao->last_name . "(" . $dao->contribution_status_id . ")", "ok");
   drush_log("Update: $update_url", "ok");
   drush_log("Cancel: $cancel_url", "ok");
   drush_log("Billing: $billing_url", "ok");
