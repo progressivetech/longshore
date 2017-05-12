@@ -31,6 +31,7 @@ function drush_demo_data() {
     demo_contacts();
     demo_campaign();
     demo_contribution_page();
+    demo_price_set();
     demo_contributions();
     demo_membership_type();
     demo_memberships();
@@ -49,13 +50,136 @@ function drush_demo_data() {
   }
 }
 
-function demo_add_images() {
-  $dir = '/var/www/powerbase/sites/default/files/civicrm/persist/contribute/images/';
-  if(!file_exists($dir)) {
-    mkdir($dir);
+function demo_price_set() {
+  $price_set = array(
+		"name" => "donate_to_neighbors_for_justice",
+		"title" => "Donate to Neighbors for Justice",
+		"is_active" => "1",
+		"extends" => "2",
+		"financial_type_id" => "3",
+		"is_quick_config" => "1",
+		"is_reserved" => "0",
+		"min_amount" => "0",
+		"entity" =>  array(
+			"civicrm_contribution_page" => array(1)
+		),	
+	);
+
+	$result = civicrm_api3('PriceSet', 'get', array('name' => 'donate_to_neighbors_for_justice'));
+	if($result['count'] == 1) {
+		drush_log("Not creating price set, already exists.", 'ok');
+		return;
+	}
+  else {
+    $result = civicrm_api3('PriceSet', 'create', $price_set);
+		$price_set_id = $result['id'];
+    // How can this part be added via the API??
+    $sql = "INSERT INTO civicrm_price_set_entity SET entity_table = 'civicrm_contribution_page', entity_id = 1, price_set_id = %0";
+    CRM_Core_DAO::executeQuery($sql, array(0 => array($price_set_id, 'Integer')));
+  } 
+
+  $price_fields = array(
+    array(
+      "price_set_id" => $price_set_id,
+      "name" => "contribution_amount",
+      "label" => "Contribution Amount",
+      "html_type" => "Radio",
+      "is_enter_qty" => "0",
+      "weight" => "2",
+      "is_display_amounts" => "1",
+      "options_per_line" => "1",
+      "is_active" => "1",
+      "is_required" => "0",
+      "visibility_id" => "1"
+	),
+  array(	
+    "price_set_id" => $price_set_id,
+    "name" => "other_amount",
+    "label" => "Other Amount",
+    "html_type" => "Text",
+    "is_enter_qty" => "0",
+    "weight" => "3",
+    "is_display_amounts" => "0",
+    "options_per_line" => "1",
+    "is_active" => "1",
+    "is_required" => "0",
+    "visibility_id" => "1"
+    )
+  );
+
+  $price_field_ids = array();
+  while(list(, $price_field) = each($price_fields)) {
+    $result = civicrm_api3('PriceField', 'create', $price_field);
+    $name = $price_field['name'];
+    $price_field_ids[$name] = $result['id'];
   }
-  $image = "immigration-protest.jpg";
-  $path = $dir . $image;
+
+  $price_field_values = array(
+    array(
+      "price_field_id" => $price_field_ids['contribution_amount'],
+      "name" => "Super",
+      "label" => "Super",
+      "amount" => "10",
+      "weight" => "1",
+      "is_default" => "0",
+      "is_active" => "1",
+      "financial_type_id" => "3",
+      "non_deductible_amount" => "0.00",
+      "contribution_type_id" => "3"
+    ),
+    array(
+      "price_field_id" => $price_field_ids['contribution_amount'],
+      "name" => "Awesome",
+      "label" => "Awesome",
+      "amount" => "100",
+      "weight" => "2",
+      "is_default" => "1",
+      "is_active" => "1",
+      "financial_type_id" => "3",
+      "non_deductible_amount" => "0.00",
+      "contribution_type_id" => "3"
+    ),
+    array(
+      "price_field_id" => $price_field_ids['contribution_amount'],
+      "name" => "Best",
+      "label" => "Best",
+      "amount" => "500",
+      "weight" => "3",
+      "is_default" => "0",
+      "is_active" => "1",
+      "financial_type_id" => "3",
+      "non_deductible_amount" => "0.00",
+      "contribution_type_id" => "3"
+    ),
+    array(
+      "price_field_id" => $price_field_ids['other_amount'],
+      "name" => "Other_Amount",
+      "label" => "Other Amount",
+      "amount" => "1",
+      "weight" => "1",
+      "is_default" => "0",
+      "is_active" => "1",
+      "financial_type_id" => "3",
+      "non_deductible_amount" => "0.00",
+      "contribution_type_id" => "3"
+    ),
+  );
+  while(list(, $price_field_value) = each($price_field_values)) {
+    civicrm_api3('PriceFieldValue', 'create', $price_field_value);
+  }
+}
+
+function demo_add_images() {
+  $dirs = array(
+    '/var/www/powerbase/sites/default/files/civicrm/persist/contribute/',
+    '/var/www/powerbase/sites/default/files/civicrm/persist/contribute/images/',
+  );
+  foreach($dirs as $dir) { 
+    if(!file_exists($dir)) {
+      mkdir($dir);
+    }
+  }
+  $path = '/var/www/powerbase/sites/default/files/civicrm/persist/contribute/images/immigration-protest.jpg';
   if(file_exists($path)) {
     drush_log("Not saving image, already exists.", 'ok');
     return;
