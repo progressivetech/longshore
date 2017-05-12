@@ -43,6 +43,7 @@ function drush_demo_data() {
     demo_email_templates();
     demo_interest_participation_status();
     demo_insert_logins($seed);
+    demo_create_reports();	
   }
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("Failed to create demo data in the database."), 'error');
@@ -50,7 +51,106 @@ function drush_demo_data() {
     return;
   }
 }
+function demo_get_new_contributors_report_form_values() {
+  return array(
+    'entryURL' => CIVICRM_UF_BASEURL . '/civicrm/report/contribute/new?reset=1',
+    'receive_date_op' => 'to',
+    'receive_date_value' => date('m-d-Y'),
+    'contribution_baseline_interval_op' => 'eq',
+    'contribution_baseline_interval_value' => 3,
+    'contribution_no_periods_op' => 'eq',
+    'contribution_no_periods_value' => 4,
+    'contribution_timeframe_min' => '',
+    'contribution_timeframe_max' => '',
+    'contribution_timeframe_op' => 'eq',
+    'contribution_timeframe_value' => 120,
+    'contribution_status_id_op' => 'in', 
+    'contribution_status_id_value' => array('0' => 1),
+    'description' => 'PowerBase Report displays how many contributors have given for the first time',
+    'view_mode' => 'view',
+    'addToDashboard' => 1,
+    'cache_minutes' => 60,
+    'permission' => 'access CiviReport',
+    'charts' => 'barChart'
+  );
 
+}
+function demo_get_key_numbers_report_form_values() {
+	return array(
+    'entryURL' => CIVICRM_UF_BASEURL . '/civicrm/report/contribute/keynumbers?reset=1',
+    'report_options_op' => "in",
+    'report_options_value' => array (
+      0 => 'donor_number',
+      1 => 'total_amount',
+      2 => 'total_amount__individual',
+      3 => 'average_donation__individual',
+      4 => 'no_increased_donations__individual',
+      5  => 'current_sustainer_count',
+    ),
+    'receive_date_relative' => 'current.year',
+    'contribution_status_id_op' => 'in',
+    'contribution_status_id_value' => array( '0' => 1),
+    'financial_type_id_op' => 'in',
+    'financial_type_id_value' => array(),
+    'payment_instrument_id_op' => 'in',
+    'payment_instrument_id_value' => array(),
+    'description' => 'PowerBase Report displays Key performance Indicators',
+    'addToDashboard' => 1,
+    'cache_minutes' => 60,
+    'permission' => 'access CiviReport'
+  );
+}
+
+function demo_create_reports() {
+  $key_numbers = array(
+    'domain_id' => 1,
+    'title' => "Key Numbers Report " . date('Y'),
+    'report_id' => "contribute/keynumbers",
+    'description' => "PowerBase Report displays Key performance Indicators",
+    'permission' => 'access CiviReport',
+    'form_values' => serialize(demo_get_key_numbers_report_form_values()),
+    'header' => '',
+    'footer' => '',
+    'is_reserved' => 0,
+  );
+
+  $result = civicrm_api3('ReportInstance', 'get', array(
+    'sequential' => 1,
+    'title' => $key_numbers['title']
+  ));
+
+  if($result['count'] == "0") {
+    civicrm_api3('ReportInstance', 'create', $key_numbers);
+  }
+  else {
+    drush_log(dt("Not adding key numbers report, already there."), 'error');
+  }
+
+  $new_contributors = array(
+    'domain_id' => 1,
+    'title' => "New Contributors by quarter",
+    'report_id' => "contribute/new",
+    'description' => "PowerBase Report displays how many contributors have given for the first time",
+    'permission' => 'access CiviReport',
+    'form_values' => serialize(demo_get_new_contributors_report_form_values()),
+    'header' => '',
+    'footer' => '',
+    'is_reserved' => 0,
+  );
+
+  $result = civicrm_api3('ReportInstance', 'get', array(
+    'sequential' => 1,
+    'title' => $new_contributors['title']
+  ));
+
+  if($result['count'] == "0") {
+    civicrm_api3('ReportInstance', 'create', $new_contributors);
+  }
+  else {
+    drush_log(dt("Not adding new contributors report, already there."), 'error');
+  }
+
+}
 function demo_insert_logins($seed) {
   // Always re-create users, even if they exist.
   $sql = "SELECT uid FROM users WHERE uid > 1";
@@ -329,9 +429,42 @@ function demo_memberships() {
   }
 }
 
+function demo_custom_id_for_name($col_name) {
+  $result = civicrm_api3('CustomField', 'getsingle', array('column_name' => $col_name));
+  return $result['id'];
+}
+
+function demo_get_random_issue_interest() {
+  $options = array(
+    'Economic Justice' => null,
+    'Environmental Justice' => null,
+    'Immigrant Rights' => null,
+    'Workers Rights' => null
+  );
+  return array_rand($options);
+}
+
+function demo_get_random_constituent_type() {
+  $options = array(
+    'Volunteer' => null,
+    'Activist' => null,
+    'Member' => null,
+    'Donor' => null,
+    'Consultant' => null,
+    'Ally' => null,
+    'Elected Official' => null,
+    'Board Member' => null,
+    'Lead Organizer' => null,
+    'Intern' => null,
+    'Staff' => null,
+    'Media_Contact' => null,
+    'Funder' => null,
+  );
+  return array_rand($options);
+}
 function demo_contacts() {
   // contacts.csv downloaded from https://www.forsyth.cc/elections/voter_data.aspx
-  // Only run if we less than 2 contacts already.
+  // Only run if we have less than 2 contacts already.
   $sql = "SELECT COUNT(*) AS count FROM civicrm_contact";
   $dao = CRM_Core_DAO::executeQuery($sql);
   $dao->fetch();
@@ -368,6 +501,36 @@ function demo_contacts() {
       $remaining_names = explode(' ', $name[0]);
       $params['first_name'] = trim(ucwords(strtolower(array_pop($remaining_names))));
 
+      /**
+       * Voter ifo
+       **/
+      // precinct (precinct code)
+      $id = 'custom_' . demo_custom_id_for_name('precinct');
+      $params[$id] = $data[11];
+      // city district (municipal district)
+      $id = 'custom_' . demo_custom_id_for_name('city_district');
+      $params[$id] = $data[12];
+      // congressional district
+      $id = 'custom_' . demo_custom_id_for_name('congressional_district');
+      $params[$id] = $data[14];
+      // state assembly (NC house)
+      $id = 'custom_' . demo_custom_id_for_name('state_assembly_district');
+      $params[$id] = $data[18];
+      // state senate (NC senate)
+      $id = 'custom_' . demo_custom_id_for_name('state_senate_district');
+      $params[$id] = $data[17];
+      // school district
+      $id = 'custom_' . demo_custom_id_for_name('school_district');
+      $params[$id] = $data[20];
+
+      // Issue options
+      $id = 'custom_' . demo_custom_id_for_name('issues_interest');
+      $params[$id] = demo_get_random_issue_interest();
+
+      // Constituent type
+      $id = 'custom_' . demo_custom_id_for_name('constituent_type');
+      $params[$id] = demo_get_random_constituent_type();
+
        // City State Zip is in format: CITY, STATE ZIP
       $street_address = $data[9];
       $city_state_zip = explode(',', $data[10]);
@@ -375,6 +538,7 @@ function demo_contacts() {
       $state_zip = explode(' ', trim($city_state_zip[0]));
       $state = trim(array_shift($state_zip));
       $postal_code = $state_zip[0];
+
 
       $params['api.address.create'] = array(
         'street_address' => $street_address,
