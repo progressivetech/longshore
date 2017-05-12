@@ -1,0 +1,6 @@
+# I'm not sure what (if any) civicrm process clears out the old templates_c
+# directory... however, on sites that send a lot of email it can grow to be
+# multiple GBs.
+#
+# Run once a night.
+15 23 * * * longshore-php find /srv/longshore/services/sites -path '/srv/longshore/services/sites/*/drupal/files/civicrm/templates_c/*' -type f -mtime +20 -name '*.php' -delete 

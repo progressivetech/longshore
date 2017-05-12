@@ -94,6 +94,17 @@ if  [ ! -f "$target" ] || ! diff -q "$source" "$target" >/dev/null; then
   fi
 fi
 
+# Ensure cron job to clear template cache is installed and up-to-date
+source="${LONG_SHARE}/templates/longshore-clear-template-cache" 
+target="/etc/cron.d/longshore-clear-template-cache"
+if  [ ! -f "$target" ] || ! diff -q "$source" "$target" >/dev/null; then
+  long_prompt "Updating longshore-clear-template-cache"
+  if [ "$reply" = "y" ]; then
+    cp "$source" "$target" 
+  fi
+fi
+
+
 # Ensure that our tweak to nginx to allow longer server names is in place.
 source="${LONG_SHARE}/templates/server-names-hash-bucket-size.conf"
 target="/etc/nginx/conf.d/server-names-hash-bucket-size.conf"
