@@ -24,12 +24,7 @@ function demo_drush_command() {
 
 
 function drush_demo_data() {
-  $seed = drush_get_option('seed', NULL);
-
-  if(!$seed) {
-    drush_log(dt("Please pass --seed='something' to pass a string to seed the password string with. Replace something with something better."), 'error');
-    return;
-  }
+  
 
   _civicrm_init();
   try {
@@ -42,8 +37,10 @@ function drush_demo_data() {
     demo_site_name();
     demo_email_templates();
     demo_interest_participation_status();
-    demo_insert_logins($seed);
+    demo_insert_logins();
     demo_create_reports();	
+    demo_create_event();
+    demo_add_images();
   }
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("Failed to create demo data in the database."), 'error');
@@ -51,6 +48,93 @@ function drush_demo_data() {
     return;
   }
 }
+
+function demo_add_images() {
+  $dir = '/var/www/powerbase/sites/default/files/civicrm/persist/contribute/images/';
+  if(!file_exists($dir)) {
+    mkdir($dir);
+  }
+  $image = "immigration-protest.jpg";
+  $path = $dir . $image;
+  if(file_exists($path)) {
+    drush_log("Not saving image, already exists.", 'ok');
+    return;
+  }
+  $url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/2017.03.07_-MuslimBan_2.0_Protest%2C_Washington%2C_DC_USA_00789_%2833192329791%29.jpg/800px-2017.03.07_-MuslimBan_2.0_Protest%2C_Washington%2C_DC_USA_00789_%2833192329791%29.jpg';
+  file_put_contents($path, file_get_contents($url));
+
+}
+
+function demo_create_event() {
+  $result = civicrm_api3('Event', 'get', array('id' => 1));
+  if($result['count'] > 0) {
+    drush_log(dt("Not creating event, already exists."), 'ok');
+    return;
+  }
+
+	// Start the event 60 days from when the demo data is created.
+	$start = date('Y-m-d H:i:s', time() + 86400 * 60);
+
+  // End it 60 minutes later...
+	$end = date('Y-m-d H:i:s', time() + (86400 * 60) + 3600);
+
+  // Start reg now.
+  $start_reg = date('Y-m-d H:i:s');
+
+  // End reg when event starts
+  $end_reg = $start;
+
+	$params = array(
+		"title" => "RESIST! Organizing Workshop",
+		"event_title" => "RESIST! Organizing Workshop",
+		"description" => "Joins for our RESIST! Organizing workshop",
+		"event_description" => "Joins for our RESIST! Organizing workshop",
+		"event_type_id" => "6",
+		"is_public" => "0",
+		"start_date" => $start,
+		"event_start_date" => $start,
+		"end_date" => $end,
+		"event_end_date" => $end,
+		"is_online_registration" => "1",
+		"registration_link_text" => "Register Now",
+		"registration_start_date" => $start_reg,
+		"registration_end_date" => $end_reg,
+		"event_full_text" => "This event is currently full.",
+		"is_monetary" => "0",
+		"is_map" => "0",
+		"is_active" => "1",
+		"fee_label" => "Workshop Fee(s)",
+		"is_show_location" => "1",
+		"default_role_id" => "1",
+		"intro_text" => "Register Now",
+		"confirm_title" => "Confirm Your Registration Information",
+		"is_email_confirm" => "0",
+		"thankyou_title" => "Thank You for Registering",
+		"is_pay_later" => "0",
+		"pay_later_text" => "I will send payment by check",
+		"pay_later_receipt" => "Please mail check or money order to => \r\n",
+		"is_partial_payment" => "0",
+		"is_multiple_registrations" => "0",
+		"max_additional_participants" => "9",
+		"allow_same_participant_emails" => "0",
+		"has_waitlist" => "0",
+		"requires_approval" => "0",
+		"selfcancelxfer_time" => "0",
+		"waitlist_text" => "This event is currently full. However you can register now and get added to a waiting list. You will be notified if spaces become available.",
+		"is_template" => "0",
+		"created_id" => "5005",
+		"created_date" => date('Y-m-d H:i:s'),
+		"currency" => "USD",
+		"campaign_id" => "1",
+		"is_share" => "1",
+		"is_confirm_enabled" => "0",
+		"is_billing_required" => "0"
+	);
+
+  $result = civicrm_api3('Event', 'create', $params);
+}
+
+
 function demo_get_new_contributors_report_form_values() {
   return array(
     'entryURL' => CIVICRM_UF_BASEURL . '/civicrm/report/contribute/new?reset=1',
@@ -151,14 +235,33 @@ function demo_create_reports() {
   }
 
 }
-function demo_insert_logins($seed) {
-  // Always re-create users, even if they exist.
+function demo_insert_logins() {
+  $seed = drush_get_option('seed', NULL);
+
   $sql = "SELECT uid FROM users WHERE uid > 1";
   $dao = CRM_Core_DAO::executeQuery($sql);
-  drush_log("Deleting " . $dao->N . " user(s)");
-  while($dao->fetch()) {
-    user_delete($dao->uid);
-  }  
+
+  $initial_count = $dao->N;
+  // If there are existing records and $seed is passed, then delete those
+  // records so they will be created again.
+  if($initial_count > 0 && $seed) {
+    drush_log("Deleting " . $dao->N . " user(s)");
+    while($dao->fetch()) {
+      user_delete($dao->uid);
+    }
+  }
+  // If there are no records, and no seed is passed, it's an error.
+  if($initial_count == 0 && !$seed) {
+    drush_log(dt("Please pass --seed='something' to pass a string to seed the password string with. Replace something with something better."), 'error');
+    return;
+  }
+
+  // If records exists and no seed is passed then skip creating users.
+  if($initial_count > 0 && !$seed) {
+    drush_log(dt("Not re-creating users."), 'ok');
+    return;
+  }
+
   $password = "${seed}-" . date('Y');
   drush_log("Adding users with names: fun1, fun2, adv1, adv2 etc and password: ${password}");
   $i = 1;
