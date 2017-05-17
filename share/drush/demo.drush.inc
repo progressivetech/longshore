@@ -42,12 +42,20 @@ function drush_demo_data() {
     demo_create_reports();	
     demo_create_event();
     demo_add_images();
+    demo_unset_default_footer();
   }
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("Failed to create demo data in the database."), 'error');
     drush_log($e->getMessage(), 'error');
     return;
   }
+}
+
+function demo_unset_default_footer() {
+  // Since we are using a email template with the unsub links, we dont' want a footer
+  // to be automatically set.
+  $sql = "UPDATE civicrm_mailing_component SET is_default = 0 WHERE component_type = 'Footer'";
+  CRM_Core_DAO::executeQuery($sql);
 }
 
 function demo_price_set() {
