@@ -1009,7 +1009,7 @@ function ptp_correlate_email_opens_to_contributions() {
     $opened_after = $ddao->time_stamp;
 
     // Check for clicked.
-    $sql = "SELECT time_stamp FROM civicrm_mailing_event_trackable_url_opene o JOIN civicrm_mailing_event_queue q ON o.event_queue_id = q.id AND contact_id = %0 AND time_stamp BETWEEN %1 AND %2 LIMIT 1";
+    $sql = "SELECT time_stamp FROM civicrm_mailing_event_trackable_url_open o JOIN civicrm_mailing_event_queue q ON o.event_queue_id = q.id AND contact_id = %0 AND time_stamp BETWEEN %1 AND %2 LIMIT 1";
     $params = array(
       0 => array($dao->id, 'Integer'),
       1 => array($before_date, 'String'),
