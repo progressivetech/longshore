@@ -277,7 +277,7 @@ projects[iats][type] = "library"
 projects[iats][destination] = "extensions"
 projects[iats][download][type] = "git"
 projects[iats][download][url] = "https://github.com/iATSPayments/com.iatspayments.civicrm.git"
-projects[iats][download][revision] = "6284966c8942698408a05c038499c82a199ac1f0"
+projects[iats][download][revision] = "669f8827dbd8930e1a4d9c60fa8ef235e7e5347b"
 
 projects[clickatell][type] = "library"
 projects[clickatell][destination] = "extensions"
