@@ -40,14 +40,44 @@ function drush_demo_data() {
     demo_interest_participation_status();
     demo_insert_logins();
     demo_create_reports();	
-    demo_create_event();
+    demo_create_organizing_workshop_event();
+    demo_create_demo_event();
+    demo_create_participants();
     demo_add_images();
     demo_unset_default_footer();
+    demo_create_random_activities();
   }
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("Failed to create demo data in the database."), 'error');
     drush_log($e->getMessage(), 'error');
     return;
+  }
+}
+
+function demo_create_random_activities() {
+  // Create 100 activities of the types: meeting (1), phone call (2)
+  // linked to the lead abatement campaign
+  for($i = 0; $i < 100; $i++) {
+    $contact_id = rand(50,5000);
+    $activity_type_id = rand(1,2);
+    // Scheduled (1), completed (2), or cancelled (3)
+    $status_id = array_rand(array(1 => 1, 2 => 2, 3 => 3));
+    $subject = array_rand(array("Check in", "Reaching out", "Update", "Info meeting"));
+    $engagement_level = rand(1,5);
+    $time_high = time();
+    $time_low = $time_high - (86400 * 365); // A year ago.
+    $activity_date_time = date('Y-m-d H:i:s', rand($time_low, $time_high));
+    $params = array(
+      'source_contact_id' => 2,
+      'target_contact_id' => $contact_id,
+      'subject' => $subject,
+      'engagement_level' => $engagement_level,
+      'activity_date_time' => $activity_date_time,
+      'status_id' => $status_id,
+      'campaign_id' => 1,
+      'activity_type_id' => $activity_type_id
+    );
+    civicrm_api3('Activity', 'create', $params);
   }
 }
 
@@ -197,7 +227,153 @@ function demo_add_images() {
 
 }
 
-function demo_create_event() {
+function demo_create_participants() {
+  $result = civicrm_api3('Participant', 'get', array());
+  if($result['count'] > 0) {
+    drush_log(dt("Not creating event participants, already exist."), 'ok');
+    return;
+  }
+
+  $workshop_start_reg = civicrm_api3(
+    'Event', 
+    'getvalue', 
+    array('return' => 'registration_start_date', 'id' => 1)
+  );
+  $demo_start_reg = civicrm_api3(
+    'Event', 
+    'getvalue', 
+    array('return' => 'registration_start_date', 'id' => 2)
+  );
+
+  // We have membership from contact ids 800 - 850 and we have contributions
+  // from contact ids 100 - 600.  We will pick a mix from both of these groups
+  // to register to events so we can have complex searching options to find
+  // potential leaders.
+  
+  // Ten members and ten contributors will be assigned to both events.
+  for($i = 0; $i < 10; $i++) {
+    foreach(array(100, 800) as $start) {
+      $contact_id = $start + $i;
+      // Event id 1 (workshop) is in the future, so we only have registered
+      $status_id = 1; 
+      $params = array(
+        'contact_id' => $contact_id, 
+        'event_id' => 1,
+        'participant_status_id' => $status_id,
+        'participant_register_date' => $workshop_start_reg,
+        'participant_role_id' => 1,
+      );
+      civicrm_api3('Participant', 'create', $params);
+
+      // Event id 2 is the protest, in the past.
+      $params['event_id'] = 2;
+      // Status could be 1 (2 attended, 3 no-show, 4 cancelled);
+      $params['participant_status_id'] = rand(2,4); 
+      $params['participant_register_date'] = $demo_start_reg; 
+      civicrm_api3('Participant', 'create', $params);
+    }
+  }
+
+  // Now randomly add 100 people to one or the other events.
+  $used_contact_ids = array(1 => array(), 2 => array());
+  for($i = 0; $i < 100; $i++) {
+    $contact_id = rand(50,5000);
+    $event_id = rand(1,2);
+    if(in_array($contact_id, $used_contact_ids[$event_id])) {
+      // Avoid potential error of registering someone for some event
+      // twice.
+      continue;
+    }
+    if($event_id == 1) {
+      $start_reg = $workshop_start_reg;
+      $status_id = 1;
+    }
+    else {
+      $status_id = rand(2,4);  
+      $start_reg = $demo_start_reg;
+    }
+    $params = array(
+      'contact_id' => $contact_id,
+      'event_id' => $event_id,
+      'participant_role_id' => 1,
+      'participant_status_id' => $status_id,
+      'participant_register_date' => $start_reg,
+    );
+    civicrm_api3('Participant', 'create', $params);
+  }
+}
+
+function demo_create_demo_event() {
+  $result = civicrm_api3('Event', 'get', array('id' => 2));
+  if($result['count'] > 0) {
+    drush_log(dt("Not creating demo event, already exists."), 'ok');
+    return;
+  }
+
+  // This event will be in the past.
+	// Start the event 30 days before the demo data is created.
+	$start = date('Y-m-d H:i:s', time() - 86400 * 30);
+
+  // End it 60 minutes later...
+	$end = date('Y-m-d H:i:s', time() - (86400 * 30) + 3600);
+
+  // Start reg 3 days earlier.
+	$start_reg = date('Y-m-d H:i:s', time() - (86400 * 30) + 3600);
+
+  // End reg when event starts
+  $end_reg = $start;
+
+	$params = array(
+		"title" => "Stop the ICE Raids: Street Protest",
+		"event_title" => "Stop the ICE Raids: Street Protest",
+		"description" => "Stop ICE from destroying families",
+		"event_description" => "Stop ICE from destroying families",
+		"event_type_id" => "7", // Direct Action.
+		"is_public" => "1",
+		"start_date" => $start,
+		"event_start_date" => $start,
+		"end_date" => $end,
+		"event_end_date" => $end,
+		"is_online_registration" => "1",
+		"registration_link_text" => "Register Now",
+		"registration_start_date" => $start_reg,
+		"registration_end_date" => $end_reg,
+		"event_full_text" => "This event is currently full.",
+		"is_monetary" => "0",
+		"is_map" => "0",
+		"is_active" => "1",
+		"fee_label" => "Workshop Fee(s)",
+		"is_show_location" => "1",
+		"default_role_id" => "1",
+		"intro_text" => "Register Now",
+		"confirm_title" => "Confirm Your Registration Information",
+		"is_email_confirm" => "0",
+		"thankyou_title" => "Thank You for Registering",
+		"is_pay_later" => "0",
+		"pay_later_text" => "I will send payment by check",
+		"pay_later_receipt" => "Please mail check or money order to => \r\n",
+		"is_partial_payment" => "0",
+		"is_multiple_registrations" => "0",
+		"max_additional_participants" => "9",
+		"allow_same_participant_emails" => "0",
+		"has_waitlist" => "0",
+		"requires_approval" => "0",
+		"selfcancelxfer_time" => "0",
+		"waitlist_text" => "This event is currently full. However you can register now and get added to a waiting list. You will be notified if spaces become available.",
+		"is_template" => "0",
+		"created_id" => "5005",
+		"created_date" => date('Y-m-d H:i:s'),
+		"currency" => "USD",
+		"campaign_id" => "1",
+		"is_share" => "1",
+		"is_confirm_enabled" => "0",
+		"is_billing_required" => "0"
+	);
+
+  $result = civicrm_api3('Event', 'create', $params);
+}
+
+function demo_create_organizing_workshop_event() {
   $result = civicrm_api3('Event', 'get', array('id' => 1));
   if($result['count'] > 0) {
     drush_log(dt("Not creating event, already exists."), 'ok');

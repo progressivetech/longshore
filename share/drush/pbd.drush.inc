@@ -48,6 +48,10 @@ function pbd_drush_command() {
         'id' => 'The contact id of the person you want the links for.'
       )
     );
+  $items['pbd-add-missing-indices'] =
+    array(
+      'description' => "Find and add any missing CiviCRM indices."
+    );
 
   return $items;
 }
@@ -59,6 +63,36 @@ function pbd_drush_command() {
  *
  * ****************************************************
  */
+
+
+/**
+ * Find any missing CiviCRM indices and add them.
+ */
+function drush_pbd_add_missing_indices() {
+  _civicrm_init();
+
+  print_r(CRM_Core_DAO_OptionValue::getReferenceColumns());
+  return;
+  // Ensure uf_group names are unique
+  $sql = "SELECT id, name, count(*) c FROM civicrm_uf_group GROUP BY name HAVING c > 1;";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  while($dao->fetch()) {
+    $sql = "UPDATE civicrm_uf_group SET name = %0 WHERE name = %1 AND id != %2";
+    $params = array(
+      0 => array($dao->name . '1', 'String'),
+      1 => array($dao->name, 'String'),
+      2 => array($dao->id, 'Integer')
+    );
+    CRM_Core_DAO::executeQuery($sql, $params);
+  }
+  $missing_indices = CRM_Core_BAO_SchemaHandler::getMissingIndices();
+  if($missing_indices) {
+    CRM_Core_BAO_SchemaHandler::createMissingIndices($missing_indices);
+  }
+  else {
+    drush_log("No missing indices", 'info');
+  }
+}
 
 /**
  * Run code to ensure all PowerBase sites are consistently

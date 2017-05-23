@@ -993,7 +993,7 @@ function ptp_correlate_email_opens_to_contributions() {
     $after_date = date('Y-m-d', $date_ts + (30 * 86400));
 
     // Check for opened.
-    $sql = "SELECT timestamp FROM civicrm_mailing_event_opened o JOIN civicrm_mailing_event_queue q ON o.event_queue_id = q.id AND contact_id = %0 AND time_stamp BETWEEN %1 AND %2 LIMIT 1";
+    $sql = "SELECT time_stamp FROM civicrm_mailing_event_opened o JOIN civicrm_mailing_event_queue q ON o.event_queue_id = q.id AND contact_id = %0 AND time_stamp BETWEEN %1 AND %2 LIMIT 1";
     $params = array(
       0 => array($dao->id, 'Integer'),
       1 => array($before_date, 'String'),
@@ -1001,15 +1001,15 @@ function ptp_correlate_email_opens_to_contributions() {
     );
     $ddao = CRM_Core_DAO::executeQuery($sql, $params);
     $ddao->fetch();
-    $opened_before = $dao->timestamp;
+    $opened_before = $dao->time_stamp;
     $params[1] = array($dao->date, 'String');
     $params[2] = array($after_date, 'String');
     $ddao = CRM_Core_DAO::executeQuery($sql, $params);
     $ddao->fetch();
-    $opened_after = $ddao->timestamp;
+    $opened_after = $ddao->time_stamp;
 
     // Check for clicked.
-    $sql = "SELECT timestamp FROM civicrm_mailing_event_trackable_url_opene o JOIN civicrm_mailing_event_queue q ON o.event_queue_id = q.id AND contact_id = %0 AND time_stamp BETWEEN %1 AND %2 LIMIT 1";
+    $sql = "SELECT time_stamp FROM civicrm_mailing_event_trackable_url_opene o JOIN civicrm_mailing_event_queue q ON o.event_queue_id = q.id AND contact_id = %0 AND time_stamp BETWEEN %1 AND %2 LIMIT 1";
     $params = array(
       0 => array($dao->id, 'Integer'),
       1 => array($before_date, 'String'),
@@ -1017,12 +1017,12 @@ function ptp_correlate_email_opens_to_contributions() {
     );
     $ddao = CRM_Core_DAO::executeQuery($sql, $params);
     $ddao->fetch();
-    $click_before = $dao->timestamp;
+    $click_before = $dao->time_stamp;
     $params[1] = array($dao->date, 'String');
     $params[2] = array($after_date, 'String');
     $ddao = CRM_Core_DAO::executeQuery($sql, $params);
     $ddao->fetch();
-    $click_after = $ddao->timestamp;
+    $click_after = $ddao->time_stamp;
     
 	  fputcsv($fp, array($dao->id, $dao->sort_name, $dao->date, $open_before, $open_after, $click_before, $click_after));
   }
