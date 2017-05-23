@@ -960,3 +960,75 @@ function ptp_label_to_name($label) {
   return preg_replace('[^a-z0-9]', '_', $name);
 }
 
+
+/**
+ * Off the cuff helper for workingwa
+ *
+ */
+function ptp_correlate_email_opens_to_contributions() {
+  $group_id = 477;
+  $group = new CRM_Contact_DAO_Group();
+  $group->id = $group_id;
+  $group->find(TRUE);
+  $force = TRUE;
+  // Check to see if lock exists
+  $lock = Civi\Core\Container::singleton()->get('lockManager')->acquire("data.core.group.{$id}");
+  if (!$lock->isAcquired()) {
+    drush_log(dt("Lock exists, not rebuilding."), 'error');
+    continue;
+  }
+  CRM_Contact_BAO_GroupContactCache::load($group, $force);
+
+  $sql = 'SELECT c.id, c.sort_name, MIN(co.receive_date) AS date FROM civicrm_contact c JOIN civicrm_contribution co ON c.id = co.contact_id JOIN civicrm_group_contact_cache gc ON c.id = gc.contact_id WHERE group_id = %0 AND co.contribution_status_id = 1 GROUP BY c.id';
+  $dao = CRM_Core_DAO::executeQuery($sql, array(0 => array($group_id, 'Integer')));
+  $fp = tmpfile();
+
+  $fields = array('contact_id', 'name', 'first_contribution_date', 'opened_30_days_before', 'opened_30_days_after', 'click_30_days_before', 'click_30_days_after');
+  // Put in the header row.
+	fputcsv($fp, $fields);
+
+  while($dao->fetch()) {
+    $date_ts = strtotime($dao->date);
+    $before_date = date('Y-m-d', $date_ts - (30 * 86400));
+    $after_date = date('Y-m-d', $date_ts + (30 * 86400));
+
+    // Check for opened.
+    $sql = "SELECT timestamp FROM civicrm_mailing_event_opened o JOIN civicrm_mailing_event_queue q ON o.event_queue_id = q.id AND contact_id = %0 AND time_stamp BETWEEN %1 AND %2 LIMIT 1";
+    $params = array(
+      0 => array($dao->id, 'Integer'),
+      1 => array($before_date, 'String'),
+      2 => array($dao->date, 'String')
+    );
+    $ddao = CRM_Core_DAO::executeQuery($sql, $params);
+    $ddao->fetch();
+    $opened_before = $dao->timestamp;
+    $params[1] = array($dao->date, 'String');
+    $params[2] = array($after_date, 'String');
+    $ddao = CRM_Core_DAO::executeQuery($sql, $params);
+    $ddao->fetch();
+    $opened_after = $ddao->timestamp;
+
+    // Check for clicked.
+    $sql = "SELECT timestamp FROM civicrm_mailing_event_trackable_url_opene o JOIN civicrm_mailing_event_queue q ON o.event_queue_id = q.id AND contact_id = %0 AND time_stamp BETWEEN %1 AND %2 LIMIT 1";
+    $params = array(
+      0 => array($dao->id, 'Integer'),
+      1 => array($before_date, 'String'),
+      2 => array($dao->date, 'String')
+    );
+    $ddao = CRM_Core_DAO::executeQuery($sql, $params);
+    $ddao->fetch();
+    $click_before = $dao->timestamp;
+    $params[1] = array($dao->date, 'String');
+    $params[2] = array($after_date, 'String');
+    $ddao = CRM_Core_DAO::executeQuery($sql, $params);
+    $ddao->fetch();
+    $click_after = $ddao->timestamp;
+    
+	  fputcsv($fp, array($dao->id, $dao->sort_name, $dao->date, $open_before, $open_after, $click_before, $click_after));
+  }
+  rewind($fp);
+	while (!feof($fp)) {
+  	echo fread($fp, 8192);
+  }
+  fclose($fp);
+}
