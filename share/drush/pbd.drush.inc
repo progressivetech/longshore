@@ -71,8 +71,6 @@ function pbd_drush_command() {
 function drush_pbd_add_missing_indices() {
   _civicrm_init();
 
-  print_r(CRM_Core_DAO_OptionValue::getReferenceColumns());
-  return;
   // Ensure uf_group names are unique
   $sql = "SELECT id, name, count(*) c FROM civicrm_uf_group GROUP BY name HAVING c > 1;";
   $dao = CRM_Core_DAO::executeQuery($sql);
