@@ -6,7 +6,8 @@
  * Functions for creating demo data. 
  */
 
-
+define('DEMO_PROTEST_EVENT_TITLE', 'Stop the ICE Raids: Street Protest');
+define('DEMO_WORKSHOP_EVENT_TITLE', 'RESIST! Organizing Workshop');
 
 /**
  * Implementation of hook_drush_command().
@@ -41,7 +42,7 @@ function drush_demo_data() {
     demo_insert_logins();
     demo_create_reports();	
     demo_create_organizing_workshop_event();
-    demo_create_demo_event();
+    demo_create_protest_event();
     demo_create_participants();
     demo_add_images();
     demo_unset_default_footer();
@@ -56,7 +57,8 @@ function drush_demo_data() {
 }
 
 function demo_save_sumfields() {
-  if (sumfields_get_setting("generate_schema_and_data", FALSE)) {
+  $out = sumfields_get_setting("generate_schema_and_data", FALSE);
+  if ($out) {
     drush_log(dt("Not setting sumfields, already set"), 'ok');
     return;
   }
@@ -98,28 +100,35 @@ function demo_save_sumfields() {
 	sumfields_save_setting('new_active_fields', $new_active_fields);
 
 	$financial_type_ids = array(3,1);
-  sumfields_save_setting('financial_type_ids', $values[$setting]);
+  sumfields_save_setting('financial_type_ids', $financial_type_ids);
 
   $membership_financial_type_ids = array(2);
-  sumfields_save_setting('membership_financial_type_ids', $values[$setting]);
+  sumfields_save_setting('membership_financial_type_ids', $membership_financial_type_ids);
 
 	$event_type_ids = array(1,2,3,4,5,6);
-  sumfields_save_setting('event_type_ids', $values[$setting]);
+  sumfields_save_setting('event_type_ids', $event_type_ids);
 
 	$participant_status_ids = array(2);
-  sumfields_save_setting('participant_status_ids', $values[$setting]);
+  sumfields_save_setting('participant_status_ids', $participant_status_ids);
 
 	$participant_noshow_ids = array(3);
-  sumfields_save_setting('participant_noshow_ids', $values[$setting]);
+  sumfields_save_setting('participant_noshow_ids', $participant_noshow_ids);
 
   $returnValues = array();
 
+  sumfields_save_setting('generate_schema_and_data', 'scheduled:'. date('Y-m-d H:i:s'));
+  drush_log("Generating summary fields...", 'ok');
   if (!sumfields_gen_data($returnValues)) {
     drush_log(dt("There was an error setting sumfields."), 'error');
   }
 
 }
 function demo_create_random_activities() {
+  $results = civicrm_api3('Activity', 'get', array('activity_type_id' => 1));
+  if($results['count'] > 0) {
+    drush_log("Not creating random activities, already there.");
+    return;
+  }
   // Create 100 activities of the types: meeting (1), phone call (2)
   // linked to the lead abatement campaign
   for($i = 0; $i < 100; $i++) {
@@ -299,17 +308,24 @@ function demo_create_participants() {
     return;
   }
 
-  $workshop_start_reg = civicrm_api3(
-    'Event', 
-    'getvalue', 
-    array('return' => 'registration_start_date', 'id' => 1)
+  // Get info about the events we expect to be in the database.
+  $params = array(
+    'return' => array('registration_start_date', 'id'),
+    'title' => DEMO_WORKSHOP_EVENT_TITLE
   );
-  $demo_start_reg = civicrm_api3(
-    'Event', 
-    'getvalue', 
-    array('return' => 'registration_start_date', 'id' => 2)
-  );
+  $workshop = civicrm_api3( 'Event', 'getsingle', $params );
+  $workshop_start_reg = $workshop['registration_start_date']; 
+  $workshop_id = $workshop['id'];
 
+   $params = array(
+    'return' => array('registration_start_date', 'id'),
+    'title' => DEMO_PROTEST_EVENT_TITLE
+  );
+  $protest = civicrm_api3( 'Event', 'getsingle', $params );
+  $protest_start_reg = $workshop['registration_start_date']; 
+  $protest_id = $workshop['id'];
+
+  
   // We have membership from contact ids 800 - 850 and we have contributions
   // from contact ids 100 - 600.  We will pick a mix from both of these groups
   // to register to events so we can have complex searching options to find
@@ -323,7 +339,7 @@ function demo_create_participants() {
       $status_id = 1; 
       $params = array(
         'contact_id' => $contact_id, 
-        'event_id' => 1,
+        'event_id' => $workshop_id,
         'participant_status_id' => $status_id,
         'participant_register_date' => $workshop_start_reg,
         'participant_role_id' => 1,
@@ -331,10 +347,10 @@ function demo_create_participants() {
       civicrm_api3('Participant', 'create', $params);
 
       // Event id 2 is the protest, in the past.
-      $params['event_id'] = 2;
+      $params['event_id'] = $protest_id;
       // Status could be 1 (2 attended, 3 no-show, 4 cancelled);
       $params['participant_status_id'] = rand(2,4); 
-      $params['participant_register_date'] = $demo_start_reg; 
+      $params['participant_register_date'] = $protest_start_reg; 
       civicrm_api3('Participant', 'create', $params);
     }
   }
@@ -343,19 +359,19 @@ function demo_create_participants() {
   $used_contact_ids = array(1 => array(), 2 => array());
   for($i = 0; $i < 100; $i++) {
     $contact_id = rand(50,5000);
-    $event_id = rand(1,2);
+    $event_id = array_rand(array(DEMO_PROTEST_EVENT_ID => null, DEMO_WORKSHOP_EVENT_ID => null));
     if(in_array($contact_id, $used_contact_ids[$event_id])) {
       // Avoid potential error of registering someone for some event
       // twice.
       continue;
     }
-    if($event_id == 1) {
+    if($event_id == DEMO_WORKSHOP_EVENT_ID) {
       $start_reg = $workshop_start_reg;
       $status_id = 1;
     }
     else {
       $status_id = rand(2,4);  
-      $start_reg = $demo_start_reg;
+      $start_reg = $protest_start_reg;
     }
     $params = array(
       'contact_id' => $contact_id,
@@ -368,8 +384,8 @@ function demo_create_participants() {
   }
 }
 
-function demo_create_demo_event() {
-  $result = civicrm_api3('Event', 'get', array('id' => 2));
+function demo_create_protest_event() {
+  $result = civicrm_api3('Event', 'get', array('title' => DEMO_PROTEST_EVENT_TITLE));
   if($result['count'] > 0) {
     drush_log(dt("Not creating demo event, already exists."), 'ok');
     return;
@@ -439,9 +455,9 @@ function demo_create_demo_event() {
 }
 
 function demo_create_organizing_workshop_event() {
-  $result = civicrm_api3('Event', 'get', array('id' => 1));
+  $result = civicrm_api3('Event', 'get', array('title' => DEMO_WORKSHOP_EVENT_TITLE));
   if($result['count'] > 0) {
-    drush_log(dt("Not creating event, already exists."), 'ok');
+    drush_log(dt("Not creating organizing event, already exists."), 'ok');
     return;
   }
 
