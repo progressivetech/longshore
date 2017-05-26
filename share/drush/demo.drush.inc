@@ -46,6 +46,7 @@ function drush_demo_data() {
     demo_add_images();
     demo_unset_default_footer();
     demo_create_random_activities();
+    demo_save_sumfields();
   }
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("Failed to create demo data in the database."), 'error');
@@ -54,6 +55,70 @@ function drush_demo_data() {
   }
 }
 
+function demo_save_sumfields() {
+  if (sumfields_get_setting("generate_schema_and_data", FALSE)) {
+    drush_log(dt("Not setting sumfields, already set"), 'ok');
+    return;
+  }
+
+  // Let's use all fields
+  $new_active_fields = array(
+    'contribution_total_lifetime',
+    'contribution_total_this_year',
+    'contribution_total_twelve_months',
+    'contribution_total_deductible_this_year',
+    'contribution_total_last_year',
+    'contribution_total_deductible_last_year',
+    'contribution_total_year_before_last',
+    'contribution_total_deductible_year_before_last_year',
+    'contribution_amount_last',
+    'contribution_date_last',
+    'contribution_date_first',
+    'contribution_largest',
+    'contribution_total_number',
+    'contribution_average_annual_amount',
+    'soft_total_lifetime',
+    'soft_total_this_year',
+    'soft_total_twelve_months',
+    'contribution_date_last_membership_payment',
+    'contribution_amount_last_membership_payment',
+    'event_last_attended_name',
+    'event_last_attended_date',
+    'event_total',
+    'event_attended',
+    'event_attended_percent_total',
+    'event_noshow',
+    'event_noshow_percent_total',
+    'event_turnout_attempts',
+    'event_turnout_attended',
+    'event_turnout_noshow',
+    'event_attended_percent_turnout',
+    'event_noshow_percent_turnout'
+	);
+	sumfields_save_setting('new_active_fields', $new_active_fields);
+
+	$financial_type_ids = array(3,1);
+  sumfields_save_setting('financial_type_ids', $values[$setting]);
+
+  $membership_financial_type_ids = array(2);
+  sumfields_save_setting('membership_financial_type_ids', $values[$setting]);
+
+	$event_type_ids = array(1,2,3,4,5,6);
+  sumfields_save_setting('event_type_ids', $values[$setting]);
+
+	$participant_status_ids = array(2);
+  sumfields_save_setting('participant_status_ids', $values[$setting]);
+
+	$participant_noshow_ids = array(3);
+  sumfields_save_setting('participant_noshow_ids', $values[$setting]);
+
+  $returnValues = array();
+
+  if (!sumfields_gen_data($returnValues)) {
+    drush_log(dt("There was an error setting sumfields."), 'error');
+  }
+
+}
 function demo_create_random_activities() {
   // Create 100 activities of the types: meeting (1), phone call (2)
   // linked to the lead abatement campaign
@@ -515,7 +580,7 @@ function demo_create_reports() {
     civicrm_api3('ReportInstance', 'create', $key_numbers);
   }
   else {
-    drush_log(dt("Not adding key numbers report, already there."), 'error');
+    drush_log(dt("Not adding key numbers report, already there."), 'ok');
   }
 
   $new_contributors = array(
@@ -539,7 +604,7 @@ function demo_create_reports() {
     civicrm_api3('ReportInstance', 'create', $new_contributors);
   }
   else {
-    drush_log(dt("Not adding new contributors report, already there."), 'error');
+    drush_log(dt("Not adding new contributors report, already there."), 'key');
   }
 
 }
@@ -624,7 +689,7 @@ function demo_interest_participation_status() {
     'name' => "Interested",
   ));
   if($result['count'] == "0") {
-    drush_log(dt("Not adding interested participant status, already there."), 'error');
+    drush_log(dt("Not adding interested participant status, already there."), 'ok');
     return;
   }
   $result = civicrm_api3('ParticipantStatusType', 'create', array(
@@ -736,7 +801,7 @@ function demo_membership_type() {
 
   $results = civicrm_api3('MembershipType', 'get', array());
   if($results['count'] >= 1) {
-    drush_log(dt("Not adding membership type, already there."), 'error');
+    drush_log(dt("Not adding membership type, already there."), 'ok');
     return;
   }
 
@@ -744,7 +809,7 @@ function demo_membership_type() {
   $member_organization_name = 'Demo Organizing Project';
   $results = civicrm_api3('Contact', 'get', array('organization_name' => $member_organization_name));
   if($results['count'] == 1) {
-    drush_log(dt("Not adding member org contact, already there."), 'error');
+    drush_log(dt("Not adding member org contact, already there."), 'ok');
     return;
   }
 
@@ -775,7 +840,7 @@ function demo_membership_type() {
 function demo_memberships() {
   $results = civicrm_api3('Membership', 'get', array());
   if($results['count'] >= 1) {
-    drush_log(dt("Not adding memberships, already there."), 'error');
+    drush_log(dt("Not adding memberships, already there."), 'ok');
     return;
   }
 
@@ -880,7 +945,7 @@ function demo_contacts() {
   $dao = CRM_Core_DAO::executeQuery($sql);
   $dao->fetch();
   if ($dao->count > 3) {
-    drush_log(dt("Not running, more than 3 contacts already entered."), 'error');
+    drush_log(dt("Not running, more than 3 contacts already entered."), 'ok');
     return;
   }
   if (($handle = fopen(__dir__  . "/contacts.csv", "r")) !== FALSE) {
@@ -982,7 +1047,7 @@ function demo_campaign() {
   // Try to be indempotent.
   $results = civicrm_api3('Campaign', 'get', array());
   if($results['count'] >= 1) {
-    drush_log(dt("Not adding campaign, already there."), 'error');
+    drush_log(dt("Not adding campaign, already there."), 'ok');
     return;
   }    
   $params = array(
@@ -1023,7 +1088,7 @@ function demo_random_donation_amount() {
 function demo_contributions() {
   $results = civicrm_api3('Contribution', 'get', array());
   if($results['count'] >= 1) {
-    drush_log(dt("Not adding contributions, already there."), 'error');
+    drush_log(dt("Not adding contributions, already there."), 'ok');
     return;
   }
 
@@ -1092,7 +1157,7 @@ function demo_contributions() {
 function demo_contribution_page() {
   $results = civicrm_api3('ContributionPage', 'get', array());
   if($results['count'] >= 1) {
-    drush_log(dt("Not adding contribution page, already there."), 'error');
+    drush_log(dt("Not adding contribution page, already there."), 'ok');
     return;
   }
   // First the contribution page
