@@ -20,7 +20,7 @@ projects[drupal][version] = "7.54"
 projects[civicrm][type] = "module" 
 projects[civicrm][directory_name] = "civicrm" 
 projects[civicrm][download][type] = "git" 
-projects[civicrm][download][revision] = "0da72bdeaa8812babb645c620bc9d6af6555efad"
+projects[civicrm][download][revision] = "a996008ec49554aee28748d430bad34f99586254"
 projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
 
 ; Packages
@@ -386,8 +386,9 @@ projects[osm][download][revision] = "3a2745d58347689bece2a538cb600e9184181d0a"
 projects[mosaico][type] = "library"
 projects[mosaico][destination] = "extensions"
 projects[mosaico][directory_name] = "uk.co.vedaconsulting.mosaico"
-projects[mosaico][download][type] = "file"
-projects[mosaico][download][url] = "https://dist.civicrm.org/extension/uk.co.vedaconsulting.mosaico/latest/uk.co.vedaconsulting.mosaico-latest.zip"
+projects[mosaico][download][type] = "git"
+projects[mosaico][download][url] = "https://github.com/veda-consulting/uk.co.vedaconsulting.mosaico"
+projects[mosaico][download][revision] ="e9869bd073e21cedc2033835226d4f6f9c8f055e"
 
 ; Required for mosaico.
 projects[flexmailer][type] = "library"
