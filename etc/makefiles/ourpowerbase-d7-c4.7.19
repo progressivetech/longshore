@@ -397,6 +397,13 @@ projects[flexmailer][download][type] = "git"
 projects[flexmailer][download][url] = "https://github.com/civicrm/org.civicrm.flexmailer"
 projects[flexmailer][download][revision] = "6018934ba67a718dea56889fb3441391ebad61ae"
 
+; Required for mosaico
+projects[shoreditch][type] = "library"
+projects[shoreditch][destination] = "extensions"
+projects[shoreditch][download][type] = "git"
+projects[shoreditch][download][url] = "https://github.com/civicrm/org.civicrm.shoreditch"
+projects[shoreditch][download][revision] = "38400bbb5d02c8606cb2d966b9b988f45cbe4d35"
+
 projects[exportpermission][type] = "library"
 projects[exportpermission][destination] = "extensions"
 projects[exportpermission][download][type] = "git"
