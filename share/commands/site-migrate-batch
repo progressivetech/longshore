@@ -1,17 +1,20 @@
 #!/bin/bash
 
 long_usage_message="usage: $(basename $0) site-migrate-batch [<action>] [<platform>] [<startdate>]
-Migrate many sites to a new platform in automated fashion
-with log entries sent to logger. Typical use case: run with the create action
-first to generate a batch file that will upgrade sites over a 5 day period.
-The batch file lists one site per line with a timestamp of the day it should
-be migrated and the platform it should be migrated to.
+
+Migrate many sites to a new platform in automated fashion with log entries sent
+to logger. Typical use case: run with the create action first to generate a
+batch file that will upgrade sites over a 5 day period.  The batch file lists
+one site per line with a timestamp of the day it should be migrated and the
+platform it should be migrated to.
 
 Arguments
   <action> - Defaults to run, which will run the migrations. Optionally
     set to create to create the batch file.
   <platform> - Platform to migrate to.
-  <startdate> - ISO formatted date to start upgrades."
+  <startdate> - ISO formatted date to start upgrades (expects it to be
+    a monday, and will generate upgrades for that day and the following
+    four days)."
 
 long_check_args "$2" "$#" 0
 
