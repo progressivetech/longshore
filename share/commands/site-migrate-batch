@@ -36,15 +36,15 @@ if [ ! -f "$path" ]; then
 fi
 
 if [ "$action" = "report" ]; then
-  long_log "Dumping the full schedule. Use arrows to scroll and hit 'q' to quite." info
-  me=$(hostname)
+  long_prompt "Dumping the full schedule. Use arrows to scroll and hit 'q' to quit."
+  temp=$(mktemp)
+  cat "$path" > "$temp"
   for sibling in $LONG_SIBLINGS; do
-    if [ "$sibling" = "$me" ]; then
-      cat "$path"
-    else
-      ssh "${sibling}@mayfirst.org" cat "$path"
-    fi
-  done | less
+    ssh "${sibling}.mayfirst.org" cat "$path" >> "$temp"
+  done
+  awk -F: '{ print $2 "\t" $1 }' "$temp" | sort | column -t |less
+  rm "$temp"
+  long_die "Done" 0
 fi
 
 if [ "$action" = "create" ]; then
