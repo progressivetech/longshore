@@ -27,6 +27,10 @@ path="$HOME/.longshore.batch.migrate"
 
 [ -z "$action" ] && action=run
 
+if [ "$action" != "run" -a "$action" != "create" -a "$action" != "report" ]; then
+  long_die "Action must be run, create or report."
+fi
+
 if [ ! -f "$path" ]; then
   touch "$path"
 fi
