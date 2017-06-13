@@ -421,6 +421,13 @@ projects[notificationlog][download][type] = "git"
 projects[notificationlog][download][url] = "https://github.com/eileenmcnaughton/nz.co.fuzion.notificationlog"
 projects[notificationlog][download][revision] = "a44ceff5256507c5ee52d1c0df2828294f74e667"
 
+projects[gbm][type] = "library"
+projects[gbm][destination] = "extensions"
+projects[gbm][download][type] = "git"
+projects[gbm][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.gbm"
+projects[gbm][download][revision] = "36dee14b60a65d7ebcdfd0eca71b5a6c599a9885"
+
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
