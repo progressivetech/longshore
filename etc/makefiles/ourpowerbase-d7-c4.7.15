@@ -425,7 +425,7 @@ projects[gbm][type] = "library"
 projects[gbm][destination] = "extensions"
 projects[gbm][download][type] = "git"
 projects[gbm][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.gbm"
-projects[gbm][download][revision] = "36dee14b60a65d7ebcdfd0eca71b5a6c599a9885"
+projects[gbm][download][revision] = "ed04424010bb7f687fddd0748339b9903bcf59a9"
 
 ;****************************************
 ; Drupal themes 
