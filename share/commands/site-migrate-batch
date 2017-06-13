@@ -10,7 +10,8 @@ platform it should be migrated to.
 
 Arguments
   <action> - Defaults to run, which will run the migrations. Optionally
-    set to create to create the batch file.
+    set to create to create the batch file or report to show the current
+    schedule.
   <platform> - Platform to migrate to.
   <startdate> - ISO formatted date to start upgrades (expects it to be
     a monday, and will generate upgrades for that day and the following
@@ -28,6 +29,18 @@ path="$HOME/.longshore.batch.migrate"
 
 if [ ! -f "$path" ]; then
   touch "$path"
+fi
+
+if [ "$action" = "report" ]; then
+  long_log "Dumping the full schedule. Use arrows to scroll and hit 'q' to quite." info
+  me=$(hostname)
+  for sibling in $LONG_SIBLINGS; do
+    if [ "$sibling" = "$me" ]; then
+      cat "$path"
+    else
+      ssh "${sibling}@mayfirst.org" cat "$path"
+    fi
+  done | less
 fi
 
 if [ "$action" = "create" ]; then
