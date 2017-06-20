@@ -72,7 +72,52 @@ function ptp_drush_command() {
         'table' => dt("Enter the table, e.g. civicrm_price_field_value")
       )
     );
+  $items['ptp-csv'] = array(
+    'description' => 'Convert all tables to csv files'
+  );
   return $items;
+}
+
+// This is stupid. Anyone who requests this deserves what they get.
+function drush_ptp_csv() {
+  _civicrm_init();
+  $sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'civicrm_%'";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  // Create a file name.
+  $dir = '/var/www/powerbase/sites/default/files/csv-export-' . md5(rand());
+
+  if(!mkdir($dir)) {
+    drush_log("Failed to create directory.", 'error');
+    return;
+  }
+  drush_log("Making directory: $dir", "ok");
+  while($dao->fetch()) {
+    $table = $dao->TABLE_NAME;
+    $sql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = %0";
+    $column_dao = CRM_Core_DAO::executeQuery($sql, array(0 => array($table, 'String')));
+    $columns = array();
+
+    while($column_dao->fetch()) {
+      $columns[] = $column_dao->COLUMN_NAME;
+    }
+
+    // Create file for this table.
+    $fp = fopen("${dir}/${table}.csv", 'w');
+
+    // Add the column headers.
+    fputcsv($fp, $columns);
+    $sql = "SELECT * FROM " . $table;
+    $row_dao = CRM_Core_DAO::executeQuery($sql);
+
+    while($row_dao->fetch()) {
+      reset($columns);
+      $row = array();
+      while(list(, $column) = each($columns)) {
+        $row[] = $row_dao->$column;
+      }
+      fputcsv($fp, $row);
+    }
+  }
 }
 
 function drush_ptp_reset_drupal_email_address() {
