@@ -213,8 +213,15 @@ for site in $sites; do
     long_log "upgrade:%s Failed confirm post upgrade database version" error "$site"
     continue
   fi
+  rm "$temp"
   long_log "upgrade:%s Confirmed post upgrade database version" info "$site"
 
+  if ! long_exec_drush_cmd "$site" "-y lsd-extensions-update"; then
+    long_log "upgrade:%s Failed to update extensions" error "$site"
+    continue
+  fi
+  long_log "upgrade:%s Updated extensions" info "$site"
+  printf "."
 
   if ! long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"; then
     long_log "upgrade:%s Failed to remove maintenance mode" error "$site"
