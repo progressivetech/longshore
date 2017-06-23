@@ -1,0 +1,11 @@
+--- js/webform.js.orig
++++ js/webform.js
+@@ -671,7 +671,7 @@
+         $this.webformProp('selected', on ? value : false);
+       }
+       else {
+-        $this.val(on ? [value] : false);
++        $this.val(on ? [value] : []);
+       }
+     });
+     return this;

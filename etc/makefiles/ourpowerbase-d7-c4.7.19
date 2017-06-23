@@ -60,6 +60,8 @@ projects[views_data_export][version] = "3.1"
 
 projects[webform][type] = "module"
 projects[webform][version] = "4.15"
+; Path to fix obscure conditional bug. See https://www.drupal.org/node/2682441
+projects[webform][patch][] = "/srv/longshore/etc/makefiles/webform.patch"
 
 projects[libraries][type] = "module"
 projects[libraries][version] = "2.3"
