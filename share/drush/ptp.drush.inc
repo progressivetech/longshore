@@ -121,33 +121,33 @@ function drush_ptp_csv() {
 }
 
 function drush_ptp_reset_drupal_email_address() {
-	_civicrm_init();
-	$site_mail = variable_get('site_mail');
-	if(preg_match('/@progressivetech.org/', trim($site_mail))) {
-	  echo "match: " . $site_mail . "\n";
-		// First try the default "From email addresses".
-		$skipFatal = TRUE;
-		$backupEmailValues = CRM_Core_BAO_Domain::getNameAndEmail($skipFatal);
+  _civicrm_init();
+  $site_mail = variable_get('site_mail');
+  if(preg_match('/@progressivetech.org/', trim($site_mail))) {
+    echo "match: " . $site_mail . "\n";
+    // First try the default "From email addresses".
+    $skipFatal = TRUE;
+    $backupEmailValues = CRM_Core_BAO_Domain::getNameAndEmail($skipFatal);
 
-		// getNameAndEmail returns an array with two empty values if no match
-		// is found - and that is not considered "empty" by php.
-		if ($backupEmailValues[1] == '') {
-			$backupEmailValues = NULL;
-		}
-		if (empty($backupEmailValues)) {
-			// If those are not set, try the system wide domain email address.
-			$results = civicrm_api3('Domain', 'getsingle', array());
-			$backupEmailValues = array(
-				0 => $results['name'],
-				1 => $results['domain_email'],
-			);
-		}
-	  if(!empty($backupEmailValues[1])) {
-	    echo "And the other setting is: " . $backupEmailValues[1] . "\n";
-	    variable_set('site_mail', $backupEmailValues[1]);
+    // getNameAndEmail returns an array with two empty values if no match
+    // is found - and that is not considered "empty" by php.
+    if ($backupEmailValues[1] == '') {
+      $backupEmailValues = NULL;
+    }
+    if (empty($backupEmailValues)) {
+      // If those are not set, try the system wide domain email address.
+      $results = civicrm_api3('Domain', 'getsingle', array());
+      $backupEmailValues = array(
+        0 => $results['name'],
+        1 => $results['domain_email'],
+      );
+    }
+    if(!empty($backupEmailValues[1])) {
+      echo "And the other setting is: " . $backupEmailValues[1] . "\n";
+      variable_set('site_mail', $backupEmailValues[1]);
 
     }
-	}
+  }
 }
 
 // Temp solution for: https://issues.civicrm.org/jira/browse/CRM-19851
@@ -167,25 +167,25 @@ function drush_ptp_recreate_multilingual_view() {
 
   $class = 'CRM_Core_I18n_SchemaStructure';
   $dao = new CRM_Core_DAO();
-	$columns =& $class::columns();
-	$cols = array();
-	$dao->query("DESCRIBE {$table}", FALSE);
-	while ($dao->fetch()) {
-		// view non-internationalized columns directly
-		if (!in_array($dao->Field, array_keys($columns[$table])) and
-			!preg_match('/_[a-z][a-z]_[A-Z][A-Z]$/', $dao->Field)
-		) {
-			$cols[] = $dao->Field;
-		}
-	}
-	// view intrernationalized columns through an alias
-	foreach ($columns[$table] as $column => $_) {
-		$cols[] = "{$column}_{$locale} {$column}";                           
-	}                                                                      
-	$sql = "CREATE OR REPLACE VIEW {$table}_{$locale} AS SELECT " . implode(', ', $cols) . "
+  $columns =& $class::columns();
+  $cols = array();
+  $dao->query("DESCRIBE {$table}", FALSE);
+  while ($dao->fetch()) {
+    // view non-internationalized columns directly
+    if (!in_array($dao->Field, array_keys($columns[$table])) and
+      !preg_match('/_[a-z][a-z]_[A-Z][A-Z]$/', $dao->Field)
+    ) {
+      $cols[] = $dao->Field;
+    }
+  }
+  // view intrernationalized columns through an alias
+  foreach ($columns[$table] as $column => $_) {
+    $cols[] = "{$column}_{$locale} {$column}";                           
+  }                                                                      
+  $sql = "CREATE OR REPLACE VIEW {$table}_{$locale} AS SELECT " . implode(', ', $cols) . "
 FROM {$table}";
-	$dao->executeQuery($sql);
-
+  // Run through drupal - otherwise, CiviCRM will try to internationalize the table names.
+  db_query($sql);
 }
 
 function drush_ptp_set_outbound_mail_settings() {
@@ -951,48 +951,48 @@ function drush_ptp_update_report() {
   module_enable(array('update'));
   update_refresh();
   $updates_needed = array();
-	if (!$available = update_get_available(TRUE)) {
-		drush_log("No update data.", 'error');
-	}
-	else {
-		module_load_include('inc', 'update', 'update.compare');
-		$data = update_calculate_project_data($available);
-		foreach($data as $project) {
+  if (!$available = update_get_available(TRUE)) {
+    drush_log("No update data.", 'error');
+  }
+  else {
+    module_load_include('inc', 'update', 'update.compare');
+    $data = update_calculate_project_data($available);
+    foreach($data as $project) {
       $recommended = NULL;
       if(array_key_exists('recommended', $project) ) {
         $recommended = $project['recommended'];
       }
       $versions = "(" .  $project['existing_version'] . " => " .
         $recommended . ")";
-			$name = $project['name'];
-			switch ($project['status']) {
-				case UPDATE_UNKNOWN:
-				case UPDATE_FETCH_PENDING:
-				case UPDATE_NOT_FETCHED:
-				case UPDATE_NOT_CHECKED:
-					if($name != 'civicrm') {
-						$updates_needed[$name] = "Didn't get update";
-					}
-					break;
-				case UPDATE_NOT_SECURE:
-					$updates_needed[$name] = "Security Update Needed ($versions)";
-					break;
-				case UPDATE_REVOKED:
-				case UPDATE_NOT_SUPPORTED:
-					break;
-					$updates_needed[$name] = "No longer supported";
-				case UPDATE_MAX_FETCH_ATTEMPTS:
-					$updates_needed[$name] = "Too many update requests";
-					break;
-				case UPDATE_NOT_CURRENT:
-					$updates_needed[$name] = "Update needed ($versions)";
-				default:
-					break;
-			}
-		}
+      $name = $project['name'];
+      switch ($project['status']) {
+        case UPDATE_UNKNOWN:
+        case UPDATE_FETCH_PENDING:
+        case UPDATE_NOT_FETCHED:
+        case UPDATE_NOT_CHECKED:
+          if($name != 'civicrm') {
+            $updates_needed[$name] = "Didn't get update";
+          }
+          break;
+        case UPDATE_NOT_SECURE:
+          $updates_needed[$name] = "Security Update Needed ($versions)";
+          break;
+        case UPDATE_REVOKED:
+        case UPDATE_NOT_SUPPORTED:
+          break;
+          $updates_needed[$name] = "No longer supported";
+        case UPDATE_MAX_FETCH_ATTEMPTS:
+          $updates_needed[$name] = "Too many update requests";
+          break;
+        case UPDATE_NOT_CURRENT:
+          $updates_needed[$name] = "Update needed ($versions)";
+        default:
+          break;
+      }
+    }
   }
   module_disable(array('update'));
-	print_r($updates_needed);
+  print_r($updates_needed);
 }
 
 /**
@@ -1030,7 +1030,7 @@ function ptp_correlate_email_opens_to_contributions() {
 
   $fields = array('contact_id', 'name', 'first_contribution_date', 'opened_30_days_before', 'opened_30_days_after', 'click_30_days_before', 'click_30_days_after');
   // Put in the header row.
-	fputcsv($fp, $fields);
+  fputcsv($fp, $fields);
 
   while($dao->fetch()) {
     $date_ts = strtotime($dao->date);
@@ -1069,11 +1069,11 @@ function ptp_correlate_email_opens_to_contributions() {
     $ddao->fetch();
     $click_after = $ddao->time_stamp;
     
-	  fputcsv($fp, array($dao->id, $dao->sort_name, $dao->date, $open_before, $open_after, $click_before, $click_after));
+    fputcsv($fp, array($dao->id, $dao->sort_name, $dao->date, $open_before, $open_after, $click_before, $click_after));
   }
   rewind($fp);
-	while (!feof($fp)) {
-  	echo fread($fp, 8192);
+  while (!feof($fp)) {
+    echo fread($fp, 8192);
   }
   fclose($fp);
 }
