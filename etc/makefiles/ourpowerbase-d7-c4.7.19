@@ -341,7 +341,7 @@ projects[simpledonate][type] = "library"
 projects[simpledonate][destination] = "extensions"
 projects[simpledonate][download][type] = "git"
 projects[simpledonate][download][url] = "https://github.com/webaccess/com.webaccessglobal.simpledonate.git"
-projects[simpledonate][download][revision] = "83985cf83270d582d5bc07f3d6779deff2b050f5"
+projects[simpledonate][download][revision] = "c5e5d532333fe386e5844a4758727d1c6b0ba2a5"
 
 projects[zip2state][type] = "library"
 projects[zip2state][destination] = "extensions"
