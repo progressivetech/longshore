@@ -153,12 +153,14 @@ function drush_ptp_reset_drupal_email_address() {
 // Temp solution for: https://issues.civicrm.org/jira/browse/CRM-19851
 function drush_ptp_recreate_multilingual_view() {
   _civicrm_init();
-  $locale = drush_get_option('locale', NULL);
   $table = drush_get_option('table', NULL);
+  $locale = drush_get_option('locale', NULL);
 
   if(empty($locale)) {
-    drush_log(dt("Please pass locale."), 'error');
-    return FALSE;
+    $locales = array('en_US', 'es_MX');
+  }
+  else {
+    $locales = array($locale);
   }
   if(empty($table)) {
     drush_log(dt("Please pass table."), 'error');
@@ -178,14 +180,16 @@ function drush_ptp_recreate_multilingual_view() {
       $cols[] = $dao->Field;
     }
   }
-  // view intrernationalized columns through an alias
-  foreach ($columns[$table] as $column => $_) {
-    $cols[] = "{$column}_{$locale} {$column}";                           
-  }                                                                      
-  $sql = "CREATE OR REPLACE VIEW {$table}_{$locale} AS SELECT " . implode(', ', $cols) . "
-FROM {$table}";
-  // Run through drupal - otherwise, CiviCRM will try to internationalize the table names.
-  db_query($sql);
+  foreach($locales as $locale) {
+    // view intrernationalized columns through an alias
+    foreach ($columns[$table] as $column => $_) {
+      $cols[] = "{$column}_{$locale} {$column}";                           
+    }                                                                      
+    $sql = "CREATE OR REPLACE VIEW {$table}_{$locale} AS SELECT " . implode(', ', $cols) . "
+  FROM {$table}";
+    // Run through drupal - otherwise, CiviCRM will try to internationalize the table names.
+    db_query($sql);
+  }
 }
 
 function drush_ptp_set_outbound_mail_settings() {
