@@ -429,6 +429,11 @@ projects[gbm][download][type] = "git"
 projects[gbm][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.gbm"
 projects[gbm][download][revision] = "1112877d33ce5266870af5eb2bd8e0b2cb13cf76"
 
+projects[nosmsurltracking][type] = "library"
+projects[nosmsurltracking][destination] = "extensions"
+projects[nosmsurltracking][download][type] = "git"
+projects[nosmsurltracking][download][url] = "https://github.com/PalanteJon/coop.palantetech.nosmsurltracking"
+projects[nosmsurltracking][download][revision] = "d3b3de61781824f2512552f17a521248ce9468bf"
 
 ;****************************************
 ; Drupal themes 
