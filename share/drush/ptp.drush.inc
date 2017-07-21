@@ -73,7 +73,10 @@ function ptp_drush_command() {
       )
     );
   $items['ptp-csv'] = array(
-    'description' => 'Convert all tables to csv files'
+    'description' => 'Convert all tables to csv files',
+    'options' => array(
+      'table' => dt("Optionally, specify the table you want.")
+    )
   );
   return $items;
 }
@@ -81,8 +84,22 @@ function ptp_drush_command() {
 // This is stupid. Anyone who requests this deserves what they get.
 function drush_ptp_csv() {
   _civicrm_init();
-  $sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'civicrm_%'";
-  $dao = CRM_Core_DAO::executeQuery($sql);
+  // Which tables should we export?
+  $tables = array();
+
+  $table = drush_get_option('table', NULL);
+  if ($table) {
+    // Just one table, the one specified by the user.
+    $tables = array($table);
+  }
+  else {
+    // All CiviCRM tables.
+    $sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'civicrm_%'";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    while($dao->fetch()) {
+      $tables[] = $dao->TABLE_NAME;
+    }
+  }
   // Create a file name.
   $dir = '/var/www/powerbase/sites/default/files/csv-export-' . md5(rand());
 
@@ -91,8 +108,7 @@ function drush_ptp_csv() {
     return;
   }
   drush_log("Making directory: $dir", "ok");
-  while($dao->fetch()) {
-    $table = $dao->TABLE_NAME;
+  foreach($tables as $table) { 
     $sql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = %0";
     $column_dao = CRM_Core_DAO::executeQuery($sql, array(0 => array($table, 'String')));
     $columns = array();
