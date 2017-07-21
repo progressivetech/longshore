@@ -36,7 +36,7 @@ projects[civicrm_drupal][type] = "library"
 projects[civicrm_drupal][destination] = "modules/civicrm" 
 projects[civicrm_drupal][directory_name] = "drupal" 
 projects[civicrm_drupal][download][type] = "git" 
-projects[civicrm_drupal][download][revision] = "dd5ab4a34a5ab22d4b7c3f7a57f375c04b8a1e79"
+projects[civicrm_drupal][download][revision] = "506d9395f613c493434b72bda95c2dad8c0aebd7"
 projects[civicrm_drupal][download][url] = "git://git.progressivetech.org/civicrm/civicrm-drupal"
 
 ;****************************************
