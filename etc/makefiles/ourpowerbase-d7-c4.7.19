@@ -427,7 +427,7 @@ projects[gbm][type] = "library"
 projects[gbm][destination] = "extensions"
 projects[gbm][download][type] = "git"
 projects[gbm][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.gbm"
-projects[gbm][download][revision] = "245f253737832f5d6f53c167e28aef3542759ee9"
+projects[gbm][download][revision] = "2bbcef8dd80548afac8dd50ae690238f76a063e2"
 
 projects[nosmsurltracking][type] = "library"
 projects[nosmsurltracking][destination] = "extensions"
