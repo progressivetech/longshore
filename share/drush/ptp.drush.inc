@@ -87,20 +87,24 @@ function ptp_drush_command() {
 // See https://support.ourpowerbase.net/ticket/2408
 function drush_ptp_is_primary_fix() {
   _civicrm_init();
-  $count = 0;
-  // Find contacts with just one email address that is NOT set to
-  // is_primary and return their civicrm_email id so they can be
-  // updated. I am not sure how these records are being created
-  // but they cause a lot of user confusion since non primary
-  // email addresses don't show up in searches.
-  $sql = 'SELECT id FROM civicrm_email GROUP BY contact_id HAVING COUNT(id) = 1 AND MAX(is_primary) = 0';
-  $dao = CRM_Core_DAO::executeQuery($sql);
-  while($dao->fetch()) {
-    $count++;
-    $sql = "UPDATE civicrm_email SET is_primary = 1 WHERE id = %0";
-    CRM_Core_DAO::executeQuery($sql, array(0 => array($dao->id, 'Integer')));
+  $tables = array('civicrm_email', 'civicrm_phone', 'civicrm_address');
+  foreach($tables as $table) {
+    $count = 0;
+    // Find contacts with just one email address that is NOT set to
+    // is_primary and return their civicrm_email id so they can be
+    // updated. I am not sure how these records are being created
+    // but they cause a lot of user confusion since non primary
+    // email addresses don't show up in searches.
+    $sql = "SELECT id FROM $table GROUP BY contact_id HAVING COUNT(id) = 1 AND MAX(is_primary) = 0";
+    $dao = CRM_Core_DAO::eecuteQuery($sql);
+    while($dao->fetch()) {
+      $count++;
+      $sql = "UPDATE $table SET is_primary = 1 WHERE id = %0";
+      CRM_Core_DAO::executeQuery($sql, array(0 => array($dao->id, 'Integer')));
+    }
+    drush_log(dt("Updated table @table, @count records changed.", 
+      array('@table' => $table, '@count' => $count)));
   }
-  drush_log(dt("Update @count records.", array('@count' => $count)));
 }
 
 // This is stupid. Anyone who requests this deserves what they get.
