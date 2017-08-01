@@ -96,7 +96,7 @@ function drush_ptp_is_primary_fix() {
     // but they cause a lot of user confusion since non primary
     // email addresses don't show up in searches.
     $sql = "SELECT id FROM $table GROUP BY contact_id HAVING COUNT(id) = 1 AND MAX(is_primary) = 0";
-    $dao = CRM_Core_DAO::eecuteQuery($sql);
+    $dao = CRM_Core_DAO::executeQuery($sql);
     while($dao->fetch()) {
       $count++;
       $sql = "UPDATE $table SET is_primary = 1 WHERE id = %0";
