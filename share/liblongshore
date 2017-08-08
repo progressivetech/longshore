@@ -2652,7 +2652,7 @@ long_is_site_reachable() {
     local protocol=http
   fi
   local url="${protocol}://${site}.${LONG_DEFAULT_DOMAIN}"
-  local text="You don&#039;t seem to have access to this page"
+  local text="PowerBase is not fully functional in Internet Explorer"
   if ! long_does_page_have_text "$url" "$text"; then
     return 1
   else
