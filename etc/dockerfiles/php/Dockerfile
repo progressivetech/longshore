@@ -1,6 +1,6 @@
 # Based on https://github.com/AsavarTzeth/docker-php5-fpm
 # Minimal PHP server used for phpmyadmin
-FROM my-jessie:latest
+FROM my-stretch:latest
 
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 
@@ -8,14 +8,15 @@ MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 RUN apt-get update && \
     apt-get install -y \
     --no-install-recommends \
-    php5-fpm \
-    php-apc \
-    php5-mcrypt \
-    php5-mysql && \
+    php-fpm \
+    php-apcu \
+    php-mcrypt \
+    php-mbstring \
+    php-mysql && \
     rm -rf /var/lib/apt/lists/*
 
 # Listen on 127.0.0.1 
-RUN sed -i 's#listen = /var/run/php5-fpm.sock#listen = 9000#' /etc/php5/fpm/pool.d/www.conf
+RUN sed -i 's#listen = /run/php/php7.0-fpm.sock#listen = 9000#' /etc/php/7.0/fpm/pool.d/www.conf
 
 COPY ./docker-entrypoint.sh /entrypoint.sh
 

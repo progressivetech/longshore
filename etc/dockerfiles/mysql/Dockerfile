@@ -1,4 +1,4 @@
-FROM my-jessie:latest
+FROM my-stretch:latest
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 RUN apt-get update && \
   export DEBIAN_FRONTEND=noninteractive && \
@@ -16,7 +16,7 @@ RUN /etc/init.d/mysql stop
 RUN rm -rf /var/lib/mysql/*
 
 # Ensure networking will work.
-RUN sed -i "s/^bind-address/#bind-address/g" /etc/mysql/my.cnf
+RUN sed -i "s/^bind-address/#bind-address/g" /etc/mysql/mariadb.conf.d/50-server.cnf
 
 # Avoid key buffer size warnings and myisam-recover warnings
 # See: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=751840
@@ -27,5 +27,5 @@ COPY ptp.cnf /etc/mysql/conf.d/
 COPY docker-entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 EXPOSE 3306
-CMD ["mysqld"]
+CMD ["mysqld_safe"]
 

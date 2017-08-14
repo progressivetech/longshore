@@ -4,7 +4,7 @@ set -e
 sql_init_file=/tmp/temp.sql
 mycnf=/root/.my.cnf
 
-if [ "$1" = 'mysqld' ]; then
+if [ "$1" = 'mysqld_safe' ]; then
   if [ -n "$MYSQL_UID" ]; then
     # Ensure the mysql user has the same UID as the one passed in. If not,
     # change it. We make this change so that the user on the host can delete
@@ -54,13 +54,7 @@ EOSQL
   touch /var/log/mysql/mysql-slow.log
   chown mysql:mysql /var/log/mysql/mysql-slow.log
   chown mysql:mysql /var/lib/mysql
-  chown -R mysql:mysql /var/run/mysqld
-
-  # Make sure we have been properly initialized
-  if [ ! -d "/var/lib/mysql/mysql" ]; then
-    printf "Initializing on a new system."
-    mysql_install_db
-  fi
+  #chown -R mysql:mysql /run/mysqld
 fi
 
 exec "$@"

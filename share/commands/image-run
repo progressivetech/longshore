@@ -9,7 +9,7 @@ Arguments
 long_check_args "$2" "$#" 1
 
 itype="$2"
-possible_itypes="my-jessie ptp-mysql ptp-php ptp-powerbase"
+possible_itypes="my-${LONG_DEBIAN_VERSION} ptp-mysql ptp-php ptp-powerbase"
 
 if ! echo "$possible_itypes" | egrep "(^| )$itype( |\$)" > /dev/null; then
   long_die "Unknown image type %s." 1 "$itype"

@@ -325,7 +325,7 @@ long_create_image() {
       image_path="${LONG_ETC}/dockerfiles/php"
     elif [ "$image_tag" = "ptp-powerbase" ]; then
       image_path="${LONG_ETC}/dockerfiles/powerbase"
-    elif [ "$image_tag" = "my-jessie" ]; then
+    elif [ "$image_tag" = "my-${LONG_DEBIAN_VERSION}" ]; then
       image_path=""
     else
       long_die "I don't know how to make an image of that type (%s)." 1 "$itype"
@@ -341,8 +341,9 @@ long_create_image() {
 
   if [ "$create_image" -eq "1" -o "$LONG_FORCE" = "1" ]; then
     long_log "Creating image (%s)" info "$image_tag"
-    if [ "$image_tag" = "my-jessie" ]; then
-      # This is a special condition
+    if [ "$image_tag" = "my-${LONG_DEBIAN_VERSION}" ]; then
+      # If the image name begins with "my-" (e.g. my-stretch), then
+      # this is a special condition
       long_create_base_image
     else
       # This sub-command seems to ignore the -l error flag.
@@ -772,7 +773,7 @@ long_create_mysql_container() {
     -e "MYSQL_UID=$UID" \
     -p "127.0.0.1:${LONG_DB_PORT}:3306" \
     $LONG_DOCKER_MEMORY_LIMIT \
-    ptp-mysql:latest mysqld || long_die "Failed to create the container %s" 1 "$name"
+    ptp-mysql:latest mysqld_safe || long_die "Failed to create the container %s" 1 "$name"
 
   # Since db containers are linked to other containers, the other containers
   # will fail to start if the db containers are not started. So, always
@@ -829,7 +830,7 @@ long_create_phpmyadmin_container() {
     $publish \
     -e "LONG_LIVE=$LONG_LIVE" \
     $LONG_DOCKER_MEMORY_LIMIT \
-    ptp-php:latest php5-fpm  || long_die "Failed to create the phpmyadmin container"
+    ptp-php:latest php-fpm7.0  || long_die "Failed to create the phpmyadmin container"
 }
 
 # Build out the required directories and permissions
@@ -1024,7 +1025,7 @@ long_create_site_container() {
     $LONG_DOCKER_MEMORY_LIMIT \
     $link \
     $publish \
-    ptp-powerbase:latest php5-fpm || long_die "Failed to create the container %s" 1 "$site"
+    ptp-powerbase:latest php-fpm7.0 || long_die "Failed to create the container %s" 1 "$site"
 
   long_clear_sibling_cache
 }

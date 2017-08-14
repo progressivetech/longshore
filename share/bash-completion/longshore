@@ -12,7 +12,7 @@ _longshore_complete() {
     COMPREPLY=() 
     return
   elif [ "$prev" = "image-create" ]; then
-    opts="my-jessie ptp-mysql ptp-php ptp-powerbase all"
+    opts="my-jessie my-stretch ptp-mysql ptp-php ptp-powerbase all"
   elif [[ "$commands" = *$prev* ]]; then
     # If any of the commands is the previous word, then sites should be the
     # available options.

@@ -14,7 +14,7 @@ long_check_args "$2" "$#" 1
 itypes="$2"
 
 if [ "$itypes" = "--all" ]; then
-  itypes="my-jessie ptp-mysql ptp-php ptp-powerbase"
+  itypes="my-${LONG_DEBIAN_VERSION} ptp-mysql ptp-php ptp-powerbase"
 fi
 
 for itype in $itypes; do

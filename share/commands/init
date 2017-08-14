@@ -15,12 +15,18 @@ user=$(whoami)
 # Define packages we need to have installed.
 install=
 wants="docker.io sudo nginx debootstrap drush wget dnsutils mysql-client \
-  composer nodejs npm parallel curl"
+  composer nodejs parallel curl"
 if [ -n "$LONG_TLS_KEY_PATH" ]; then
   wants="$wants openssl"
 fi
 
 for want in $wants; do
+  # Hack for mariadb transition still happening in buster??
+  if [ "$want" = "mysql-client" ]; then
+    if grep "buster" /etc/debian_version >/dev/null; then
+      want=mariadb-client
+    fi
+  fi
   if ! dpkg -l "$want" 2>/dev/null | grep ^ii >/dev/null; then
     install="$install $want"
   fi

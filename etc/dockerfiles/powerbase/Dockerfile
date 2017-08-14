@@ -1,6 +1,6 @@
 # Based on https://github.com/AsavarTzeth/docker-php5-fpm
 # Used for PowerBase sites.
-FROM my-jessie:latest
+FROM my-stretch:latest
 
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 
@@ -9,14 +9,14 @@ RUN apt-get update && \
     export DEBIAN_FRONTEND=noninteractive && \ 
     apt-get install -y \
     --no-install-recommends \
-    php5-fpm \
-    php-apc \
-    php5-mcrypt \
-    php5-mysql \
-    php5-curl \
-    php5-gd \
-    php5-imagick \
-    liboauth-php \
+    php-fpm \
+    php-apcu \
+    php-mcrypt \
+    php-mysql \
+    php-curl \
+    php-gd \
+    php-xml \
+    php-imagick \
     fonts-linuxlibertine \
     wkhtmltopdf \
     xauth \
@@ -40,7 +40,7 @@ RUN apt-get update && \
 RUN cd /usr/local/bin && wget -q -O drush https://s3.amazonaws.com/files.drush.org/drush.phar && chmod 755 drush
 
 # Listen on 127.0.0.1 
-RUN sed -i 's#listen = /var/run/php5-fpm.sock#listen = 9000#' /etc/php5/fpm/pool.d/www.conf
+RUN sed -i 's#listen = /run/php/php7.0-fpm.sock#listen = 9000#' /etc/php/7.0/fpm/pool.d/www.conf
 
 # User arbitrary high UID so we can more easily understand UIDs on the host
 RUN groupmod -g 5001 www-data
@@ -59,10 +59,10 @@ RUN chown www-data:www-data /var/www/.ssh
 RUN mkdir /var/www/powerbase
 
 # Copy our custom PHP settings for powerbase.
-COPY powerbase.ini /etc/php5/fpm/conf.d/99-powerbase.ini
+COPY powerbase.ini /etc/php/7.0/fpm/conf.d/99-powerbase.ini
 
 # We want a lot more processes to be able to run
-RUN sed -i 's#pm.max_children = 5#pm.max_children = 40#' /etc/php5/fpm/pool.d/www.conf
+RUN sed -i 's#pm.max_children = 5#pm.max_children = 40#' /etc/php/7.0/fpm/pool.d/www.conf
 
 # Copy over our esmtprc file to configure handling email.
 COPY esmtprc /etc/esmtprc
@@ -84,4 +84,4 @@ COPY wkhtmltopdf.0.12.4 /usr/bin/wkhtmltopdf
 EXPOSE 9000
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["php5-fpm"]
+CMD ["php-fpm7.0"]
