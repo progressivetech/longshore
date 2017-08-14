@@ -16,6 +16,7 @@ RUN apt-get update && \
     php-curl \
     php-gd \
     php-xml \
+    php-mbstring \
     php-imagick \
     fonts-linuxlibertine \
     wkhtmltopdf \
