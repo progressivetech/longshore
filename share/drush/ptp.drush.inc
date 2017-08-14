@@ -1066,7 +1066,7 @@ function ptp_correlate_email_opens_to_contributions() {
   $lock = Civi\Core\Container::singleton()->get('lockManager')->acquire("data.core.group.{$id}");
   if (!$lock->isAcquired()) {
     drush_log(dt("Lock exists, not rebuilding."), 'error');
-    continue;
+    return;
   }
   CRM_Contact_BAO_GroupContactCache::load($group, $force);
 
