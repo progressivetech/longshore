@@ -81,7 +81,38 @@ function ptp_drush_command() {
   $items['ptp-is-primary-fix'] = array(
     'description' => 'Find all contacts with one email that is not set to is_primary and set it to is_primary'
   );
+  $items['ptp-parse-addresses'] = array(
+    'description' => 'Analyze addresses that are not parsing properly.'
+  );
   return $items;
+}
+
+function drush_ptp_parse_addresses() {
+  $sql = "SELECT id, contact_id, street_address, street_number, street_name, street_number_suffix FROM civicrm_address";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  while($dao->fetch()) {
+    $street_name = trim($dao->street_name);
+    $street_number = trim($dao->street_number);
+    $street_number_suffix = trim($dao->street_number_suffix, ' ');
+    $street_address = str_replace('  ', ' ', $dao->street_address);
+    if (empty($dao->street_address)) {
+      continue;
+    }
+    if (!preg_match("|$street_number ?${street_number_suffix}? ?$street_name|", $street_address)) {
+      $msg = dt(
+        "Error: @id / @contact_id - @street_number @street_number_suffix @street_name doesn't match @street_address",
+        array(
+          '@id' => $dao->id,
+          '@contact_id' => $dao->contact_id,
+          '@street_number' => $street_number,
+          '@street_name' => $street_name,
+          '@street_address' => $street_address,
+          '@street_number_suffix' => $street_number_suffix
+        )
+      );
+      drush_log($msg, 'error');
+    }
+  }
 }
 
 // See https://support.ourpowerbase.net/ticket/2408
