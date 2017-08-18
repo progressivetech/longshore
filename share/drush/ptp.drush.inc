@@ -90,6 +90,7 @@ function ptp_drush_command() {
 function drush_ptp_parse_addresses() {
   $sql = "SELECT id, contact_id, street_address, street_number, street_name, street_number_suffix FROM civicrm_address";
   $dao = CRM_Core_DAO::executeQuery($sql);
+  $count = 0;
   while($dao->fetch()) {
     $street_name = trim($dao->street_name);
     $street_number = trim($dao->street_number);
@@ -99,6 +100,7 @@ function drush_ptp_parse_addresses() {
       continue;
     }
     if (!preg_match("|$street_number ?${street_number_suffix}? ?$street_name|", $street_address)) {
+      $count++;
       $msg = dt(
         "Error: @id / @contact_id - @street_number @street_number_suffix @street_name doesn't match @street_address",
         array(
@@ -113,6 +115,7 @@ function drush_ptp_parse_addresses() {
       drush_log($msg, 'error');
     }
   }
+  drupal_log(dt("Count of badly parsed address: @count", array('@count', $count)), 'ok');
 }
 
 // See https://support.ourpowerbase.net/ticket/2408
