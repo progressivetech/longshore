@@ -115,7 +115,7 @@ function drush_ptp_parse_addresses() {
       drush_log($msg, 'error');
     }
   }
-  drupal_log(dt("Count of badly parsed address: @count", array('@count', $count)), 'ok');
+  drush_log(dt("Count of badly parsed address: @count", array('@count', $count)), 'ok');
 }
 
 // See https://support.ourpowerbase.net/ticket/2408
