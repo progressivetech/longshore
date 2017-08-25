@@ -23,7 +23,7 @@ path="${LONG_SRV}/services/sites/$site/drupal/files/civicrm/ConfigAndLog/"
 
 if [ -n "$purge" ]; then
   # Purge
-  find "$path" -type f -mtime 365 -delete
+  find "$path" -type f -mtime +365 -delete
   long_log "Log files purged." "info"
 else
   # Find the right log
