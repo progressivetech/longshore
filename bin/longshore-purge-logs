@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# This should be run via cron job as the longshore-php user.
+
+find /srv/longshore/services/sites -path '/srv/longshore/services/sites/*/drupal/files/civicrm/ConfigAndLog/*' -type f -name 'CiviCRM.*.log*' -mtime +365 -delete
