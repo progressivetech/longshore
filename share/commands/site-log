@@ -1,8 +1,7 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-log <site> [purge]
-Pipe the current ConfigAndLog file to less. Or, if 'purge' is passed
-as the last argument, purge all logs older than 1 year.
+long_usage_message="usage: $(basename $0) site-log <site> 
+Pipe the current ConfigAndLog file to less.
 
 Arguments
   <site> - The site on which to report."
@@ -10,23 +9,11 @@ Arguments
 long_check_args "$2" "$#" 1
 
 site="$2"
-purge="$3"
-
-if [ -n "$purge" -a "$purge" != "purge" ]; then
-  long_die "Pass purge as last argument to purge logs. I don't understand %s." 1 "$purge"
-fi
 
 long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 long_rerun_over_network "$@" && exit
 
+# Find the right log
 path="${LONG_SRV}/services/sites/$site/drupal/files/civicrm/ConfigAndLog/"
-
-if [ -n "$purge" ]; then
-  # Purge
-  find "$path" -type f -mtime 365 -delete
-  long_log "Log files purged." "info"
-else
-  # Find the right log
-  log=$(ls -t "$path"/CiviCRM.*.log | head -n1)
-  less "$log"
-fi
+log=$(ls -t "$path"/CiviCRM.*.log | head -n1)
+less "$log"
