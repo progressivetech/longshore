@@ -317,13 +317,13 @@ function demo_create_participants() {
   $workshop_start_reg = $workshop['registration_start_date']; 
   $workshop_id = $workshop['id'];
 
-   $params = array(
+  $params = array(
     'return' => array('registration_start_date', 'id'),
     'title' => DEMO_PROTEST_EVENT_TITLE
   );
   $protest = civicrm_api3( 'Event', 'getsingle', $params );
-  $protest_start_reg = $workshop['registration_start_date']; 
-  $protest_id = $workshop['id'];
+  $protest_start_reg = $protest['registration_start_date']; 
+  $protest_id = $protest['id'];
 
   
   // We have membership from contact ids 800 - 850 and we have contributions
@@ -359,7 +359,7 @@ function demo_create_participants() {
   $used_contact_ids = array(1 => array(), 2 => array());
   for($i = 0; $i < 100; $i++) {
     $contact_id = rand(50,5000);
-    $event_id = array_rand(array(DEMO_PROTEST_EVENT_ID => null, DEMO_WORKSHOP_EVENT_ID => null));
+    $event_id = array_rand(array($protest_id => null, $workshop_id => null));
     if(in_array($contact_id, $used_contact_ids[$event_id])) {
       // Avoid potential error of registering someone for some event
       // twice.
