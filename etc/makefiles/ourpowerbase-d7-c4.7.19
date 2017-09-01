@@ -291,7 +291,7 @@ projects[twilio][type] = "library"
 projects[twilio][destination] = "extensions"
 projects[twilio][download][type] = "git"
 projects[twilio][download][url] = "https://github.com/civicrm/org.civicrm.sms.twilio.git"
-projects[twilio][download][revision] = "8caa6a51d48dbc885c52f71bb04ceada68f8cf79"
+projects[twilio][download][revision] = "061db01d9124bc4a4d0072cd47f64b34cd33f5d7"
 
 projects[cividiscount][type] = "library"
 projects[cividiscount][destination] = "extensions"
