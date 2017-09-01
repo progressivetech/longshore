@@ -290,7 +290,7 @@ projects[clickatell][download][revision] = "82d244c7b5884eee44b945acc17b36c806d0
 projects[twilio][type] = "library"
 projects[twilio][destination] = "extensions"
 projects[twilio][download][type] = "git"
-projects[twilio][download][url] = "https://github.com/civicrm/org.civicrm.sms.twilio.git"
+projects[twilio][download][url] = "git://git.progressivetech.org/extensions/org.civicrm.sms.twilio"
 projects[twilio][download][revision] = "061db01d9124bc4a4d0072cd47f64b34cd33f5d7"
 
 projects[cividiscount][type] = "library"
