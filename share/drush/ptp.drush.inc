@@ -88,7 +88,7 @@ function ptp_drush_command() {
 }
 
 function drush_ptp_parse_addresses() {
-  $sql = "SELECT id, contact_id, street_address, street_number, street_name, street_number_suffix FROM civicrm_address ca JOIN civicrm_contact c ON ca.contact_id = c.id WHERE
+  $sql = "SELECT ca.id, contact_id, street_address, street_number, street_name, street_number_suffix FROM civicrm_address ca JOIN civicrm_contact c ON ca.contact_id = c.id WHERE
     is_deleted = 0";
   $dao = CRM_Core_DAO::executeQuery($sql);
   $count = 0;
