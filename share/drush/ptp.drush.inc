@@ -99,7 +99,7 @@ function drush_ptp_parse_addresses() {
     if (empty($dao->street_address)) {
       continue;
     }
-    if (!preg_match("|$street_number ?${street_number_suffix}? ?$street_name|", $street_address)) {
+    if (!preg_match("|$street_number ?${street_number_suffix}? ?$street_name|i", $street_address)) {
       $count++;
       $msg = dt(
         "Error: @id / @contact_id - @street_number @street_number_suffix @street_name doesn't match @street_address",
