@@ -1,17 +1,30 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-import <site> [<path>]
+long_usage_message="usage: $(basename $0) site-import <site> [<path>] [conf]
 Replace existing database with the one in the backup directory or the one
-specified as the second argument. 
+specified as the second argument. Optionally pass 'conf' to indicate that
+you want to run site-setup and set-configure after importing.
 
 Arguments
   <site> - The site you want to import the db over, e.g. ptp
-  <path> - Optionally, provide an alternate path to the database to import."
+  <path> - Optionally, provide an alternate path to the database to import.
+  conf - If conf is passed, run site-setup and site-configure after import."
 
 long_check_args "$2" "$#" 1
 
 site="$2"
-path="$3"
+third="$3"
+fourth="$4"
+
+conf=
+path=
+if [ "$third" == "conf" -o "$fourth" == "conf"  ]; then
+  conf=1
+fi
+
+if [ "${third:0:1}" = "/" ]; then
+  path="$third"
+fi
 
 long_container_running "$site" || long_die "The site '%s' isn't running." 1 "$site"
 # If tables exist in the database, the user will be prompted before continuing
@@ -19,4 +32,9 @@ long_container_running "$site" || long_die "The site '%s' isn't running." 1 "$si
 long_drop_tables "$site"
 long_log "Importing backup file." info
 long_import_backup "$site" "$path"
+
+if [ "$conf" -eq "1" ]; then
+  long_setup_site "$site"
+  long_configure_site "$site"
+fi
 
