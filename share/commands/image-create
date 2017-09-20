@@ -2,7 +2,7 @@
 
 long_usage_message="usage: $(basename $0) image-create <type>
 Create an image if it doesn't already exist. See also 
-image-rebuild which rebuilds images that need updates.
+image-upgrade which rebuilds images that need updates.
 
 Arguments
   <type> - The image type you want to create (ptp-mysql, etc.) or '--all'

@@ -45,15 +45,17 @@ EOSQL
   # servers we may have far less RAM available so we adjust this
   # down to the default.
   if [ "$LONG_LIVE" = "n" ]; then
-    printf "Not running on live system\n"
     sed -i "s/^innodb_buffer_pool_size =/; innodb_buffer_pool_size =/" /etc/mysql/conf.d/ptp.cnf
-  else
-    printf "Running on live system\n"
   fi
 
   touch /var/log/mysql/mysql-slow.log
   chown mysql:mysql /var/log/mysql/mysql-slow.log
   chown mysql:mysql /var/lib/mysql
+
+  if [ ! -d /var/lib/mysql/mysql ]; then
+    # Initialize the base database. This was taken from the Debian postinst script.
+    bash /usr/bin/mysql_install_db --skip-auth-anonymous-user --auth-root-authentication-method=socket --rpm --cross-bootstrap --user=mysql --disable-log-bin
+  fi
   #chown -R mysql:mysql /run/mysqld
 fi
 
