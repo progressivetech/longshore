@@ -404,10 +404,10 @@ long_container_up() {
     docker $LONG_DOCKER_LOG_ARG start "$label" || long_die "Failed to start the container %s" 1 "$label"
 
     if [ "$type" = "mysql" ]; then
-      # When starting mysql containers, wait 5 seconds and then ensure 
+      # When starting mysql containers, wait 15 seconds and then ensure 
       # the databases are upgraded.
-      long_log "Sleeping 5 seconds before ensuring databases are upgraded."
-      sleep 5
+      long_log "Sleeping 15 seconds before ensuring databases are upgraded."
+      sleep 15
       long_log "Running mysql_upgrade."
       docker $LONG_DOCKER_LOG_ARG exec "$name" mysql_upgrade -h localhost --port 3306
       long_log "Finished running mysql_upgrade."
