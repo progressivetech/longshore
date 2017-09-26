@@ -406,7 +406,7 @@ long_container_up() {
     if [ "$type" = "mysql" ]; then
       # When starting mysql containers, wait 30 seconds and then ensure 
       # the databases are upgraded.
-      while ! long_up_long_enough "$dbhost" 30; do
+      while ! long_up_long_enough "$name" 30; do
         long_log "Waiting 10 more seconds to ensure database has started." info
         sleep 10 
       done
