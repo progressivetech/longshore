@@ -26,7 +26,7 @@ if [ "$action" != "upgrade" -a "$action" != "print" ]; then
 fi
 
 if [ "$action" = "print" -a "$LONG_FORCE" = "1" ]; then
-  long_die "Don't pass MF_FORCE if you want to print the packages."
+  long_die "Don't pass LONG_FORCE if you want to print the packages."
 fi
 
 possible_itypes="my-${LONG_DEBIAN_VERSION} ptp-mysql ptp-php ptp-powerbase"

@@ -7,7 +7,7 @@ image-upgrade which rebuilds images that need updates.
 Arguments
   <type> - The image type you want to create (ptp-mysql, etc.) or '--all'
     to create all images
-Pass MF_FORCE=1 to force the building of an existing image." 
+Pass LONG_FORCE=1 to force the building of an existing image." 
 
 long_check_args "$2" "$#" 1
 
