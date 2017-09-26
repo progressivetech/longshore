@@ -140,7 +140,7 @@ projects[civicrm_activity_ical][download][revision] = "550c6edec856c00d689f0f71a
 projects[opb][type] = "module"
 projects[opb][download][type] = "git"
 projects[opb][download][url] = "git://git.progressivetech.org/powerbase/opb.git"
-projects[opb][download][revision] = "565f5c93f1e7dc2fa9ffec9c51c80b3fec1af6cc"
+projects[opb][download][revision] = "5bbfa9430f26fb0874264d53233a7cdc43c278cb"
 
 projects[civimigrate][type] = "module"
 projects[civimigrate][download][type] = "git"
