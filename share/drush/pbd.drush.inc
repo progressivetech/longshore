@@ -3836,7 +3836,7 @@ function pbd_setting($key, $value, $group = NULL) {
  * once per cron job instead. If you add a group to this list you
  * *must* also:
  *  * create the cron job via the web UI (Job.group_cache_flush). 
- *  * In Search Preferences, set cache time to one minute 
+ *  * In Search Preferences, set cache time to 15 minutes
  * Otherwise, it will never get flushed.
  */
 function pbd_set_smart_group_refresh_mode() {
