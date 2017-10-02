@@ -135,7 +135,7 @@ projects[hybridauth][patch][] = "/srv/longshore/etc/makefiles/hybridauth.patch"
 projects[civicrm_activity_ical][type] = "module"
 projects[civicrm_activity_ical][download][type] = "git"
 projects[civicrm_activity_ical][download][url] = "git://git.progressivetech.org/powerbase/civicrm_activity_ical.git"
-projects[civicrm_activity_ical][download][revision] = "550c6edec856c00d689f0f71a7a335753bf77221"
+projects[civicrm_activity_ical][download][revision] = "083a7e4a2271aeb359b5fadf9391799c34ca569a"
 
 projects[opb][type] = "module"
 projects[opb][download][type] = "git"
