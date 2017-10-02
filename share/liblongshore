@@ -1132,7 +1132,7 @@ long_create_container() {
       if [ -z "$platform" ]; then
         local nginx_path="${LONG_NGINX_SITES_ENABLED}/${name}.conf"
         if [ -f "$nginx_path" ]; then
-          platform=$(egrep -o 'ourpowerbase-d[0-9]+-c[0-9.]+' "$nginx_path")
+          platform=$(grep 'root  /var/www/powerbase/ourpowerbase-d' "$nginx_path" | egrep -o 'ourpowerbase-d[0-9]+-c[0-9.]+')
         fi
         # We use the default if the site is brand new.
         if [ -z "$platform" ]; then
