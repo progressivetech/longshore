@@ -84,7 +84,28 @@ function ptp_drush_command() {
   $items['ptp-parse-addresses'] = array(
     'description' => 'Analyze addresses that are not parsing properly.'
   );
+  $items['ptp-checksum'] = array(
+    'description' => 'validate a checksum',
+    'options' => array(
+      'checksum' => dt("Provide the checksum."),
+      'id' => dt("The contact id to check"),
+    ),
+  );
   return $items;
+}
+
+function drush_ptp_checksum() {
+  _civicrm_init();
+  $checksum = drush_get_option('checksum', NULL);
+  $contact_id = drush_get_option('id', NULL);
+  drush_log("Checking contact id: $contact_id and checksum: $checksum");
+  if (CRM_Contact_BAO_Contact_Utils::validChecksum($contact_id, $checksum)) {
+    drush_log("Yup, it passes.", "ok");
+  }
+  else {
+    drush_Log("Broken checksum.", "error");
+  }
+
 }
 
 function drush_ptp_parse_addresses() {
