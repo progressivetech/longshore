@@ -60,7 +60,7 @@ for itype in $itypes; do
 
   if [ "$LONG_FORCE" = "1" -o -n "$packages" ]; then
     # Re-build the image
-    long_log "Found packages needing to be upgraded in %s image; rebuilding." info "$itype"
+    long_log "Forced, or found packages needing to be upgraded in %s image; rebuilding." info "$itype"
     LONG_FORCE=1
     long_create_image "$itype"
   fi
