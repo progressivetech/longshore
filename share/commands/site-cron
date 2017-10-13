@@ -34,19 +34,19 @@ for site in $sites; do
     continue
   fi
 
-  start_ts=$(date +%s)
+  declare -i start_ts=$(date +%s)
   long_exec_drush_cmd "$site" "core-cron"
-  end_drupal_ts=$(date +%s)
+  declare -i end_drupal_ts=$(date +%s)
   long_exec_drush_cmd "$site" "-u 1 -r /var/www/powerbase civicrm-api job.execute auth=0 -y"
-  end_ts=$(date +%s)
+  declare -i end_ts=$(date +%s)
 
   # Check for cron jobs that take longer then 20 minutes to complete.
-  elapsed=$(( "$end_ts" - "$start_ts" ))
-  limit=$(( 60 * 20 ))
-  if [ "$elapsed" -gt "$limit" ]; then
+  declare -i elapsed=$(( $end_ts - $start_ts ))
+  declare -i limit=$(( 60 * 20 ))
+  if [ $elapsed -gt $limit ]; then
     # Generate human readable numbers.
-    drupal_elapsed_minutes=$(( ( "$end_drupal_ts" - "$start_ts" )/60 ))
-    civicrm_elapsed_minutes=$(( ( "$end_ts" - "$end_drupal_ts" )/60 ))
+    drupal_elapsed_minutes=$(( ( $end_drupal_ts - $start_ts )/60 ))
+    civicrm_elapsed_minutes=$(( ( $end_ts - $end_drupal_ts )/60 ))
 
     msg=$(printf "%s site took %s minutes to complete the drupal cron job and %s minutes to complete the civicrm cron job.\n" \
       "$site" "$drupal_elapsed_minutes" "$civicrm_elapses_minutes")
