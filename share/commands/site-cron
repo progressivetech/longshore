@@ -45,11 +45,12 @@ for site in $sites; do
   declare -i limit=$(( 60 * 20 ))
   if [ $elapsed -gt $limit ]; then
     # Generate human readable numbers.
-    drupal_elapsed_minutes=$(( ( $end_drupal_ts - $start_ts )/60 ))
-    civicrm_elapsed_minutes=$(( ( $end_ts - $end_drupal_ts )/60 ))
+    drupal_elapsed_minutes=$(echo "($end_drupal_ts - $start_ts)/60" | bc)
+    civicrm_elapsed_minutes=$(echo "($end_ts - $end_drupal_ts)/60" | bc)
 
-    msg=$(printf "%s site took %s minutes to complete the drupal cron job and %s minutes to complete the civicrm cron job.\n" \
-      "$site" "$drupal_elapsed_minutes" "$civicrm_elapses_minutes")
+
+    msg=$(printf "Site: %s. Total elapsed: %s. It took %s minutes to complete the drupal cron job and %s minutes to complete the civicrm cron job.\n" \
+      "$site" "$elapses" "$drupal_elapsed_minutes" "$civicrm_elapses_minutes")
 
     # Log it.
     logger -t powerbase "$msg"
