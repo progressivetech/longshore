@@ -60,7 +60,7 @@ for site in $sites; do
 
   # Check for cron jobs that take longer then 20 minutes to complete.
   declare -i elapsed=$(( $end_ts - $start_ts ))
-  declare -i limit=$(( 60 * 20 ))
+  declare -i limit=$(( 60 * 40 ))
   if [ $elapsed -gt $limit ]; then
     # Generate human readable numbers.
     drupal_elapsed_minutes=$(echo "($end_drupal_ts - $start_ts)/60" | bc)
