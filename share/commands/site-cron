@@ -35,6 +35,9 @@ else
 fi
 for site in $sites; do
   if [ "$background" = "yes" ]; then
+    # Sleep for a brief interval between each job to avoid having all jobs hitting
+    # the server at exactly the same time.
+    sleep 2
     $LONG_SRV/bin/longshore site-cron "$site" &
     continue
   fi
