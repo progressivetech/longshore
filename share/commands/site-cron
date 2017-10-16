@@ -50,7 +50,7 @@ for site in $sites; do
 
 
     msg=$(printf "Site: %s. Total elapsed: %s. It took %s minutes to complete the drupal cron job and %s minutes to complete the civicrm cron job.\n" \
-      "$site" "$elapses" "$drupal_elapsed_minutes" "$civicrm_elapses_minutes")
+      "$site" "$elapsed" "$drupal_elapsed_minutes" "$civicrm_elapsed_minutes")
 
     # Log it.
     logger -t powerbase "$msg"
