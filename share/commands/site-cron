@@ -16,14 +16,29 @@ long_check_args "$2" "$#" 0
 # only this, sibling (so it can be called by a cron job and not overlap with the
 # other siblings).
 
+# Additinally, if we are called without specifying "site" - then we run for all
+# sites *in parallel* by calling this script a second time with the site
+# specified followed by "&" to back ground the process. We take this step
+# because we don't want one stuck cron job to stop other cron jobs from being
+# executed.
+
+background=no
 if [ -n "$2" ]; then
   sites="$2"
 else
+  # No site is specified, so we iterate over all of them, backgrounding
+  # each one.
+  background=yes
   hostname=$(hostname)
   long_set_sites "$hostname"
   sites="$LONG_SITES"
 fi
 for site in $sites; do
+  if [ "$background" = "yes" ]; then
+    $LONG_SRV/bin/longshore site-cron "$site" &
+    continue
+  fi
+
   # This command never has more arguments than site-cron and the site. And
   # if we just pass "$@" like we do for the other commands, we will lose
   # the <site> if this command was called without a site argument.
