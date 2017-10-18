@@ -21,7 +21,7 @@ function drush_stripe_sync_plans() {
   $currency = 'usd';
 
   // Include Stripe library & Set API credentials.
-  require_once('stripe-php/lib/Stripe.php');
+  require_once('packages/stripe-php/lib/init.php');
   $sql = "SELECT user_name FROM civicrm_payment_processor WHERE is_active = 1 AND ".
       "is_test = 0 AND url_site LIKE '%api.stripe.com%'";
   $dao = CRM_Core_DAO::executeQuery($sql);
