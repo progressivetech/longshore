@@ -33,7 +33,7 @@ function drush_stripe_sync_plans() {
   Stripe::setApiKey($dao->user_name);
 
   // Get all plans in CiviCRM.
-  $sql = "SELECT plan_id FROM civicrm_stripe_plans";
+  $sql = "SELECT plan_id FROM civicrm_stripe_plans WHERE is_live = 1";
   $dao = CRM_Core_DAO::executeQuery($sql);
   while($dao->fetch()) {
     $id = $dao->plan_id;
