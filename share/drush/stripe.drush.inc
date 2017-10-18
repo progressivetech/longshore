@@ -21,7 +21,7 @@ function drush_stripe_sync_plans() {
   $currency = 'usd';
 
   // Include Stripe library & Set API credentials.
-  require_once('packages/stripe-php/lib/init.php');
+  require_once('packages/stripe-php/init.php');
   $sql = "SELECT user_name FROM civicrm_payment_processor WHERE is_active = 1 AND ".
       "is_test = 0 AND url_site LIKE '%api.stripe.com%'";
   $dao = CRM_Core_DAO::executeQuery($sql);
@@ -30,7 +30,7 @@ function drush_stripe_sync_plans() {
     drush_log(dt("Failed to get stripe api user name."), 'error');
     return;
   }
-  Stripe::setApiKey($dao->user_name);
+  \Stripe\Stripe::setApiKey($dao->user_name);
 
   // Get all plans in CiviCRM.
   $sql = "SELECT plan_id FROM civicrm_stripe_plans WHERE is_live = 1";
@@ -63,7 +63,7 @@ function drush_stripe_sync_plans() {
             'interval_count' => $interval_count
           );
           try {
-            Stripe_Plan::create($stripe_plan);
+            \Stripe\Plan::create($stripe_plan);
             drush_log("Created", 'ok');
           }
           catch ( Exception $e ) {
