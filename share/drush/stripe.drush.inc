@@ -39,7 +39,7 @@ function drush_stripe_sync_plans() {
     $id = $dao->plan_id;
     try {
       // Try to get this plan from Stripe.
-      $plan = Stripe_Plan::retrieve($id);
+      $plan = \Stripe\Plan::retrieve($id);
       drush_log("Exists: $id", 'ok');
     }
     catch ( Stripe_InvalidRequestError $e ) {
