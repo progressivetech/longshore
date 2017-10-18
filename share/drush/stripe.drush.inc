@@ -42,7 +42,7 @@ function drush_stripe_sync_plans() {
       $plan = \Stripe\Plan::retrieve($id);
       drush_log("Exists: $id", 'ok');
     }
-    catch ( Stripe_InvalidRequestError $e ) {
+    catch ( Stripe\Error\InvalidRequest $e ) {
       //echo $e->getJsonBody()['error']['message'] . "\n";
       drush_log("MISSING: $id", 'ok');
       while(1) {
