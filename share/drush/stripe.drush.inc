@@ -48,7 +48,7 @@ function drush_stripe_sync_plans() {
       // Delete it from the civicrm_stripe_plans table so it will be
       // re-created. 
       $sql = "DELETE FROM civicrm_stripe_plans WHERE plan_id = %0";
-      $params = array(0 => array($id, 'Integer'));
+      $params = array(0 => array($id, 'String'));
       CRM_Core_DAO::executeQuery($sql, $params);
     }
   }
