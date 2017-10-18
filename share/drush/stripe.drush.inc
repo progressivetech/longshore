@@ -44,39 +44,12 @@ function drush_stripe_sync_plans() {
     }
     catch ( Stripe\Error\InvalidRequest $e ) {
       //echo $e->getJsonBody()['error']['message'] . "\n";
-      drush_log("MISSING: $id", 'ok');
-      while(1) {
-        $answer = drush_prompt("Add?", 'y', TRUE);
-        if($answer == 'y') {
-          drush_log("Adding...", 'ok');
-          $pieces = explode('-', $id);
-          $amount = $pieces[3];
-          $interval = $pieces[2];
-          $interval_count = $pieces[1];
-          $formatted_amount = '$' . number_format(($amount / 100), 2);
-          $stripe_plan = array(
-            'amount' => $amount,
-            'interval' => $interval,
-            'name' => "CiviCRM every ${interval_count} ${interval}s ${formatted_amount}",
-            'currency' => $currency, 
-            'id' => $id,
-            'interval_count' => $interval_count
-          );
-          try {
-            \Stripe\Plan::create($stripe_plan);
-            drush_log("Created", 'ok');
-          }
-          catch ( Exception $e ) {
-            drush_log("There was an error", 'error');
-            drush_log($e->getJsonBody()['error']['message'], 'error');
-          }
-          break;
-        }
-        elseif($answer == 'n') {
-          drush_log("Not entering", 'ok');
-          break;
-        }
-      }
+      drush_log("MISSING: $id, deleting", 'ok');
+      // Delete it from the civicrm_stripe_plans table so it will be
+      // re-created. 
+      $sql = "DELETE FROM civicrm_stripe_plans WHERE plan_id = %0";
+      $params = array(0 => array($id, 'Integer'));
+      CRM_Core_DAO::executeQuery($sql, $params);
     }
   }
 }
