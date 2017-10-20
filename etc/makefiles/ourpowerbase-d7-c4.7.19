@@ -124,7 +124,7 @@ projects[node_clone][type] = "module"
 projects[node_clone][version] = "1.0-rc2"
 
 projects[password_policy][type] = "module"
-projects[password_policy][version] = "1.10"
+projects[password_policy][version] = "1.14"
 
 projects[jquery_update][type] = "module"
 projects[jquery_update][version] = "3.0-alpha5"
