@@ -18,38 +18,67 @@ function stripe_drush_command() {
 
 function drush_stripe_sync_plans() {
   _civicrm_init();
-  $currency = 'usd';
 
-  // Include Stripe library & Set API credentials.
+  // Include Stripe library.
   require_once('packages/stripe-php/init.php');
-  $sql = "SELECT user_name FROM civicrm_payment_processor WHERE is_active = 1 AND ".
+
+  // Get all payment processors.
+  $sql = "SELECT id, user_name FROM civicrm_payment_processor WHERE is_active = 1 AND ".
       "is_test = 0 AND url_site LIKE '%api.stripe.com%'";
   $dao = CRM_Core_DAO::executeQuery($sql);
-  $dao->fetch();
-  if(empty($dao->user_name)) {
-    drush_log(dt("Failed to get stripe api user name."), 'error');
-    return;
-  }
-  \Stripe\Stripe::setApiKey($dao->user_name);
+  while ($dao->fetch()) {
+    $ppid = $dao->id;
+    $user_name = $dao->user_name;
+    drush_log("Working on payment processor $ppid", 'ok');
+    \Stripe\Stripe::setApiKey($user_name);
 
-  // Get all plans in CiviCRM.
-  $sql = "SELECT plan_id FROM civicrm_stripe_plans WHERE is_live = 1";
-  $dao = CRM_Core_DAO::executeQuery($sql);
-  while($dao->fetch()) {
-    $id = $dao->plan_id;
-    try {
-      // Try to get this plan from Stripe.
-      $plan = \Stripe\Plan::retrieve($id);
-      drush_log("Exists: $id", 'ok');
+    // First ensure all plans in CiviCRM are also in Stripe. If a plan is
+    // in CiviCRM and not in stripe, delete it from CiviCRM so it will be
+    // created. 
+    $sql = "SELECT plan_id FROM civicrm_stripe_plans WHERE is_live = 1 AND processor_id = %0";
+    $params = array(0 => array($ppid, 'Integer'));
+    $plan_dao = CRM_Core_DAO::executeQuery($sql, $params);
+    while($plan_dao->fetch()) {
+      $plan_id = $plan_dao->plan_id;
+      drush_log("Working on plan: $plan_id", 'ok');
+      try {
+        // Try to get this plan from Stripe.
+        $plan = \Stripe\Plan::retrieve($plan_id);
+        drush_log("Exists: $id, no action taken.", 'ok');
+      }
+      catch ( Stripe\Error\InvalidRequest $e ) {
+        //echo $e->getJsonBody()['error']['message'] . "\n";
+        drush_log("MISSING: $id, deleting it", 'ok');
+        // Delete it from the civicrm_stripe_plans table so it will be
+        // re-created. 
+        $sql = "DELETE FROM civicrm_stripe_plans WHERE plan_id = %0 AND processor_id = %1";
+        $params = array(0 => array($id, 'String'), 1 => array($ppid, 'Integer'));
+        // CRM_Core_DAO::executeQuery($sql, $params);
+      }
     }
-    catch ( Stripe\Error\InvalidRequest $e ) {
-      //echo $e->getJsonBody()['error']['message'] . "\n";
-      drush_log("MISSING: $id, deleting", 'ok');
-      // Delete it from the civicrm_stripe_plans table so it will be
-      // re-created. 
-      $sql = "DELETE FROM civicrm_stripe_plans WHERE plan_id = %0";
-      $params = array(0 => array($id, 'String'));
-      CRM_Core_DAO::executeQuery($sql, $params);
+
+    // Now go in the other direction. Ensure all plans in Stripe are in CiviCRM.
+    // If one is missing, create it in CiviCRM.
+    drush_log("Getting plans from stripe.");
+    $plans = json_decode(\Stripe\Plan::all(array('limit' => 100)));
+    foreach ($plans['data'] as $plan_json) {
+      // plan is also json...
+      $plan = json_decode($plan_json);
+      drush_log("Got plan from Stripe - " . $plan->id, 'ok');
+      // See if this plan exists.
+      $sql = "SELECT plan_id FROM civicrm_stripe_plans WHERE plan_id = %0 AND processor_id = %1";
+      $params = array(0 => array($plan->id, 'String'), 1 => array($ppid, 'Integer'));
+      $plan_dao = CRM_Core_DAO::executeQuery($sql, $params);
+      if ($plan_dao->N == 0) {
+        drush_log("Plan doesn't exist, creating it.");
+        // Doesn't exist, create it.
+        $sql = "INSERT INTO civicrm_stripe_plans SET plan_id = %0, is_live = 1, processor_id = %1";
+        // Use same params as search.
+        // CRM_Core_DAO::executeQuery($sql, $params);
+      }
+      else {
+        drush_log("Plan exists, no action.");
+      }
     }
   }
 }
