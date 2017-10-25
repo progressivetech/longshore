@@ -44,26 +44,24 @@ function drush_stripe_sync_plans() {
       try {
         // Try to get this plan from Stripe.
         $plan = \Stripe\Plan::retrieve($plan_id);
-        drush_log("Exists: $id, no action taken.", 'ok');
+        drush_log("Exists: no action taken.", 'ok');
       }
       catch ( Stripe\Error\InvalidRequest $e ) {
         //echo $e->getJsonBody()['error']['message'] . "\n";
-        drush_log("MISSING: $id, deleting it", 'ok');
+        drush_log("MISSING: $plan_id, deleting it", 'ok');
         // Delete it from the civicrm_stripe_plans table so it will be
         // re-created. 
         $sql = "DELETE FROM civicrm_stripe_plans WHERE plan_id = %0 AND processor_id = %1";
-        $params = array(0 => array($id, 'String'), 1 => array($ppid, 'Integer'));
-        // CRM_Core_DAO::executeQuery($sql, $params);
+        $params = array(0 => array($plan_id, 'String'), 1 => array($ppid, 'Integer'));
+        CRM_Core_DAO::executeQuery($sql, $params);
       }
     }
 
     // Now go in the other direction. Ensure all plans in Stripe are in CiviCRM.
     // If one is missing, create it in CiviCRM.
     drush_log("Getting plans from stripe.");
-    $plans = json_decode(\Stripe\Plan::all(array('limit' => 100)));
-    foreach ($plans['data'] as $plan_json) {
-      // plan is also json...
-      $plan = json_decode($plan_json);
+    $plans = \Stripe\Plan::all(array('limit' => 100));
+    foreach ($plans['data'] as $plan) {
       drush_log("Got plan from Stripe - " . $plan->id, 'ok');
       // See if this plan exists.
       $sql = "SELECT plan_id FROM civicrm_stripe_plans WHERE plan_id = %0 AND processor_id = %1";
@@ -74,7 +72,7 @@ function drush_stripe_sync_plans() {
         // Doesn't exist, create it.
         $sql = "INSERT INTO civicrm_stripe_plans SET plan_id = %0, is_live = 1, processor_id = %1";
         // Use same params as search.
-        // CRM_Core_DAO::executeQuery($sql, $params);
+        CRM_Core_DAO::executeQuery($sql, $params);
       }
       else {
         drush_log("Plan exists, no action.");
