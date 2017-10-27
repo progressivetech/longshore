@@ -12,8 +12,6 @@ while(list(,$pb_server) = each($pb_servers)) {
     if(empty($host)) continue;
     $cfg['Servers'][$i]['host'] = $host;
     $cfg['Servers'][$i]['auth_type'] = 'cookie';
-    $cfg['Servers'][$i]['ssl'] = TRUE;
-    $cfg['Servers'][$i]['extension'] = 'mysqli';
     $i++;
 }
 
