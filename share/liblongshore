@@ -2737,13 +2737,18 @@ long_create_dkim_dns() {
   [ -z "$api_password" ] && long_die "Please put your red api password in %s." 1 "$red_api_password_path"
   [ -z "$LONG_IP_ADDR" ] && long_die "The host IP address is not set in longshore.conf"
 
+  declare -a post
   if [ -n "$exists" ]; then
     long_log "The DNS dkim record has already been created." info
+    return
   else
-    post="action=insert&output=text&object=item&set:service_id=${service_id}&set:hosting_order_id=${hosting_order_id}&set:dns_fqdn=${fqdn}&set:dns_type=text&set:dns_ttl=${dns_ttl}&set:dns_text=${txt}&user_name=$api_login&user_pass=$api_password&output_format=text"
+    post=("action=insert" "output=text" "object=item" "set:service_id=${service_id}" "set:hosting_order_id=${hosting_order_id}" "set:dns_fqdn=${fqdn}" set:dns_type=text" "set:dns_ttl=${dns_ttl}" "set:dns_text=${txt}" "user_name=$api_login" "user_pass=$api_password" "output_format=text")
+    for i in "${post[@]}"
+      
+
   fi
 
-  out=$(curl --silent --data-urlencode "$post" "$url")
+  out=$(curl --silent $(for $i in "${post[@]}"; do echo --data-urlencode "$i"; done) "$url")
   if [ "$?" -ne "0" ]; then
     long_die "Failed to use curl when setting the DNS entry."
   fi
