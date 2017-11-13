@@ -2707,9 +2707,12 @@ long_generate_dkim_key() {
     return
   fi
   # The txt is not suitable for inserting into a DNS record. It needs some cleanup. At the moment we get:
-  # pb1._domainkey IN TXT "v=DKIM1; h=rsa-sha256; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC047HZeFustgY0/B7wRXmSF3M7B771M3/q703OWk25zLmyxQnu0WMhfi9MVtXb2XxYOoyrwQyaQalFybM+lm0g0Ays7GJnQWBpPY067f8VhimD6VxC+CWfqoSDfzdE//Jz5lD7qYUlMmsKG7I8b/S+WYBMGeNvZ0L3zDF+HgWT1QIDAQAB" ; ----- DKIM key pb1 for southernersonnewground.org
+  # (Note line break).
+  # default._domainkey      IN      TXT     ( "v=DKIM1; h=rsa-sha256; k=rsa; s=email; "
+  #    "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDgJv0vEZGGap5E9B0UN3W4W6TAjj5s2iVnaQMGaRuC/b4n3jCi3uqM9/sFk4HuoMq2noRkC1hZ8lulPusblt/o8sFOMJpWBPwbYDA4V3Hc3Sekj0uClIUEGaruvJu9a+kWIBinUk45ReQ4hjYAvrkqmS0qruG6oCvAaV6oK0KgDQIDAQAB" )  ; ----- DKIM key default for livingcully
   # We need just the part in quotes, and rsa-sha256 is wrong, we just want sha256.
-  LONG_SITE_DKIM_TXT=$(echo "$out" | cut -d'"' -f2 | sed "s/h=rsa-sha256/h=sha256/")
+  # The echo $(echo) part removes the line break
+  LONG_SITE_DKIM_TXT=$(echo $(echo "$out" | cut -d'"' -f2 | sed "s/h=rsa-sha256/h=sha256/"))
 }
 
 long_create_dkim_dns() {
