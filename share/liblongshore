@@ -2711,8 +2711,9 @@ long_generate_dkim_key() {
   # default._domainkey      IN      TXT     ( "v=DKIM1; h=rsa-sha256; k=rsa; s=email; "
   #    "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDgJv0vEZGGap5E9B0UN3W4W6TAjj5s2iVnaQMGaRuC/b4n3jCi3uqM9/sFk4HuoMq2noRkC1hZ8lulPusblt/o8sFOMJpWBPwbYDA4V3Hc3Sekj0uClIUEGaruvJu9a+kWIBinUk45ReQ4hjYAvrkqmS0qruG6oCvAaV6oK0KgDQIDAQAB" )  ; ----- DKIM key default for livingcully
   # We need just the part in quotes, and rsa-sha256 is wrong, we just want sha256.
-  # The echo $(echo) part removes the line break
-  LONG_SITE_DKIM_TXT=$(echo $(echo "$out" | cut -d'"' -f2 | sed "s/h=rsa-sha256/h=sha256/"))
+  # The echo $(echo) part removes the line break (replaces it with 2 spaces).
+  # And lastly, urlencode the relevant characters (space, +, /). 
+  LONG_SITE_DKIM_TXT=$(echo $(echo "$out" | cut -d'"' -f2 | sed "s/h=rsa-sha256/h=sha256/") | sed "s#  # #g" | sed "s# #%20#g" | sed "s#/#%2F#g" | sed "s#+#%2B#g" )
 }
 
 long_create_dkim_dns() {
@@ -2748,7 +2749,7 @@ long_create_dkim_dns() {
     post=("action=insert" "output=text" "object=item" "set:service_id=${service_id}" "set:hosting_order_id=${hosting_order_id}" "set:dns_fqdn=${fqdn}" "set:dns_type=text" "set:dns_ttl=${dns_ttl}" "set:dns_text=${txt}" "user_name=$api_login" "user_pass=$api_password" "output_format=text")
   fi
 
-  out=$(curl --silent $(for i in "${post[@]}"; do echo --data-urlencode "$i"; done) "$url")
+  out=$(curl --silent $(for i in "${post[@]}"; do echo --data "$i"; done) "$url")
   if [ "$?" -ne "0" ]; then
     long_die "Failed to use curl when setting the DNS entry."
   fi
