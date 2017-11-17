@@ -1627,6 +1627,8 @@ long_destroy_site() {
     $LONG_MANAGE_IMAP_USER_CMD delete "${site}-activities" 2>/dev/null
     $LONG_MANAGE_IMAP_USER_CMD delete "${site}-returns" 2>/dev/null
   fi
+
+  long_log "Please manually delete the DNS record." info
 }
 
 # Disable a site container. 
