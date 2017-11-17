@@ -117,7 +117,7 @@ function drush_ptp_parse_addresses() {
     $street_name = trim($dao->street_name);
     $street_number = trim($dao->street_number);
     $street_number_suffix = trim($dao->street_number_suffix, ' ');
-    $street_address = str_replace('  ', ' ', $dao->street_address);
+    $street_address = preg_replace('  +', ' ', $dao->street_address);
     if (empty($dao->street_address)) {
       continue;
     }
