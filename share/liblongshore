@@ -698,6 +698,7 @@ long_exec_drush_cmd() {
   local site="$1"
   local cmd="$2"
   local envvars="$3"
+  local -i return=0
 
   # Set drush quiet setting. Default is not to be quiet.
   quiet=-v
@@ -719,7 +720,9 @@ long_exec_drush_cmd() {
   printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
   printf "drush $quiet $cmd\n" >> "$file"
   long_exec_in_container "$site" "$file"
+  return="$?"
   rm "$file"
+  return "$return"
 }
 
 # Launch an interactive bash shell in the given site as wwww-data

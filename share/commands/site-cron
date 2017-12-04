@@ -52,11 +52,31 @@ for site in $sites; do
     continue
   fi
 
+  # Keep track of whether there is an error running this cron job or not.
+  err=0
   declare -i start_ts=$(date +%s)
   long_exec_drush_cmd "$site" "core-cron"
+  if [ "$?" -ne "0" ]; then
+    err="$?"
+  fi
   declare -i end_drupal_ts=$(date +%s)
   long_exec_drush_cmd "$site" "-u 1 -r /var/www/powerbase civicrm-api job.execute auth=0 -y"
+  if [ "$?" -ne "0" ]; then
+    err="$?"
+  fi
   declare -i end_ts=$(date +%s)
+
+  if [ "$err" -ne "0" ]; then
+    msg=$(printf "Site: %s. Error running cron job.\n" "$site")
+
+    # Log it.
+    logger -t powerbase "$msg"
+
+    # Email it.
+    echo $msg | \
+      /usr/bin/mail -s "PowerBase site with cron job failing to run" \
+      pb-alert-warning@progressivetech.org
+  fi
 
   # Check for cron jobs that take longer then 20 minutes to complete.
   declare -i elapsed=$(( $end_ts - $start_ts ))
