@@ -3211,7 +3211,7 @@ function pbd_enable_modules() {
     'webform_civicrm',
     'webform','options_element',
     'libraries', 'autologout', 'themekey_civicrm', 'civicrm_engage',
-    'themekey_ui', 'jquery_update'
+    'themekey_ui', 'jquery_update', 'path'
   );
 
   drush_log(dt("Checking which modules are already enabled."));
