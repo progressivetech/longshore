@@ -13,9 +13,109 @@ function stripe_drush_command() {
   $items = array();
   $items['stripe-sync-plans'] =
     array('description' => "Ensure all stripe recurring payment plans in database are configured in stripe.");
+  $items['stripe-repair-subs'] = array(
+    'description' => "Given a file with a list of subscription/customer pairs, try to re-create the right data so they get processed.",
+    'options' => array(
+      'file' => "The file with the colon separated subscription/customer pairs",
+      'ppid' => "The stripe processor id if more than one."
+    ),
+  );
   return $items;
 }
 
+/*
+ * If a stripe subscription doesn't match anything in the civicrm_stripe_subscription table
+ * we may be able to fix it. You first have to use the Stripe.ListEvents api to find all the
+ * events that have not been procssed. Then create a text file with one line for each failure
+ * in the form:
+ * sub:cus
+ * Then feed that file to this command.
+ */
+function drush_stripe_repair_subs() {
+  _civicrm_init();
+  $file = drush_get_option('file', NULL);
+  $ppid = drush_get_option('ppid', NULL);
+  if (!file_exists($file)) {
+    drush_log(dt("Please pass path to file with colon separated sub:cust codes. Can't find '@file'.", array('@file' => $file)), 'error');
+    return;
+  }
+
+  if (empty($ppid)) {
+    $sql = "SELECT pp.id FROM civicrm_payment_processor pp JOIN 
+      civicrm_payment_processor_type ppt 
+      ON pp.payment_processor_type_id = ppt.id 
+      WHERE ppt.name = 'Stripe' AND pp.is_test = 0 
+      AND pp.is_active = 1 AND ppt.is_active = 1";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    if ($dao->N > 1) {
+      drush_log(dt("More than one Stripe payment processor, please pass ppid."), 'error');
+      return;
+    }
+    $dao->fetch();
+    $ppid = $dao->id; 
+  }
+
+  $pairs = file($file);
+  foreach($pairs as $line) {
+    $parts = explode(':', $line);
+    $sub = trim($parts[0]);
+    $cus = trim($parts[1]);
+
+    $sql = "SELECT cr.id, contribution_status_id, cr.contact_id FROM civicrm_stripe_customers sc JOIN civicrm_email e ON sc.email = e.email ".
+      "JOIN civicrm_contribution_recur cr ON cr.contact_id = e.contact_id WHERE sc.id = %0";
+    $params = array(0 => array($cus, 'String'));
+    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+    if ($dao->N == 0) {
+      // If we can't find the customer or related recurring contribution, we are in trouble.
+      drush_log(dt("Can't find customer (@cus) for subscription (@sub).", array('@cus' => $cus, '@sub' => $sub)), 'error');
+      continue;
+    }
+    if ($dao->N != 1) {
+      // If we have more than on record, we should stop also. 
+      drush_log(dt("Found more than one record for customer (@cus) for subscription (@sub).", array('@cus' => $cus, '@sub' => $sub)), 'error');
+      continue;
+    }
+
+    $dao->fetch();
+    $contribution_recur_id = $dao->id;
+    $contact_id = $dao->contact_id;
+    $contribution_status_id = $dao->contribution_status_id;
+
+    // We expect that this subscription is not in the civicrm_stripe_subscription table but let's be sure.
+    $sql = "SELECT subscription_id FROM civicrm_stripe_subscriptions WHERE subscription_id = %0";
+    $params = array(0 => array($sub, 'String'));
+    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+    if ($dao->N != 0) {
+      drush_log(dt("Found subscription (@sub) in civicrm_stripe_subscriptions.", array('@sub' => $sub)), 'error');
+      continue;
+    }
+
+    // Now make sure this contribution id is not already in there...
+    $sql = "SELECT subscription_id FROM civicrm_stripe_subscriptions WHERE contribution_recur_id = %0";
+    $params = array(0 => array($contribution_recur_id, 'Integer'));
+    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+    if ($dao->N != 0) {
+      drush_log(dt("Found contribution_recur_id (@id) in civicrm_stripe_subscriptions.", array('@id' => $contribution_recur_id)), 'error');
+      continue;
+    }
+
+    // Now, insert it.
+    $sql = "INSERT INTO civicrm_stripe_subscriptions SET subscription_id = %0, customer_id = %1, contribution_recur_id = %2, is_live = 1, processor_id = %3";
+    $params = array(
+      0 => array($sub, 'String'),
+      1 => array($cus, 'String'),
+      2 => array($contribution_recur_id, 'Integer'),
+      3 => array($ppid, 'Integer')
+    );
+    drush_log(dt("Success for @sub and @cus.", array('@sub' => $sub, '@cus' => $cus)), 'ok');
+    CRM_Core_DAO::executeQuery($sql, $params);
+
+    if ($contribution_status_id != 5) {
+      drush_log(dt("Contribution status id is incorrect - may need to manually tweak."), 'error');
+    }
+  }
+
+}
 function drush_stripe_sync_plans() {
   _civicrm_init();
 
