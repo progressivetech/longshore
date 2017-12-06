@@ -444,9 +444,9 @@ function drush_ptp_update_site_stats() {
   // custom_335 is the site URL
   $site_url_field = 'custom_335';
   // custom_472 is recent logins
-  $logins_field = 'custom_472';
+  $logins_field = 'custom_586';
   // custom_471 is count of contacts
-  $contacts_field = 'custom_471';
+  $contacts_field = 'custom_584';
   // cusotm_470 is hosting frontend, aka sibling
   $sibling_field = 'custom_470';
 
