@@ -393,8 +393,9 @@ projects[osm][download][revision] = "d398c886c0a06fc30379c5ea799876516d7a04d5"
 projects[mosaico][type] = "library"
 projects[mosaico][destination] = "extensions"
 projects[mosaico][directory_name] = "uk.co.vedaconsulting.mosaico"
-projects[mosaico][download][type] = "file"
-projects[mosaico][download][url] = "https://dist.civicrm.org/extension/uk.co.vedaconsulting.mosaico/latest/uk.co.vedaconsulting.mosaico-latest.zip"
+projects[mosaico][download][type] = "git"
+projects[mosaico][download][url] = "https://github.com/veda-consulting/uk.co.vedaconsulting.mosaico"
+projects[mosaico][download][revision] = "fb20636893a2429091a760d2e8fd8e35811eee92"
 
 ; Required for mosaico.
 projects[flexmailer][type] = "library"
@@ -408,6 +409,7 @@ projects[shoreditch][type] = "library"
 projects[shoreditch][destination] = "extensions"
 projects[shoreditch][download][type] = "git"
 projects[shoreditch][download][url] = "https://github.com/civicrm/org.civicrm.shoreditch"
+; This is version alpha14 (which is the current download version).
 projects[shoreditch][download][revision] = "a1270312b5b296be7f6fa491bde4ce62d18a6e80"
 
 projects[exportpermission][type] = "library"
