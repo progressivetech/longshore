@@ -393,9 +393,9 @@ projects[osm][download][revision] = "d398c886c0a06fc30379c5ea799876516d7a04d5"
 projects[mosaico][type] = "library"
 projects[mosaico][destination] = "extensions"
 projects[mosaico][directory_name] = "uk.co.vedaconsulting.mosaico"
-projects[mosaico][download][type] = "git"
-projects[mosaico][download][url] = "https://github.com/veda-consulting/uk.co.vedaconsulting.mosaico"
-projects[mosaico][download][revision] = "fb20636893a2429091a760d2e8fd8e35811eee92"
+projects[mosaico][download][type] = "file"
+; Use file download because  mosaico has a build script that won't get executed.
+projects[mosaico][download][url] = "http://dist.civicrm.org/extension/uk.co.vedaconsulting.mosaico/2.0-beta3.1512698300/uk.co.vedaconsulting.mosaico-2.0-beta3.1512698300.zip"
 
 ; Required for mosaico.
 projects[flexmailer][type] = "library"
