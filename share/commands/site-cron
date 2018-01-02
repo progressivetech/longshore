@@ -93,10 +93,10 @@ for site in $sites; do
     # Log it.
     logger -t powerbase "$msg"
 
-    # Email it.
-    echo $msg | \
-      /usr/bin/mail -s "PowerBase site with slow cron job" \
-      pb-alert-warning@progressivetech.org
+    # Email it (no thanks - too much email!).
+    #echo $msg | \
+    #  /usr/bin/mail -s "PowerBase site with slow cron job" \
+    #  pb-alert-warning@progressivetech.org
 
   fi
 done
