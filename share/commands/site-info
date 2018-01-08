@@ -36,7 +36,7 @@ fi
 if [ -n "$PB_YEAR" ]; then
   year="$PB_YEAR"
 else
-  year=$(date +%Y)
+  year=$(date -d "last year" +%Y)
 fi
 
 if [ -n "$option" -a "$option" != '-u' -a "$option" != "-r" -a "$option" != "-rh" -a "$option" != "-f" ]; then
