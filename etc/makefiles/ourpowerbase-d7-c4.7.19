@@ -441,6 +441,12 @@ projects[nosmsurltracking][download][type] = "git"
 projects[nosmsurltracking][download][url] = "https://github.com/PalanteJon/coop.palantetech.nosmsurltracking"
 projects[nosmsurltracking][download][revision] = "d3b3de61781824f2512552f17a521248ce9468bf"
 
+projects[multipleparticipantroleforevent][type] = "library"
+projects[multipleparticipantroleforevent][destination] = "extensions"
+projects[multipleparticipantroleforevent][download][type] = "git"
+projects[multipleparticipantroleforevent][download][url] = "https://github.com/veda-consulting/uk.co.vedaconsulting.multipleparticipantroleforevent"
+projects[multipleparticipantroleforevent][download][revision] = "1195de1e0410bd2f333e57445fb4cfa955429bac"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
