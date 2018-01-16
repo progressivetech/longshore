@@ -451,7 +451,7 @@ projects[leftforum][type] = "library"
 projects[leftforum][destination] = "extensions"
 projects[leftforum][download][type] = "git"
 projects[leftforum][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.leftforum"
-projects[leftforum][download][revision] = "0e4bd80687bca5181ec26bbbb0907cd902fb8d99"
+projects[leftforum][download][revision] = "db876bae0fed07ca01fefd056d3c9ad954a330d2"
 
 ;****************************************
 ; Drupal themes 
