@@ -447,6 +447,12 @@ projects[multipleparticipantroleforevent][download][type] = "git"
 projects[multipleparticipantroleforevent][download][url] = "https://github.com/veda-consulting/uk.co.vedaconsulting.multipleparticipantroleforevent"
 projects[multipleparticipantroleforevent][download][revision] = "1195de1e0410bd2f333e57445fb4cfa955429bac"
 
+projects[leftforum][type] = "library"
+projects[leftforum][destination] = "extensions"
+projects[leftforum][download][type] = "git"
+projects[leftforum][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.leftforum"
+projects[leftforum][download][revision] = "082dce495e4d5bfae9f778c61ac698dee3988d67"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
