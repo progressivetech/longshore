@@ -19,6 +19,7 @@ RUN apt-get update && \
     php-soap \
     php-mbstring \
     php-imagick \
+    php-zip \
     fonts-linuxlibertine \
     wkhtmltopdf \
     xauth \
