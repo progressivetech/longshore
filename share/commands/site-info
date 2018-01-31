@@ -72,6 +72,7 @@ for site in $sites; do
 
   mycnf="${LONG_SRV}/services/sites/${site}/my.cnf"
   pass=$(grep password= "$mycnf" | cut -d= -f2)
+  user=$(grep user= "$mycnf" | cut -d= -f2)
   long_set_site_db_host "$site"
   long_set_site_platform "$site"
   long_set_site_memory "$site"
@@ -93,10 +94,8 @@ for site in $sites; do
       "$LONG_SITE_RECENT_LOGINS_COUNT" "$LONG_SITE_CONTACTS_COUNT" "$LONG_SITE_CONTRIBUTIONS_SUM" "$LONG_SITE_EMAILS_COUNT";
   else
     # On screen output.
-    long_sanitize_db_username "$site" >/dev/null
-    db_user="$LONG_DBUSER"
     printf "Site: %s\nDB User: %s\nPassword: %s\nDB: %s\nPHPMyAdmin URL: %s\nPlatform: %s\nSibling: %s\nPids: %s\nMemory: %s\n" \
-      "$site" "$db_user" "$pass"  "$LONG_SITE_DB_HOST" "$LONG_PHPMYADMIN_URL" "$LONG_SITE_PLATFORM" "$sibling" \
+      "$site" "$user" "$pass"  "$LONG_SITE_DB_HOST" "$LONG_PHPMYADMIN_URL" "$LONG_SITE_PLATFORM" "$sibling" \
       "$LONG_SITE_PIDS" "$LONG_SITE_MEMORY"
 
     if [ "$full_output" = "y" ]; then
