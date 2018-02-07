@@ -40,7 +40,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Download most recent version of drush
-RUN cd /usr/local/bin && wget -q -O drush https://s3.amazonaws.com/files.drush.org/drush.phar && chmod 755 drush
+RUN cd /usr/local/bin && wget -q -O drush https://github.com/drush-ops/drush/releases/download/8.1.16/drush.phar && chmod 755 drush
 
 # Listen on 127.0.0.1 
 RUN sed -i 's#listen = /run/php/php7.0-fpm.sock#listen = 9000#' /etc/php/7.0/fpm/pool.d/www.conf
