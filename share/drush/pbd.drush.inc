@@ -277,15 +277,15 @@ function pbd_configure_dev_site() {
 }
 
 /**
- * Configure CiviCRM to use wkhtmltopdf.
+ * Configure CiviCRM to NOT use wkhtmltopdf.
  *
  * Using DomPDF to generate PDF's (the default in CiviCRM) is painfully slow.
- * Use wkthmltopdf instead. We invoke via xvfb-run to avoid an X Server error
- * that wkhtmltopdf will otherwise generate.
+ * However, on Debian we can't seem to get a version of wkhtml that is secure
+ * See: https://support.ourpowerbase.net/ticket/2528
  **/
 function pbd_configure_wkhtmltopdf() {
   require_once "CRM/Core/BAO/ConfigSetting.php";
-  pbd_setting('wkhtmltopdfPath', '/usr/bin/xvfb-run -- wkhtmltopdf');
+  pbd_setting('wkhtmltopdfPath', '');
 }
 
 /**
