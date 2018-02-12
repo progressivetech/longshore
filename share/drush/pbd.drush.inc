@@ -284,7 +284,7 @@ function pbd_configure_dev_site() {
  * See: https://support.ourpowerbase.net/ticket/2528
  **/
 function pbd_configure_wkhtmltopdf() {
-  require_once "CRM/Core/BAO/ConfigSetting.php";
+  _civicrm_init();
   pbd_setting('wkhtmltopdfPath', '');
 }
 
