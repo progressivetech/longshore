@@ -1440,6 +1440,10 @@ function pbd_create_drupal_roles() {
 
   // Admins should have access to the admin area
   $perms['Powerbase Administrator'][] = 'access administration pages';
+  $perms['Powerbase Administrator'][] = 'access content overview';
+
+  // Set paths
+  $perms['Powerbase Administrator'][] = 'create url aliases';
 
   // Ability to enable modles
   $perms['Powerbase Administrator'][] = 'administer modules';
@@ -1465,6 +1469,11 @@ function pbd_create_drupal_roles() {
   $perms['Powerbase Administrator'][] = 'access all views';
 
   // Full access to webform
+  $perms['Powerbase Administrator'][] = 'create webform content';
+  $perms['Powerbase Administrator'][] = 'edit own webform content';
+  $perms['Powerbase Administrator'][] = 'edit any webform content';
+  $perms['Powerbase Administrator'][] = 'delete any webform content';
+  $perms['Powerbase Administrator'][] = 'delete own webform content';
   $perms['Powerbase Administrator'][] = 'access all webform results';
   $perms['Powerbase Administrator'][] = 'access own webform results';
   $perms['Powerbase Administrator'][] = 'edit all webform submissions';
