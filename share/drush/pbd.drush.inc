@@ -229,13 +229,14 @@ function drush_pbd_configure_once() {
 
   variable_set('site_frontpage','civicrm');
 
+  pbd_add_web_location_type();
   pbd_disable_create_new_household_menu();
   pbd_disable_modules();
   pbd_set_default_civicrm_option_lists();
   pbd_adjust_display_preferences();
   pbd_disable_communications_status();
   pbd_adjust_custom_data_groups();
-  pbd_ensure_petition_profile_exists();
+  pbd_ensure_powerbase_profiles_exists();
   // This causes problems on migrated CiviCRM installs.
   // pbd_delete_all_tags();
   pbd_add_image_upload_menu();
@@ -249,7 +250,6 @@ function drush_pbd_configure_once() {
   pbd_remove_country_from_address_formats();
   pbd_enable_waitlist_participant_status_types();
   pbd_add_web_signup_group();
-  pbd_add_web_location_type();
   pbd_add_constituent_type_fields_to_profiles();
   pbd_add_first_tag();
   pbd_configure_ckeditor();
@@ -2220,70 +2220,425 @@ function pbd_get_my_contact_id() {
 }
 
 // see: https://app.liquidplanner.com/space/48716/collaborate/list/5088099P
-function pbd_ensure_petition_profile_exists() {
+function pbd_ensure_powerbase_profiles_exists() {
   _civicrm_init();
-  require_once('api/api.php');
-  // use sql to search for petition - can't use api because we need a like search
-  $sql = "SELECT id FROM civicrm_uf_group WHERE name LIKE 'PowerBase_Petition%'";
-  $dao = CRM_Core_DAO::executeQuery( $sql );
-  $dao->fetch();
-  if(empty($dao->id)) {
-    // add it
-    $params = array(
+  $locationTypes = CRM_Core_PseudoConstant::get('CRM_Core_DAO_Address', 'location_type_id');
+  $web_location_type_id = array_search('From the Web', $locationTypes);
+  $home_location_type_id = array_search('Home', $locationTypes);
+  $work_location_type_id = array_search('Work', $locationTypes);
+
+  $profiles = array (
+    0 => array(
       'name' => 'PowerBase_Petition',
       'is_active' => 1,
       'created_id' => pbd_get_my_contact_id(),
       'group_type' => 'Contact',
-      'title' => 'PowerBase Petition',
+      'title' => 'PowerBase Petition Contact Info',
       'add_captcha' => '0',
       'is_map' => '0',
       'is_edit_link' => '0',
       'is_uf_link' => '0',
-      'is_update_dupe' => '0',
+      'is_update_dupe' => '2',
       'name' => 'PowerBase_Petition',
-      'is_proximity_search' => '0'
-    );
-    try {
-      $results = civicrm_api3('UFGroup','create', $params);
-    }
-    catch (CiviCRM_API3_Exception $e) {
-      drush_log(dt("Failed to create petition profile."), 'error');
-      drush_log($e->getMessage(), 'error');
-      return;
-    }
+      'is_proximity_search' => '0',
+      'api.uf_field.create' => array(
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'first_name',
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '10',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'First Name',
+          'field_type' => 'Individual'
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'last_name',
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '20',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'Las Name',
+          'field_type' => 'Individual'
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'email',
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '0',
+          'weight' => '30',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'Email',
+          'field_type' => 'Contact'
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'street_address',
+          'location_type_id' => $web_location_type_id,
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '40',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'Street Address',
+          'field_type' => 'Contact'
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'city',
+          'location_type_id' => $web_location_type_id,
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '50',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'City',
+          'field_type' => 'Contact'
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'state_province',
+          'location_type_id' => $web_location_type_id,
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '60',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'State',
+          'field_type' => 'Contact'
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'postal_code',
+          'location_type_id' => $web_location_type_id,
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '70',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'Zip Code',
+          'field_type' => 'Contact'
+        ),
+      )
+    ),
+    1 => array(
+      'name' => 'Powerbase_Phone_Search',
+      'title' => 'Search View Call List',
+      'description' => 'Powerbase profile designed to be used for search results',
+      'is_active' => 1,
+      'api.uf_field.create' => array(
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'phone',
+          'is_active' => 1,
+          'label' => 'Phone (Primary)',
+          'field_type' => 'Contact',
+          "weight" => 10,
+          "in_selector" => "1",
+          "visibility" => "Public Pages and Listings",
+          "field_type" => "Contact",
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'phone',
+          'is_active' => 1,
+          "weight" => 20,
+          'location_type_id' => $home_location_type_id,
+          'phone_type_id' => 2,
+          'label' => 'Mobile (Home)',
+          "in_selector" => "1",
+          'field_type' => 'Contact',
+          "visibility" => "Public Pages and Listings",
+          "field_type" => "Contact",
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'phone',
+          'is_active' => 1,
+          'location_type_id' => $work_location_type_id,
+          "weight" => 30,
+          'phone_type_id' => 1,
+          'label' => 'Phone (work)',
+          'field_type' => 'Contact',
+          "in_selector" => "1",
+          "visibility" => "Public Pages and Listings",
+          "field_type" => "Contact",
+        ),
+      ),
+    ),
+    2 => array(
+      'name' => 'Powerbase_Employer_Search',
+      'title' => 'Search View Current Employer',
+      'description' => 'Powerbase profile designed to be used for search results',
+      'is_active' => 1,
+      'api.uf_field.create' => array(
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'current_employer',
+          'is_active' => 1,
+          'label' => 'Current Employer',
+          'weight' => 10,
+          "in_selector" => "1",
+          "visibility" => "Public Pages and Listings",
+          "field_type" => "Individual",
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'job_title',
+          'is_active' => 1,
+          'phone_type_id' => 2,
+          'label' => 'Job Title',
+          'weight' => 20,
+          "in_selector" => "1",
+          'field_type' => 'Individual',
+          "visibility" => "Public Pages and Listings",
+          "field_type" => "Individual",
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'email',
+          'is_active' => 1,
+          'weight' => 30,
+          'label' => 'Email',
+          "in_selector" => "1",
+          'field_type' => 'Contact',
+          "visibility" => "Public Pages and Listings",
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'phone',
+          'is_active' => 1,
+          'weight' => 40,
+          'phone_type_id' => 1,
+          'label' => 'Phone',
+          'field_type' => 'Contact',
+          "in_selector" => "1",
+          "visibility" => "Public Pages and Listings",
+        ),
+      )
 
-    $uf_group = array_pop($results['values']);
-    $group_id = $uf_group['id'];
-  } else {
-    $group_id = $dao->id;
-  }
-  // now search for the email field
-  $results = civicrm_api("UFField","get", array ('version' => 3, 'uf_group_id' => $group_id));
-  if($results['is_error'] != 0) {
-    drush_log("Error searching for petition profile field.");
-    return;
-  }
+    ),
+    3 => array(
+      'name' => 'Powerbase_Donor_Name_And_Address',
+      'title' => 'Donor Name and Address',
+      'description' => 'Powerbase profile for collecting Donor Name',
+      'is_active' => 1,
+      'is_update_dupe' => '2',
+      'api.uf_field.create' => array(
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'first_name',
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '10',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'First Name',
+          'field_type' => 'Individual',
+          "is_multi_summary" => "0",
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'last_name',
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '20',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'Last Name',
+          'field_type' => 'Individual',
+          "is_multi_summary" =>"0",
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'street_address',
+          'location_type_id' => $web_location_type_id,
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '30',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'Street Address',
+          'field_type' => 'Contact'
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'city',
+          'location_type_id' => $web_location_type_id,
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '40',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'City',
+          'field_type' => 'Contact'
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'state_province',
+          'location_type_id' => $web_location_type_id,
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '50',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'State',
+          'field_type' => 'Contact'
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'postal_code',
+          'location_type_id' => $web_location_type_id,
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '60',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'Zip Code',
+          'field_type' => 'Contact'
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'phone',
+          'location_type_id' => $web_location_type_id,
+          'phone_type_id' => 1,
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '0',
+          'weight' => '70',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'Phone',
+          'field_type' => 'Contact'
+        ),
+      )
+    ),
+    4 => array(
+      'name' => 'Powerbase_Sign_Up',
+      'title' => 'Email Signup',
+      'description' => 'Powerbase profile for collecting Email addresses',
+      'is_active' => 1,
+      'is_update_dupe' => '2',
+      'api.uf_field.create' => array(
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'first_name',
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '10',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'First Name',
+          'field_type' => 'Individual',
+          "is_multi_summary" => "0",
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'last_name',
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '20',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'Last Name',
+          'field_type' => 'Individual',
+          "is_multi_summary" => "0",
+        ),
+        array(
+          'uf_group_id' => '$value.id',
+          'field_name' => 'email',
+          'location_type_id' => $web_location_type_id,
+          'is_active' => '1',
+          'is_view' => '0',
+          'is_required' => '1',
+          'weight' => '30',
+          'help_post' => '',
+          'help_pre' => '',
+          'visibility' => 'User and User Admin Only',
+          'in_selector' => '0',
+          'is_searchable' => '0',
+          'label' => 'Email',
+          'field_type' => 'Contact'
+        ),
+      ),
+    ),
+  );
 
-  // check if we've already created it
-  if(count($results['values']) == 0) {
-    // add it
-    $params = array(
-      'version' => 3,
-      'uf_group_id' => $group_id,
-      'field_name' => 'email',
-      'is_active' => '1',
-      'is_view' => '0',
-      'is_required' => '0',
-      'weight' => '1',
-      'help_post' => '',
-      'help_pre' => '',
-      'visibility' => 'User and User Admin Only',
-      'in_selector' => '0',
-      'is_searchable' => '0',
-      'label' => 'Email',
-      'field_type' => 'Contact'
-    );
-    $results = civicrm_api('UFField','create', $params);
+  foreach($profiles as $profile) {
+    // See if it exists already.
+    $name = $profile['name'];
+    $results = civicrm_api3('UFGroup', 'get', array('name' => $name));
+    if ($results['count'] == 0) {
+      drush_log(dt("Creating profile @name", array('@name' => $name)), 'ok');
+      civicrm_api3('UFGroup', 'create', $profile);
+    }
   }
 }
 
