@@ -454,6 +454,12 @@ projects[leftforum][download][type] = "git"
 projects[leftforum][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.leftforum"
 projects[leftforum][download][revision] = "8fc509a9a5eeafa409cbca575de2647558f5a5f1"
 
+projects[donortracking][type] = "library"
+projects[donortracking][destination] = "extensions"
+projects[donortracking][download][type] = "git"
+projects[donortracking][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.donortracking"
+projects[donortracking][download][revision] = "a6559b9e16065fe2be407637bec4e47f1a021d50"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
