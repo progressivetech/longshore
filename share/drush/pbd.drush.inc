@@ -1580,6 +1580,7 @@ function pbd_disable_create_new_household_menu() {
 
 function pbd_activate_cron_jobs() {
   $activate = array('process_mailing', 'process_membership', 'fetch_bounces', 'send_reminder', 'fetch_activities', 'cleanup', 'update_greeting', 'update_greeting', 'process_participant', 'process_sms', 'process_respondent', 'geocode', 'update_email_resetdate');
+  $disable = array('version_check');
   _civicrm_init();
   require_once('CRM/Core/BAO/Job.php');
   // enable all cron jobs that should be enabled but are not enabled
@@ -1589,6 +1590,14 @@ function pbd_activate_cron_jobs() {
     $job = CRM_Core_BAO_Job::retrieve( $params, $defaults );
     if(!empty($job) && $job->id) {
       CRM_Core_BAO_Job::setIsActive( $job->id, 1);
+    }
+  }
+  while(list(,$api_action) = each($disable)) {
+    $params = array('api_action' => $api_action, 'is_active' => 1);
+    $defaults = array();
+    $job = CRM_Core_BAO_Job::retrieve( $params, $defaults );
+    if(!empty($job) && $job->id) {
+      CRM_Core_BAO_Job::setIsActive( $job->id, 0);
     }
   }
   // Parameters should be set for update_email_resetdate. Make sure we don't have the default
