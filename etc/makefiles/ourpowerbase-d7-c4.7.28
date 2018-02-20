@@ -460,6 +460,12 @@ projects[donortracking][download][type] = "git"
 projects[donortracking][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.donortracking"
 projects[donortracking][download][revision] = "a6559b9e16065fe2be407637bec4e47f1a021d50"
 
+projects[profiles][type] = "library"
+projects[profiles][destination] = "extensions"
+projects[profiles][download][type] = "git"
+projects[profiles][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.profiles"
+projects[profiles][download][revision] = "b8ba47e2b0638d2bc39fc3702797b5159e494a69"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
