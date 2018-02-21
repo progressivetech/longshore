@@ -266,9 +266,12 @@ function pbd_enable_one_time_extensions() {
   drush_log("Importing civicrm_engage data", 'notice');
   pbd_import_engage_data();
 
+  // sumfields and donortracking should be enabled before profiles so 
+  // so we can build profiles using those fields.
   $params['keys'] = array(
-    'net.ourpowerbase.profiles',
+    'net.ourpowerbase.sumfields',
     'net.ourpowerbase.donortracking'
+    'net.ourpowerbase.profiles',
   );
   civicrm_api3('Extension', 'install', $params);
 }
