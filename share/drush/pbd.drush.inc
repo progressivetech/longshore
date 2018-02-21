@@ -270,7 +270,7 @@ function pbd_enable_one_time_extensions() {
   // so we can build profiles using those fields.
   $params['keys'] = array(
     'net.ourpowerbase.sumfields',
-    'net.ourpowerbase.donortracking'
+    'net.ourpowerbase.donortracking',
     'net.ourpowerbase.profiles',
   );
   civicrm_api3('Extension', 'install', $params);
