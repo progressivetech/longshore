@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# This is an insane way to work around wkhtmltopdf's inability to properly 
+# handle https images. See https://github.com/wkhtmltopdf/wkhtmltopdf/issues/3001
+#
+# It's a bit bonkers.
+
+# Iterate over the arguments looking for the one ending in .html
+for var in "$@"; do
+    if [ "${var##*.}" = "html" ]; then
+      # See if the html contains any image links using https
+      replace=$(egrep -io 'https.*\.(jpg|jpeg|png|gif|css)' "$var" | sort | uniq)
+      if [ -n "$replace" ]; then
+        deleteme=
+        for url in $replace; do
+          ext="${url##*.}"
+          path=$(mktemp --suffix=".${ext}")
+          wget -q -O "$path" "$url"
+          sed -i "s|${url}|file://${path}|g" "$var"
+          deleteme="${deleteme} ${path}"
+        done
+      fi
+      break
+    fi
+done
+
+/usr/bin/wkhtmltopdf $@
+
+if [ -n "$deleteme" ]; then
+  rm "$deleteme"
+fi
