@@ -30,6 +30,20 @@ function ptp_drush_command() {
         'sibling' => 'Name of longshore sibling guest',
       ),
     );
+  $items['ptp-get-site-name'] =
+    array(
+      'description' => 'Given a powerbase URL, return the friendly name of the organization.',
+      'options' => array(
+        'url' => 'The full PowerBase URL of the site.'
+      ),
+  );
+  $items['ptp-get-site-email'] =
+    array(
+      'description' => 'Given a powerbase URL, return the email address for the organization.',
+      'options' => array(
+        'url' => 'The full PowerBase URL of the site.'
+      ),
+  );
   $items['ptp-configure'] =
     array('description' => "Ensure all PTP general settings are properly configured."
   );
@@ -92,6 +106,43 @@ function ptp_drush_command() {
     ),
   );
   return $items;
+}
+
+function drush_ptp_get_site_name() {
+ ptp_get_site_info('name'); 
+}
+
+function drush_ptp_get_site_email() {
+ ptp_get_site_info('email'); 
+}
+
+function ptp_get_site_info($info) {
+  _civicrm_init();
+  $url = drush_get_option('url', NULL);
+  if (empty($url)) {
+    drush_Log("Please pass the Powerbase url.", "error");
+    return FALSE;
+  }
+
+  if ($info == 'name') {
+    $return = 'organization_name';
+  }
+  elseif ($info == 'email') {
+    $return = 'email';
+  }
+  else {
+    drush_Log("I can only return a name or an email.", "error");
+    return FALSE;
+  }
+  $result = civicrm_api3('Contact', 'get', array(
+    'sequential' => 1,
+    'return' => array($return),
+    'custom_335' => $url,
+  ));
+  if ($result['count'] == 1) {
+    $values = array_pop($result['values']);
+    drush_print($values[$return]);
+  }
 }
 
 function drush_ptp_checksum() {

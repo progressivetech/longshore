@@ -27,6 +27,7 @@ docker start "$site"
 long_create_dns "$site"
 long_setup_site "$site"
 long_configure_site_once "$site"
+long_setup_org_info "$site"
 long_configure_site "$site"
 long_nginx_reload
 

@@ -53,6 +53,15 @@ function pbd_drush_command() {
       'description' => "Find and add any missing CiviCRM indices."
     );
 
+  $items['pbd-setup-org-info'] =
+    array(
+      'description' => "Set default organization name and email address",
+      'options' => array(
+        'name' => 'The full name of the organization.',
+        'email' => 'The primary email of the organization'
+      )
+    );
+
   return $items;
 }
 
@@ -64,6 +73,78 @@ function pbd_drush_command() {
  * ****************************************************
  */
 
+
+/**
+ * Update organization info
+ */
+function drush_pbd_setup_org_info() {
+  $email = drush_get_option('email', null);
+  $name = drush_get_option('name', null);
+  // Set Drupal settings.
+  if (!empty($email)) {
+    variable_set('site_mail', $email);
+  }
+  if (!empty($name)) {
+    variable_set('site_name', $name);
+  }
+
+  // Now CiviCRM ones.
+  _civicrm_init();
+  $params = array(
+    'id' => CRM_Core_Config::domainID(),
+  );
+  $results = civicrm_api3('Domain', 'get', $params);
+
+  // We can only update the name here.
+  $values = array_pop($results['values']);
+  $values['name'] = $name;
+  civicrm_api3('Domain', 'update', $values);
+
+  // Now we can update the contact manually.
+  $contact_id = $values['contact_id'];
+  $params = array(
+    'id' => $contact_id,
+    'sort_name' => $name,
+    'display_name' => $name,
+    'legal_name' => $name,
+    'organization_name' => $name,
+  );
+  civicrm_api3('Contact', 'create', $params);
+
+  $params = array(
+    'contact_id' => $contact_id,
+    'location_type_id' => 2,
+    'email' => $email,
+    'is_primary' => 1,
+  );
+  civicrm_api3('Email', 'create', $params);
+
+  // Taken from CRM_Contact_Form_Domain
+  $emailName = '"' . $name . '" <' . $email. '>';
+
+  $emailParams = array(
+    'label' => $emailName,
+    'description' => $params['description'],
+    'is_active' => 1,
+    'is_default' => 1,
+  );
+
+  $groupParams = array('name' => 'from_email_address');
+
+  //add from email address.
+  $action = CRM_Core_Action::ADD;
+  $grpId = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', 'from_email_address', 'id', 'name');
+  $fieldValues = array('option_group_id' => $grpId);
+  $emailParams['weight'] = CRM_Utils_Weight::getDefaultWeight('CRM_Core_DAO_OptionValue', $fieldValues);
+
+  //reset default within domain.
+  $emailParams['reset_default_for'] = array('domain_id' => CRM_Core_Config::domainID());
+
+  $fromEmailId = NULL;
+  CRM_Core_OptionValue::addOptionValue($emailParams, $groupParams, $action, $fromEmailId);
+
+
+}
 
 /**
  * Find any missing CiviCRM indices and add them.
@@ -186,17 +267,17 @@ function drush_pbd_configure() {
  **/
 function drush_pbd_configure_once() {
   _civicrm_init();
-  $force = drush_get_option('force', NULL);
-  // Should only be run once because it contains settings
+  $force = drush_get_option('force', null);
+  // should only be run once because it contains settings
   // that a group may want to change and that we don't
   // want to override.
-  drush_log(dt("Performing one-time configuration."), 'notice');
+  drush_log(dt("performing one-time configuration."), 'notice');
   if(1 == pbd_get_setting('one-time-configuration-set')) {
     if(!is_null($force)) {
-      drush_log(dt("Forcing one-time configuration even though it has already been set."), 'notice');
+      drush_log(dt("forcing one-time configuration even though it has already been set."), 'notice');
     }
     else {
-      drush_log(dt("One-time configuration has already been done, skipping."), 'notice');
+      drush_log(dt("one-time configuration has already been done, skipping."), 'notice');
       return TRUE;
     }
   }

@@ -2767,3 +2767,17 @@ long_create_dkim_dns() {
     long_die "Failed to create DNS record."
   fi
 }
+
+# Pull information from the PTP database to setup default
+# info in the site database.
+long_setup_org_info() {
+  local site="$1"
+  local url="https://${site}.ourpowerbase.net/"
+  # Call externally to query the PTP database, not this sites database.
+  # We have to call via the full longshore command because the site
+  # may not be on the same server as the PTP site.
+  local name=$("${LONG_SRV}/bin/longshore" site-drush ptp ptp-get-site-name "--url=$url")
+  local email=$("${LONG_SRV}/bin/longshore" site-drush ptp ptp-get-site-email "--url=$url")
+
+  long_exec_drush_cmd "$site" "pbd-setup-org-info --email=$email '--name=$name'"
+}
