@@ -81,8 +81,10 @@ COPY ./jamie.crt /root/
 RUN sed -i 's/^!//g' /etc/ca-certificates.conf && update-ca-certificates
 
 # Copy over wkhtmltopdf that is compiled with patched qt library so 
-# line breaks work.
+# line breaks work. Also copy over bash wrapper to handle broken
+# ssl in wkhtmltopdf.
 COPY wkhtmltopdf.0.12.4 /usr/bin/wkhtmltopdf
+COPY wkhtmltopdf.wrapper /usr/bin/wkhtmltopdf.wrapper
 
 EXPOSE 9000
 
