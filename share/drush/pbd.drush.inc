@@ -85,7 +85,7 @@ function drush_pbd_setup_org_info() {
     variable_set('site_mail', $email);
   }
   if (!empty($name)) {
-    variable_set('site_name', $name);
+    variable_set('site_name', "${name} Powerbase");
   }
 
   // Now CiviCRM ones.
@@ -3876,7 +3876,7 @@ function pbd_set_smart_group_refresh_mode() {
  */
 function pbd_set_state_province_limit() {
   $key = 'provinceLimit';
-  $results = civicrm_api3('setting', 'get', $params);
+  $results = civicrm_api3('setting', 'get', array());
   if(empty($results['values'][$key])) {
     // Set to the US
     $params[$key] = 1228;
