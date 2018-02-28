@@ -77,6 +77,8 @@ projects[themekey][version] = "3.4"
 
 projects[webform_civicrm][type] = "module"
 projects[webform_civicrm][version] = "4.19"
+; Path to fix address update problem. See https://www.drupal.org/project/webform_civicrm/issues/2948459 
+projects[webform_civicrm][patch][] = "/srv/longshore/etc/makefiles/webform_civicrm.patch"
 
 projects[options_element][type] = "module"
 projects[options_element][version] = "1.12"
