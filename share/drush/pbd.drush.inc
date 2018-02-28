@@ -243,7 +243,6 @@ function drush_pbd_configure() {
   pbd_ensure_civicrm_news_removed_from_dashboard();
   pbd_add_partner_greeting_options();
   pbd_enable_user_framework_logging();
-  pbd_configure_wkhtmltopdf();
   pbd_set_max_file_size();
   pbd_configure_google_recaptcha();
   pbd_configure_google_geo_map();
@@ -331,6 +330,9 @@ function drush_pbd_configure_once() {
   pbd_enable_remote_profile_submissions();
   pbd_set_state_province_limit();
 
+  // Different groups have different settings. By default use built-in
+  // pdf generation. If requested, we may set to wkhtmltopdf.wrapper.
+  pbd_configure_wkhtmltopdf();
   pbd_set_setting('one-time-configuration-set', 1);
 }
  
