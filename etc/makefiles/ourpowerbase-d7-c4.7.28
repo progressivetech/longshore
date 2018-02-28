@@ -468,6 +468,12 @@ projects[profiles][download][type] = "git"
 projects[profiles][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.profiles"
 projects[profiles][download][revision] = "8c504e3f6f4f7938a448cadc7c1c5a2eda5e697e"
 
+projects[fastactionlinks][type] = "library"
+projects[fastactionlinks][destination] = "extensions"
+projects[fastactionlinks][download][type] = "git"
+projects[fastactionlinks][download][url] = "https://github.com/MegaphoneJon/com.megaphonetech.fastactionlinks"
+projects[fastactionlinks][download][revision] = "9c3b32b8c5c686d526e42f4953472fc9eef12ca8"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
