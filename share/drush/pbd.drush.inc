@@ -62,6 +62,10 @@ function pbd_drush_command() {
       )
     );
 
+  $items['pbd-restore-dedupe-rules'] = 
+    array(
+      'description' => 'Restore dedupe rules to defaults.'
+    );
   return $items;
 }
 
@@ -73,6 +77,20 @@ function pbd_drush_command() {
  * ****************************************************
  */
 
+
+/**
+ * Restore dedupe rules.
+ */
+function drush_pbd_restore_dedupe_rules() {
+
+  $sql_rule = "INSERT INTO civicrm_dedupe_rule VALUES (4,2,'civicrm_contact','organization_name',NULL,10),(5,2,'civicrm_email','email',NULL,10),(6,3,'civicrm_contact','household_name',NULL,10),(7,3,'civicrm_email','email',NULL,10),(9,5,'civicrm_contact','organization_name',NULL,10),(10,5,'civicrm_email','email',NULL,10),(11,6,'civicrm_contact','household_name',NULL,10),(12,6,'civicrm_email','email',NULL,10)";
+  $sql_rule_group = "INSERT INTO civicrm_dedupe_rule_group VALUES (1,'Individual',20,'Supervised','IndividualSupervised','Name and Email (reserved)',1),(2,'Organization',10,'Supervised','OrganizationSupervised','Name and Email',0),(3,'Household',10,'Supervised','HouseholdSupervised','Name and Email',0),(4,'Individual',10,'Unsupervised','IndividualUnsupervised','Email (reserved)',1),(5,'Organization',10,'Unsupervised','OrganizationUnsupervised','Name and Email',0),(6,'Household',10,'Unsupervised','HouseholdUnsupervised','Name and Email',0),(7,'Individual',10,'General','IndividualGeneral','Name and Address (reserved)',1)";
+
+  CRM_Core_DAO::executeQuery("DELETE FROM civicrm_dedupe_rule");
+  CRM_Core_DAO::executeQuery("DELETE FROM civicrm_dedupe_rule_group");
+  CRM_Core_DAO::executeQuery($sql_rule_group);
+  CRM_Core_DAO::executeQuery($sql_rule);
+}
 
 /**
  * Update organization info
