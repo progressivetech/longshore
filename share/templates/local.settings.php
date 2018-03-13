@@ -11,9 +11,5 @@ error_reporting(LONG_ERROR_REPORTING);
 // All sites have access to extra language fonts.
 define("K_PATH_FONTS", "/var/www/powerbase/sites/all/libraries/fonts/");
 
-// If we are using stripe - be sure to use the PHP submission method
-// See: https://github.com/drastik/com.drastikbydesign.stripe/issues/113
-define('STRIPE_SUBMISSION_METHOD', 'php');
-
 // Ensure pages can be embedded via iframes by disabling drupal protection
 $conf['x_frame_options'] = '';
