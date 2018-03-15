@@ -6,7 +6,9 @@ It is a set of bash helper scripts providing a thin wrapper around docker comman
 
 == Installing on Debian Stretch ==
 
- * Install docker.io from unstable
+ * Install docker from docker repos. 
+
+ * As longshore user...
 
  * cd /srv && git clone git://git.progressivetech.org/provisioning/longshore.git
 
@@ -16,7 +18,7 @@ It is a set of bash helper scripts providing a thin wrapper around docker comman
 
  * As root: /srv/longshore/bin/longshore init
 
-== Setting up LVM and docker ==
+== Setting up overlay2 and docker ==
 
 Create a 100GB logical volume and format it as ext4.
 
