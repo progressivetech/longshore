@@ -70,6 +70,11 @@ if [ "$reply" = "y" ]; then
   ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-drush '$site' '-y vset maintenance_mode 0'"
 fi
 
+long_prompt "Updating DNS record..."
+if [ "$reply" = "y" ]; then
+  ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-dns '$site'"
+fi
+
 long_prompt "Destroying local copy of site..."
 if [ "$reply" = "y" ]; then
   long_destroy_site "$site"
