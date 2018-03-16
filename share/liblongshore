@@ -1577,6 +1577,9 @@ long_destroy_site() {
     long_log "Dropping database (%s) on host (%s)." info "$site" "$LONG_SITE_DB_HOST"
     long_execute_root_query "$LONG_SITE_DB_HOST" "$temp"  
     rm "$temp"
+    long_log "Stopping and Dropping db container (%s)." info "$LONG_SITE_DB_HOST"
+    docker $LONG_DOCKER_LOG_ARG stop "$LONG_SITE_DB_HOST"
+    docker $LONG_DOCKER_LOG_ARG rm "$LONG_SITE_DB_HOST"
   fi
 
   long_log "Deleting container" info
