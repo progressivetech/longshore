@@ -17,7 +17,7 @@ site="$2"
 db="$3"
 platform="$4"
 
-[ -z "$db" ] && db="$LONG_DEFAULT_DB"
+[ -z "$db" ] && db="db${site}"
 [ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
 
 long_fetch_site "$site"

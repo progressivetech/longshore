@@ -1,19 +1,16 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-transfer <site> <sibling> [<db>]
+long_usage_message="usage: $(basename $0) site-transfer <site> <sibling>
 Move a site from the current sibling to a new sibling.
 
 Arguments
   <site> - The site to transfer.
-  <sibling> - The sibling to transfer the site to.
-  <db> - The database on the remote site to transfer the site to. If
-    empty, use the same database that it is currently on."
+  <sibling> - The sibling to transfer the site to."
 
 long_check_args "$2" "$#" 2
 
 site="$2"
 sibling="$3"
-db_host="$4"
 
 # Run some sanity checks.
 if [ ! -d "${LONG_SRV}/services/sites/${site}" ]; then
@@ -38,12 +35,7 @@ fi
 # Record existing platform
 long_set_site_platform "$site"
 platform="$LONG_SITE_PLATFORM"
-
-if [ -z "$db_host" ]; then
-  # Record existing database
-  long_set_site_db_host "$site"
-  db_host="$LONG_SITE_DB_HOST"
-fi
+db_host="db${site}"
 
 # Empty sessions table for quicker restore and to ensure everyone is 
 # logged out for upgrade.
