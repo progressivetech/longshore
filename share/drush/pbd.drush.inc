@@ -350,6 +350,7 @@ function drush_pbd_configure_once() {
 
   // Different groups have different settings. By default use built-in
   // pdf generation. If requested, we may set to wkhtmltopdf.wrapper.
+  // /usr/bin/xvfb-run -- wkhtmltopdf.wrapper
   pbd_configure_wkhtmltopdf();
   pbd_set_setting('one-time-configuration-set', 1);
 }
