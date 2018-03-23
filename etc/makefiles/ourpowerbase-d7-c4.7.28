@@ -53,19 +53,19 @@ projects[recaptcha][type] = "module"
 projects[recaptcha][version] = "2.2"
 
 projects[views][type] = "module"
-projects[views][version] = "3.17"
+projects[views][version] = "3.18"
 
 projects[advanced_help][type] = "module"
 projects[advanced_help][version] = "1.3"
 
 projects[ctools][type] = "module"
-projects[ctools][version] = "1.12"
+projects[ctools][version] = "1.14"
 
 projects[views_data_export][type] = "module"
 projects[views_data_export][version] = "3.1"
 
 projects[webform][type] = "module"
-projects[webform][version] = "4.15"
+projects[webform][version] = "4.16"
 ; Path to fix obscure conditional bug. See https://www.drupal.org/node/2682441
 projects[webform][patch][] = "/srv/longshore/etc/makefiles/webform.patch"
 
@@ -476,6 +476,12 @@ projects[fastactionlinks][download][type] = "git"
 projects[fastactionlinks][download][url] = "https://github.com/MegaphoneJon/com.megaphonetech.fastactionlinks"
 projects[fastactionlinks][download][revision] = "9c3b32b8c5c686d526e42f4953472fc9eef12ca8"
 
+projects[donorsearch][type] = "library"
+projects[donorsearch][destination] = "extensions"
+projects[donorsearch][download][type] = "git"
+projects[donorsearch][download][url] = "https://github.com/civicrm/org.civicrm.donorsearch"
+projects[donorsearch][download][revision] = "6729134913f91382f41c9f5e57bce1f8a0413487"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
@@ -484,7 +490,7 @@ projects[newsflash][type] = "theme"
 projects[newsflash][version] = "2.5"
 
 projects[bootstrap][type] = "theme"
-projects[bootstrap][version] = "3.13"
+projects[bootstrap][version] = "3.19"
 
 projects[responsive][type] = "theme"
 projects[responsive][version] = "1.7"
