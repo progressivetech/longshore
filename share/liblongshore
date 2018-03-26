@@ -1267,6 +1267,9 @@ long_import_backup() {
   fi
 
   long_execute_site_query "$site" "$path"
+
+  # Ensure Triggers are created.
+  long_exec_drush_cmd "$site" "php-eval '_civicrm_init(); CRM_Core_DAO::triggerRebuild()'"
 }
 
 # Drop all tables in a database. Useful when importing a backup over an existing
