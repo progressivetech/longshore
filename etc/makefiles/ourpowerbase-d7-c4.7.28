@@ -482,6 +482,12 @@ projects[donorsearch][download][type] = "git"
 projects[donorsearch][download][url] = "https://github.com/civicrm/org.civicrm.donorsearch"
 projects[donorsearch][download][revision] = "6729134913f91382f41c9f5e57bce1f8a0413487"
 
+projects[checksum][type] = "library"
+projects[checksum][destination] = "extensions"
+projects[checksum][download][type] = "git"
+projects[checksum][download][url] = "https://github.com/mattwire/uk.co.mjwconsult.checksum.git"
+projects[checksum][download][revision] = "7dba799fbf770ae430d706f896f6702b84b33dda"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
