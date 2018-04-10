@@ -450,10 +450,12 @@ function pbd_add_partner_greeting_options() {
           array('@option_group' => $option_group));
       drush_log($msg);
       // We have a match - we have to insert this value for this option group
+      // filter = 1 means limit to individual contats.
       $params = array(
         'option_group_id' => $dao->id,
         'name' => $new_greetings[$option_group],
         'label' => $new_greetings[$option_group],
+        'filter' => 1,
       );
       try {
         civicrm_api3('OptionValue', 'create', $params);
