@@ -308,7 +308,7 @@ long_phpmyadmin_is_latest() {
 
 # This variable containing the names of all database containers
 long_set_db_containers() {
-  LONG_DB_CONTAINERS=$(ls "${LONG_SRV}/services/databases/")
+  LONG_DB_CONTAINERS=$(ls "${LONG_SRV}/services/databases/" | grep -v "lost+found")
 }
 
 # Create if necessary the given image
