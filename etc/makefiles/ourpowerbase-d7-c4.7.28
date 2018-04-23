@@ -283,7 +283,7 @@ projects[extendedreport][type] = "library"
 projects[extendedreport][destination] = "extensions"
 projects[extendedreport][download][type] = "git"
 projects[extendedreport][download][url] = "git://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport.git"
-projects[extendedreport][download][revision] = "7f8bd37aae173bc82b3e2043e436a3a6d5f78ac6"
+projects[extendedreport][download][revision] = "a9a9c51b077c028cdeabab88664ea77f6afc66da"
 
 projects[iats][type] = "library"
 projects[iats][destination] = "extensions"
