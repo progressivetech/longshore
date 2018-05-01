@@ -488,6 +488,12 @@ projects[checksum][download][type] = "git"
 projects[checksum][download][url] = "https://github.com/mattwire/uk.co.mjwconsult.checksum.git"
 projects[checksum][download][revision] = "7dba799fbf770ae430d706f896f6702b84b33dda"
 
+projects[registermore][type] = "library"
+projects[registermore][destination] = "extensions"
+projects[registermore][download][type] = "git"
+projects[registermore][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.registermore"
+projects[registermore][download][revision] = "ce59f83bd482e1fa195eb6a45ed865ec69aec3e0"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
