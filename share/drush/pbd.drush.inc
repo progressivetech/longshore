@@ -392,6 +392,18 @@ function pbd_configure_dev_site() {
   // Make it easier to debug css and js issues.
   variable_set('preprocess_css', 0);
   variable_set('preprocess_js', 0);
+
+  // Replace stripe live keys with PTP test keys.
+  $sk = 'sk_test_TlGdeoi8e1EOPC3nvcJ4q5UZ';
+  $pk = 'pk_test_k2hELLGpBLsOJr6jZ2z9RaYh';
+
+  $params = array(
+    0 => array($sk, 'String'),
+    1 => array($pk, 'String'),
+  );
+  $sql = "UPDATE civicrm_payment_processor SET user_name = %0, password = %1 WHERE is_test = 0 AND payment_processor_type_id IN (SELECT id FROM civicrm_payment_processor_type WHERE name = 'Stripe')";
+
+  CRM_Core_DAO::executeQuery($sql, $params);
 }
 
 /**
