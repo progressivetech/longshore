@@ -492,7 +492,7 @@ projects[registermore][type] = "library"
 projects[registermore][destination] = "extensions"
 projects[registermore][download][type] = "git"
 projects[registermore][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.registermore"
-projects[registermore][download][revision] = "ce59f83bd482e1fa195eb6a45ed865ec69aec3e0"
+projects[registermore][download][revision] = "5986f7e31615f0601892c47f13e097316f1926e5"
 
 ;****************************************
 ; Drupal themes 
