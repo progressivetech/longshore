@@ -1586,7 +1586,7 @@ long_destroy_site() {
     # Only prompt to drop the db host if we are NOT using the db01 style name.
     if ! echo "$LONG_SITE_DB_HOST" | egrep 'db[0-9]+$'; then
       long_prompt "Deleting DB host" "$LONG_SITE_DB_HOST"
-      if [ "$reply" != "y" ]; then
+      if [ "$reply" = "y" ]; then
         long_log "Stopping and Dropping db container (%s)." info "$LONG_SITE_DB_HOST"
         docker $LONG_DOCKER_LOG_ARG stop "$LONG_SITE_DB_HOST"
         docker $LONG_DOCKER_LOG_ARG rm "$LONG_SITE_DB_HOST"
