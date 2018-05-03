@@ -97,6 +97,9 @@ function drush_pbd_restore_dedupe_rules() {
  */
 function drush_pbd_setup_org_info() {
   $email = drush_get_option('email', null);
+  if (empty($email)) {
+    $email = 'FIXME@example.org';
+  }
   $name = drush_get_option('name', null);
   // Set Drupal settings.
   if (!empty($email)) {
@@ -363,11 +366,10 @@ function drush_pbd_configure_once() {
 function pbd_enable_one_time_extensions() {
   // Enable civicrm_enage module and load our custom data
   // this must happen after campaign component is enabled
-  drush_pm_enable('civicrm_engage');
-
+  module_enable(array('civicrm_engage'));
   drush_log("Importing civicrm_engage data", 'notice');
   pbd_import_engage_data();
-
+ 
   // sumfields and donortracking should be enabled before profiles so 
   // so we can build profiles using those fields.
   $params['keys'] = array(
@@ -375,7 +377,13 @@ function pbd_enable_one_time_extensions() {
     'net.ourpowerbase.donortracking',
     'net.ourpowerbase.profiles',
   );
-  civicrm_api3('Extension', 'install', $params);
+  try {
+    civicrm_api3('Extension', 'install', $params);
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    drush_log(dt("Failed to enable all extensions."), 'error');
+    drush_log($e->getMessage(), 'error');
+  }
 }
 
 function pbd_configure_dev_site() {
@@ -1570,7 +1578,9 @@ function pbd_create_drupal_roles() {
   }
 
   // Everyone should be able to configure the engage preferences
-  $perms['Powerbase Administrator'][] = 'access civiengage settings';
+  if (module_exists('civicrm_engage')) {
+    $perms['Powerbase Administrator'][] = 'access civiengage settings';
+  }
 
   // Full access to views
   $perms['Powerbase Administrator'][] = 'administer views';
@@ -3268,7 +3278,7 @@ function pbd_enable_modules() {
     'civicrm_cicero', 'ctools', 'views', 'views_ui',
     'webform_civicrm',
     'webform','options_element',
-    'libraries', 'autologout', 'themekey_civicrm', 'civicrm_engage',
+    'libraries', 'autologout', 'themekey_civicrm',
     'themekey_ui', 'jquery_update', 'path'
   );
 
@@ -3755,8 +3765,10 @@ function pbd_enable_default_extensions() {
 function pbd_import_engage_data() {
   // Reset the module data cache - since the civicrm_engage module was probably
   // installed during this session.
-  drupal_static_reset('system_rebuild_module_data');
-  if(module_exists('civicrm_engage')) {
+  system_list_reset();
+  $refresh = TRUE;
+  $list = module_list($refresh);
+  if(isset($list['civicrm_engage'])) {
     drush_log(dt("Checking civicrm_engage data."));
     module_load_include('inc', 'civicrm_engage', 'civicrm_engage.admin');
     if(!civicrm_engage_subtypes_added()) {
