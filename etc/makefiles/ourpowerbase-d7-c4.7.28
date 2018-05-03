@@ -462,7 +462,7 @@ projects[donortracking][type] = "library"
 projects[donortracking][destination] = "extensions"
 projects[donortracking][download][type] = "git"
 projects[donortracking][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.donortracking"
-projects[donortracking][download][revision] = "a6559b9e16065fe2be407637bec4e47f1a021d50"
+projects[donortracking][download][revision] = "73ec6aacf249d56b6ec9377992635d3ba1c8c56c"
 
 projects[profiles][type] = "library"
 projects[profiles][destination] = "extensions"
