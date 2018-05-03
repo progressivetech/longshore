@@ -196,7 +196,7 @@ function drush_lsd_set_paths() {
       $results = civicrm_api3('Setting', 'get', array());
       $current_settings = array_pop($results['values']);
       while(list($k, $v) = each($want_settings)) {
-        if($current_settings[$k] != $v) {
+        if(isset($current_settings[$k]) && $current_settings[$k] != $v) {
           // Update it.
           drush_log(dt("Updating @key to @value", array('@key' => $k, '@value' => $v)));
           $update_params[$k] = $v;
