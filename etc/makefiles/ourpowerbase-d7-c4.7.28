@@ -494,6 +494,12 @@ projects[registermore][download][type] = "git"
 projects[registermore][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.registermore"
 projects[registermore][download][revision] = "f620712af22458b516b0a1cadd4f3f80aa180d75"
 
+projects[qrcodecheckin][type] = "library"
+projects[qrcodecheckin][destination] = "extensions"
+projects[qrcodecheckin][download][type] = "git"
+projects[qrcodecheckin][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.qrcodecheckin"
+projects[qrcodecheckin][download][revision] = "a9f0b970f010ece3136d667946c164bf6a22958c"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
