@@ -442,7 +442,7 @@ function demo_create_protest_event() {
 		"selfcancelxfer_time" => "0",
 		"waitlist_text" => "This event is currently full. However you can register now and get added to a waiting list. You will be notified if spaces become available.",
 		"is_template" => "0",
-		"created_id" => "5005",
+		"created_id" => "1",
 		"created_date" => date('Y-m-d H:i:s'),
 		"currency" => "USD",
 		"campaign_id" => "1",
@@ -511,7 +511,7 @@ function demo_create_organizing_workshop_event() {
 		"selfcancelxfer_time" => "0",
 		"waitlist_text" => "This event is currently full. However you can register now and get added to a waiting list. You will be notified if spaces become available.",
 		"is_template" => "0",
-		"created_id" => "5005",
+		"created_id" => "1",
 		"created_date" => date('Y-m-d H:i:s'),
 		"currency" => "USD",
 		"campaign_id" => "1",
@@ -704,7 +704,7 @@ function demo_interest_participation_status() {
     'sequential' => 1,
     'name' => "Interested",
   ));
-  if($result['count'] == "0") {
+  if($result['count'] == "1") {
     drush_log(dt("Not adding interested participant status, already there."), 'ok');
     return;
   }
