@@ -326,14 +326,14 @@ function demo_create_participants() {
   $protest_id = $protest['id'];
 
   
-  // We have membership from contact ids 800 - 850 and we have contributions
+  // We have membership from contact ids 575 - 625 and we have contributions
   // from contact ids 100 - 600.  We will pick a mix from both of these groups
   // to register to events so we can have complex searching options to find
   // potential leaders.
   
   // Ten members and ten contributors will be assigned to both events.
   for($i = 0; $i < 10; $i++) {
-    foreach(array(100, 800) as $start) {
+    foreach(array(100, 575) as $start) {
       $contact_id = $start + $i;
       // Event id 1 (workshop) is in the future, so we only have registered
       $status_id = 1; 
@@ -365,7 +365,7 @@ function demo_create_participants() {
       // twice.
       continue;
     }
-    if($event_id == DEMO_WORKSHOP_EVENT_ID) {
+    if($event_id == $workshop_id) {
       $start_reg = $workshop_start_reg;
       $status_id = 1;
     }
@@ -861,13 +861,13 @@ function demo_memberships() {
   }
 
 
-  // We're going to add 50 members for contacts with ids 800 - 850
+  // We're going to add 50 members for contacts with ids 575 - 625 
   // They are all going to $10 to be members. We have to create
   // a contribution record, and membership record and a line item
   // to link them together.
 
-  $contact_id = 800;
-  while($contact_id < 851) {
+  $contact_id = 575;
+  while($contact_id < 626) {
     // First the contribution. Let's keep it simple - everyone pays by check.
     $join_date = demo_random_date_in_last_year();
     $params = array(
