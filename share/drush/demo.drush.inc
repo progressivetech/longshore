@@ -356,15 +356,17 @@ function demo_create_participants() {
   }
 
   // Now randomly add 100 people to one or the other events.
-  $used_contact_ids = array(1 => array(), 2 => array());
+  $used_contact_ids = array($protest_id => array(), $workshop_id => array());
   for($i = 0; $i < 100; $i++) {
-    $contact_id = rand(50,5000);
+    $contact_id = rand(1000,5000);
+    // array_rand: pick one or more random keys out of an array.
     $event_id = array_rand(array($protest_id => null, $workshop_id => null));
     if(in_array($contact_id, $used_contact_ids[$event_id])) {
       // Avoid potential error of registering someone for some event
       // twice.
       continue;
     }
+    $used_contact_ids[$event_id][] = $contact_id;
     if($event_id == $workshop_id) {
       $start_reg = $workshop_start_reg;
       $status_id = 1;
