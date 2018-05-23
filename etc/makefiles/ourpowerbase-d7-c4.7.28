@@ -492,7 +492,7 @@ projects[registermore][type] = "library"
 projects[registermore][destination] = "extensions"
 projects[registermore][download][type] = "git"
 projects[registermore][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.registermore"
-projects[registermore][download][revision] = "e0828d50e2b9f30e22c8e34c1fc41469eabd9919"
+projects[registermore][download][revision] = "4b207888cf1cf8e2c316895dfe424a5164c32220"
 
 projects[qrcodecheckin][type] = "library"
 projects[qrcodecheckin][destination] = "extensions"
