@@ -498,7 +498,7 @@ projects[qrcodecheckin][type] = "library"
 projects[qrcodecheckin][destination] = "extensions"
 projects[qrcodecheckin][download][type] = "git"
 projects[qrcodecheckin][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.qrcodecheckin"
-projects[qrcodecheckin][download][revision] = "68c9035c384007ce7678adf31d66cd4e6e46961c"
+projects[qrcodecheckin][download][revision] = "dbc1f6da1b17e7db04b02762f613909916dd1fe9"
 
 ;****************************************
 ; Drupal themes 
