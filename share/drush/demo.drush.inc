@@ -939,21 +939,28 @@ function demo_get_random_issue_interest() {
 }
 
 function demo_get_random_constituent_type() {
-  $options = array(
-    'Volunteer' => null,
-    'Activist' => null,
-    'Member' => null,
-    'Donor' => null,
-    'Consultant' => null,
-    'Ally' => null,
-    'Elected Official' => null,
-    'Board Member' => null,
-    'Lead Organizer' => null,
-    'Intern' => null,
-    'Staff' => null,
-    'Media_Contact' => null,
-    'Funder' => null,
-  );
+  // Get all active options.
+  static $options;
+
+  if (empty($options)) {
+    $id = civicrm_api3('OptionGroup', 'getvalue', array(
+      'name' => 'constituent_type_ind_values',
+      'return' => 'id',
+    ));
+
+    $result = civicrm_api3('OptionValue', 'get', array(
+      'option_group_id' => $id,
+      'is_active' => 1
+    ));
+
+    $options = array();
+    foreach($result['values'] as $value) {
+      $name = $value['label'];
+      $options[$name] = null;
+    }
+  }
+  
+  // array_rand returns a random array key.
   return array_rand($options);
 }
 function demo_contacts() {
@@ -1044,10 +1051,22 @@ function demo_contacts() {
       );
       $email_address = $params['first_name'] . '.' .  $params['last_name'] . 
         substr(md5(rand()), 0, 5) . '@example.net';
+
       $params['api.email.create'] = array(
         'email' => $email_address,
         'is_primary' => 1,
         'location_type_id' => 1
+      );
+
+      $phone_first = rand(100,999);
+      $phone_last = rand(1000,9999);
+      $phone = '(555) ' . $phone_first . '-' . $phone_last; 
+
+      $params['api.phone.create'] = array(
+        'phone' => $phone,
+        'phone_type_id' => 2, // Mobile
+        'is_primary' => 1,
+        'location_type_id' => 1 // Home
       );
 
       civicrm_api3('Contact', 'create', $params);
