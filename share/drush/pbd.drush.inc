@@ -352,6 +352,7 @@ function drush_pbd_configure_once() {
   pbd_configure_autologout();
   pbd_enable_remote_profile_submissions();
   pbd_set_state_province_limit();
+  pbd_dedupe_rules();
 
   // Different groups have different settings. By default use built-in
   // pdf generation. If requested, we may set to wkhtmltopdf.wrapper.
@@ -4066,4 +4067,43 @@ function pbd_enable_remote_profile_submissions() {
   pbd_setting('remote_profile_submissions', TRUE);
 }
 
+
+/**
+ * Set our own dedupe rules.
+ */
+function pbd_dedupe_rules() {
+
+  $sql = "UPDATE civicrm_dedupe_rule_group SET used = 'General' WHERE name = 'IndividualUnsupervised'";
+  CRM_Core_DAO::executeQuery($sql);
+  $sql = "UPDATE civicrm_dedupe_rule_group SET used = 'Unsupervised' WHERE name = 'IndividualSupervised'";
+  CRM_Core_DAO::executeQuery($sql);
+  $sql = "INSERT INTO civicrm_dedupe_rule_group SET 
+    contact_type = 'Individual',
+    threshold = '2',
+    used = 'Supervised', 
+    name = 'FirstAndLastName',
+    title = 'First and Last Name'";
+  CRM_Core_DAO::executeQuery($sql);
+
+  $sql = "SELECT id FROM civicrm_dedupe_rule_group WHERE name = 'FirstAndLastName'";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  $dao->fetch();
+  
+  $sql = "INSERT INTO civicrm_dedupe_rule SET
+    dedupe_rule_group_id = %0,
+    rule_table = 'civicrm_contact',
+    rule_field = 'first_name',
+    rule_length = NULL,
+    rule_weight = 1";
+  $params = array(0 => array($dao->id, 'Integer'));
+  CRM_Core_DAO::executeQuery($sql, $params); 
+  $sql = "INSERT INTO civicrm_dedupe_rule SET
+    dedupe_rule_group_id = %0,
+    rule_table = 'civicrm_contact',
+    rule_field = 'last_name',
+    rule_length = NULL,
+    rule_weight = 1";
+  CRM_Core_DAO::executeQuery($sql, $params); 
+
+}
 ?>
