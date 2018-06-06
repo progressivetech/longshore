@@ -344,6 +344,7 @@ function drush_pbd_configure_once() {
   pbd_remove_country_from_address_formats();
   pbd_enable_waitlist_participant_status_types();
   pbd_add_web_signup_group();
+  pbd_enable_disable_constituent_types();
   pbd_add_constituent_type_fields_to_profiles();
   pbd_add_first_tag();
   pbd_configure_ckeditor();
@@ -847,6 +848,48 @@ function pbd_add_first_tag() {
     return FALSE;
   }
 }
+
+/**
+ * We don't want all the default constituent types.
+ *
+ * FIXME: this should be fixed in civicrm_engage where they are
+ * created.
+ */
+
+function pbd_enable_disable_constituent_types() {
+
+  $sql = "UPDATE civicrm_option_value v 
+    JOIN civicrm_option_group g ON v.option_group_id = g.id 
+    SET v.is_active = 0 
+    WHERE 
+      (
+        g.name = 'constituent_type_ind_values' 
+          AND 
+        (
+          label = 'Member' OR 
+          label = 'Lead Organizer' OR
+          label = 'Activist' OR
+          label = 'Funder' OR
+          label = 'Elected Official' OR
+          label = 'Media Contact' OR
+          label = 'Donor'
+        )
+      )
+      OR 
+      (
+        g.name = 'constituent_type_org_values' 
+          AND 
+        (
+          label = 'Member Organization' OR 
+          label = 'Media Organization' OR
+          label = 'Foundation' OR
+          label = 'Elected Official office'
+        )
+      )";
+  CRM_Core_DAO::executeQuery($sql);
+
+}
+
 /**
  * Add constituent types to reserved org and ind profiles.
  *
