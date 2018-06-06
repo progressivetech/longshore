@@ -319,7 +319,7 @@ projects[stripe][type] = "library"
 projects[stripe][destination] = "extensions"
 projects[stripe][download][type] = "git"
 projects[stripe][download][url] = "git://git.progressivetech.org/extensions/com.drastikbydesign.stripe"
-projects[stripe][download][revision] = "0362743574d81c91bbdf1323669a5b12e6746c4a"
+projects[stripe][download][revision] = "753f833602f0b69773f12f9cb5228f3bb5e15c52"
 
 projects[authnetecheck][type] = "library"
 projects[authnetecheck][destination] = "extensions"
