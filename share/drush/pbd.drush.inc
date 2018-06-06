@@ -344,7 +344,8 @@ function drush_pbd_configure_once() {
   pbd_remove_country_from_address_formats();
   pbd_enable_waitlist_participant_status_types();
   pbd_add_web_signup_group();
-  pbd_enable_disable_constituent_types();
+  pbd_fix_constituent_types();
+  pbd_disable_contact_types();
   pbd_add_constituent_type_fields_to_profiles();
   pbd_add_first_tag();
   pbd_configure_ckeditor();
@@ -386,6 +387,48 @@ function pbd_enable_one_time_extensions() {
     drush_log($e->getMessage(), 'error');
   }
 }
+
+/**
+ * We don't want all contact types enabled by default.
+ *
+ * FIXME: should be fixed in civicrm_engage
+ */
+function pbd_disable_contact_types() {
+  // Get ids of contact types to disable.
+  $disables = array(
+    0 => array(
+      'name' => 'Funder_Contact',
+      'parent_id' => 'Individual',
+    ),
+    1 => array(
+      'name' => 'Media_Contact',
+      'parent_id' => 'Individual',
+    ),
+    2 => array(
+      'name' => 'Media_Outlet',
+      'parent_id' => 'Organization',
+    ),
+    3 => array(
+      'name' => 'Foundation',
+      'parent_id' => 'Organization',
+    ),
+  );
+
+  foreach($disables as $disable) {
+    $params = $disable;
+    $params['return'] = 'id';
+    print_r($params);
+    $id = civicrm_api3('ContactType', 'getvalue', $params);
+
+    $params = array(
+      'id' => $id,
+      'is_active' => 0,
+    );
+    print_r($params);
+    civicrm_api3('ContactType', 'create', $params);
+  }
+}
+
 
 function pbd_configure_dev_site() {
   drush_log(dt("Configuring dev site settings."));
@@ -856,8 +899,9 @@ function pbd_add_first_tag() {
  * created.
  */
 
-function pbd_enable_disable_constituent_types() {
+function pbd_fix_constituent_types() {
 
+  // First disable a bunch we don't want.
   $sql = "UPDATE civicrm_option_value v 
     JOIN civicrm_option_group g ON v.option_group_id = g.id 
     SET v.is_active = 0 
@@ -888,6 +932,21 @@ function pbd_enable_disable_constituent_types() {
       )";
   CRM_Core_DAO::executeQuery($sql);
 
+  // Now add, one we want (prospect)
+  $id = civicrm_api3('OptionGroup', 'getvalue', array(
+    'name' => 'constituent_type_ind_values',
+    'return' => 'id'
+  ));
+
+  $params = array(
+    'name' => 'Prospect',
+    'option_group_id' => $id,
+    'label' => 'Prospect',
+    'value' => 'Prospect',
+    'is_active' => 1,
+  );
+
+  civicrm_api3('OptionValue', 'create', $params);
 }
 
 /**
