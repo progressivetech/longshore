@@ -1557,6 +1557,7 @@ long_destroy_site() {
   # Remove the nginx file first so the site is no longer accessible.
   long_log "Disabling nginx configuration." info
   rm -f "${LONG_NGINX_SITES_ENABLED}/${site}.conf"
+  rm -f "${LONG_NGINX_SITES_ENABLED}/${site}-redirect.conf"
   long_nginx_reload
 
   if long_container_running "$site"; then
