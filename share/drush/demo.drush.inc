@@ -48,6 +48,8 @@ function drush_demo_data() {
     demo_unset_default_footer();
     demo_create_random_activities();
     demo_save_sumfields();
+    demo_enable_extensions();
+    demo_add_sms_provider();
   }
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("Failed to create demo data in the database."), 'error');
@@ -478,8 +480,9 @@ function demo_create_organizing_workshop_event() {
 	$params = array(
 		"title" => "RESIST! Organizing Workshop",
 		"event_title" => "RESIST! Organizing Workshop",
-		"description" => "Joins for our RESIST! Organizing workshop",
-		"event_description" => "Joins for our RESIST! Organizing workshop",
+		"description" => "Join for our RESIST! Organizing workshop",
+    // Shamelessly stolen from https://college.lclark.edu/live/events/223510-civil-disobedience-workshop
+		"event_description" => "This workshop is a response to the danger our country and the world faces in the wake of Donald Trump's unconstitutional and illegal actions as president. In order to effectively oppose Trump's agenda, we will look back to previous movements that employed civil disobedience as well as look forward as we develop new tactics that respond to our reality. In addition to exploring the theory of civil disobedience, we will learn first hand tactics for engaging in it as it relates to our upcoming protests.",
 		"event_type_id" => "6",
 		"is_public" => "0",
 		"start_date" => $start,
@@ -966,6 +969,8 @@ function demo_get_random_constituent_type() {
 function demo_contacts() {
   // contacts.csv downloaded from https://www.forsyth.cc/elections/voter_data.aspx
   // Only run if we have less than 2 contacts already.
+  // geocoding.csv is created from a Powerbase site that had geo-coding run on it.
+  // We import the geo-coding to save on geo coding expenses.
   $sql = "SELECT COUNT(*) AS count FROM civicrm_contact";
   $dao = CRM_Core_DAO::executeQuery($sql);
   $dao->fetch();
@@ -973,6 +978,20 @@ function demo_contacts() {
     drush_log(dt("Not running, more than 3 contacts already entered."), 'ok');
     return;
   }
+  // First load our geocoding file and build an array in memory.
+  $geo = array();
+  if (($handle = fopen(__dir__  . "/geo.csv", "r")) !== FALSE) {
+    $i = 0;
+    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+      $i++;
+      $street_address = $data[0];
+      $geo[$street_address] = array(
+        'geo_code_1' => $data[1],
+        'geo_code_2' => $data[2],
+      );
+    }
+  }
+
   if (($handle = fopen(__dir__  . "/contacts.csv", "r")) !== FALSE) {
     $i = 0;
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
@@ -1033,6 +1052,12 @@ function demo_contacts() {
       $state = trim(array_shift($state_zip));
       $postal_code = $state_zip[0];
 
+      $geo_code_1 = NULL;
+      $geo_code_2 = NULL;
+      if (array_key_exists($street_address, $geo)) {
+        $geo_code_1 = $geo[$street_address]['geo_code_1'];
+        $geo_code_2 = $geo[$street_address]['geo_code_2'];
+      }
 
       $params['api.address.create'] = array(
         'street_address' => $street_address,
@@ -1040,7 +1065,9 @@ function demo_contacts() {
         'state_province_id' => 'North Carolina',
         'postal_code' => $postal_code,
         'is_primary' => 1,
-        'location_type_id' => 1
+        'location_type_id' => 1,
+        'geo_code_1' => $geo_code_1,
+        'geo_code_2' => $geo_code_2
       );
       $email_address = $params['first_name'] . '.' .  $params['last_name'] . 
         substr(md5(rand()), 0, 5) . '@example.net';
@@ -1223,4 +1250,30 @@ function demo_contribution_page() {
   $result = civicrm_api3('ContributionPage', 'create', $params);
 }
 
+function demo_enable_extensions() {
+  $params['keys'] = array('com.webaccessglobal.module.civimobile', 'org.civicrm.sms.twilio');
+  civicrm_api3('Extension', 'install', $params);
+}
 
+function demo_add_sms_provider() {
+  $params = array(
+    "name" => "org.civicrm.sms.twilio",
+    "title" => "SMS: Organizing Department",
+    "username" => "fake",
+    "password" => "fake",
+    "api_type" => "1",
+    "api_url" => "https://api.twilio.com/",
+    "api_params" => "From=15555551212",
+    "is_default" => "1",
+    "is_active" => "1",
+    "domain_id" => "1"
+  );
+  $result = civicrm_api3('SmsProvider', 'get', $params);
+
+  if ($result['count'] == 0) {
+    civicrm_api3('SmsProvider', 'create', $params);
+  }
+  else {
+    drush_log(dt("SMS Provider already created."), 'ok');
+  }
+}
