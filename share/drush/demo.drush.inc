@@ -974,13 +974,6 @@ function demo_contacts() {
     return;
   }
   if (($handle = fopen(__dir__  . "/contacts.csv", "r")) !== FALSE) {
-    // Until skipping geo coding is fixed...
-    // https://support.ourpowerbase.net/ticket/2292
-    $params = array(
-      'geoProvider' => "",
-      'mapProvider' => "",
-    );
-    civicrm_api3('Setting', 'create', $params); 
     $i = 0;
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
       $i++;
@@ -1072,11 +1065,6 @@ function demo_contacts() {
       civicrm_api3('Contact', 'create', $params);
     }
     fclose($handle);
-    $params = array(
-      'geoProvider' => "Google",
-      'mapProvider' => "Google",
-    );
-    civicrm_api3('Setting', 'create', $params); 
   }
 }
 
