@@ -418,14 +418,12 @@ function pbd_disable_contact_types() {
   foreach($disables as $disable) {
     $params = $disable;
     $params['return'] = 'id';
-    print_r($params);
     $id = civicrm_api3('ContactType', 'getvalue', $params);
 
     $params = array(
       'id' => $id,
       'is_active' => 0,
     );
-    print_r($params);
     civicrm_api3('ContactType', 'create', $params);
   }
 }
