@@ -59,11 +59,7 @@ function drush_demo_data() {
 }
 
 function demo_save_sumfields() {
-  $out = sumfields_get_setting("generate_schema_and_data", FALSE);
-  if ($out) {
-    drush_log(dt("Not setting sumfields, already set"), 'ok');
-    return;
-  }
+  // Always re-save to ensure lastest contributions are counted. 
 
   // Let's use all fields
   $new_active_fields = array(
@@ -480,9 +476,8 @@ function demo_create_organizing_workshop_event() {
 	$params = array(
 		"title" => "RESIST! Organizing Workshop",
 		"event_title" => "RESIST! Organizing Workshop",
-		"description" => "Join for our RESIST! Organizing workshop",
     // Shamelessly stolen from https://college.lclark.edu/live/events/223510-civil-disobedience-workshop
-		"event_description" => "This workshop is a response to the danger our country and the world faces in the wake of Donald Trump's unconstitutional and illegal actions as president. In order to effectively oppose Trump's agenda, we will look back to previous movements that employed civil disobedience as well as look forward as we develop new tactics that respond to our reality. In addition to exploring the theory of civil disobedience, we will learn first hand tactics for engaging in it as it relates to our upcoming protests.",
+		"description" => "This workshop is a response to the danger our country and the world faces in the wake of Donald Trump's unconstitutional and illegal actions as president. In order to effectively oppose Trump's agenda, we will look back to previous movements that employed civil disobedience as well as look forward as we develop new tactics that respond to our reality. In addition to exploring the theory of civil disobedience, we will learn first hand tactics for engaging in it as it relates to our upcoming protests.",
 		"event_type_id" => "6",
 		"is_public" => "0",
 		"start_date" => $start,
@@ -526,6 +521,17 @@ function demo_create_organizing_workshop_event() {
 	);
 
   $result = civicrm_api3('Event', 'create', $params);
+
+  // Add the online profile.
+  $params = array(
+    'is_active' => 1,
+    'module' => 'CiviEvent',
+    'entity_table' => 'civicrm_event',
+    'entity_id' => 1,
+    'uf_group_id' => 12, // This is the Your Registration Info profile
+  );
+
+  $result = civicrm_api3('UFJoin', 'create', $params);
 }
 
 
