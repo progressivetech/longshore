@@ -169,7 +169,12 @@ if [ -z "$source_platform_path_temp" ]; then
   dm_install_drupal "$SRC/drupal" "$TRG/drupal" > /dev/null || long_die "Failed to dm_install_drupal"
 
   # Now download the internationalization file and unpack it.
-  l10n_file="civicrm-${DM_VERSION}-l10n.tar.gz"
+  if echo $DM_VERSION | grep beta >/dev/null; then
+    # Temp hack while we install 5.3.0 in beta.
+    l10n_file=civicrm-5.2.0-l10n.tar.gz
+  else
+    l10n_file="civicrm-${DM_VERSION}-l10n.tar.gz"
+  fi
 
   l10n_url="https://download.civicrm.org/${l10n_file}"
   cd "$TRG"
