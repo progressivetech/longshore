@@ -160,7 +160,7 @@ projects[civimigrate][download][revision] = "d5ff5861b07f50bfc9a92f8a4ea5d9b61dd
 projects[themekey_civicrm][type] = "module"
 projects[themekey_civicrm][download][type] = "git"
 projects[themekey_civicrm][download][url] = "git://git.progressivetech.org/powerbase/themekey_civicrm.git"
-projects[themekey_civicrm][download][revision] = "943500de8e8e030deabca76d203425f3240c8c9a"
+projects[themekey_civicrm][download][revision] = "37a19a50c70869846ccb8316c0eb62365071a3e0"
 
 projects[arrange_fields][type] = "module"
 projects[arrange_fields][download][type] = "git"
