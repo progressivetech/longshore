@@ -109,7 +109,7 @@ LONG_LOG_LEVEL=error
 
 for site in $sites; do
   new_platform=$(grep ":$site:" "$path" | cut -d: -f3)
-  new_version=$(echo "$new_platform" | egrep -o "[0-9]+\.[0-9]+\.[0-9]+$")
+  new_version=$(echo "$new_platform" | egrep -o "[0-9]+\.[0-9]+(\.[0-9]+)?$")
   printf "\n____Migrating %s to platform %s running %s.____\n" "$site" "$new_platform" "$new_version"
   # Run some sanity checks.
   if ! long_check_site_exists "$site"; then
