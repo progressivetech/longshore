@@ -208,7 +208,8 @@ for site in $sites; do
   # Confirm that the udpate was successful.
   temp=$(mktemp)
   printf "SELECT version FROM civicrm_domain WHERE id = 1\n" > "$temp"
-  post_upgrade_version=$(long_execute_site_query "$site" "$temp" | tail -n1) 
+  # Strip out any .beta2 tags.
+  post_upgrade_version=$(long_execute_site_query "$site" "$temp" | tail -n1 | sed "s/\.beta[0-9]*$//") 
   if [ "$post_upgrade_version" != "$new_version" ]; then
     long_log "upgrade:%s Failed confirm post upgrade database version" error "$site"
     continue
