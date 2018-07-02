@@ -103,3 +103,5 @@ LONG_YAHOO_BOSS_API_SECRET=""
 
 LONG_SIBLING_CACHE=~/.long-sibling-cache
 
+# Only used on dev sites - the host used when getting info about a site.
+# LONG_DEFAULT_HOST=neruda

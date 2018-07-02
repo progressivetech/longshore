@@ -1819,7 +1819,7 @@ long_fetch_site() {
   local site="$1"
   long_log "Getting remote path and server" info 
   local user=longshore
-  local default_host=olivera
+  local default_host=$LONG_DEFAULT_HOST
   local path="/srv/longshore/services/sites/${site}"
 
   long_log "Get host for site (%s)" info "$site"
@@ -2271,7 +2271,7 @@ long_gitify_site() {
       # Dev instance, add remote and pull 
       long_log "Initializing git repo for dev site." info
       local user=longshore
-      local default_host=olivera
+      local default_host=$LONG_DEFAULT_HOST
       long_log "Get host for site (%s)" info "$site"
       local host=$(ssh ${user}@${default_host}.mayfirst.org "/srv/longshore/bin/longshore site-info '$site'" | grep ^Sibling: | cut -d: -f2 | tr -d ' ')
 
