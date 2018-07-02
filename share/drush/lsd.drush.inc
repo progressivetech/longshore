@@ -107,7 +107,7 @@ function drush_lsd_set_paths() {
   // We only need to refresh the cache if we reset an extensions setting.
   $freshen_extensions_cache = FALSE;
 
-  $abs_root_path = '/var/www/powerbase';
+  $abs_root_path = '[cms.root]';
   $rel_site_path ='sites/default';
   $abs_site_path = $abs_root_path . '/' . $rel_site_path;
 
@@ -131,10 +131,6 @@ function drush_lsd_set_paths() {
         'value' => "${rel_civicrm_files_path}/upload",
         'group_name' => 'Directory Preferences',
       ),
-      'customPHPPathDir' => array(
-        'value' => "${abs_site_path}/custom-civicrm/php",
-        'group_name' => 'Directory Preferences',
-      ),
       'extensionsDir' => array(
         'value' => "${abs_root_path}/sites/all/extensions",
         'group_name' => 'Directory Preferences',
@@ -142,10 +138,6 @@ function drush_lsd_set_paths() {
       'extensionsURL' => array(
         'value' => "sites/all/extensions",
         'group_name' => 'URL Preferences',
-      ),
-      'customTemplateDir' => array(
-        'value' => "${abs_site_path}/custom-civicrm/templates",
-        'group_name' => 'Directory Preferences',
       ),
     );
 
