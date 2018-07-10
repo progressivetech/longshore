@@ -66,6 +66,10 @@ function pbd_drush_command() {
     array(
       'description' => 'Restore dedupe rules to defaults.'
     );
+  $items['pbd-rebuild-multilingual-schema'] = 
+    array(
+      'description' => 'If site is multi-lingual, rebuilds the schema.'
+    );
   return $items;
 }
 
@@ -78,6 +82,25 @@ function pbd_drush_command() {
  */
 
 
+/**
+ * Rebuild the multi-lingual schema 
+ *
+ * Check to make sure the site is multi-lingual and if so, rebuild the schema.
+ * This somehow doesn't get properly run when we upgrade.
+ */
+
+function drush_pbd_rebuild_multilingual_schema() {
+  _civicrm_init();
+  $sql = "SELECT locales FROM civicrm_domain WHERE locales IS NOT NULL";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  if ($dao->N == 0) {
+    return TRUE;
+  }
+  $dao->fetch();
+  $langs = explode(CRM_Core_DAO::VALUE_SEPARATOR, $dao->locales);
+  CRM_Core_I18n_Schema::rebuildMultilingualSchema($langs);
+  drush_log(dt("Updated schema with @langs", array('@langs' => print_r($langs, TRUE))), 'info');
+}
 /**
  * Restore dedupe rules.
  */

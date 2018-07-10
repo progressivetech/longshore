@@ -113,6 +113,15 @@ done
 # Reset to previous log level.
 LONG_LOG_LEVEL="$old_log_level"
 
+long_prompt "Rebuilding multi-lingual schema (if multi-lingual)..."
+[ "$reply" = "y" ] && long_exec_drush_cmd "$site" "pbd-rebuild-multilingual-schema"
+
+long_prompt "Updating Drupal"
+[ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y updatedb"
+
+long_prompt "Updating CiviCRM Extensions on %s" info "$site"
+[ "$reply" = "y" ] &&  long_exec_drush_cmd "$site" "-y lsd-extensions-update"
+
 long_prompt "Removing maintenance mode..."
 [ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"
 

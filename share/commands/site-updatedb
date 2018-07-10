@@ -25,6 +25,7 @@ for site in $sites; do
   long_exec_drush_cmd "$site" "-y updatedb"
   long_log "Updating CiviCRM Core on %s" info "$site"
   long_exec_drush_cmd "$site" "-y civicrm-upgrade-db"
+  long_exec_drush_cmd "$site" "pbd-rebuild-multilingual-schema"
   long_log "Updating CiviCRM Extensions on %s" info "$site"
   long_exec_drush_cmd "$site" "-y lsd-extensions-update"
 done
