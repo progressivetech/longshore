@@ -1832,7 +1832,7 @@ function pbd_disable_create_new_household_menu() {
 }
 
 function pbd_activate_cron_jobs() {
-  $activate = array('process_mailing', 'process_membership', 'fetch_bounces', 'send_reminder', 'fetch_activities', 'cleanup', 'update_greeting', 'update_greeting', 'process_participant', 'process_sms', 'process_respondent', 'geocode', 'update_email_resetdate');
+  $activate = array('process_mailing', 'process_membership', 'fetch_bounces', 'send_reminder', 'fetch_activities', 'cleanup', 'update_greeting', 'update_greeting', 'process_participant', 'process_sms', 'process_respondent', 'geocode', 'update_email_resetdate', 'disable_expired_relationships');
   $disable = array('version_check');
   _civicrm_init();
   require_once('CRM/Core/BAO/Job.php');
