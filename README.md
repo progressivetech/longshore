@@ -8,6 +8,8 @@ It is a set of bash helper scripts providing a thin wrapper around docker comman
 
  * Install docker from docker repos. 
 
+ * mkdir /srv && chown longshore /srv
+
  * As longshore user...
 
  * cd /srv && git clone git://git.progressivetech.org/provisioning/longshore.git
@@ -16,7 +18,7 @@ It is a set of bash helper scripts providing a thin wrapper around docker comman
 
  * Edit /srv/longshore/etc/longshore.conf
 
- * As root: /srv/longshore/bin/longshore init
+ * As root: chown root /srv && /srv/longshore/bin/longshore init
 
 == Setting up overlay2 and docker ==
 
