@@ -76,7 +76,10 @@ function ptp_drush_command() {
     );
   $items['ptp-set-outbound-mail-settings'] = 
     array(
-      'description' => dt("Temporary for re-setting to bulk.mayfirst.org for upgade purposes.")
+      'description' => dt("Temporary for re-setting to bulk.mayfirst.org for upgade purposes."),
+      'options' => array(
+        'host' => dt("The host to set it to. Defaults to bulk.ourpowerbase.net")
+      ),
     );
   $items['ptp-recreate-multilingual-view'] =
     array(
@@ -343,7 +346,9 @@ function drush_ptp_recreate_multilingual_view() {
 
 function drush_ptp_set_outbound_mail_settings() {
   _civicrm_init();
-  ptp_set_outbound_mail_settings('bulk.ourpowerbase.net');
+  $host = drush_get_option('host','bulk.ourpowerbase.net'); 
+  drush_log(dt("Setting outbound host to @host", array('@host' => $host)), 'ok');
+  ptp_set_outbound_mail_settings($host);
 }
 
 /**
