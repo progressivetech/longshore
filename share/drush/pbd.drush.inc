@@ -1659,10 +1659,12 @@ function pbd_create_drupal_roles() {
   $never_access_perms = array('view report sql');
   foreach($never_access_perms as $never_access_perm) {
     unset($civi_perms[$never_access_perm]);
-    foreach($roles as $never_access_role) {
-      if(FALSE !== ($role_obj = user_role_load_by_name($never_access_role))) {
-        user_role_revoke_permissions($role_obj->rid, $never_access_perm);
-      }
+  }
+  // Let's get admin too.
+  $never_access_roles = array_merge($roles, array('administrator'));
+  foreach($never_access_roles as $never_access_role) {
+    if(FALSE !== ($role_obj = user_role_load_by_name($never_access_role))) {
+      user_role_revoke_permissions($role_obj->rid, $never_access_perms);
     }
   }
 
