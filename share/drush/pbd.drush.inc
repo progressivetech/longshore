@@ -461,7 +461,10 @@ function pbd_configure_dev_site() {
 
   // Allow anon users to see dsm calls.
   user_role_grant_permissions(1, array('access devel information'));
+
+  // Allow admin role access to sql tab in reports.
   drush_civicrm_enable_debug();
+  user_role_grant_permissions(3, array('view report sql'));
 
   // Make it easier to debug css and js issues.
   variable_set('preprocess_css', 0);
@@ -1620,11 +1623,17 @@ function pbd_grant_admin_all_perms() {
     }
   }
 
+  // Create list of permissions that not even admins should have
+  // access to on a production site.
+  $exceptions = array('view report sql');
   // ensure the admin role has all avaialble permissions
   // $all_permissions = drupal_map_assoc(array_keys(module_invoke_all('permission')));
   $all_permissions = array_keys(module_invoke_all('permission'));
   $admin_permissions = array();
   while(list(,$perm) = each($all_permissions)) {
+    if (in_array($perm, $exceptions)) {
+      continue;
+    }
     $admin_permissions[$perm] = true;
   }
   user_role_change_permissions($rid, $admin_permissions);
@@ -1645,6 +1654,17 @@ function pbd_create_drupal_roles() {
   // some sites may want to remove this priv so ACLs can
   // do a more fine tuned approach.
   unset($civi_perms['access all custom data']);
+
+  // There are some permissions that nobody should get on a production site.
+  $never_access_perms = array('view report sql');
+  foreach($never_access_perms as $never_access_perm) {
+    unset($civi_perms[$never_access_perm]);
+    foreach($roles as $never_access_role) {
+      if(FALSE !== ($role_obj = user_role_load_by_name($never_access_role))) {
+        user_role_revoke_permissions($role_obj->rid, $never_access_perm);
+      }
+    }
+  }
 
   $civi_perms = array_keys($civi_perms);
 
