@@ -29,5 +29,5 @@ long_setup_site "$site"
 long_configure_site_once "$site"
 long_setup_org_info "$site"
 long_configure_site "$site"
+long_add_demo_theme "$site"
 long_nginx_reload
-
