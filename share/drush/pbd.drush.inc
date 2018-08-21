@@ -38,7 +38,8 @@ function pbd_drush_command() {
     array(
       'description' => "Setup a new theme to work as custom theme (remove blocks, configure theme, etc.)",
       'options' => array(
-        'name' => 'The name of the theme to prepare.'
+        'name' => 'The name of the theme to prepare.',
+        'default' => 'Whether to set it as the default in themekey.'
       )
     );
   $items['pbd-subscription-links'] =
@@ -816,6 +817,9 @@ function drush_pbd_prepare_theme() {
   drupal_theme_rebuild();
   $themes = system_rebuild_theme_data();
   $name = drush_get_option('name');
+  // Pass --default if you want this theme to replace the default theme.'
+  // This is only useful on new sites.
+  $default = drush_get_option('default');
   // Ensure the theme is here (e.g. typo)
   if(!array_key_exists($name, $themes)) {
     drush_log("That theme does not exist in the filesystem.", 'error');
@@ -845,6 +849,13 @@ function drush_pbd_prepare_theme() {
     ->condition('region', 'content', '!=')
     ->execute();
 
+  if ($default) {
+    // Replace the "default" theme with this one.
+    db_update("themekey_properties")
+      ->fields(array('theme' => $name))
+      ->condition('theme', 'default', '=')
+      ->execute();
+  }
 }
 /*
  * ***************************************************************
