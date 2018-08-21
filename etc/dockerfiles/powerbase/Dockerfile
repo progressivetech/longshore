@@ -36,6 +36,8 @@ RUN apt-get update && \
     openssh-client \
     bc \
     libssl-dev \
+    xfonts-75dpi \
+    xfonts-base \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
