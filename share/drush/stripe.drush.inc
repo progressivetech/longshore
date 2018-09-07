@@ -119,9 +119,6 @@ function drush_stripe_repair_subs() {
 function drush_stripe_sync_plans() {
   _civicrm_init();
 
-  // Include Stripe library.
-  require_once('packages/stripe-php/init.php');
-
   // Get all payment processors.
   $sql = "SELECT id, user_name FROM civicrm_payment_processor WHERE is_active = 1 AND ".
       "is_test = 0 AND url_site LIKE '%api.stripe.com%'";
