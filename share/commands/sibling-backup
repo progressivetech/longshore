@@ -8,18 +8,6 @@ host=$(hostname)
 backups_path="/srv/longshore/ptp-backups/${host}"
 
 for sibling in $LONG_SIBLINGS; do
-  # Skip chico - because we don't send backups to chico to save on
-  # bandwidth costs for chico.
-  [ "$sibling" = "chico" ] && continue
-
-  # For chico, we only send our backups to victoria
-  # to save on bandwidth.
-  bwlimit=
-  if [ "$host" = "chico" ]; then
-    [ "$sibling" != "neruda" ] && continue
-    # Also set a bandwidth limit
-    bwlimit="--bwlimit=200"
-  fi
-  rsync -a $bwlimit --delete --exclude '*lost+found' "${backups_path}/" ${sibling}.mayfirst.org:"${backups_path}/"
+  rsync -a --delete --exclude '*lost+found' "${backups_path}/" ${sibling}.mayfirst.org:"${backups_path}/"
 done
 
