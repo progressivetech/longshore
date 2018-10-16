@@ -761,6 +761,7 @@ long_create_mysql_container() {
   # in /mnt/my.cnf and ${dir}/mysql will get mounted at /var/lib/mysql.
   mkdir -p "${dir}/mysql"
   mkdir -p "${dir}/logs"
+  mkdir -p "${dir}/tmp"
 
   # Get the port number. Each MySQL container is assigned a unique port
   # on the host. This will generate a LONG_DB_PORT variable.
@@ -786,6 +787,7 @@ long_create_mysql_container() {
     -v "${dir}/mysql":/var/lib/mysql \
     -v "${dir}/my.cnf:/root/.my.cnf" \
     -v "${dir}/logs:/var/log/mysql" \
+    -v "${dir}/tmp:/tmp" \
     -e "LONG_LIVE=$LONG_LIVE" \
     -e "MYSQL_UID=$UID" \
     -p "127.0.0.1:${LONG_DB_PORT}:3306" \
