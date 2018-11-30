@@ -528,6 +528,7 @@ function demo_create_organizing_workshop_event() {
     'module' => 'CiviEvent',
     'entity_table' => 'civicrm_event',
     'entity_id' => 1,
+    'weight' => 1,
     'uf_group_id' => 12, // This is the Your Registration Info profile
   );
 
