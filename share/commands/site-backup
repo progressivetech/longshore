@@ -10,24 +10,42 @@ Arguments
 
 long_check_args "$2" "$#" 0
 
+# Our backup strategy is:
+# 1. Make daily backups that overwrite the previous day's backup
+# 2. Make first of the month backups that persist for 12 months
+# 3. Copy daily backups and the last 6 months backups to every server to
+#    facilitate restoring in case a server is lost (this step is handled by
+#    the sibling-backup script).
+
 # This scripts is designed to be run by a daily cron job.  It makes a backup
 # called site.daily.tar.gz. In addition, One the first of every month it makes
 # a timestamped backup designed to stay around for 1 year.  After a year, we
 # should have 12 backups of each database.  Backups older than one year are
-# deleted
+# deleted from all directories. Backups older than 3 months are deleted from
+# directories not matching $hostname.
 
 backup_dir="${LONG_SRV}/backups"
+hostname=$(hostname)
+
 [ ! -d "$backup_dir" ] && mkdir "$backup_dir"
 
-# delete all backups older than one year
+# delete all backups older than one year from this server's backup directory.
 for file in $(find "${backup_dir}/" -mtime +365); do
   long_log "Deleting %s because it is more than a year old." info "$file"
   rm "$file"
 done
 
-# Run for all local sites
-hostname=$(hostname)
+# delete all backups older than 6 months from non-$hostname directories..
+for dir in $(ls "${LONG_SRV}/ptp-backups/"); do
+  if [ "$hostname" != "$dir" ]; then
+    for file in $(find "${LONG_SRV}/ptp-backups/${dir}" -type f -mtime +180 2>/dev/null); do
+      long_log "Deleting %s because it is more than 3 months old." info "$file"
+      rm "$file"
+    done
+  fi
+done
 
+# Run for all local sites
 if [ -n "$2" ]; then
   sites="$2"
 else
