@@ -164,31 +164,12 @@ function drush_pbd_setup_org_info() {
   );
   civicrm_api3('Email', 'create', $params);
 
-  // Taken from CRM_Contact_Form_Domain
   $emailName = '"' . $name . '" <' . $email. '>';
-
-  $emailParams = array(
-    'label' => $emailName,
-    'description' => $params['description'],
-    'is_active' => 1,
-    'is_default' => 1,
-  );
-
-  $groupParams = array('name' => 'from_email_address');
-
-  //add from email address.
-  $action = CRM_Core_Action::ADD;
-  $grpId = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', 'from_email_address', 'id', 'name');
-  $fieldValues = array('option_group_id' => $grpId);
-  $emailParams['weight'] = CRM_Utils_Weight::getDefaultWeight('CRM_Core_DAO_OptionValue', $fieldValues);
-
-  //reset default within domain.
-  $emailParams['reset_default_for'] = array('domain_id' => CRM_Core_Config::domainID());
-
-  $fromEmailId = NULL;
-  CRM_Core_OptionValue::addOptionValue($emailParams, $groupParams, $action, $fromEmailId);
-
-
+  $this->callApiSuccess('optionValue', 'create', array(
+      'label' => $emailName,
+      'option_group_id' => 'from_email_address',
+      'is_default' => 1,
+    ));
 }
 
 /**
