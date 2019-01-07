@@ -165,7 +165,7 @@ function drush_pbd_setup_org_info() {
   civicrm_api3('Email', 'create', $params);
 
   $emailName = '"' . $name . '" <' . $email. '>';
-  $this->callApiSuccess('optionValue', 'create', array(
+  civicrm_api3('optionValue', 'create', array(
       'label' => $emailName,
       'option_group_id' => 'from_email_address',
       'is_default' => 1,
