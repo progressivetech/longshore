@@ -1128,7 +1128,7 @@ long_create_container() {
       if [ -z "$db_host" ]; then
         local settings="${LONG_SRV}/services/sites/${name}/drupal/settings.php"
         if [ -f "$settings" ]; then
-          db_host=$(egrep "'host' => 'db[0-9]+'," "$settings" | cut -d'>' -f2 | tr -d "', ")
+          db_host=$(egrep "'host' => 'db[0-9a-z-]+'," "$settings" | cut -d'>' -f2 | tr -d "', ")
         fi 
         
       fi
