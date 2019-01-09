@@ -119,7 +119,7 @@ long_prompt "Rebuilding multi-lingual schema (if multi-lingual)..."
 long_prompt "Updating Drupal"
 [ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y updatedb"
 
-long_prompt "Updating CiviCRM Extensions on %s" info "$site"
+long_prompt "Updating CiviCRM Extensions on %s" "$site"
 [ "$reply" = "y" ] &&  long_exec_drush_cmd "$site" "-y lsd-extensions-update"
 
 long_prompt "Removing maintenance mode..."
