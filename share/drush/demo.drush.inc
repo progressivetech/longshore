@@ -50,6 +50,7 @@ function drush_demo_data() {
     demo_save_sumfields();
     demo_enable_extensions();
     demo_add_sms_provider();
+    demo_add_payment_processor();
   }
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("Failed to create demo data in the database."), 'error');
@@ -1104,6 +1105,11 @@ function demo_contacts() {
       );
 
       civicrm_api3('Contact', 'create', $params);
+
+      // We want to intentionally create one duplicate.
+      if ($i == 2) {
+        civicrm_api3('Contact', 'create', $params);
+      }
     }
     fclose($handle);
     $params = array(
@@ -1294,5 +1300,53 @@ function demo_add_sms_provider() {
   }
   else {
     drush_log(dt("SMS Provider already created."), 'ok');
+  }
+}
+
+function demo_add_payment_provider() {
+  $params1 = array(
+    "domain_id" => "1",
+    "name" => "Fake Payment Processor",
+    "payment_processor_type_id" => "8",
+    "is_active" => "1",
+    "is_default" => "1",
+    "is_test" => "0",
+    "user_name" => "dummy",
+    "url_site" => "https://example.org/",
+    "url_recur" => "https://example.org/",
+    "class_name" => "Payment_Dummy",
+    "billing_mode" => "1",
+    "is_recur" => "1",
+    "payment_type" => "1",
+    "payment_instrument_id" => "1",
+  );
+  $params2 = array(
+    "domain_id" => "1",
+    "name" => "Fake Payment Processor",
+    "payment_processor_type_id" => "8",
+    "is_active" => "1",
+    "is_default" => "1",
+    "is_test" => "1",
+    "user_name" => "dummy-test",
+    "url_site" => "https://example.org/",
+    "url_recur" => "https://example.org/",
+    "class_name" => "Payment_Dummy",
+    "billing_mode" => "1",
+    "is_recur" => "1",
+    "payment_type" => "1",
+    "payment_instrument_id" => "1"
+  );
+
+  $params = array($params1, $params2);
+
+  foreach($params as $param) {
+    $result = civicrm_api3('PaymentProcessor', 'get', $param);
+
+    if ($result['count'] == 0) {
+      civicrm_api3('PaymentProcessor', 'create', $param);
+    }
+    else {
+      drush_log(dt("PaymentProcessor already created."), 'ok');
+    }
   }
 }
