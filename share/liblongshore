@@ -761,7 +761,17 @@ long_create_mysql_container() {
   # in /mnt/my.cnf and ${dir}/mysql will get mounted at /var/lib/mysql.
   mkdir -p "${dir}/mysql"
   mkdir -p "${dir}/logs"
-  mkdir -p "${dir}/tmp"
+
+  # Each host can optionally allocated a dedicated partition
+  # to be used on db containers for /tmp (which is where mysql
+  # will write out queries too big to fit in memory). By using
+  # a volume for this it is more efficient than writing it via
+  # overlay2 and also prevents a disk fill up from impacting
+  # other services.
+  if [ ! -d "${LONG_SRV}/tmp" ]; then
+    long_die "Missing tmp directory: ${LONG_SRV}/tmp."
+  fi
+  local tmp_volume="${LONG_SRV}/tmp"
 
   # Get the port number. Each MySQL container is assigned a unique port
   # on the host. This will generate a LONG_DB_PORT variable.
@@ -784,16 +794,15 @@ long_create_mysql_container() {
   long_log "Creating mysql container (%s)." info "$name"
 
   docker $LONG_DOCKER_LOG_ARG create --log-driver "$LONG_DEFAULT_LOG_DRIVER" --name "$name" \
-    -v "${dir}/mysql":/var/lib/mysql \
+    -v "${dir}/mysql:/var/lib/mysql"  \
     -v "${dir}/my.cnf:/root/.my.cnf" \
     -v "${dir}/logs:/var/log/mysql" \
-    -v "${dir}/tmp:/tmp" \
+    -v "${tmp_volume}:/tmp" \
     -e "LONG_LIVE=$LONG_LIVE" \
     -e "MYSQL_UID=$UID" \
     -p "127.0.0.1:${LONG_DB_PORT}:3306" \
     $LONG_DOCKER_MEMORY_LIMIT \
     ptp-mysql:latest mysqld_safe || long_die "Failed to create the container %s" 1 "$name"
-
   # Since db containers are linked to other containers, the other containers
   # will fail to start if the db containers are not started. So, always
   # start after creation.
