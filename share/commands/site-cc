@@ -32,22 +32,4 @@ fi
 long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 long_rerun_over_network "$@" && exit
 
-if [ "$cache" == "all" -o "$cache" == "drush" ]; then
-  long_exec_drush_cmd "$site" "cc all"
-fi
-if [ "$cache" == "all" -o "$cache" == "menu" ]; then
-  long_exec_drush_cmd "$site" "php-eval '_civicrm_init(); CRM_Core_Invoke::rebuildMenuAndCaches();'"
-fi
-if [ "$cache" == "all" -o "$cache" == "files" ]; then
-  long_exec_in_container "$site" "rm -rf \
-    /var/www/powerbase/sites/default/files/css/* \
-    /var/www/powerbase/sites/default/files/js/* \
-    /var/www/powerbase/sites/default/files/civicrm/templates_c/en_US/*"
-fi
-if [ "$cache" == "all" -o "$cache" == "flood" ]; then
-  temp=$(mktemp)
-  printf 'TRUNCATE TABLE flood;' > "$temp"
-  long_execute_site_query "$site" "$temp"
-  rm "$temp"
-fi
-
+long_clear_cache "$site" "$cache"

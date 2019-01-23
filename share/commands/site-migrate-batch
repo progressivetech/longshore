@@ -250,6 +250,15 @@ for site in $sites; do
     continue
   fi
   long_log "upgrade:%s Ran site-configure." info "$site"
+
+  if ! long_clear_cache "$site" all; then
+    long_log "upgrade:%s Failed to clear cache" error "$site"
+    continue
+  fi
+  long_log "upgrade:%s Ran clear cache." info "$site"
+
   printf ". Done!\n"
+
+
 done
 printf "\n"

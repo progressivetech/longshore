@@ -127,3 +127,7 @@ long_prompt "Removing maintenance mode..."
 
 long_prompt "Running site-configure..."
 [ "$reply" = "y" ] && long_configure_site "$site" 
+
+long_prompt "Running site-cc..."
+[ "$reply" = "y" ] && long_clear_cache "$site" all
+
