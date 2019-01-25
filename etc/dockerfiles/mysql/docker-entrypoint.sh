@@ -59,6 +59,19 @@ EOSQL
     bash /usr/bin/mysql_install_db --skip-auth-anonymous-user --auth-root-authentication-method=socket --rpm --cross-bootstrap --user=mysql --disable-log-bin
   fi
   #chown -R mysql:mysql /run/mysqld
+
+  # Ensure we log errors to stderr so docker logs can pick it up.
+  # See: https://github.com/moby/moby/issues/6880
+  # /dev/stderr is root owned so the user mysql can't write to it.
+  # Below is a hacky work around.
+  if [ ! -h /var/log/mysql.err ]; then
+    # Allow `mysql` user to write to /dev/stderr
+    mkfifo -m 600 /var/log/mysql.err
+    chown mysql:mysql /var/log/mysql.err
+    cat <> /var/log/mysql.err 1>&2 &
+  fi
+  set -- "$@" --log-error=/var/log/mysql.err --skip-syslog
+
 fi
 
 exec "$@"
