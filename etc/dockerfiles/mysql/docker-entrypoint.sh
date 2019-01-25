@@ -64,12 +64,14 @@ EOSQL
   # See: https://github.com/moby/moby/issues/6880
   # /dev/stderr is root owned so the user mysql can't write to it.
   # Below is a hacky work around.
-  if [ ! -h /var/log/mysql.err ]; then
-    # Allow `mysql` user to write to /dev/stderr
-    mkfifo -m 600 /var/log/mysql.err
-    chown mysql:mysql /var/log/mysql.err
-    cat <> /var/log/mysql.err 1>&2 &
-  fi
+  if [ -e /var/log/mysql.err ]; then
+    # No matter what is there, remove it and start over with a pipe.
+    rm /var/log/mysql.err
+  fi 
+  # Allow `mysql` user to write to /dev/stderr
+  mkfifo -m 600 /var/log/mysql.err
+  chown mysql:mysql /var/log/mysql.err
+  cat <> /var/log/mysql.err 1>&2 &
   set -- "$@" --log-error=/var/log/mysql.err --skip-syslog
 
 fi
