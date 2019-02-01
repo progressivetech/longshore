@@ -9,6 +9,6 @@ backups_path="/srv/longshore/ptp-backups/${host}"
 
 # We only rsync files younger than 6 months to all servers to save disk space.
 for sibling in $LONG_SIBLINGS; do
-  find "$backups_path" -type f -mtime -180 -exec rsync -a --delete "{}" ${sibling}.mayfirst.org:"${backups_path}/" \;
+  find "$backups_path" -type f -mtime -180 -exec rsync -t "{}" ${sibling}.mayfirst.org:"${backups_path}/" \;
 done
 
