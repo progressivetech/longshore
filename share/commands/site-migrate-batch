@@ -217,8 +217,8 @@ for site in $sites; do
   rm "$temp"
   if [ "$post_upgrade_version" != "$new_version" ]; then
     # Check for overridden environment file.
-    if [ "$LONG_UPGRADE_VERSION" != "$new_version" ]; then
-      long_log "upgrade:%s Failed confirm post upgrade database version" error "$site"
+    if [ "$LONG_UPGRADE_VERSION" != "$post_upgrade_version" ]; then
+      long_log "upgrade:%s Failed confirm post upgrade database version, trying for '$LONG_UPGRADE_VERSION', but got '$post_upgrade_version'" error "$site"
       continue
     fi
   fi
