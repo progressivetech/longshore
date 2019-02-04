@@ -8,6 +8,10 @@ batch file that will upgrade sites over a 5 day period.  The batch file lists
 one site per line with a timestamp of the day it should be migrated and the
 platform it should be migrated to.
 
+Pass the environment variable LONG_UPGRADE_VERSION to the full upgrade version
+(e.g. 5.7.3) if that is the version that will be reported by the database, yet
+we are using a make file that specifies just 5.7.
+
 Arguments
   <action> - Defaults to run, which will run the migrations. Optionally
     set to create to create the batch file or report to show the current
@@ -210,11 +214,14 @@ for site in $sites; do
   printf "SELECT version FROM civicrm_domain WHERE id = 1\n" > "$temp"
   # Strip out any .beta2 tags.
   post_upgrade_version=$(long_execute_site_query "$site" "$temp" | tail -n1 | sed "s/\.beta[0-9]*$//") 
-  if [ "$post_upgrade_version" != "$new_version" ]; then
-    long_log "upgrade:%s Failed confirm post upgrade database version" error "$site"
-    continue
-  fi
   rm "$temp"
+  if [ "$post_upgrade_version" != "$new_version" ]; then
+    # Check for overridden environment file.
+    if [ "$LONG_UPGRADE_VERSION" != "$new_version" ]; then
+      long_log "upgrade:%s Failed confirm post upgrade database version" error "$site"
+      continue
+    fi
+  fi
   long_log "upgrade:%s Confirmed post upgrade database version" info "$site"
 
   if ! long_exec_drush_cmd "$site" "-y pbd-rebuild-multilingual-schema"; then
