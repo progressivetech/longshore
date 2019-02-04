@@ -1753,6 +1753,9 @@ function pbd_create_drupal_roles() {
   $perms['Powerbase Administrator'][] = 'administer theme assignments';
   $perms['Powerbase Administrator'][] = 'administer themekey settings';
 
+  // And ability to access theme area
+  $perms['Powerbase Administrator'][] = 'administer themes';
+  
   while(list(,$role) = each($roles)) {
     $role_obj = user_role_load_by_name($role);
     if(!$role_obj) {
