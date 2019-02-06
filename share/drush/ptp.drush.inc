@@ -764,7 +764,7 @@ function ptp_insert_relationship($ind_contact_id, $org_contact_id) {
     // We have to create one. The hard part is finding the right
     // relationship type since each site can modify this information.
     $sql = "SELECT id FROM civicrm_relationship_type WHERE name_a_b
-      LIKE '%employe%' LIMIT 1";
+      LIKE 'employe%' LIMIT 1";
     $dao = CRM_Core_DAO::executeQuery($sql);
     $dao->fetch();
     $relationship_type_id = $dao->id;
