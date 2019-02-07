@@ -105,7 +105,7 @@ if [ -z "$sites" ]; then
   long_die "No sites to migrate today." 
 fi
 
-printf "Sites to migrate: %s." "$sites_display"
+printf "Sites to migrate: %s.\n" "$sites_display"
 long_prompt "Starting migration..."
 
 # Reduce noise, turn off all output (all log messages will go to logger).
