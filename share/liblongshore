@@ -1602,6 +1602,12 @@ long_destroy_site() {
         long_log "Stopping and Dropping db container (%s)." info "$LONG_SITE_DB_HOST"
         docker $LONG_DOCKER_LOG_ARG stop "$LONG_SITE_DB_HOST"
         docker $LONG_DOCKER_LOG_ARG rm "$LONG_SITE_DB_HOST"
+
+        # Now delete the database directory
+        local db_path="${LONG_SRV}/services/databases/${LONG_SITE_DB_HOST}"
+        if [ -d "$db_path" ]; then
+          rm -rf "$db_path"
+        fi
       fi
     fi
   fi
