@@ -21,6 +21,13 @@ if [ "$command" = "-x" ]; then
   command="$1"
 fi
 
+# Pass -v for more noisy 
+if [ "$command" = "-v" -o "$command" = "--verbose" ]; then
+  LONG_LOG_LEVEL=info
+  shift
+  command="$1"
+fi
+
 # Try to find a config file
 locations="~/.config/longshore/longshore.conf /etc/longshore/longshore.conf /usr/local/etc/longshore/longshore.conf"
 
