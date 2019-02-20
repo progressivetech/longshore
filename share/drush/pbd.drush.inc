@@ -781,10 +781,10 @@ function drush_pbd_subscription_links() {
   $update_url = $paymentObject->subscriptionURL($contribution_id, $entity, 'update');
   $cancel_url = $paymentObject->subscriptionURL($contribution_id, $entity, 'cancel');
   $billing_url = $paymentObject->subscriptionURL($contribution_id, $entity, 'billing');
-  drush_log("Name: " . $dao->first_name . " " . $dao->last_name . "(" . $dao->contribution_status_id . ")", "ok");
-  drush_log("Update: $update_url", "ok");
-  drush_log("Cancel: $cancel_url", "ok");
-  drush_log("Billing: $billing_url", "ok");
+  drush_print("Name: " . $dao->first_name . " " . $dao->last_name . "(" . $dao->contribution_status_id . ")");
+  drush_print("Update: $update_url");
+  drush_print("Cancel: $cancel_url");
+  drush_print("Billing: $billing_url");
 
 }
 /**
