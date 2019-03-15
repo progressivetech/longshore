@@ -205,13 +205,17 @@ function drush_pbd_add_missing_indices() {
  * without problems.
  **/
 function drush_pbd_configure() {
-  drush_log(dt("Running opb configure code"), 'notice');
+  drush_log(dt("Running configure code"), 'notice');
 
   // _civicrm_init no longer creates config singleton.
   // This is necessary in order to have a fully functional
   // database.
   _civicrm_init();
   $config = CRM_Core_Config::singleton();
+
+  // Can be removed after it has run on all sites.
+  module_disable(array('civicrm_engage'));
+  drupal_uninstall_modules(array('civicrm_engage'));
 
   // Enable extensions and modules early so settings and permission
   // steps that are taken later work properly.
@@ -334,8 +338,6 @@ function drush_pbd_configure_once() {
   pbd_disable_modules();
   pbd_set_default_civicrm_option_lists();
   pbd_adjust_display_preferences();
-  pbd_disable_communications_status();
-  pbd_adjust_custom_data_groups();
   // This causes problems on migrated CiviCRM installs.
   // pbd_delete_all_tags();
   pbd_add_image_upload_menu();
@@ -349,9 +351,6 @@ function drush_pbd_configure_once() {
   pbd_remove_country_from_address_formats();
   pbd_enable_waitlist_participant_status_types();
   pbd_add_web_signup_group();
-  pbd_fix_constituent_types();
-  pbd_disable_contact_types();
-  pbd_add_constituent_type_fields_to_profiles();
   pbd_add_first_tag();
   pbd_configure_ckeditor();
   pbd_configure_autologout();
@@ -359,9 +358,6 @@ function drush_pbd_configure_once() {
   pbd_set_state_province_limit();
   pbd_dedupe_rules();
 
-  // Different groups have different settings. By default use built-in
-  // pdf generation. If requested, we may set to wkhtmltopdf.wrapper.
-  // /usr/bin/xvfb-run -- wkhtmltopdf.wrapper
   pbd_configure_wkhtmltopdf();
   pbd_set_setting('one-time-configuration-set', 1);
 }
@@ -372,64 +368,24 @@ function drush_pbd_configure_once() {
  * Groups may choose to disable them later.
  */
 function pbd_enable_one_time_extensions() {
-  // Enable civicrm_enage module and load our custom data
-  // this must happen after campaign component is enabled
-  module_enable(array('civicrm_engage'));
-  drush_log("Importing civicrm_engage data", 'notice');
-  pbd_import_engage_data();
- 
   // sumfields and donortracking should be enabled before profiles so 
   // so we can build profiles using those fields.
-  $params['keys'] = array(
+  $keys = array(
     'net.ourpowerbase.sumfields',
     'net.ourpowerbase.donortracking',
+    'net.ourpowerbase.constituentfields',
+    'net.ourpowerbase.participantfields',
     'net.ourpowerbase.profiles',
   );
-  try {
-    civicrm_api3('Extension', 'install', $params);
-  }
-  catch (CiviCRM_API3_Exception $e) {
-    drush_log(dt("Failed to enable all extensions."), 'error');
-    drush_log($e->getMessage(), 'error');
-  }
-}
-
-/**
- * We don't want all contact types enabled by default.
- *
- * FIXME: should be fixed in civicrm_engage
- */
-function pbd_disable_contact_types() {
-  // Get ids of contact types to disable.
-  $disables = array(
-    0 => array(
-      'name' => 'Funder_Contact',
-      'parent_id' => 'Individual',
-    ),
-    1 => array(
-      'name' => 'Media_Contact',
-      'parent_id' => 'Individual',
-    ),
-    2 => array(
-      'name' => 'Media_Outlet',
-      'parent_id' => 'Organization',
-    ),
-    3 => array(
-      'name' => 'Foundation',
-      'parent_id' => 'Organization',
-    ),
-  );
-
-  foreach($disables as $disable) {
-    $params = $disable;
-    $params['return'] = 'id';
-    $id = civicrm_api3('ContactType', 'getvalue', $params);
-
-    $params = array(
-      'id' => $id,
-      'is_active' => 0,
-    );
-    civicrm_api3('ContactType', 'create', $params);
+  foreach($keys as $key) {
+    $params['keys'] = array($key);
+    try {
+      civicrm_api3('Extension', 'install', $params);
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      drush_log(dt("Failed to enable extension: $key."), 'error');
+      drush_log($e->getMessage(), 'error');
+    }
   }
 }
 
@@ -474,7 +430,7 @@ function pbd_configure_dev_site() {
  **/
 function pbd_configure_wkhtmltopdf() {
   _civicrm_init();
-  pbd_setting('wkhtmltopdfPath', '');
+  pbd_setting('wkhtmltopdfPath', '/usr/bin/wkhtmltopdf');
 }
 
 /**
@@ -907,130 +863,6 @@ function pbd_add_first_tag() {
     drush_log($e->getMessage(), 'error');
     return FALSE;
   }
-}
-
-/**
- * We don't want all the default constituent types.
- *
- * FIXME: this should be fixed in civicrm_engage where they are
- * created.
- */
-
-function pbd_fix_constituent_types() {
-
-  // First disable a bunch we don't want.
-  $sql = "UPDATE civicrm_option_value v 
-    JOIN civicrm_option_group g ON v.option_group_id = g.id 
-    SET v.is_active = 0 
-    WHERE 
-      (
-        g.name = 'constituent_type_ind_values' 
-          AND 
-        (
-          label = 'Member' OR 
-          label = 'Lead Organizer' OR
-          label = 'Activist' OR
-          label = 'Funder' OR
-          label = 'Elected Official' OR
-          label = 'Media Contact' OR
-          label = 'Donor'
-        )
-      )
-      OR 
-      (
-        g.name = 'constituent_type_org_values' 
-          AND 
-        (
-          label = 'Member Organization' OR 
-          label = 'Media Organization' OR
-          label = 'Foundation' OR
-          label = 'Elected Official office'
-        )
-      )";
-  CRM_Core_DAO::executeQuery($sql);
-
-  // Now add, one we want (prospect)
-  $id = civicrm_api3('OptionGroup', 'getvalue', array(
-    'name' => 'constituent_type_ind_values',
-    'return' => 'id'
-  ));
-
-  $params = array(
-    'name' => 'Prospect',
-    'option_group_id' => $id,
-    'label' => 'Prospect',
-    'value' => 'Prospect',
-    'is_active' => 1,
-  );
-
-  civicrm_api3('OptionValue', 'create', $params);
-}
-
-/**
- * Add constituent types to reserved org and ind profiles.
- *
- * In PowerBase constituent type is a required field so avoid confusion
- * by adding it to the main profiles used for data entry.
- **/
-function pbd_add_constituent_type_fields_to_profiles() {
-  try {
-    // Collect the New Organization and New Individual Reserved
-    // profile ids.
-    $params = array(
-      'return' => 'id',
-      'name' => 'new_organization'
-    );
-    $new_org_id = civicrm_api3('UFGroup', 'getvalue', $params);
-    $params['name'] = 'new_individual';
-    $new_ind_id = civicrm_api3('UFGroup', 'getvalue', $params);
-
-    // Collect the ind constituent type and org constituent type
-    // custom field ids.
-    $params = array(
-      'return' => 'id',
-      'column_name' => 'constituent_type'
-    );
-    $ind_const_type_id = civicrm_api3('CustomField', 'getvalue', $params);
-    $params['column_name'] = 'constituent_type_org';
-    $org_const_type_id = civicrm_api3('CustomField', 'getvalue', $params);
-
-    // Now add the fields to the profiles.
-    $params = array(
-      'uf_group_id' => $new_org_id,
-      'field_name' => 'custom_' . $org_const_type_id,
-      'is_active' => 1,
-      'is_required' => 1,
-      'visibility' => 'User and User Admin Only',
-      'label' => 'Constituent Type - Org',
-      'field_type' => 'Organization',
-      'weight' => 5,
-    );
-    civicrm_api3('UFField', 'create', $params);
-
-    // Now add the fields to the profiles.
-    $params = array(
-      'uf_group_id' => $new_ind_id,
-      'field_name' => 'custom_' . $ind_const_type_id,
-      'is_active' => 1,
-      'is_required' => 1,
-      'visibility' => 'User and User Admin Only',
-      'label' => 'Constituent Type - Ind',
-      'field_type' => 'Individual',
-      'weight' => 5,
-    );
-    civicrm_api3('UFField', 'create', $params);
-
-
-  }
-  catch (CiviCRM_API3_Exception $e) {
-    if($e->getErrorCode() == 'already exists') {
-      return TRUE;
-    }
-    drush_log(dt("Failed to add constituent type fields to reserved profiles."), 'error');
-    drush_log($e->getMessage(), 'error');
-    return FALSE;
-  }
-
 }
 
 /**
@@ -1718,11 +1550,6 @@ function pbd_create_drupal_roles() {
     $perms['Powerbase Administrator'][] = 'administer civicrm cicero';
   }
 
-  // Everyone should be able to configure the engage preferences
-  if (module_exists('civicrm_engage')) {
-    $perms['Powerbase Administrator'][] = 'access civiengage settings';
-  }
-
   // Full access to views
   $perms['Powerbase Administrator'][] = 'administer views';
   $perms['Powerbase Administrator'][] = 'access all views';
@@ -2324,134 +2151,6 @@ function pbd_disable_event_details() {
       );
       $result = civicrm_api3("CustomGroup","update", $params);
     }
-  }
-}
-
-function pbd_disable_communications_status() {
-  _civicrm_init();
-  $results = civicrm_api("CustomField","get", array ('version' => 3, 'column_name' => 'communication_status'));
-  if($results['is_error'] == 0) {
-    $values = array_pop($results['values']);
-    $id = $values['id'];
-    if(!empty($id)) {
-      $params = array(
-        'id' => $id,
-        'is_active' => 0
-      );
-      $result = civicrm_api3("CustomField","update", $params);
-    }
-  }
-}
-
-
-function pbd_adjust_custom_data_groups() {
-  _civicrm_init();
-  require_once('api/api.php');
-
-  // Change display of Grassroots Info from tab to inline
-  $results = civicrm_api('CustomGroup','get', array ('version' => 3,'sequential' => 1, 'name' =>'Grassroots_Info'));
-
-  if($results['is_error'] == 0) {
-    $values = array_pop($results['values']);
-    $id = $values['id'];
-    $params = array(
-      'version' => 3,
-      'id' => $id,
-      'style' => 'Inline'
-    );
-    $result = civicrm_api('CustomGroup','update', $params);
-
-  }
-
-  // disable Organization details
-  $results = civicrm_api('CustomGroup','get', array ('version' => 3,'sequential' => 1, 'name' =>'Organizational_Details'));
-
-  if($results['is_error'] == 0) {
-    $values = array_pop($results['values']);
-    $id = $values['id'];
-    $params = array(
-      'version' => 3,
-      'id' => $id,
-      'is_active' => 0
-    );
-    $result = civicrm_api('CustomGroup','update', $params);
-  }
-
-  // Ensure uniform settings across all groups.
-  $groups = array(
-    2 => array(
-      'name' => 'Communication_Details',
-      'collapse_adv_display' => 0,
-    ),
-    3 => array(
-      'name' => 'Constituent_Info_Individuals',
-      'collapse_adv_display' => 0,
-    ),
-    4 => array(
-      'name' => 'Grassroots_Info',
-      'collapse_adv_display' => 0,
-    ),
-    5 => array(
-      'name' => 'Demographics',
-      'collapse_adv_display' => 0,
-    ),
-    6 => array(
-      'name' => 'Voter_Info',
-      'collapse_adv_display' => 1,
-    ),
-    8 => array(
-      'name' => 'Constituent_Info_Organizations',
-      'collapse_adv_display' => 0,
-    ),
-    9 => array(
-      'name' => 'Proposal_Info',
-      'collapse_adv_display' => 1,
-    ),
-    10 => array(
-      'name' => 'Participant_Info',
-      'collapse_adv_display' => 0,
-    ),
-    11 => array(
-      'name' => 'Event_Details',
-      'collapse_adv_display' => 0,
-    ),
-    17 => array(
-      'name' => 'Organizational_Details',
-      'collapse_adv_display' => 0,
-    ),
-    18 => array(
-      'name' => 'Media_Outlet_Info',
-      'collapse_adv_display' => 1,
-    ),
-    19 => array(
-      'name' => 'Media_Info',
-      'collapse_adv_display' => 1,
-    ),
-    20 => array(
-      'name' => 'Funder_Info',
-      'collapse_adv_display' => 1,
-    ),
-    21 => array(
-      'name' => 'Elected_Official_Info',
-      'collapse_adv_display' => 1,
-    ),
-    22 => array(
-      'name' => 'Grant_Info',
-      'collapse_adv_display' => 1
-    )
-  );
-
-  while(list($weight,$values) = each($groups)) {
-    $name = $values['name'];
-    $collapse_adv_display = $values['collapse_adv_display'];
-    $sql = "UPDATE civicrm_custom_group SET weight = %0, collapse_adv_display = %1 WHERE name = %2";
-    $params = array (
-      0 => array( $weight, 'Integer'),
-      1 => array ( $collapse_adv_display, 'Integer'),
-      2 => array ( $name, 'String')
-    );
-
-    $dao = CRM_Core_DAO::executeQuery( $sql, $params );
   }
 }
 
@@ -3223,103 +2922,6 @@ function pbd_setup_option_values($group_id, $value_params) {
 }
 
 
-/**
- * Ensure the existing voter info fields match our
- * intended voter info fields. FIXME - this should be integrated
- * with civicrm_engage CustomData.xml file.
- */
-function pbd_harmonize_voter_info_fields() {
-  // ensure we have option groups setup properly
-  $option_group_ids = array();
-
-  // election option group
-  $group_params = pbd_get_election_option_group_params();
-  $option_group_ids['election'] = pbd_setup_option_group($group_params);
-  $value_params = pbd_get_election_option_value_params($option_group_ids['election']);
-  pbd_setup_option_values($option_group_ids['election'], $value_params);
-
-  // county name  option group (we don't setup these options)
-  $group_params = pbd_get_county_name_option_group_params();
-  $option_group_ids['county_name'] = pbd_setup_option_group($group_params);
-
-  // party registration option group
-  $group_params = pbd_get_party_registration_option_group_params();
-  $option_group_ids['party_registration'] = pbd_setup_option_group($group_params);
-  $value_params = pbd_get_party_registration_option_value_params($option_group_ids['party_registration']);
-  pbd_setup_option_values($option_group_ids['party_registration'], $value_params);
-
-  // ensure our voter info custom group is setup properly
-  $voter_info_custom_group_params = pbd_get_voter_info_custom_group_params();
-  $voter_info_custom_group = pbd_return_entity('CustomGroup', $voter_info_custom_group_params);
-  $voter_info_custom_group_id = $voter_info_custom_group['id'];
-
-  // $source is what we want them to be set to
-  $source = pbd_get_voter_info_custom_field_params($voter_info_custom_group_id, $option_group_ids);
-  // $target are the existing values (if any)
-  $target = pbd_get_custom_field_set('Voter_Info');
-  pbd_harmonize_custom_fields($source, $target);
-}
-
-
-function pbd_harmonize_custom_fields($source, $target) {
-  $check_keys = array(
-    'data_type', 'html_type', 'default_value', 'is_required',
-    'is_searchable', 'is_search_range', 'weight', 'is_active',
-    'is_view', 'text_length', 'note_columns', 'note_rows', 'label'
-  );
-
-  // compare our intended voter fields with existing
-  // voter fields
-  $changes = array();
-  $new = array();
-  while(list($k_source,$v_source) = each($source)) {
-    reset($target);
-    $label = $v_source['label'];
-    $exists = false;
-    while(list($k_target,$v_target) = each($target)) {
-      if(preg_grep('/^' . $label . '$/', $v_target)) {
-        // we have a match, make sure they are the same
-        reset($check_keys);
-        while(list(,$key) = each($check_keys)) {
-          // for some reason, default_value is coming over as string Array
-          // instead of an actual Array
-          if($v_source[$key] !== $v_target[$key] && $v_target[$key] != 'Array') {
-            $changes[$k_source] = $k_target;
-          }
-        }
-        $exists = true;
-      }
-    }
-    if(!$exists) {
-      $new[] = $k_source;
-    }
-  }
-  // add new fields
-  while(list(,$v) = each($new)) {
-    pbd_return_entity('CustomField', $source[$v], 'label');
-  }
-  while(list($k,$v) = each($changes)) {
-    // copy target id to ensure the record is updated
-    $params = $source[$k];
-    $params['id'] = $target[$v]['id'];
-    // for some reason, default_value is not being properly populated,
-    // so overwrite
-    if(array_key_exists('default_value', $source)) {
-      $params['default_value'] = $source['default_value'];
-    }
-    $params['version'] = 3;
-    // echo "Source: \n";
-    // print_r($source[$k]);
-    // echo "Target: \n";
-    // print_r($target[$v]);
-    $results = civicrm_api('CustomField', 'update', $params);
-    if($results['is_error']) {
-      print_r($results);
-      return;
-    }
-
-  }
-}
 
 function pbd_get_custom_field_set($name) {
   _civicrm_init();
@@ -3443,52 +3045,6 @@ function pbd_enable_modules() {
     drush_log(dt("No modules to enable."));
   }
 
-}
-
-function pbd_harmonize_report_instances_with_menu() {
-  _civicrm_init();
-  $sql = "SELECT id, name, url FROM civicrm_navigation WHERE url LIKE '%/instance/%'";
-  $dao = CRM_Core_DAO::executeQuery($sql);
-  $menu_items = array();
-  while($dao->fetch()) {
-    if(preg_match('#/instance/([0-9]+)&reset#',$dao->url, $matches)) {
-      $menu_items[$dao->id] = array(
-        'instance' => $matches[1],
-        'name' => $dao->name,
-      );
-    }
-  }
-  while(list($k,$v) = each($menu_items)) {
-    $sql = "SELECT title FROM civicrm_report_instance WHERE id = %1";
-    $params = array( 1 => array($v['instance'], 'Integer') );
-    $dao = CRM_Core_DAO::executeQuery($sql, $params);
-
-    while($dao->fetch()) {
-      $title = $dao->title;
-      $menu_name = $v['name'];
-      $report_instance = $v['instance'];
-      // we don't want to renamed "Grant Report Summary" to "Grant Report (Summary)" (which is
-      // sometimes the only difference in the name. Or add the word report or any other number
-      // of changes that don't actually indicate a problem
-      $compare_title = str_replace(array(')','(','report'),'',strtolower($title));
-      $compare_menu_name = str_replace(array(')','(','report'),'',strtolower($menu_name));
-      if(trim($compare_title) != trim($compare_menu_name)) {
-        drush_print("Menu named '$menu_name' which refers to report instance '$report_instance' should be named '$title' for civicrm_navigation with id '$k'");
-        $sql = "UPDATE civicrm_navigation SET name = %1, label = %1 WHERE id = %2";
-        $params = array(
-          1 => array($title, 'String'),
-          2 => array($k, 'Integer'),
-        );
-        // drush_print(str_replace(array('%1', '%2'), array("'$title'", $k), $sql));
-        CRM_Core_DAO::executeQuery($sql, $params);
-      }
-    }
-  }
-  // clear the cache
-  $sql = "DELETE FROM civicrm_cache WHERE group_name = 'navigation'";
-  CRM_Core_DAO::executeQuery($sql);
-  $sql = "DELETE FROM civicrm_setting WHERE name = 'navigation';";
-  CRM_Core_DAO::executeQuery($sql);
 }
 
 /**
@@ -3898,41 +3454,6 @@ function pbd_enable_default_extensions() {
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("There was an error installing/uninstalling the default extensions."), 'error');
     drush_log($e->getMessage(), 'error');
-  }
-}
-
-/**
- * Import default data from civicrm_engage. This
- * no longer happens by default when you enable
- * the module.
- **/
-function pbd_import_engage_data() {
-  // Reset the module data cache - since the civicrm_engage module was probably
-  // installed during this session.
-  system_list_reset();
-  $refresh = TRUE;
-  $list = module_list($refresh);
-  if(isset($list['civicrm_engage'])) {
-    drush_log(dt("Checking civicrm_engage data."));
-    module_load_include('inc', 'civicrm_engage', 'civicrm_engage.admin');
-    if(!civicrm_engage_subtypes_added()) {
-      drush_log(dt("Contact subtypes not added, loading them now."));
-      civicrm_engage_load_contact_subtypes();
-    }
-    if(!civicrm_engage_custom_data_added()) {
-      drush_log(dt("Custom data not added, loading now."));
-      civicrm_engage_load_custom_data();
-    }
-    if(!civicrm_engage_custom_voter_us_data_added()) {
-      drush_log(dt("Voter us data not added, loading now."));
-      civicrm_engage_load_custom_voter_us_data();
-    }
-    // These can be set twice without damage.
-    civicrm_engage_enable_address_parsing();
-    civicrm_engage_set_autocomplete_options();
-  }
-  else {
-    drush_log(dt("civicrm_enage is not enabled."), 'error');
   }
 }
 
