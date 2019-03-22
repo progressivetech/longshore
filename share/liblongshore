@@ -801,6 +801,7 @@ long_create_mysql_container() {
     -e "LONG_LIVE=$LONG_LIVE" \
     -e "MYSQL_UID=$UID" \
     -p "127.0.0.1:${LONG_DB_PORT}:3306" \
+    --restart unless-stopped \
     $LONG_DOCKER_MEMORY_LIMIT \
     ptp-mysql:latest mysqld_safe || long_die "Failed to create the container %s" 1 "$name"
   # Since db containers are linked to other containers, the other containers
@@ -858,6 +859,7 @@ long_create_phpmyadmin_container() {
     $publish \
     -e "LONG_LIVE=$LONG_LIVE" \
     $LONG_DOCKER_MEMORY_LIMIT \
+    --restart unless-stopped \
     ptp-php:latest php-fpm7.0  || long_die "Failed to create the phpmyadmin container"
 }
 
@@ -1050,6 +1052,7 @@ long_create_site_container() {
     -v "${LONG_SHARE}/drush:/var/www/.drush" \
     -e "LONG_LIVE=$LONG_LIVE" \
     -e "PB_URL=${site}.${LONG_DEFAULT_DOMAIN}" \
+    --restart unless-stopped \
     $LONG_DOCKER_MEMORY_LIMIT \
     $link \
     $publish \
