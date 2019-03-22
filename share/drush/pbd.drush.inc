@@ -378,14 +378,10 @@ function pbd_enable_one_time_extensions() {
     'net.ourpowerbase.profiles',
   );
   foreach($keys as $key) {
-    $params['keys'] = array($key);
-    try {
-      civicrm_api3('Extension', 'install', $params);
-    }
-    catch (CiviCRM_API3_Exception $e) {
-      drush_log(dt("Failed to enable extension: $key."), 'error');
-      drush_log($e->getMessage(), 'error');
-    }
+    $key = escapeshellarg($key);
+    // We call a separate process to avoid all the crazy cache problems we have
+    // enabling these in the same session.
+    drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv ext:enable $key");
   }
 }
 
