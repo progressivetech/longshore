@@ -200,6 +200,19 @@ function drush_pbd_add_missing_indices() {
 }
 
 /**
+ * Ensure we run as admin user
+ *
+ * Some configuration steps check permissions and we don't want to fail
+ * on those.
+ *
+ */
+function pbd_run_as_admin() {
+  // Ensure we operate with admin privs
+  global $user;
+  $user = user_load(1);
+}
+
+/**
  * Run code to ensure all PowerBase sites are consistently
  * configured. This function should be able to run repeatedly
  * without problems.
@@ -207,6 +220,7 @@ function drush_pbd_add_missing_indices() {
 function drush_pbd_configure() {
   drush_log(dt("Running configure code"), 'notice');
 
+  pbd_run_as_admin();
   // _civicrm_init no longer creates config singleton.
   // This is necessary in order to have a fully functional
   // database.
@@ -296,6 +310,8 @@ function drush_pbd_configure() {
  **/
 function drush_pbd_configure_once() {
   _civicrm_init();
+  pbd_run_as_admin();
+
   $force = drush_get_option('force', null);
   // should only be run once because it contains settings
   // that a group may want to change and that we don't
@@ -381,7 +397,7 @@ function pbd_enable_one_time_extensions() {
     $key = escapeshellarg($key);
     // We call a separate process to avoid all the crazy cache problems we have
     // enabling these in the same session.
-    drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv ext:enable $key");
+    drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable $key");
   }
 }
 
