@@ -317,7 +317,7 @@ function drush_pbd_configure_once() {
   // that a group may want to change and that we don't
   // want to override.
   drush_log(dt("performing one-time configuration."), 'notice');
-  if(1 == pbd_get_setting('one-time-configuration-set')) {
+  if(1 == variable_set('one-time-configuration-set')) {
     if(!is_null($force)) {
       drush_log(dt("forcing one-time configuration even though it has already been set."), 'notice');
     }
@@ -375,7 +375,7 @@ function drush_pbd_configure_once() {
   pbd_dedupe_rules();
 
   pbd_configure_wkhtmltopdf();
-  pbd_set_setting('one-time-configuration-set', 1);
+  variable_set('one-time-configuration-set', 1);
 }
  
 /**
