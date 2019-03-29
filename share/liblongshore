@@ -2815,6 +2815,7 @@ long_add_demo_theme() {
   local site="$1"
   local themes="${LONG_SRV}/services/sites/${site}/drupal/themes"
   if [ ! -d "${themes}/demo" ]; then
+    mkdir -p "$themes"
     cp -r "${LONG_SHARE}/themes/demo" "${themes}/"
     long_exec_drush_cmd "$site" "pbd-prepare-theme --name=demo --default"
   fi
