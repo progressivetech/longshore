@@ -384,15 +384,18 @@ function drush_pbd_configure_once() {
  * Groups may choose to disable them later.
  */
 function pbd_enable_one_time_extensions() {
-  // sumfields and donortracking should be enabled before profiles so 
-  // so we can build profiles using those fields.
   $keys = array(
     'net.ourpowerbase.sumfields',
-    'net.ourpowerbase.donortracking',
     'net.ourpowerbase.constituentfields',
     'net.ourpowerbase.participantfields',
     'net.ourpowerbase.profiles',
+    'net.ourpowerbase.engage',
+    'net.ourpowerbase.search.eventcount',
+    'com.aghstrategies.uscounties',
+    'eu.tttp.noverwrite',
+    'de.systopia.osm'
   );
+
   foreach($keys as $key) {
     $key = escapeshellarg($key);
     // We call a separate process to avoid all the crazy cache problems we have

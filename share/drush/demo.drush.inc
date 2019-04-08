@@ -29,6 +29,7 @@ function drush_demo_data() {
 
   _civicrm_init();
   try {
+    demo_enable_extensions();
     demo_contacts();
     demo_campaign();
     demo_contribution_page();
@@ -48,7 +49,6 @@ function drush_demo_data() {
     demo_unset_default_footer();
     demo_create_random_activities();
     demo_save_sumfields();
-    demo_enable_extensions();
     demo_add_sms_provider();
     demo_add_payment_processor();
   }
@@ -90,28 +90,8 @@ function demo_save_sumfields() {
     'event_attended_percent_total',
     'event_noshow',
     'event_noshow_percent_total',
-    'event_turnout_attempts',
-    'event_turnout_attended',
-    'event_turnout_noshow',
-    'event_attended_percent_turnout',
-    'event_noshow_percent_turnout'
 	);
 	sumfields_save_setting('new_active_fields', $new_active_fields);
-
-	$financial_type_ids = array(3,1);
-  sumfields_save_setting('financial_type_ids', $financial_type_ids);
-
-  $membership_financial_type_ids = array(2);
-  sumfields_save_setting('membership_financial_type_ids', $membership_financial_type_ids);
-
-	$event_type_ids = array(1,2,3,4,5,6);
-  sumfields_save_setting('event_type_ids', $event_type_ids);
-
-	$participant_status_ids = array(2);
-  sumfields_save_setting('participant_status_ids', $participant_status_ids);
-
-	$participant_noshow_ids = array(3);
-  sumfields_save_setting('participant_noshow_ids', $participant_noshow_ids);
 
   $returnValues = array();
 
@@ -410,7 +390,7 @@ function demo_create_protest_event() {
 		"event_title" => "Stop the ICE Raids: Street Protest",
 		"description" => "Stop ICE from destroying families",
 		"event_description" => "Stop ICE from destroying families",
-		"event_type_id" => "7", // Direct Action.
+		"event_type_id" => "6", // Direct Action.
 		"is_public" => "1",
 		"start_date" => $start,
 		"event_start_date" => $start,
@@ -935,7 +915,7 @@ function demo_memberships() {
 }
 
 function demo_custom_id_for_name($col_name) {
-  $result = civicrm_api3('CustomField', 'getsingle', array('column_name' => $col_name));
+  $result = civicrm_api3('CustomField', 'getsingle', array('name' => $col_name));
   return $result['id'];
 }
 
@@ -955,7 +935,7 @@ function demo_get_random_constituent_type() {
 
   if (empty($options)) {
     $id = civicrm_api3('OptionGroup', 'getvalue', array(
-      'name' => 'constituent_type_ind_values',
+      'name' => 'constituentfields_individual_constituent_type_values',
       'return' => 'id',
     ));
 
@@ -1033,30 +1013,26 @@ function demo_contacts() {
        * Voter ifo
        **/
       // precinct (precinct code)
-      $id = 'custom_' . demo_custom_id_for_name('precinct');
+      $id = 'custom_' . demo_custom_id_for_name('voterfields_precinct');
       $params[$id] = $data[11];
       // city district (municipal district)
-      $id = 'custom_' . demo_custom_id_for_name('city_district');
+      $id = 'custom_' . demo_custom_id_for_name('voterfields_city_district');
       $params[$id] = $data[12];
       // congressional district
-      $id = 'custom_' . demo_custom_id_for_name('congressional_district');
+      $id = 'custom_' . demo_custom_id_for_name('voterfields_congressional_district');
       $params[$id] = $data[14];
       // state assembly (NC house)
-      $id = 'custom_' . demo_custom_id_for_name('state_assembly_district');
+      $id = 'custom_' . demo_custom_id_for_name('voterfields_state_assembly_district');
       $params[$id] = $data[18];
       // state senate (NC senate)
-      $id = 'custom_' . demo_custom_id_for_name('state_senate_district');
+      $id = 'custom_' . demo_custom_id_for_name('voterfields_state_senate_district');
       $params[$id] = $data[17];
       // school district
-      $id = 'custom_' . demo_custom_id_for_name('school_district');
+      $id = 'custom_' . demo_custom_id_for_name('voterfields_school_district');
       $params[$id] = $data[20];
 
-      // Issue options
-      $id = 'custom_' . demo_custom_id_for_name('issues_interest');
-      $params[$id] = demo_get_random_issue_interest();
-
       // Constituent type
-      $id = 'custom_' . demo_custom_id_for_name('constituent_type');
+      $id = 'custom_' . demo_custom_id_for_name('constituentfields_individual_constituent_type');
       $params[$id] = demo_get_random_constituent_type();
 
        // City State Zip is in format: CITY, STATE ZIP
@@ -1276,8 +1252,25 @@ function demo_contribution_page() {
 }
 
 function demo_enable_extensions() {
-  $params['keys'] = array('com.webaccessglobal.module.civimobile', 'org.civicrm.sms.twilio');
-  civicrm_api3('Extension', 'install', $params);
+  $keys = array(
+    'com.webaccessglobal.module.civimobile', 
+    'org.civicrm.sms.twilio', 
+    'net.ourpowerbase.donortracking',
+    'net.ourpowerbase.foundationfields',
+    'net.ourpowerbase.mediafields',
+    'net.ourpowerbase.remoteform',
+    'net.ourpowerbase.report.advancedfundraising',
+    'net.ourpowerbase.report.dbhealth',
+    'net.ourpowerbase.search.eventcount',
+    'net.ourpowerbase.turnout',
+    'net.ourpowerbase.voterfields' 
+  );
+  foreach($keys as $key) {
+    $key = escapeshellarg($key);
+    // We call a separate process to avoid all the crazy cache problems we have
+    // enabling these in the same session.
+    drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable $key");
+  }
 }
 
 function demo_add_sms_provider() {
@@ -1303,7 +1296,7 @@ function demo_add_sms_provider() {
   }
 }
 
-function demo_add_payment_provider() {
+function demo_add_payment_processor() {
   $params1 = array(
     "domain_id" => "1",
     "name" => "Fake Payment Processor",
