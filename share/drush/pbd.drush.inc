@@ -3649,11 +3649,18 @@ function pbd_enable_remote_profile_submissions() {
  * Set our own dedupe rules.
  */
 function pbd_dedupe_rules() {
-
+  // This may need to be redone. See: https://lab.civicrm.org/dev/core/issues/387
+  
+  // We want the default individual unsupervised rule to be first name, last name 
+  // and email (e.g. what the default supervised rule is). We want the default
+  // unsupervised rule (email only) to be a general rule. 
   $sql = "UPDATE civicrm_dedupe_rule_group SET used = 'General' WHERE name = 'IndividualUnsupervised'";
   CRM_Core_DAO::executeQuery($sql);
   $sql = "UPDATE civicrm_dedupe_rule_group SET used = 'Unsupervised' WHERE name = 'IndividualSupervised'";
   CRM_Core_DAO::executeQuery($sql);
+
+  // We also want the individual supervised rule to be just first and last name.
+  // Create a new rule group 
   $sql = "INSERT INTO civicrm_dedupe_rule_group SET 
     contact_type = 'Individual',
     threshold = '2',
@@ -3682,5 +3689,18 @@ function pbd_dedupe_rules() {
     rule_weight = 1";
   CRM_Core_DAO::executeQuery($sql, $params); 
 
+  // And lastly, we want to fix the organization rules.
+  // By default, both supervised and unsupervised are both called "Name and Email"
+  // and both are actually Name OR Email. We want unsupervised to be
+  // both name and email and supervised to be just name.
+  $sql = "UPDATE civicrm_dedupe_rule_group SET threshold = '20' WHERE name = 'OrganizationUnsupervised'";
+  CRM_Core_DAO::executeQuery($sql);
+
+  $sql = "SELECT id FROM civicrm_dedupe_rule_group WHERE name = 'OrganizationSupervised'";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  $dao->fetch();
+
+  $sql = "DELETE FROM civicrm_dedupe_rule WHERE dedupe_rule_group_id = %0 AND rule_field = 'email'";
+  CRM_Core_DAO::executeQuery($sql, array(0 => array($dao->id, 'Integer')));
 }
 ?>
