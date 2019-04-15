@@ -231,10 +231,6 @@ function drush_pbd_configure() {
   module_disable(array('civicrm_engage'));
   drupal_uninstall_modules(array('civicrm_engage'));
 
-  // Enable extensions and modules early so settings and permission
-  // steps that are taken later work properly.
-  pbd_enable_default_extensions();
-
   /* Drupal Settings */
   pbd_enable_modules();
   pbd_configure_themekey();
@@ -3417,60 +3413,6 @@ function pbd_configure_default_cicero_mappings() {
   variable_set('civicrm_cicero_contact_field_map', $map);
 }
 
-
-/**
- * Some extensions we want enabled on all sites.
- **/
-function pbd_enable_default_extensions() {
-  $default_extensions = array(
-    'net.ourpowerbase.search.eventcount',
-    'net.ourpowerbase.engage',
-    'net.ourpowerbase.report.dbhealth',
-    'net.ourpowerbase.report.advancedfundraising',
-    'com.aghstrategies.uscounties',
-    'eu.tttp.noverwrite',
-    'net.ourpowerbase.sumfields',
-    'de.systopia.osm'
-  );
-  _civicrm_init();
-  $uninstall_extensions = array();
-  try{
-    // Uninstall first.
-    $params['keys'] = array();
-    while(list(,$ext) = each($uninstall_extensions)) {
-      $params['keys'][] = $ext;
-    }
-    if(!empty($params['keys'])) {
-      drush_log(dt("Uninstalling extensions"));
-      civicrm_api3('Extension', 'disable', $params);
-      civicrm_api3('Extension', 'uninstall', $params);
-    }
-
-    // Reset for installing.
-    $params['keys'] = array();
-    // To speed things up - eliminate extensions that are already enabled.
-    // by first building an array of enabled extensions.
-    $sql = "SELECT full_name FROM civicrm_extension WHERE is_active = 1";
-    $dao = CRM_Core_DAO::executeQuery($sql);
-    $enabled_already = array();
-    while($dao->fetch()) {
-      $enabled_already[] = $dao->full_name;
-    }
-    while(list(,$ext) = each($default_extensions)) {
-      if(!in_array($ext, $enabled_already)) {
-        $params['keys'][] = $ext;
-      }
-    }
-    if(!empty($params['keys'])) {
-      drush_log(dt("Installing extensions"));
-      civicrm_api3('Extension', 'install', $params);
-    }
-  }
-  catch (CiviCRM_API3_Exception $e) {
-    drush_log(dt("There was an error installing/uninstalling the default extensions."), 'error');
-    drush_log($e->getMessage(), 'error');
-  }
-}
 
 /**
  * Civicrm 4.3 upgrade adds civicrm news, which pulls in blog posts
