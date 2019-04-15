@@ -1073,15 +1073,22 @@ function drush_ptp_check_sumfields() {
       $site = ptp_get_subdomain();
       drush_log(dt("@site: Missing Contribution Trigger", array('@site' => $site)), 'error');
       if (drush_get_option('fix', FALSE)) {
-        sumfields_save_setting('generate_schema_and_data', 'scheduled:'. date('Y-m-d H:i:s'));
-        $returnValues = array();
-        if(!sumfields_gen_data($returnValues)) {
-          drush_log(dt("@site: There was an error fixing the data.", array('@site' => $site)), 'error');
-        }
-        else {
-          drush_log(dt("@site: Data fixed", array('@site' => $site)), 'error');
-        }
+         drush_ptp_fix_sumfields();
       }
+    }
+  }
+}
+
+function drush_ptp_fix_sumfields() {
+  _civicrm_init();
+  if (function_exists('sumfields_save_settings')) {
+    sumfields_save_setting('generate_schema_and_data', 'scheduled:'. date('Y-m-d H:i:s'));
+    $returnValues = array();
+    if(!sumfields_gen_data($returnValues)) {
+      drush_log(dt("@site: There was an error fixing the data.", array('@site' => $site)), 'error');
+    }
+    else {
+      drush_log(dt("@site: Data fixed", array('@site' => $site)), 'error');
     }
   }
 }
