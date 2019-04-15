@@ -1084,6 +1084,7 @@ function ptp_fix_sumfields() {
   if (function_exists('sumfields_save_setting')) {
     sumfields_save_setting('generate_schema_and_data', 'scheduled:'. date('Y-m-d H:i:s'));
     $returnValues = array();
+    $site = ptp_get_subdomain();
     if(!sumfields_gen_data($returnValues)) {
       drush_log(dt("@site: There was an error fixing the data.", array('@site' => $site)), 'error');
     }
