@@ -1081,7 +1081,7 @@ function drush_ptp_check_sumfields() {
 
 function ptp_fix_sumfields() {
   _civicrm_init();
-  if (function_exists('sumfields_save_settings')) {
+  if (function_exists('sumfields_save_setting')) {
     sumfields_save_setting('generate_schema_and_data', 'scheduled:'. date('Y-m-d H:i:s'));
     $returnValues = array();
     if(!sumfields_gen_data($returnValues)) {
