@@ -1028,7 +1028,6 @@ function pbd_enable_pb_components() {
   $params = array(
     'enable_components' => array(
       'CiviContribute',
-      'CiviMember',
       'CiviEvent',
       'CiviMail',
       'CiviReport',
