@@ -1073,13 +1073,13 @@ function drush_ptp_check_sumfields() {
       $site = ptp_get_subdomain();
       drush_log(dt("@site: Missing Contribution Trigger", array('@site' => $site)), 'error');
       if (drush_get_option('fix', FALSE)) {
-         drush_ptp_fix_sumfields();
+         ptp_fix_sumfields();
       }
     }
   }
 }
 
-function drush_ptp_fix_sumfields() {
+function ptp_fix_sumfields() {
   _civicrm_init();
   if (function_exists('sumfields_save_settings')) {
     sumfields_save_setting('generate_schema_and_data', 'scheduled:'. date('Y-m-d H:i:s'));
