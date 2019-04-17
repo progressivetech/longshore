@@ -284,6 +284,8 @@ function drush_lsd_extensions_update() {
     drush_log("Failed to run database updates on extensions.", 'error');
     drush_log($out, 'error');
   }
+  // Lastly, refresh the list of extensions
+  CRM_Extension_System::singleton()->getManager()->refresh();
 }
 
 /**
