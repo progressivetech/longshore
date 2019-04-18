@@ -230,6 +230,10 @@ function drush_pbd_configure() {
   // Can be removed after it has run on all sites.
   module_disable(array('civicrm_engage'));
   drupal_uninstall_modules(array('civicrm_engage'));
+  // Fix demographics custom group:
+  $sql = "UPDATE civicrm_custom_group SET style = 'Inline' WHERE name = 'Demographics'";
+  echo "Running: $sql\n";
+  CRM_Core_DAO::executeQuery($sql);
 
   /* Drupal Settings */
   pbd_enable_modules();
