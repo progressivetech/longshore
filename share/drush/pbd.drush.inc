@@ -232,8 +232,8 @@ function drush_pbd_configure() {
   drupal_uninstall_modules(array('civicrm_engage'));
   // Fix demographics custom group:
   $sql = "UPDATE civicrm_custom_group SET style = 'Inline' WHERE name = 'Demographics'";
-  echo "Running: $sql\n";
   CRM_Core_DAO::executeQuery($sql);
+  drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable net.ourpowerbase.spouse");
 
   /* Drupal Settings */
   pbd_enable_modules();
@@ -390,6 +390,7 @@ function pbd_enable_one_time_extensions() {
     'net.ourpowerbase.profiles',
     'net.ourpowerbase.engage',
     'net.ourpowerbase.search.eventcount',
+    'net.ourpowerbase.search.spouse',
     'com.aghstrategies.uscounties',
     'eu.tttp.noverwrite',
     'uk.co.vedaconsulting.mosaico',
