@@ -2541,12 +2541,12 @@ long_set_dbs() {
   local sibling=
   for sibling in $siblings; do
     if [ "$sibling" = "$me" ]; then
-      dbs=$(ls "$LONG_SRV/services/databases")
-      for db in $dbs; do
-        dbs=$(ls "$LONG_SRV/services/databases/$db/mysql" | egrep -v '^(lost\+found|tc\.log|aria_|multi-master|ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)' | tr "\n" " ")
+      dbhosts=$(ls "$LONG_SRV/services/databases")
+      for dbhost in $dbhosts; do
+        dbs=$(ls "$LONG_SRV/services/databases/$dbhost/mysql" | egrep -v '^(lost\+found|tc\.log|aria_|multi-master|ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)' | tr "\n" " ")
         count=$(echo "$dbs" | wc -w)
         # Get Id for this db
-        id=$(docker $LONG_DOCKER_LOG_ARG inspect -f {{.Id}} "$db")
+        id=$(docker $LONG_DOCKER_LOG_ARG inspect -f {{.Id}} "$dbhost")
         mem=0
         for pid in $(grep "$id" /proc/*/cgroup 2>/dev/null | cut -d/ -f3| sort | uniq); do
           mem=$(( $mem + $(( $(ps -h -p "$pid" -o rss) / 1024 )) ))
