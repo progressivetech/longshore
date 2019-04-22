@@ -2543,7 +2543,7 @@ long_set_dbs() {
     if [ "$sibling" = "$me" ]; then
       dbs=$(ls "$LONG_SRV/services/databases")
       for db in $dbs; do
-        dbs=$(ls "$LONG_SRV/services/databases/$db/mysql" | egrep -v '^(ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)' | tr "\n" " ")
+        dbs=$(ls "$LONG_SRV/services/databases/$db/mysql" | egrep -v '^(tc\.log|aria_|multi-master|ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)' | tr "\n" " ")
         count=$(echo "$dbs" | wc -w)
         # Get Id for this db
         id=$(docker $LONG_DOCKER_LOG_ARG inspect -f {{.Id}} "$db")
