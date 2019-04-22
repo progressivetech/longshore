@@ -2541,7 +2541,7 @@ long_set_dbs() {
   local sibling=
   for sibling in $siblings; do
     if [ "$sibling" = "$me" ]; then
-      dbhosts=$(ls "$LONG_SRV/services/databases")
+      dbhosts=$(ls "$LONG_SRV/services/databases" | grep -v 'lost+found')
       for dbhost in $dbhosts; do
         dbs=$(ls "$LONG_SRV/services/databases/$dbhost/mysql" | egrep -v '^(lost\+found|tc\.log|aria_|multi-master|ibdata1|ib_logfile0|ib_logfile1|mysql|performance_schema)' | tr "\n" " ")
         count=$(echo "$dbs" | wc -w)
