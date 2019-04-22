@@ -233,7 +233,10 @@ function drush_pbd_configure() {
   // Fix demographics custom group:
   $sql = "UPDATE civicrm_custom_group SET style = 'Inline' WHERE name = 'Demographics'";
   CRM_Core_DAO::executeQuery($sql);
-  drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable net.ourpowerbase.spouse");
+  $params['keys'] = array(
+    'net.ourpowerbase.spouse'
+  );
+  civicrm_api3('Extension', 'install', $params);
 
   /* Drupal Settings */
   pbd_enable_modules();
