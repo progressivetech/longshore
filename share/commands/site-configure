@@ -31,3 +31,6 @@ elif [ "$once" = "once-force" ]; then
 else
   long_configure_site "$site"
 fi
+
+# Clear cache for good measure and to avoid mosaico missing graphics driver error.
+long_clear_cache "$site" all 
