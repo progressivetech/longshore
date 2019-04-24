@@ -3609,35 +3609,40 @@ function pbd_dedupe_rules() {
   CRM_Core_DAO::executeQuery($sql);
 
   // We also want the individual supervised rule to be just first and last name.
-  // Create a new rule group 
-  $sql = "INSERT INTO civicrm_dedupe_rule_group SET 
-    contact_type = 'Individual',
-    threshold = '2',
-    used = 'Supervised', 
-    name = 'FirstAndLastName',
-    title = 'First and Last Name'";
-  CRM_Core_DAO::executeQuery($sql);
+  // Create a new rule group if it doesn't already exist.
 
   $sql = "SELECT id FROM civicrm_dedupe_rule_group WHERE name = 'FirstAndLastName'";
   $dao = CRM_Core_DAO::executeQuery($sql);
-  $dao->fetch();
-  
-  $sql = "INSERT INTO civicrm_dedupe_rule SET
-    dedupe_rule_group_id = %0,
-    rule_table = 'civicrm_contact',
-    rule_field = 'first_name',
-    rule_length = NULL,
-    rule_weight = 1";
-  $params = array(0 => array($dao->id, 'Integer'));
-  CRM_Core_DAO::executeQuery($sql, $params); 
-  $sql = "INSERT INTO civicrm_dedupe_rule SET
-    dedupe_rule_group_id = %0,
-    rule_table = 'civicrm_contact',
-    rule_field = 'last_name',
-    rule_length = NULL,
-    rule_weight = 1";
-  CRM_Core_DAO::executeQuery($sql, $params); 
+  if ($dao->N == 0) {
+    $sql = "INSERT INTO civicrm_dedupe_rule_group SET 
+      contact_type = 'Individual',
+      threshold = '2',
+      used = 'Supervised', 
+      name = 'FirstAndLastName',
+      title = 'First and Last Name'";
+    CRM_Core_DAO::executeQuery($sql);
 
+    $sql = "SELECT id FROM civicrm_dedupe_rule_group WHERE name = 'FirstAndLastName'";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    $dao->fetch();
+    
+    $sql = "INSERT INTO civicrm_dedupe_rule SET
+      dedupe_rule_group_id = %0,
+      rule_table = 'civicrm_contact',
+      rule_field = 'first_name',
+      rule_length = NULL,
+      rule_weight = 1";
+    $params = array(0 => array($dao->id, 'Integer'));
+    CRM_Core_DAO::executeQuery($sql, $params); 
+    $sql = "INSERT INTO civicrm_dedupe_rule SET
+      dedupe_rule_group_id = %0,
+      rule_table = 'civicrm_contact',
+      rule_field = 'last_name',
+      rule_length = NULL,
+      rule_weight = 1";
+    CRM_Core_DAO::executeQuery($sql, $params); 
+
+  }
   // And lastly, we want to fix the organization rules.
   // By default, both supervised and unsupervised are both called "Name and Email"
   // and both are actually Name OR Email. We want unsupervised to be
@@ -3651,5 +3656,9 @@ function pbd_dedupe_rules() {
 
   $sql = "DELETE FROM civicrm_dedupe_rule WHERE dedupe_rule_group_id = %0 AND rule_field = 'email'";
   CRM_Core_DAO::executeQuery($sql, array(0 => array($dao->id, 'Integer')));
+
+  $sql = "UPDATE civicrm_dedupe_rule_group SET title = 'Name' WHERE id = %0";
+  CRM_Core_DAO::executeQuery($sql, array(0 => array($dao->id, 'Integer')));
+
 }
 ?>
