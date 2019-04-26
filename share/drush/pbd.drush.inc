@@ -244,7 +244,6 @@ function drush_pbd_configure() {
   pbd_configure_jquery_update();
   pbd_create_drupal_roles();
   pbd_grant_anonymous_and_authenticated_role_access();
-  pbd_email_footer();
   variable_set('preprocess_css',1);
   variable_set('preprocess_js',1);
   // Turning off page caching too...
@@ -394,6 +393,7 @@ function pbd_enable_one_time_extensions() {
     'net.ourpowerbase.engage',
     'net.ourpowerbase.search.eventcount',
     'net.ourpowerbase.search.spouse',
+    'net.ourpowerbase.search.setup',
     'com.aghstrategies.uscounties',
     'eu.tttp.noverwrite',
     'uk.co.vedaconsulting.mosaico',
@@ -3063,70 +3063,6 @@ function pbd_enable_modules() {
     drush_log(dt("No modules to enable."));
   }
 
-}
-
-/**
- * Ensure all sites have reasonable footer components.
- *
- * That means:
- *
- * Ensure all sites have a footer with the name "PowerBase Footer",
- * and if they don't, insert one with all needed tokens.
- *
- * Next, check their default footer.
- *
- * If the body_html contains the 'action.unsubscribeUrl' then do
- * nothing. They are good to go.
- *
- * Otherwise...
- *
- * If it contains the string "Sample Footer for HTML formatted content"
- * then change the default to our footer. This means they haven't done
- * any customizations and we should help them out.
- *
- * If it doesn't contain that string, then do nothing. They have customized
- * their default footer and it's missing an important token but...  we can't
- * change it without pulling the rug out from under them.
- *
- */
-function pbd_email_footer() {
-  _civicrm_init();
-
-  // The is_default parameter may or may not get changed below.
-  $pb_default_footer = array(
-    'name' => 'PowerBase Footer',
-    'component_type' => 'Footer',
-    'subject' => 'PowerBase Footer with reasonable tokens',
-    'is_active' => 1,
-    'is_default' => 0,
-    'body_text' => "To remove your name from this email list: {action.unsubscribeUrl}.\n" .
-      "To unsubscribe from all emails from us: {action.optOutUrl}. {domain.address}\n",
-      'body_html' => '<p style="font-size: 10px; color: #999;">To remove your name from this email list click <a href="{action.unsubscribeUrl}">here</a>. To unsubscribe from all emails from us click <a href="{action.optOutUrl}">here</a>. {domain.address}</p>',
-  );
-  $pb_footer_id = pbd_ensure_pb_email_footer_exists($pb_default_footer);
-  if(empty($pb_footer_id)) {
-    drush_print("Not setting default footer, could not reliable ensure it exists.");
-  }
-  // Get information about default footer
-  $sql = "SELECT id, name, body_html FROM civicrm_mailing_component
-    WHERE component_type = 'Footer' AND is_default = 1";
-  $dao = CRM_Core_DAO::executeQuery($sql);
-  $our_name = 'PowerBase Footer';
-  $dao->fetch();
-
-  $html_array = explode("\n", $dao->body_html);
-  $has_unsub_token = preg_grep('/action.unsubscribeUrl/', $html_array);
-  $has_default_string = preg_grep('/Sample Footer for HTML formatted content/', $html_array);
-
-  if(empty($dao->id) || (!$has_unsub_token && $has_default_string)) {
-    // Make the pb email footer the default
-    $sql = "UPDATE civicrm_mailing_component SET is_default = 0 WHERE component_type = 'Footer'";
-    CRM_Core_DAO::executeQuery($sql);
-
-    $sql = "UPDATE civicrm_mailing_component SET is_default = 1 WHERE id = %1";
-    $params = array( 1 => array($pb_footer_id, 'Integer'));
-    CRM_Core_DAO::executeQuery($sql, $params);
-  }
 }
 
 /**
