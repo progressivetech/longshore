@@ -393,7 +393,7 @@ function pbd_enable_one_time_extensions() {
     'net.ourpowerbase.engage',
     'net.ourpowerbase.search.eventcount',
     'net.ourpowerbase.search.spouse',
-    'net.ourpowerbase.search.setup',
+    'net.ourpowerbase.setup',
     'com.aghstrategies.uscounties',
     'eu.tttp.noverwrite',
     'uk.co.vedaconsulting.mosaico',
