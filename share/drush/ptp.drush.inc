@@ -30,20 +30,15 @@ function ptp_drush_command() {
         'sibling' => 'Name of longshore sibling guest',
       ),
     );
-  $items['ptp-get-site-name'] =
+  $items['ptp-get-site-info'] =
     array(
-      'description' => 'Given a powerbase URL, return the friendly name of the organization.',
+      'description' => 'Given a powerbase URL, return information about it taken from the PTP database..',
       'options' => array(
-        'url' => 'The full PowerBase URL of the site.'
+        'url' => 'The full PowerBase URL of the site.',
+        'info' => 'The info you want: name, email, phone, state, address, zip, state'
       ),
   );
-  $items['ptp-get-site-email'] =
-    array(
-      'description' => 'Given a powerbase URL, return the email address for the organization.',
-      'options' => array(
-        'url' => 'The full PowerBase URL of the site.'
-      ),
-  );
+  
   $items['ptp-configure'] =
     array('description' => "Ensure all PTP general settings are properly configured."
   );
@@ -111,17 +106,11 @@ function ptp_drush_command() {
   return $items;
 }
 
-function drush_ptp_get_site_name() {
- ptp_get_site_info('name'); 
-}
 
-function drush_ptp_get_site_email() {
- ptp_get_site_info('email'); 
-}
-
-function ptp_get_site_info($info) {
+function drush_ptp_get_site_info() {
   _civicrm_init();
   $url = drush_get_option('url', NULL);
+  $info = drush_get_option('info', NULL);
   if (empty($url)) {
     drush_Log("Please pass the Powerbase url.", "error");
     return FALSE;
@@ -133,8 +122,23 @@ function ptp_get_site_info($info) {
   elseif ($info == 'email') {
     $return = 'email';
   }
+  elseif ($info == 'state') {
+    $return = 'state_province';
+  }
+  elseif ($info == 'phone') {
+    $return = 'phone';
+  }
+  elseif ($info == 'address') {
+    $return = 'street_address';
+  }
+  elseif ($info == 'city') {
+    $return = 'city';
+  }
+  elseif ($info == 'zip') {
+    $return = 'postal_code';
+  }
   else {
-    drush_Log("I can only return a name or an email.", "error");
+    drush_Log("I can only return a name, state, phone, address, city, zip or an email.", "error");
     return FALSE;
   }
   $result = civicrm_api3('Contact', 'get', array(

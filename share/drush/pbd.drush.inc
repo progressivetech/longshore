@@ -59,7 +59,12 @@ function pbd_drush_command() {
       'description' => "Set default organization name and email address",
       'options' => array(
         'name' => 'The full name of the organization.',
-        'email' => 'The primary email of the organization'
+        'email' => 'The primary email of the organization',
+        'state' => 'The default state of the organization',
+        'phone' => 'The default phone of the organization',
+        'zip' => 'The zip of the organization',
+        'address' => 'The address of the organization',
+        'city' => 'The city of the organization',
       )
     );
 
@@ -120,26 +125,55 @@ function drush_pbd_restore_dedupe_rules() {
  * Update organization info
  */
 function drush_pbd_setup_org_info() {
-  $email = drush_get_option('email', null);
-  if (empty($email)) {
-    $email = 'FIXME@example.org';
-  }
   $name = drush_get_option('name', null);
-  // Set Drupal settings.
-  if (!empty($email)) {
-    variable_set('site_mail', $email);
+  $email = drush_get_option('email', null);
+  $phone = drush_get_option('phone', null);
+  $state = drush_get_option('state', null);
+  $address = drush_get_option('address', null);
+  $city = drush_get_option('city', null);
+  $zip = drush_get_option('zip', null);
+
+  // Let's make all fields required so we don't accidentally set things up
+  // partially.
+  $required = [ 'name', 'email', 'phone', 'state', 'address', 'city', 'zip' ];
+  foreach($required as $req) {
+    $val = $$req;
+    if (empty($val)) {
+      drush_log(dt("Can't set org info, @req is required.", array('@req' => $req)), 'error');
+      return;
+    }
   }
-  if (!empty($name)) {
-    variable_set('site_name', "${name} Powerbase");
+  _civicrm_init();
+  // This should be passed as an abbreviation, so we first have to convert
+  // it to the ID and if we fail we bail.
+  try {
+    $state_province_id = civicrm_api3('StateProvince', 'getvalue', [
+      'abbreviation' => $state,
+      'country_id' => 1228,
+      'return' => 'id',
+    ]);
+
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    drush_log(dt("Failed to get state province id for @state. Bailing!", array('@state' => $state)), 'error');
+    drush_log($e->getMessage(), 'error');
+    return;
   }
 
+  // Set Drupal settings.
+  variable_set('site_mail', $email);
+  variable_set('site_name', "${name} Powerbase");
+
   // Now CiviCRM ones.
-  _civicrm_init();
+ 
+  // Make the state the default state. Amost all of our groups are local, so this makes sense.
+  civicrm_api3('Setting', 'create', [ 'defaultContactStateProvince' => $state_province_id ]);
+
+  // Set the domain.
   $params = array(
     'id' => CRM_Core_Config::domainID(),
   );
   $results = civicrm_api3('Domain', 'get', $params);
-
   // We can only update the name here.
   $values = array_pop($results['values']);
   $values['name'] = $name;
@@ -156,20 +190,80 @@ function drush_pbd_setup_org_info() {
   );
   civicrm_api3('Contact', 'create', $params);
 
-  $params = array(
+  // Only add email, phone and address if they don't already exist.
+  // Test by trying to retrieve them.
+
+  $email_params = array(
     'contact_id' => $contact_id,
     'location_type_id' => 2,
     'email' => $email,
     'is_primary' => 1,
   );
-  civicrm_api3('Email', 'create', $params);
+  try {
+    civicrm_api3('Email', 'getsingle', $email_params);
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    if ($e->getMessage() == 'Expected one Email but found 0') {
+      // It has not been added, so add it.
+      civicrm_api3('Email', 'create', $email_params);
+    }
+    else {
+      drush_log($e->getMessage(), 'error');
+      return;
+    }
+  }
 
+  $phone_params = array(
+    'contact_id' => $contact_id,
+    'location_type_id' => 2,
+    'phone' => $phone,
+    'is_primary' => 1,
+  );
+  try {
+    civicrm_api3('Phone', 'getsingle', $phone_params);
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    if ($e->getMessage() == 'Expected one Phone but found 0') {
+      // It has not been added, so add it.
+      civicrm_api3('Phone', 'create', $phone_params);
+    }
+    else {
+      drush_log($e->getMessage(), 'error');
+      return;
+    }
+  }
+
+  $address_params = array(
+    'contact_id' => $contact_id,
+    'location_type_id' => 2,
+    'street_address' => $address,
+    'state_province_id' => $state_province_id,
+    'city' => $city,
+    'postal_code' => $zip,
+    'is_primary' => 1,
+  );
+  try {
+    civicrm_api3('Address', 'getsingle', $address_params);
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    if ($e->getMessage() == 'Expected one Address but found 0') {
+      // It has not been added, so add it.
+      civicrm_api3('Address', 'create', $address_params);
+    }
+    else {
+      drush_log($e->getMessage(), 'error');
+      return;
+    }
+  }
+
+  // More CiviCRM settings.
   $emailName = '"' . $name . '" <' . $email. '>';
   civicrm_api3('optionValue', 'create', array(
-      'label' => $emailName,
-      'option_group_id' => 'from_email_address',
-      'is_default' => 1,
-    ));
+    'label' => $emailName,
+    'option_group_id' => 'from_email_address',
+    'is_default' => 1,
+  ));
+
 }
 
 /**
