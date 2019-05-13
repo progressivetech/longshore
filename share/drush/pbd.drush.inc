@@ -3134,7 +3134,7 @@ function pbd_enable_modules() {
   $modules_wanted = array(
     'themekey', 'opb',
     'civicrm_cicero', 'ctools', 'views', 'views_ui',
-    'webform_civicrm',
+    'webform_civicrm', 'file',
     'webform','options_element',
     'libraries', 'autologout', 'themekey_civicrm',
     'themekey_ui', 'jquery_update', 'path'
