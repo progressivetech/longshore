@@ -89,3 +89,10 @@ log_error = /dev/stderr
 
 ; skip networking. We don't use dns for authentication. This speeds things up
 skip_name_resolve = on
+
+; This won't be necessary with buster version of mariadb since barracuda
+; will be default (see https://mariadb.com/kb/en/library/xtradbinnodb-file-format/)
+innodb_file_format = Barracuda
+; The next value MUST be removed for buster since it was removed from mariadb
+; See: https://mariadb.com/kb/en/library/innodb-system-variables/#innodb_large_prefix
+innodb_large_prefix = on
