@@ -169,6 +169,9 @@ function drush_pbd_setup_org_info() {
   // Make the state the default state. Amost all of our groups are local, so this makes sense.
   civicrm_api3('Setting', 'create', [ 'defaultContactStateProvince' => $state_province_id ]);
 
+  // Make US the only available country in localization. 1228 is the id for the country US.
+  civicrm_api3('Setting', 'create', [ 'countryLimit' => "1228" ]);
+
   // Set the domain.
   $params = array(
     'id' => CRM_Core_Config::domainID(),
