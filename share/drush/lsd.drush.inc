@@ -246,11 +246,8 @@ function lsd_install_prep() {
   // Set some include paths. This is handled in the civicrm_setup function in
   // install/civicrm.php - but that function also messes with directory
   // permissions so I'd rather not call it.
-  $pkgPath = $crmPath . DIRECTORY_SEPARATOR . 'packages';
-  set_include_path(
-    $crmPath . PATH_SEPARATOR . $pkgPath . PATH_SEPARATOR .
-      get_include_path()
-  );
+  require_once $crmPath . '/CRM/Core/ClassLoader.php';
+  CRM_Core_ClassLoader::singleton()->register();
 
   // Bah - this file is needed for one function call to write the settings file.
   $civicrmInstallerHelper = "$crmPath/install/civicrm.php";
