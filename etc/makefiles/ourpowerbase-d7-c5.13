@@ -537,7 +537,7 @@ projects[remoteform][type] = "library"
 projects[remoteform][destination] = "extensions"
 projects[remoteform][download][type] = "git"
 projects[remoteform][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.remoteform"
-projects[remoteform][download][revision] = "713ab5b84c98fb25177cc44794ce66f581ec57f3"
+projects[remoteform][download][revision] = "c196a5ef2069d7574480c2ef4a14124cb2e3bca3"
 
 projects[civimobileapi][type] = "library"
 projects[civimobileapi][destination] = "extensions"
