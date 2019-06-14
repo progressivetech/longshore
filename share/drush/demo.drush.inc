@@ -797,34 +797,12 @@ function demo_site_name() {
   //set domain from email address, CRM-3552
   $emailName = '"' . $params['email_name'] . '" <' . $params['email_address'] . '>';
 
-  $emailParams = array(
+  civicrm_api3('optionValue', 'create', array(
     'label' => $emailName,
-    'description' => '',
-    'is_active' => 1,
+    'option_group_id' => 'from_email_address',
     'is_default' => 1,
-  );
+  ));
 
-  $groupParams = array('name' => 'from_email_address');
-
-  $optionValues = array();
-  $default_from_address_option_value_id = NULL;
-  CRM_Core_OptionValue::getValues($groupParams, $optionValues);
-  foreach ($optionValues as $Id => $value) {
-    if ($value['is_default'] && $value['is_active']) {
-      $default_from_address_option_value_id = $Id;
-    }
-  }
-
-  //add from email address.
-  $action = CRM_Core_Action::ADD;
-  $grpId = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_OptionGroup', 'from_email_address', 'id', 'name');
-  $fieldValues = array('option_group_id' => $grpId);
-  $emailParams['weight'] = CRM_Utils_Weight::getDefaultWeight('CRM_Core_DAO_OptionValue', $fieldValues);
-
-  //reset default within domain.
-  $emailParams['reset_default_for'] = array('domain_id' => CRM_Core_Config::domainID());
-
-  CRM_Core_OptionValue::addOptionValue($emailParams, $groupParams, $action, $default_from_address_option_value_id);
 }
 
 function demo_membership_type() {
