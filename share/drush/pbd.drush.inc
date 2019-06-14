@@ -394,12 +394,23 @@ function drush_pbd_configure() {
   pbd_disable_external_extension_repository();
   pbd_set_smart_group_refresh_mode();
 
+  pbd_disable_checks();
+
   // This should go last so we can reset settigs set above (like
   // preprocess variables).
   if ( getenv('LONG_LIVE') == 'n' ) {
     pbd_configure_dev_site();
   }
 
+}
+
+function pbd_disable_checks() {
+  // The following should be removed once all databases have been rebuilt to include
+  // the proper my.cnf settings.
+  civicrm_api3('StatusPreference', 'create', ['name' => 'checkMysqlUtf8mb4', 'ignore_severity' => 3]);
+
+  // The following should be removed when we upgrade to buster.
+  civicrm_api3('StatusPreference', 'create', ['name' => 'checkPhpVersion', 'ignore_severity' => 3]);
 }
 
 /**
