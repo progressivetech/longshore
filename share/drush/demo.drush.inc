@@ -29,6 +29,7 @@ function drush_demo_data() {
 
   _civicrm_init();
   try {
+    demo_enable_components();
     demo_enable_extensions();
     demo_contacts();
     demo_campaign();
@@ -59,6 +60,26 @@ function drush_demo_data() {
   }
 }
 
+/**
+ * Enable all components.
+ *
+ * By default we don't enable membership on new installs, but we want it
+ * on demo.
+ **/
+function demo_enable_components() {
+  $params = array(
+    'enable_components' => array(
+      'CiviContribute',
+      'CiviEvent',
+      'CiviMail',
+      'CiviReport',
+      'CiviMember',
+      'CiviCampaign'
+    )
+  );
+  civicrm_api3('Setting', 'create', $params);
+
+}
 function demo_save_sumfields() {
   // Always re-save to ensure lastest contributions are counted. 
 
