@@ -945,13 +945,12 @@ function demo_get_random_constituent_type() {
 
     $options = array();
     foreach($result['values'] as $value) {
-      $name = $value['label'];
-      $options[$name] = null;
+      $options[] = $value['value'];
     }
   }
   
   // array_rand returns a random array key.
-  return array_rand($options);
+  return $options[array_rand($options)];
 }
 function demo_contacts() {
   // contacts.csv downloaded from https://www.forsyth.cc/elections/voter_data.aspx
@@ -1032,7 +1031,7 @@ function demo_contacts() {
 
       // Constituent type
       $id = 'custom_' . demo_custom_id_for_name('constituentfields_individual_constituent_type');
-      $params[$id] = demo_get_random_constituent_type();
+      $params[$id] = [demo_get_random_constituent_type()];
 
        // City State Zip is in format: CITY, STATE ZIP
       $street_address = $data[9];
