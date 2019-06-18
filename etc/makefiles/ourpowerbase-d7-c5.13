@@ -549,7 +549,7 @@ projects[api4][type] = "library"
 projects[api4][destination] = "extensions"
 projects[api4][download][type] = "git"
 projects[api4][download][url] = "https://github.com/civicrm/org.civicrm.api4"
-projects[api4][download][revision] = "e9534c18c80d42c0ee67fc75d0958af4217bc8a3"
+projects[api4][download][revision] = "fafd48da288173dded6cedcd0a49d5578620b68d"
 
 projects[sqlexport][type] = "library"
 projects[sqlexport][destination] = "extensions"
@@ -603,7 +603,7 @@ projects[setup][type] = "library"
 projects[setup][destination] = "extensions"
 projects[setup][download][type] = "git"
 projects[setup][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.setup"
-projects[setup][download][revision] = "dabf2165c4103b3a56cd28d1e3346c310fbbabc3"
+projects[setup][download][revision] = "28701c64e2d77c4013c420f27145bf9a1c0a0f9f"
 
 ;****************************************
 ; Drupal themes 
