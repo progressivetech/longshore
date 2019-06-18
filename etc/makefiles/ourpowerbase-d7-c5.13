@@ -605,6 +605,12 @@ projects[setup][download][type] = "git"
 projects[setup][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.setup"
 projects[setup][download][revision] = "28701c64e2d77c4013c420f27145bf9a1c0a0f9f"
 
+projects[contactlayout][type] = "library"
+projects[contactlayout][destination] = "extensions"
+projects[contactlayout][download][type] = "git"
+projects[contactlayout][download][url] = "https://github.com/civicrm/org.civicrm.contactlayout"
+projects[contactlayout][download][revision] = "ea044fe7a6f622d518f81eb2bee7d2d2f30b7643"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
