@@ -504,7 +504,8 @@ function pbd_enable_one_time_extensions() {
     'com.aghstrategies.uscounties',
     'eu.tttp.noverwrite',
     'uk.co.vedaconsulting.mosaico',
-    'de.systopia.osm'
+    'de.systopia.osm',
+    'org.civicrm.shoreditch'
   );
 
   foreach($keys as $key) {
