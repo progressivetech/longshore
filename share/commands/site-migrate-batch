@@ -9,8 +9,7 @@ one site per line with a timestamp of the day it should be migrated and the
 platform it should be migrated to.
 
 Pass the environment variable LONG_UPGRADE_VERSION to the full upgrade version
-(e.g. 5.7.3) if that is the version that will be reported by the database, yet
-we are using a make file that specifies just 5.7.
+(e.g. 5.7.3) that we expect the database to report upon upgrade.
 
 Arguments
   <action> - Defaults to run, which will run the migrations. Optionally
@@ -26,6 +25,8 @@ long_check_args "$2" "$#" 0
 action="$2"
 platform="$3"
 startdate="$4"
+
+[ -z "$LONG_UPGRADE_VERSION" ] && long_die "Please set LONG_UPGRADE_VERSION to the version (e.g. 5.7.3) you expect the database to report when complete."
 
 path="$HOME/.longshore.batch.migrate"
 
