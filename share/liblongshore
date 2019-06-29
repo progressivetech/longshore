@@ -445,14 +445,29 @@ long_set_php_port() {
   local name="$1"
   local envdir=
   local last_port=
+  local port_candidate=
+
   if [ "$name" = "phpmyadmin" ]; then
     envdir="${LONG_SRV}/services/phpmyadmin/env"
   else
     envdir="${LONG_SRV}/services/sites/${name}/env"
   fi
+
+  # Set the global var that will hold the value to empty.
+  LONG_PHP_PORT=
+
+  # If the container has been created, we should already have a port.
   if [ -f "${envdir}/PORT" ]; then
-    LONG_PHP_PORT=$(cat "${envdir}/PORT")
-  else
+    port_candidate=$(cat "${envdir}/PORT")
+
+    # Make sure it is not being used by another site (e.g., we may be transferring
+    # this site to another server and the port could be in use).
+    if ! docker ps | egrep -v " ${name}\$" | grep "127.0.0.1:$port_candidate" >/dev/null; then
+      LONG_PHP_PORT="$port_candidate"
+    fi
+  fi
+
+  if [ -z "$LONG_PHP_PORT" ]; then
     # If we don't already have a PORT file, find the next available port.
     last_port=$(cat "${LONG_SRV}/services/phpmyadmin/env/PORT" "${LONG_SRV}"/services/sites/*/env/PORT 2>/dev/null | sort -n | tail -n1)
     if [ -z "$last_port" ]; then
@@ -460,9 +475,9 @@ long_set_php_port() {
     else
       LONG_PHP_PORT=$(( $last_port + 1 ))
     fi
-    mkdir -p "$envdir"
-    echo "$LONG_PHP_PORT" > "${envdir}/PORT"
   fi
+  mkdir -p "$envdir"
+  echo "$LONG_PHP_PORT" > "${envdir}/PORT"
 }
 
 # Take the passed in var and sanitize for sql statement
