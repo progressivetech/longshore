@@ -66,7 +66,7 @@ fi
 
 long_prompt "Restoring site on new sibling..."
 if [ "$reply" = "y" ]; then
-  ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-restore -v '$site' '$backup_target_path' '$db_host' '$platform'"
+  ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore -v site-restore '$site' '$backup_target_path' '$db_host' '$platform'"
   ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-drush '$site' '-y vset maintenance_mode 0'"
 fi
 
