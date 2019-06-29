@@ -103,6 +103,7 @@ if [ "$reply" = "y" ]; then
   else
     long_log "Not updating DNS."
   fi
+  long_clear_cache "$site" all
 else
   long_log "Cancelled restore." info
 fi
