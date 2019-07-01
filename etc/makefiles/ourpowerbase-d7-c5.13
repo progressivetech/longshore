@@ -615,7 +615,7 @@ projects[onenorthside][type] = "library"
 projects[onenorthside][destination] = "extensions"
 projects[onenorthside][download][type] = "git"
 projects[onenorthside][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.onenorthside"
-projects[onenorthside][download][revision] = "dd50b4dd67d8ebaf763d80d5701795c0fb20a2d5"
+projects[onenorthside][download][revision] = "20345af2490fa5338608f805c0867e49937a6695"
 
 ;****************************************
 ; Drupal themes 
