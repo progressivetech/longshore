@@ -246,7 +246,7 @@ fi
 
 # See if we have other servers to copy the code to 
 siblings="$LONG_SIBLINGS"
-if [[ $(echo "$siblings" | wc -w) -lt "2" ]]; then
+if [[ $(echo "$siblings" | wc -w) -lt "1" ]]; then
   # Don't prompt to sync if we have nobody to sync to.
   sync=n
 fi
