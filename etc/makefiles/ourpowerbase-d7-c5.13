@@ -410,8 +410,8 @@ projects[flexmailer][download][revision] = "52b066065e733b772f3ac3e8039f9806759a
 projects[shoreditch][type] = "library"
 projects[shoreditch][destination] = "extensions"
 projects[shoreditch][download][type] = "git"
-projects[shoreditch][download][url] = "https://github.com/civicrm/org.civicrm.shoreditch"
-projects[shoreditch][download][revision] = "9a7b44155770cf672df2436ae51eea7dbd7f11f2"
+projects[shoreditch][download][url] = "https://github.com/progressivetech/org.civicrm.shoreditch"
+projects[shoreditch][download][revision] = "d61d85c078c61d3b7e8b264aa44f397e6a22bfa5"
 
 projects[exportpermission][type] = "library"
 projects[exportpermission][destination] = "extensions"
