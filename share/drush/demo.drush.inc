@@ -1058,8 +1058,15 @@ function demo_contacts() {
         'geo_code_1' => $geo_code_1,
         'geo_code_2' => $geo_code_2
       );
-      $email_address = $params['first_name'] . '.' .  $params['last_name'] . 
-        substr(md5(rand()), 0, 5) . '@example.net';
+      $email_address = $params['first_name'] . '.' .  $params['last_name'];
+      if ($params['first_name'] == 'Anne' && $params['last_name'] == 'Irvin') {
+        // no op. For our training curriculum, we want Anne Irvin to be a dupe,
+        // so we have to ensure she has a consistent email address so it is matched.
+      }
+      else {
+        $email_address .= substr(md5(rand()), 0, 5);
+      }
+      $email_address .= '@example.net';
 
       $params['api.email.create'] = array(
         'email' => $email_address,
