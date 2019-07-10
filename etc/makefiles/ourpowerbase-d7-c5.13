@@ -274,7 +274,7 @@ projects[supersearchvsea][type] = "library"
 projects[supersearchvsea][destination] = "extensions"
 projects[supersearchvsea][download][type] = "git"
 projects[supersearchvsea][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.search.supersearchvsea.git"
-projects[supersearchvsea][download][revision] = "94a12437b83f9f53f879dfa628e86db81575664e"
+projects[supersearchvsea][download][revision] = "787b51b7a78589af9c340be6897bbbbf625eee63"
 
 projects[extendedreport][type] = "library"
 projects[extendedreport][destination] = "extensions"
