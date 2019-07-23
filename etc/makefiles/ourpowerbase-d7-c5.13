@@ -617,6 +617,13 @@ projects[onenorthside][download][type] = "git"
 projects[onenorthside][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.onenorthside"
 projects[onenorthside][download][revision] = "c80e15a93af34b9f5eab751d50a3567d682e36cc"
 
+
+projects[birthdaysbymonth][type] = "library"
+projects[birthdaysbymonth][destination] = "extensions"
+projects[birthdaysbymonth][download][type] = "git"
+projects[birthdaysbymonth][download][url] = "https://bitbucket.org/clearriver/org.namelessnetwork.birthdaysbymonth"
+projects[birthdaysbymonth][download][revision] = "27c065b220af4bec83bf4e0b6c03b7dcdf83ea58"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
