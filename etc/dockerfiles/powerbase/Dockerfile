@@ -38,6 +38,7 @@ RUN apt-get update && \
     libssl-dev \
     xfonts-75dpi \
     xfonts-base \
+    php-xdebug \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 

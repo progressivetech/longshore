@@ -617,12 +617,23 @@ projects[onenorthside][download][type] = "git"
 projects[onenorthside][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.onenorthside"
 projects[onenorthside][download][revision] = "c80e15a93af34b9f5eab751d50a3567d682e36cc"
 
-
 projects[birthdaysbymonth][type] = "library"
 projects[birthdaysbymonth][destination] = "extensions"
 projects[birthdaysbymonth][download][type] = "git"
 projects[birthdaysbymonth][download][url] = "https://bitbucket.org/clearriver/org.namelessnetwork.birthdaysbymonth"
 projects[birthdaysbymonth][download][revision] = "27c065b220af4bec83bf4e0b6c03b7dcdf83ea58"
+
+projects[pivotreport][type] = "library"
+projects[pivotreport][destination] = "extensions"
+projects[pivotreport][download][type] = "git"
+projects[pivotreport][download][url] = "https://github.com/compucorp/uk.co.compucorp.civicrm.pivotreport"
+projects[pivotreport][download][revision] = "4f52a4d0f8d97dd8638a45f7cba43fb106d6ddd0"
+
+projects[reportplus][type] = "library"
+projects[reportplus][destination] = "extensions"
+projects[reportplus][download][type] = "git"
+projects[reportplus][download][url] = "https://lab.civicrm.org/extensions/reportplus.git"
+projects[reportplus][download][revision] = "c76f5d1a89676a3722981763c9360f60e811b99b"
 
 ;****************************************
 ; Drupal themes 
