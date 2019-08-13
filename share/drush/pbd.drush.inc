@@ -3086,7 +3086,7 @@ function pbd_configure_themekey() {
     // custom theme.
     $settings = array(
       '(civicrm/profile/edit|civicrm/profile/view|civicrm/profile/create)',
-      '(civicrm/mailing/subscribe|civicrm/mailing/unsubscribe|civicrm/mailing/optout|civicrm/mailing/resubscribe)',
+      '(civicrm/mailing/subscribe|civicrm/mailing/unsubscribe|civicrm/mailing/optout|civicrm/mailing/resubscribe|civicrm/mailing/confirm)',
       '(civicrm/contribute/transact|civicrm/pcp|civicrm/contribute/campaign|civicrm/contribute/unsubscribe|civicrm/contribute/updatebilling|civicrm/contribute/updaterecur)',
       '(civicrm/event/info|civicrm/event/register|civicrm/event/confirm|civicrm/mailing/forward|civicrm/event/ical|civicrm/event/view_cart|event/cart_checkout)',
     );
