@@ -1247,3 +1247,27 @@ function ptp_correlate_email_opens_to_contributions() {
   }
   fclose($fp);
 }
+
+function ptp_find_possible_dupe_activities() {
+  _civicrm_init();
+  $sql = "SELECT a.id, subject, activity_type_id, date_add(created_date, INTERVAL 15 SECOND) as date_high, date_add(created_date, INTERVAL -15 SECOND) AS date_low FROM civicrm_activity a JOIN civicrm_option_value ov ON a.activity_type_id = ov.value JOIN civicrm_option_group og ON ov.option_group_id = og.id AND og.name = 'activity_type' WHERE created_date > '2019-06-01' AND ov.name NOT IN ('Membership Renewal', 'Membership Signup', 'Event Registration', 'Change Membership Status')";
+  $row = CRM_Core_DAO::executeQuery($sql);
+  while($row->fetch()) {
+    $sql = "SELECT id, subject, activity_type_id, created_date FROM civicrm_activity WHERE id != %0 AND activity_type_id = %1 AND subject = %2 AND created_date BETWEEN %3 and %4";
+    $params = array(
+      0 => array($row->id, 'Integer'),
+      1 => array($row->activity_type_id, 'Integer'),
+      2 => array($row->subject, 'String'),
+      3 => array(str_replace(array(' ','-',':'),'', $row->date_low), 'Timestamp'),
+      4 => array(str_replace(array(' ', '-', ':'), '', $row->date_high), 'Timestamp'),
+    );
+    $rrow = CRM_Core_DAO::executeQuery($sql, $params);
+    while($rrow->fetch()) {
+      echo "activity id: $rrow->id\n";
+      echo "activity subject: $rrow->subject\n";
+      echo "activity type id: $rrow->activity_type_id\n";
+      echo "activity created: $rrow->created_date\n\n";
+
+    }
+  }
+}
