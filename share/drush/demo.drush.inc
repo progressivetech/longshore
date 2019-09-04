@@ -53,6 +53,7 @@ function drush_demo_data() {
     demo_add_sms_provider();
     demo_add_payment_processor();
     demo_set_contact_defaults();
+    demo_add_door_knocking_activity_type();
   }
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("Failed to create demo data in the database."), 'error');
@@ -1377,4 +1378,9 @@ function demo_add_payment_processor() {
 function demo_set_contact_defaults() {
   // Set default state to North Carolina (1032)
   civicrm_api3('Setting', 'create', ['defaultContactStateProvince' => 1032]);
+}
+
+function demo_add_door_knocking_activity_type() {
+  $option_group_id = civicrm_api3('option_group', 'getsingle', [ 'name' => 'activity_type', 'return' => 'id' ]);
+  civicrm_api3('option_value', 'create', [ 'option_group_id' => $option_group_id['id'], 'name' => 'door_knocking', 'label' => 'Door Knocking', 'value' => '99']);
 }
