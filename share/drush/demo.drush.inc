@@ -52,6 +52,7 @@ function drush_demo_data() {
     demo_save_sumfields();
     demo_add_sms_provider();
     demo_add_payment_processor();
+    demo_set_contact_defaults();
   }
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("Failed to create demo data in the database."), 'error');
@@ -762,7 +763,6 @@ function demo_site_name() {
   variable_set('site_name', $name);
 
   // CiviCRM is hard...
-  //
   $defaultLocationType = CRM_Core_BAO_LocationType::getDefault();
   $params = array(
     'name' => $name,
@@ -802,6 +802,27 @@ function demo_site_name() {
     'option_group_id' => 'from_email_address',
     'is_default' => 1,
   ));
+
+  // And lastly set a phone number and address for our default organization.
+  $params = [
+    'contact_id' => $contact_id,
+    'location_type_id' => 2, // work
+    'is_primary' => 1,
+    'phone' => '555-123-4567',
+    'phone_type_id' => 1, // phone
+  ];
+  civicrm_api3('Phone', 'create', $params);
+
+  $params = [
+    'contact_id' => $contact_id,
+    'location_type_id' => 2, // work
+    'is_primary' => 1,
+    'street_address' => '825 Hastings Hill Rd',
+    'city' => 'Kernersville',
+    'postal_code' => '27284',
+    'state_province_id' => 1032
+  ];
+  civicrm_api3('Address', 'create', $params);
 
 }
 
@@ -1032,6 +1053,10 @@ function demo_contacts() {
       // Constituent type
       $id = 'custom_' . demo_custom_id_for_name('constituentfields_individual_constituent_type');
       $params[$id] = [demo_get_random_constituent_type()];
+
+      $id = 'custom_' . demo_custom_id_for_name('constituentfields_subscribe_to_newsletter');
+      $fifty_fifty = rand(0,1);
+      $params[$id] = $fifty_fifty;
 
        // City State Zip is in format: CITY, STATE ZIP
       $street_address = $data[9];
@@ -1347,4 +1372,9 @@ function demo_add_payment_processor() {
       drush_log(dt("PaymentProcessor already created."), 'ok');
     }
   }
+}
+
+function demo_set_contact_defaults() {
+  // Set default state to North Carolina (1032)
+  civicrm_api3('Setting', 'create', ['defaultContactStateProvince' => 1032]);
 }
