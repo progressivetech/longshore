@@ -35,6 +35,7 @@ function drush_demo_data() {
     demo_campaign();
     demo_contribution_page();
     demo_price_set();
+    demo_add_direct_action_event_type();
     demo_contributions();
     demo_membership_type();
     demo_memberships();
@@ -60,6 +61,20 @@ function drush_demo_data() {
     drush_log($e->getMessage(), 'error');
     return;
   }
+}
+
+/**
+ * Add event type of direct action
+ */
+function demo_add_direct_action_event_type() {
+  $event_type_id = civicrm_api3('option_group', 'getvalue', [ 'name' => 'event_type', 'return' => 'id' ]);
+  $direct_action = civicrm_api3('option_value', 'get', [ 'option_group_id' => $event_type_id, 'name' => 'direct_action' ]);
+  if ($direct_action['count'] == 1) {
+    drush_log("Not direct action event type, already there.");
+    return;
+  }
+  $params = [ 'option_group_id' => $event_type_id, 'name' => 'direct_action', 'label' => "Direct Action", 'value' => 7 ];
+  civicrm_api3('option_value', 'create', $params);
 }
 
 /**
@@ -413,7 +428,7 @@ function demo_create_protest_event() {
 		"event_title" => "Stop the ICE Raids: Street Protest",
 		"description" => "Stop ICE from destroying families",
 		"event_description" => "Stop ICE from destroying families",
-		"event_type_id" => "6", // Direct Action.
+		"event_type_id" => "7", // Direct Action.
 		"is_public" => "1",
 		"start_date" => $start,
 		"event_start_date" => $start,
