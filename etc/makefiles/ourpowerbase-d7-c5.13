@@ -172,7 +172,7 @@ projects[sumfields][type] = "library"
 projects[sumfields][destination] = "extensions"
 projects[sumfields][download][type] = "git"
 projects[sumfields][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.sumfields.git"
-projects[sumfields][download][revision] = "2a5b4e57f123ab27dc4949647c62bc45ccbf2014"
+projects[sumfields][download][revision] = "8546a373a90facf94119a9f90ae2ae28ad2c165e"
 
 projects[petitionemail][type] = "library"
 projects[petitionemail][destination] = "extensions"
