@@ -151,7 +151,7 @@ function drush_ptp_get_site_info() {
     $value = $values[$return];
     # We use the results in a bash command so we have to strip
     # ', ", (, ) to avoid bash errors.
-    drush_print(str_replace(array('"', '"', "(", ")"), "", $value));
+    drush_print(str_replace(array('"', "'", "(", ")"), "", $value));
   }
 }
 
