@@ -148,7 +148,10 @@ function drush_ptp_get_site_info() {
   ));
   if ($result['count'] == 1) {
     $values = array_pop($result['values']);
-    drush_print($values[$return]);
+    $value = $values[$return];
+    # We use the results in a bash command so we have to strip
+    # ', ", (, ) to avoid bash errors.
+    drush_print(str_replace(array('"', '"', "(", ")"), "", $value));
   }
 }
 
