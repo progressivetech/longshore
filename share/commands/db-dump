@@ -1,0 +1,26 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) civicrm-dump <dbhost> <dbname>
+Output a dump of the specified database.
+
+Arguments
+  <dbhost> - the container holding the db 
+  <name> - the name of the db to dump."
+
+long_check_args "$2" "$#" 2
+
+dbhost="$2"
+dbname="$3"
+
+if ! long_check_alpha_numeric "$dbname"; then
+  long_die "Your dbname should only contain alpha numeric characters."
+fi
+
+mycnf="${LONG_SRV}/services/databases/${dbhost}/my.cnf"
+if [ ! -f "$mycnf" ]; then
+  long_die "The my.cnf file doesn't exist for this database (%s)" 1 "$mycnf"
+fi
+
+mysqldump --defaults-file="$mycnf" --skip-triggers "$dbname" | sed "s/DEFINER=[^@]*@[^* ]*/DEFINER=CURRENT_USER/g"
+
+

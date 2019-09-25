@@ -1,0 +1,20 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) db-sqlq <db> <path>
+Run the sql commands in a passed in file as root.
+
+Arguments
+  <db> - The name of the database on which you want the sql cli.
+  <path> - The path to the sql commands to run."
+
+long_check_args "$2" "$#" 1
+
+db="$2"
+path="$3"
+
+if [ ! -f "$path" ]; then
+  long_die "Can't find path to file."
+fi
+
+long_execute_root_query "$db" "$path"
+

@@ -1,0 +1,44 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) civicrm-import <dbhost> <dbname> <path>
+Import a civicrm database provided via the command line into the db container provided 
+try to remove all non civicrm tables. 
+
+Arguments
+  <dbhost> - the container to import into (typically starts with db, should be created already)
+  <name> - the name of the db to create and import into, e.g. 'test'. 
+  <path> - The path to a sql file to import."
+
+long_check_args "$2" "$#" 3
+
+dbhost="$2"
+dbname="$3"
+path="$4"
+
+if [ ! -f "$path" ]; then
+  long_die "Can't find path to file."
+fi
+
+if ! long_check_alpha_numeric "$dbname"; then
+  long_die "Your dbname should only contain alpha numeric characters."
+fi
+
+# First create the passed in database.
+temp=$(mktemp)
+echo "CREATE DATABASE IF NOT EXISTS $dbname" > "$temp"
+long_execute_root_query "$dbhost" "$temp"
+rm "$temp"
+
+# Now import. We need to specify the db name so we can't
+# use the liblongshore function. And we need root to avoid
+# permission problems with definers.
+mycnf="${LONG_SRV}/services/databases/${dbhost}/my.cnf"
+if [ ! -f "$mycnf" ]; then
+  long_die "The my.cnf file doesn't exist for this database (%s)" 1 "$mycnf"
+fi
+
+cat "$path" | sed "s/DEFINER=[^@]*@[^* ]*/DEFINER=CURRENT_USER/g" | mysql --defaults-file="$mycnf" "$dbname"
+
+
+
+

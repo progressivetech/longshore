@@ -1,0 +1,58 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) civicrm-massage <dbhost> <dbname>
+Attempt to remove all non civicrm tables and make any ad all adjustments needed 
+prior to importing. 
+
+Arguments
+  <dbhost> - the container to import into (typically starts with db, should be created already)
+  <name> - the name of the db to create and import into, e.g. 'test'."
+
+long_check_args "$2" "$#" 2
+
+dbhost="$2"
+dbname="$3"
+
+if ! long_check_alpha_numeric "$dbname"; then
+  long_die "Your dbname should only contain alpha numeric characters."
+fi
+
+mycnf="${LONG_SRV}/services/databases/${dbhost}/my.cnf"
+if [ ! -f "$mycnf" ]; then
+  long_die "The my.cnf file doesn't exist for this database (%s)" 1 "$mycnf"
+fi
+
+get_tables=$(mktemp)
+drop_tables=$(mktemp)
+# Note: exclude table names with spaces (we had a dump with broken tables with spaces once)
+echo "SELECT TABLE_NAME, TABLE_TYPE FROM information_schema.TABLES WHERE TABLE_TYPE NOT LIKE 'SYSTEM VIEW' AND TABLE_SCHEMA='$dbname' AND TABLE_NAME NOT LIKE 'civi%' AND TABLE_NAME NOT LIKE '% %'" > "$get_tables"
+
+mysql --defaults-file="$mycnf" --skip-column-names "$dbname" < "$get_tables" | while read table table_type; do
+  entity=TABLE
+  if [ "$table_type" == "VIEW" ]; then
+    entity=VIEW
+  fi
+  printf "SET FOREIGN_KEY_CHECKS=0; DROP %s %s;\n" "$entity" "$table" >> "$drop_tables"
+done
+
+rm "$get_tables"
+mysql --defaults-file="$mycnf" "$dbname" < "$drop_tables"
+rm "$drop_tables"
+
+# Now drop all triggers.
+get_triggers=$(mktemp)
+drop_triggers=$(mktemp)
+echo "SELECT Concat('DROP TRIGGER ', Trigger_Name, ';') FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = '$dbname';" > "$get_triggers"
+cat "$get_triggers" | mysql --defaults-file="$mycnf" --skip-column-names "$dbname" > "$drop_triggers"
+rm "$get_triggers"
+cat "$drop_triggers" | mysql --defaults-file="$mycnf" "$dbname"
+rm "$drop_triggers"
+
+misc=$(mktemp)
+echo "DELETE FROM civicrm_uf_match; DELETE FROM civicrm_setting WHERE name = 'logging';" > "$misc"
+mysql --defaults-file="$mycnf" "$dbname" < "$misc"
+rm "$misc"
+
+long_log "Done! Please tool around in $dbname to see if there are more changes to be made using longshore db-sqlc $dbhost."
+
+
