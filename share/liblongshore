@@ -1341,7 +1341,10 @@ long_drop_tables() {
       # die here to avoid importing a sql file
       rm "$get_tables_temp"
       rm "$drop_tables_temp"
-      long_die "Dying. Bye."
+      long_prompt "Continuing to the next step which might be an import." 
+      if [ "$reply" = "n" ]; then
+        long_die "Dying. Bye."
+      fi
     fi
   fi
   rm "$get_tables_temp"
