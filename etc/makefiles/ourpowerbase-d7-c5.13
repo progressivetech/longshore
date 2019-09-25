@@ -525,7 +525,7 @@ projects[jsumfields][type] = "library"
 projects[jsumfields][destination] = "extensions"
 projects[jsumfields][download][type] = "git"
 projects[jsumfields][download][url] = "https://github.com/progressivetech/com.joineryhq.jsumfields"
-projects[jsumfields][download][revision] = "d8c59e5e9fe72f24cd550bb2e7dec452b15969a7"
+projects[jsumfields][download][revision] = "8733e4975dd4358250dfaa651ad98d18dbc5c596"
 
 projects[relationshipblock][type] = "library"
 projects[relationshipblock][destination] = "extensions"
