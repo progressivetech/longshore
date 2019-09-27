@@ -1,0 +1,34 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) db-fix-row-format <dbhost> 
+One time fix for upgrading mariadb from 10.1 to 10.3 by changing all tables to
+use ROW_FORMAT=dynamic to avoid the errors 'Row size too large'. See:
+https://mariadb.com/kb/en/library/innodb-dynamic-row-format/
+
+Arguments
+  <dbhost> - the container holding the db"
+
+long_check_args "$2" "$#" 1
+
+dbhost="$2"
+db=$(echo "$dbhost" | sed 's/^db//')
+
+select_temp=$(mktemp)
+alter_temp=$(mktemp)
+echo "SELECT NAME FROM information_schema.INNODB_SYS_TABLESPACES WHERE ROW_FORMAT = 'Compact or Redundant';" > "$select_temp"
+
+count=0
+for table in $(long_execute_root_query "$dbhost" "$select_temp" | grep -v '^mysql' | cut -d/ -f2); do
+  if [ "$table" != "NAME" ]; then
+    echo "ALTER TABLE ${db}.${table} ROW_FORMAT=dynamic;\n" >> "$alter_temp"
+    count=$(( $count + 1 ))
+  fi
+done
+
+long_execute_root_query "$dbhost" "$alter_temp" rm "$alter_temp"
+
+long_log "Updated %s tables.\n" info "$count"
+
+rm "$select_temp"
+rm "$alter_temp"
+

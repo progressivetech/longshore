@@ -57,9 +57,7 @@ table_open_cache = 96
 ; http://www.mysqlperformanceblog.com/2007/11/03/choosing-innodb_buffer_pool_size/
 ; default is just 8MB, setting to 1GB
 innodb_buffer_pool_size = 2147483648 
-; used to store internal db info. increase if you have lots
-; of tables. default is 1M, setting to 20M
-innodb_additional_mem_pool_size = 20972000 
+
 ; innodb_log_file_size should be 25% of buffer pool size
 ; bigger log file size means less flushing to disk, but slower 
 ; recovery in case of crash, default 5M, setting to 256M
@@ -90,9 +88,3 @@ log_error = /dev/stderr
 ; skip networking. We don't use dns for authentication. This speeds things up
 skip_name_resolve = on
 
-; This won't be necessary with buster version of mariadb since barracuda
-; will be default (see https://mariadb.com/kb/en/library/xtradbinnodb-file-format/)
-innodb_file_format = Barracuda
-; The next value MUST be removed for buster since it was removed from mariadb
-; See: https://mariadb.com/kb/en/library/innodb-system-variables/#innodb_large_prefix
-innodb_large_prefix = on
