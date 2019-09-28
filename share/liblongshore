@@ -875,7 +875,7 @@ long_create_phpmyadmin_container() {
     -e "LONG_LIVE=$LONG_LIVE" \
     $LONG_DOCKER_MEMORY_LIMIT \
     --restart unless-stopped \
-    ptp-php:latest php-fpm7.0  || long_die "Failed to create the phpmyadmin container"
+    ptp-php:latest php-fpm7.3  || long_die "Failed to create the phpmyadmin container"
 }
 
 # Build out the required directories and permissions
@@ -1071,7 +1071,7 @@ long_create_site_container() {
     $LONG_DOCKER_MEMORY_LIMIT \
     $link \
     $publish \
-    ptp-powerbase:latest php-fpm7.0 || long_die "Failed to create the container %s" 1 "$site"
+    ptp-powerbase:latest php-fpm7.3 || long_die "Failed to create the container %s" 1 "$site"
 
   long_clear_sibling_cache
 }
@@ -1320,7 +1320,7 @@ long_drop_tables() {
     include="^civicrm_"
   fi
 
-  echo "SELECT TABLE_NAME, TABLE_TYPE FROM information_schema.TABLES WHERE TABLE_TYPE NOT LIKE 'SYSTEM VIEW'" > "$get_tables_temp"
+  echo "SELECT TABLE_NAME, TABLE_TYPE FROM information_schema.TABLES WHERE TABLE_SCHEMA = '$site' AND TABLE_TYPE NOT LIKE 'SYSTEM VIEW'" > "$get_tables_temp"
   long_execute_site_query "$site" "$get_tables_temp" | egrep -v "^$exclude" | egrep "$include" | while read table table_type; do
     entity=TABLE
     if [ "$table_type" == "VIEW" ]; then

@@ -1,6 +1,6 @@
 # Based on https://github.com/AsavarTzeth/docker-php5-fpm
 # Used for PowerBase sites.
-FROM my-stretch:latest
+FROM my-buster:latest
 
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 
@@ -11,7 +11,6 @@ RUN apt-get update && \
     --no-install-recommends \
     php-fpm \
     php-apcu \
-    php-mcrypt \
     php-mysql \
     php-curl \
     php-gd \
@@ -24,15 +23,15 @@ RUN apt-get update && \
     wkhtmltopdf \
     xauth \
     wget \
-    mysql-client \
+    mariadb-client \
     esmtp-run \
     ca-certificates \
     iputils-ping \
     bc \
     openssh-client \
-    heirloom-mailx \
+    bsd-mailx \
     xfonts-baekmuk \
-    ttf-baekmuk \
+    fonts-baekmuk \
     openssh-client \
     bc \
     libssl-dev \
@@ -43,10 +42,10 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Download most recent version of drush
-RUN cd /usr/local/bin && wget -q -O drush https://github.com/drush-ops/drush/releases/download/8.1.16/drush.phar && chmod 755 drush
+RUN cd /usr/local/bin && wget -q -O drush https://github.com/drush-ops/drush/releases/download/8.3.0/drush.phar && chmod 755 drush
 
 # Listen on 127.0.0.1 
-RUN sed -i 's#listen = /run/php/php7.0-fpm.sock#listen = 9000#' /etc/php/7.0/fpm/pool.d/www.conf
+RUN sed -i 's#listen = /run/php/php7.3-fpm.sock#listen = 9000#' /etc/php/7.3/fpm/pool.d/www.conf
 
 # User arbitrary high UID so we can more easily understand UIDs on the host
 RUN groupmod -g 5001 www-data
@@ -65,10 +64,10 @@ RUN chown www-data:www-data /var/www/.ssh
 RUN mkdir /var/www/powerbase
 
 # Copy our custom PHP settings for powerbase.
-COPY powerbase.ini /etc/php/7.0/fpm/conf.d/99-powerbase.ini
+COPY powerbase.ini /etc/php/7.3/fpm/conf.d/99-powerbase.ini
 
 # We want a lot more processes to be able to run
-RUN sed -i 's#pm.max_children = 5#pm.max_children = 40#' /etc/php/7.0/fpm/pool.d/www.conf
+RUN sed -i 's#pm.max_children = 5#pm.max_children = 40#' /etc/php/7.3/fpm/pool.d/www.conf
 
 # Copy over our esmtprc file to configure handling email.
 COPY esmtprc /etc/esmtprc
@@ -93,4 +92,4 @@ COPY wkhtmltopdf.wrapper /usr/bin/wkhtmltopdf.wrapper
 EXPOSE 9000
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["php-fpm7.0"]
+CMD ["php-fpm7.3"]

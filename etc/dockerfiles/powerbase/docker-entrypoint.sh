@@ -4,30 +4,30 @@ set -e
 # If the command passed to docker run/exec starts with a - or -- then
 # set the command.
 if [ "${1:0:1}" = '-' ]; then
-  set -- php-fpm7.0 "$@"
+  set -- php-fpm7.3 "$@"
 fi
 
-if [ "$1" = 'php-fpm7.0' ]; then
+if [ "$1" = 'php-fpm7.3' ]; then
   mkdir -p /run/php
-  set -- "$@" --nodaemonize --fpm-config /etc/php/7.0/fpm/php-fpm.conf
+  set -- "$@" --nodaemonize --fpm-config /etc/php/7.3/fpm/php-fpm.conf
 fi
 # On dev servers we add more logging output 
 if [ "$LONG_LIVE" = "n" ]; then
-  printf "display_errors = On\n" > '/etc/php/7.0/fpm/conf.d/99-powerbase-dev.ini'
-  printf "display_startup_errors = On\n" >> '/etc/php/7.0/fpm/conf.d/99-powerbase-dev.ini'
-  printf "error_reporting = E_ALL\n" >> '/etc/php/7.0/fpm/conf.d/99-powerbase-dev.ini'
-  printf "html_errors = On\n" >> '/etc/php/7.0/fpm/conf.d/99-powerbase-dev.ini'
-  printf "log_errors = On\n" >> '/etc/php/7.0/fpm/conf.d/99-powerbase-dev.ini'
+  printf "display_errors = On\n" > '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  printf "display_startup_errors = On\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  printf "error_reporting = E_ALL\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  printf "html_errors = On\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  printf "log_errors = On\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
 
   # Also, we enable xdebug
-  printf "xdebug.remote_enable=1\n" >> '/etc/php/7.0/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.remote_connect_back=On\n" >> '/etc/php/7.0/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.remote_port=9000\n" >> '/etc/php/7.0/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.profiler_enable=1\n" >> '/etc/php/7.0/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.remote_autostart=true\n" >> '/etc/php/7.0/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.remote_handler=dbgp\n" >> '/etc/php/7.0/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.remote_mode=req\n" >> '/etc/php/7.0/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.remote_host=10.11.13.1\n" >> '/etc/php/7.0/fpm/conf.d/99-powerbase-dev.ini'
+  printf "xdebug.remote_enable=1\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  printf "xdebug.remote_connect_back=On\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  printf "xdebug.remote_port=9000\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  printf "xdebug.profiler_enable=1\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  printf "xdebug.remote_autostart=true\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  printf "xdebug.remote_handler=dbgp\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  printf "xdebug.remote_mode=req\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  printf "xdebug.remote_host=10.11.13.1\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
 
   # And we ensure the civix is installed. Sometimes download.civicrm.org is not 
   # available - we don't want to hang forever, so timeout after 30 seconds.
