@@ -752,6 +752,7 @@ long_exec_in_container() {
   local site="$1"
   local cmd="$2"
 
+  long_init_site_tmp_var "$site"
   # If the file to execute is in $LONG_SITE_TMP, then we need to translate
   # the path to where it will exist in the site container.
   local dir=$(dirname "$cmd")
