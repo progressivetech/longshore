@@ -1503,6 +1503,8 @@ long_configure_civicrm_imap_user() {
   local user="$2"
   local pass="$3"
 
+  long_init_site_tmp_var "$site"
+
   # Creating a php file to be executed in the container. This approach
   # avoids sending passwords via the command line.
   local imap_file=$(mktemp "${LONG_SITE_TMP}/imap.XXXXXXX.php");
