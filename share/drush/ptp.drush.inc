@@ -558,7 +558,7 @@ function drush_ptp_update_site_stats() {
   }
   $results = civicrm_api('Contact', 'update', $params);
   if($results['is_error'] != 0) {
-    drush_log(dt("Unable to update the record."), 'error');
+    drush_log(dt("Unable to update the record.") . print_r($results), 'error');
     return;
   }
   drush_log(dt("Record value has been updated."), 'notice');
