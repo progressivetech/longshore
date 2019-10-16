@@ -819,7 +819,7 @@ long_create_mysql_container() {
     -p "127.0.0.1:${LONG_DB_PORT}:3306" \
     --restart unless-stopped \
     $LONG_DOCKER_MEMORY_LIMIT \
-    ptp-mysql:latest mysqld_safe || long_die "Failed to create the container %s" 1 "$name"
+    ptp-mysql:latest mysqld || long_die "Failed to create the container %s" 1 "$name"
   # Since db containers are linked to other containers, the other containers
   # will fail to start if the db containers are not started. So, always
   # start after creation.

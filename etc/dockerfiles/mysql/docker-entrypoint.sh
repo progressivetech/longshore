@@ -4,7 +4,7 @@ set -e
 sql_init_file=/tmp/temp.sql
 mycnf=/root/.my.cnf
 
-if [ "$1" = 'mysqld_safe' ]; then
+if [ "$1" = 'mysqld' ]; then
   if [ -n "$MYSQL_UID" ]; then
     # Ensure the mysql user has the same UID as the one passed in. If not,
     # change it. We make this change so that the user on the host can delete
@@ -58,7 +58,8 @@ EOSQL
     # clear the way for mounting this directory from the host.
     bash /usr/bin/mysql_install_db --skip-auth-anonymous-user --auth-root-authentication-method=socket --rpm --cross-bootstrap --user=mysql --disable-log-bin
   fi
-  #chown -R mysql:mysql /run/mysqld
+  mkdir -p /var/run/mysqld
+  chown -R mysql:mysql /var/run/mysqld
 
   # Ensure we log errors to stderr so docker logs can pick it up.
   # See: https://github.com/moby/moby/issues/6880
@@ -72,8 +73,7 @@ EOSQL
   mkfifo -m 600 /var/log/mysql.err
   chown mysql:mysql /var/log/mysql.err
   cat <> /var/log/mysql.err 1>&2 &
-  set -- "$@" --log-error=/var/log/mysql.err --skip-syslog
-
+  set -- "$@" --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/x86_64-linux-gnu/mariadb18/plugin --user=mysql --log-error=/var/log/mysql.err --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --port=3306
 fi
 
 exec "$@"
