@@ -56,7 +56,7 @@ EOSQL
     # Initialize the base database. This was taken from the Debian postinst script.
     # We have to re-run it because our docker image will rm -rf /var/lib/mysql to
     # clear the way for mounting this directory from the host.
-    bash /usr/bin/mysql_install_db --skip-auth-anonymous-user --auth-root-authentication-method=socket --rpm --cross-bootstrap --user=mysql --disable-log-bin
+    bash /usr/bin/mysql_install_db --skip-test-db --auth-root-authentication-method=socket --rpm --cross-bootstrap --user=mysql --disable-log-bin
   fi
   mkdir -p /var/run/mysqld
   chown -R mysql:mysql /var/run/mysqld
