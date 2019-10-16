@@ -92,3 +92,8 @@ skip_name_resolve = on
 ; to avoid having a single query fill the entire tmp disk.
 ; Setting to 8GB
 tmp_disk_table_size = 10737420000
+
+; this settings doesn't seem to work on docker with mounted file systems
+; if we don't set it, we get errors in mysql log (not fatal but still it doesn't
+; work so let's disable it)
+innodb_use_native_aio=0
