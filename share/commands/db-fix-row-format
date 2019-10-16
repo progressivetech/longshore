@@ -25,7 +25,7 @@ for table in $(long_execute_root_query "$dbhost" "$select_temp" | grep -v '^mysq
   fi
 done
 
-long_execute_root_query "$dbhost" "$alter_temp" rm "$alter_temp"
+long_execute_root_query "$dbhost" "$alter_temp"
 
 long_log "Updated %s tables.\n" info "$count"
 
