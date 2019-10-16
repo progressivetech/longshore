@@ -55,7 +55,7 @@ table_open_cache = 96
 ; disk. 
 ; we have 4 GB of RAM on each server
 ; http://www.mysqlperformanceblog.com/2007/11/03/choosing-innodb_buffer_pool_size/
-; default is just 8MB, setting to 1GB
+; default is just 8MB, setting to 2GB
 innodb_buffer_pool_size = 2147483648 
 
 ; innodb_log_file_size should be 25% of buffer pool size
@@ -88,3 +88,7 @@ log_error = /dev/stderr
 ; skip networking. We don't use dns for authentication. This speeds things up
 skip_name_resolve = on
 
+; The maximum size of a tmp table written to disk. We limit these
+; to avoid having a single query fill the entire tmp disk.
+; Setting to 8GB
+tmp_disk_table_size = 10737420000
