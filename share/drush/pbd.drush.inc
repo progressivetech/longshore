@@ -545,7 +545,7 @@ function pbd_configure_dev_site() {
   );
   $sql = "UPDATE civicrm_payment_processor SET user_name = %0, password = %1 WHERE is_test = 0 AND payment_processor_type_id IN (SELECT id FROM civicrm_payment_processor_type WHERE name = 'Stripe')";
 
-  CRM_Core_DAO::executeQuery($sql, $params);
+  //CRM_Core_DAO::executeQuery($sql, $params);
 }
 
 /**
