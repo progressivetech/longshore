@@ -103,6 +103,15 @@ function ptp_drush_command() {
       'id' => dt("The contact id to check"),
     ),
   );
+  $items['ptp-authorize-to-stripe'] = array(
+    'description' => 'move an authorize recurring contribution to stripe',
+    'options' => array(
+      'id' => dt("The contact id of the person to move"),
+      'sub' => dt("The Stripe subscription id we should expect to use from now on"),
+      'authid' => dt("Optionally, provide the payment processor id number for authorize (if you have more then one)"),
+      'stripeid' => dt("Optionally, provide the payment processor id number for stripe"),
+    )
+  );
   return $items;
 }
 
@@ -584,6 +593,64 @@ function drush_ptp_configure() {
   ptp_set_admin_password();
   ptp_create_help_menu();
 }
+
+/**
+ * move recurring contributions from authorize to stripe
+ *
+ */
+function drush_ptp_authorize_to_stripe() {
+  _civicrm_init();
+  $id = drush_get_option('id', NULL);
+  $sub = drush_get_option('sub', NULL);
+  $authid = drush_get_option('authid', NULL);
+  $stripeid = drush_get_option('stripeid', NULL);
+
+  if (empty($id) || empty($sub)) {
+    drush_log("Please provide both id and sub", 'error');
+    return;
+  }
+
+  // Get the payment processor type ids
+  if (empty($stripeid)) {
+    $stripe_type_id = civicrm_api3('PaymentProcessorType', 'getvalue', [ 'name' => 'Stripe', 'return' => 'id' ]);
+    $stripeid = civicrm_api3('PaymentProcessor', 'getvalue', [ 'payment_processor_type_id' => $stripe_type_id, 'is_test' => 0, 'return' => 'id' ]);
+  }
+
+  if (empty($authid)) {
+    $authorize_type_id = civicrm_api3('PaymentProcessorType', 'getvalue', [ 'name' => 'AuthNet', 'return' => 'id']);
+    $authid = civicrm_api3('PaymentProcessor', 'getvalue', [ 'payment_processor_type_id' => $authorize_type_id, 'is_test' => 0, 'return' => 'id' ]);
+  }
+
+  // Get the recurring contribution id associated with this contact.
+  $params = [ 'contact_id' => $id, 'payment_processor_id' => $authid, 'contribution_status_id' => "In Progress" ];
+  $recur = civicrm_api3('ContributionRecur', 'getsingle', $params );
+
+  drush_log("Updating contribution recur id: " . $recur['id']);
+  // Update it to use the stripe info.
+  $recur['trxn_id'] = $sub;
+  $recur['processor_id'] = $sub;
+  $recur['payment_processor_id'] = $stripeid;
+
+  civicrm_api3('ContributionRecur', 'create', $recur);
+
+  // Check for membership record.
+  // We may need to fix for this scenario: https://lab.civicrm.org/dev/membership/issues/13#note_25614
+  $membership = civicrm_api3('Membership', 'getsingle', [ 'contribution_recur_id' => $recur['id'] ]);
+  if ($membership['id']) {
+    // Find the first contribution 
+    $orig_contribution = civicrm_api3('Contribution', 'get', [ 'contribution_recur_id' => $recur['id'], 'options' => [ 'limit' => 1]] );
+    $line_item = civicrm_api3('LineItem', 'getsingle', [ 'contribution_id' => $orig_contribution['id'] ] );
+    // Update the line item so civi knows it is a membership
+    if ($line_item['entity_table'] != 'civicrm_membership') {
+      drush_log("Updating line item table");
+      // You really can't do this via the API.
+      $sql = "UPDATE civicrm_line_item SET entity_table = 'civicrm_membership' AND entity_id = %0";
+      $params = array(0 => array($recur['id'], 'Integer'));
+      CRM_Core_DAO::executeQuery($sql, $params);
+    }
+  }
+}
+
 
 /**
  * Insert PTP contacts into the database.
