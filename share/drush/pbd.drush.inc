@@ -378,7 +378,6 @@ function drush_pbd_configure() {
   /* CiviCRM Settings */
   pbd_add_message_templates();
   pbd_activate_cron_jobs();
-  pbd_set_optin_defaults();
   pbd_default_geo_settings();
   pbd_turn_off_pdf_receipt();
   pbd_turn_off_version_check();
@@ -438,6 +437,8 @@ function drush_pbd_configure_once() {
   }
 
   $one_time = TRUE;
+
+  pbd_set_optin_defaults();
 
   # All new sites get the newsflash theme until we finalize the
   # new powerbase one..
