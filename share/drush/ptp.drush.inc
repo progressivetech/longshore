@@ -644,8 +644,8 @@ function drush_ptp_authorize_to_stripe() {
     if ($line_item['entity_table'] != 'civicrm_membership') {
       drush_log("Updating line item table");
       // You really can't do this via the API.
-      $sql = "UPDATE civicrm_line_item SET entity_table = 'civicrm_membership' AND entity_id = %0";
-      $params = array(0 => array($recur['id'], 'Integer'));
+      $sql = "UPDATE civicrm_line_item SET entity_table = 'civicrm_membership' AND entity_id = %0 WHERE id = %1";
+      $params = array(0 => array($recur['id'], 'Integer'), 1 => array($line_item['id'], 'Integer'));
       CRM_Core_DAO::executeQuery($sql, $params);
     }
   }

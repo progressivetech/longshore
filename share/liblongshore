@@ -1332,6 +1332,7 @@ long_drop_tables() {
   # Only run if we have a drop file that is more than 0 bytes (i.e. 
   # don't run if there are no tables in the database)
   if [ -s "$drop_tables_temp" ]; then
+    cat "$drop_tables_temp"
     table_count=$(wc -l "$drop_tables_temp" | cut -d\  -f1)
     long_prompt "Deleting %s tables from the database for site '%s'" "$table_count" "$site"
     if [ "$reply" = "y" ]; then
