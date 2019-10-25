@@ -319,6 +319,12 @@ projects[stripe][download][type] = "git"
 projects[stripe][download][url] = "https://lab.civicrm.org/jamie/stripe.git"
 projects[stripe][download][revision] = "172ccfedeada30c32a12be151d5569b5a9e97ff4"
 
+projects[mjwshared][type] = "library"
+projects[mjwshared][destination] = "extensions"
+projects[mjwshared][download][type] = "git"
+projects[mjwshared][download][url] = "https://lab.civicrm.org/extensions/mjwshared.git"
+projects[mjwshared][download][revision] = "1dd5a61c8a2a45f03cfa1c251b4a2fc6129398a7"
+
 projects[civisualize][type] = "library"
 projects[civisualize][destination] = "extensions"
 projects[civisualize][download][type] = "git"
