@@ -1,0 +1,61 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-migrate-lite <site> <new-platform>
+Migrate the site from it's current platform to a new platform without backups,
+clearing the cache, running db updates etc.
+
+Arguments
+  <site> - The site to migrate.
+  <platform> - The name or path to the new platform."
+
+long_check_args "$2" "$#" 2
+
+site="$2"
+new_platform=$(basename "$3")
+
+# Run some sanity checks.
+if ! long_check_site_exists "$site"; then
+  long_die "Site doesn't exist (%s)." 1 "$site"
+fi
+
+if ! long_container_running "$site"; then
+  long_die "Please start the site before migrating"
+fi
+
+if [ ! -d "${LONG_SRV}/platforms/${new_platform}" ]; then
+  long_die "Can't find the new platform (%s)." 1 "$new_platform"
+fi
+
+# Record existing platform
+long_set_site_platform "$site"
+old_platform="$LONG_SITE_PLATFORM"
+
+# Record existing database
+long_set_site_db_host "$site"
+db_host="$LONG_SITE_DB_HOST"
+
+if [ -z "$db_host" ]; then
+  long_die "Can't determine current database host."
+fi
+
+if [ -z "$old_platform" ]; then
+  long_die "Can't determine current platform."
+fi
+
+if [ "$new_platform" = "$old_platform" ]; then
+  long_log "Site is already running that platform." error
+  long_prompt ""
+  [ "$reply" != "y" ] && long_die "Not continuing." 0
+fi
+
+long_prompt "Stopping and removing site container..."
+if [ "$reply" = "y" ]; then
+  docker stop "$site"
+  docker rm "$site"
+fi
+
+long_prompt "Launching new container with new platform"
+[ "$reply" = "y" ] && long_container_up site "$site" "$db_host" "$new_platform"
+
+long_prompt "Reload nginx"
+[ "$reply" = "y" ] && long_nginx_reload 
