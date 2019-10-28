@@ -20,6 +20,10 @@ if [ "$LONG_LIVE" = "n" ]; then
   printf "log_errors = On\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
 
   # Also, we enable xdebug
+  xdebug_file="/etc/php/7.3/mods-available/xdebug.ini"
+  xdebug_link="/etc/php/7.3/fpm/conf.d/20-xdebug.ini"
+  [ -f "$xdebug_file" ] && [ ! -e "$xdebug_link" ] && ln -s  "$xdebug_link"
+
   printf "xdebug.remote_enable=1\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
   printf "xdebug.remote_connect_back=On\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
   printf "xdebug.remote_port=9000\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
@@ -44,6 +48,9 @@ if [ "$LONG_LIVE" = "n" ]; then
 
   # And relay email to the smtp server, not bulk.mayfirst.org.
   sed -i "s/bulk\.ourpowerbase\.net/smtp/" /etc/esmtprc
+else
+  # Ensure we do not have debugging enabled.
+  rm -f /etc/php/7.3/fpm/conf.d/20-xdebug.ini
 fi
 
 # We use cv to enable extensions.
