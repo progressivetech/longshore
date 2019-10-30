@@ -622,7 +622,8 @@ function drush_ptp_find_stripe_subs_to_update() {
           drush_log("Problem! " . $e->getMessage(), 'error');
         }
       }
-      else {
+      else if ($stripe_customer_id != 'cus_Fyjmy8H1Xu5A1E'){
+        // We know that cus_Fyjmy8H1Xu5A1E is a test customer id.
         drush_log("No contact_id for: $evtid : $stripe_subscription_id : $stripe_customer_id", 'error');
       }
     }
