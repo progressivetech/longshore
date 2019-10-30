@@ -594,6 +594,37 @@ function drush_ptp_configure() {
   ptp_create_help_menu();
 }
 
+function drush_ptp_find_stripe_subs_to_update() {
+  _civicrm_init();
+  // Get a list of the last 100 strip events
+  $result = civicrm_api3('Stripe', 'listevents', [ 'ppid' => 7, 'limit' => 100 ]);
+  foreach ($result['values'] as $value) {
+    if ($value['processed'] == "no") {
+      $evtid = $value['id'];
+      $stripe_customer_id = $value['customer'];
+      $stripe_subscription_id = $value['subscription'];
+      // Lookup the customer so we can get the contact id.
+      $customer = \Stripe\Customer::retrieve($stripe_customer_id);
+      if (isset($customer->metadata->customer_id)) {
+        $contact_id = $customer->metadata->customer_id;
+        echo "Processing: $evtid : $stripe_subscription_id : $stripe_customer_id : $contact_id \n";
+        // First, update their subscription from authorize to stripe
+        drush_set_option('id', $contact_id);
+        drush_set_option('sub', $stripe_subscription_id);
+        drush_set_option('authid', 3);
+        try {
+          drush_ptp_authorize_to_stripe();
+          // And now reproccess this event
+          $result = civicrm_api3('Stripe', 'Ipn', [ 'evtid' => $evtid, 'ppid' => 7 ]);
+          print_r($result);
+        }
+        catch (CiviCRM_API3_Exception $e) {
+          drush_log("Problem! " . $e->getMessage(), 'error');
+        }
+      }
+    }
+   } 
+ }
 /**
  * move recurring contributions from authorize to stripe
  *
