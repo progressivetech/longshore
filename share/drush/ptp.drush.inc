@@ -179,10 +179,14 @@ function drush_ptp_checksum() {
 }
 
 function drush_ptp_parse_addresses() {
+  _civicrm_init();
   $sql = "SELECT ca.id, contact_id, street_address, street_number, street_name, street_number_suffix FROM civicrm_address ca JOIN civicrm_contact c ON ca.contact_id = c.id WHERE
     is_deleted = 0";
   $dao = CRM_Core_DAO::executeQuery($sql);
   $count = 0;
+  $reparsed = 0;
+  $reparsed_fail = 0;
+  $reparsed_error = 0;
   while($dao->fetch()) {
     $street_name = trim($dao->street_name);
     $street_number = trim($dao->street_number);
@@ -196,7 +200,7 @@ function drush_ptp_parse_addresses() {
     if (!preg_match("|" . preg_quote($street_number) . " ?(" . preg_quote($street_number_suffix) . ")? ?" . preg_quote($street_name) . "|i", $street_address)) {
       $count++;
       $msg = dt(
-        "Error: @id / @contact_id - @street_number @street_number_suffix @street_name doesn't match @street_address",
+        "@id / @contact_id - @street_number @street_number_suffix @street_name doesn't match @street_address",
         array(
           '@id' => $dao->id,
           '@contact_id' => $dao->contact_id,
@@ -207,9 +211,30 @@ function drush_ptp_parse_addresses() {
         )
       );
       drush_log($msg, 'error');
+      $fix = TRUE;
+      if ($fix) {
+        $result = civicrm_api3('Address', 'getsingle', [ 'id' => $dao->id ]);
+        $parsed = CRM_Core_BAO_Address::parseStreetAddress($result['street_address']);
+        if (empty($parsed['street_name']) || empty($parsed['street_number'])) {
+          drush_log(dt("Failed to parse @street_address", array('@street_address' => $result['street_address'])));
+          $reparsed_fail++;
+          continue;
+        }
+        $params = array_merge($result, $parsed);
+        $result = civicrm_api3('Address', 'create', $params);
+        if($result['is_error'] == 0) {
+          drush_log(dt("Reparse @street_address", array('@street_address' => $result['street_address'])));
+          $reparsed++;
+        }
+        else {
+          drush_log(dt("Error reparsing @street_address", array('@street_address' => $result['street_address'])));
+          $reparsed_error++;
+        }
+      }
     }
+
   }
-  drush_log(dt("Count of badly parsed address: @count", array('@count' => $count)), 'ok');
+  drush_log(dt("Badly parsed: @count, reparsed: @reparsed, reparsed failed: @reparsed_fail, reparsed error: @reparsed_error", array('@count' => $count, '@reparsed' => $reparsed, '@reparsed_fail' => $reparsed_fail, '@reparsed_error' => $reparsed_error ), 'ok'));
 }
 
 // See https://support.ourpowerbase.net/ticket/2408
