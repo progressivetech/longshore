@@ -22,4 +22,3 @@ COPY ./docker-entrypoint.sh /entrypoint.sh
 EXPOSE 9000
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["php5-fpm"]

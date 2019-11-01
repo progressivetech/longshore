@@ -191,6 +191,8 @@ function drush_ptp_parse_addresses() {
     if (empty($dao->street_address)) {
       continue;
     }
+    // Eliminate double spaces in address - we consider space differences to not be worth mentioning.
+    $street_address = str_replace('  ', ' ', $street_address);
     if (!preg_match("|" . preg_quote($street_number) . " ?(" . preg_quote($street_number_suffix) . ")? ?" . preg_quote($street_name) . "|i", $street_address)) {
       $count++;
       $msg = dt(
