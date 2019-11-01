@@ -652,11 +652,11 @@ projects[reportplus][download][type] = "git"
 projects[reportplus][download][url] = "https://lab.civicrm.org/extensions/reportplus.git"
 projects[reportplus][download][revision] = "c76f5d1a89676a3722981763c9360f60e811b99b"
 
-;projects[authnet][type] = "library"
-;projects[authnet][destination] = "extensions"
-;projects[authnet][download][type] = "git"
-;projects[authnet][download][url] = "https://lab.civicrm.org/extensions/authnet"
-;projects[authnet][download][revision] = "3e8549e6923ba681f95ac7861eca99abeff56dc4"
+projects[authnetapi][type] = "library"
+projects[authnetapi][destination] = "extensions"
+projects[authnetapi][download][type] = "git"
+projects[authnetapi][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.authnetapi"
+projects[authnetapi][download][revision] = "c5dac4ee8ff2c468fecaf3aa64b77c47b3b785c3"
 
 ;****************************************
 ; Drupal themes 
