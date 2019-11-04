@@ -697,21 +697,28 @@ function drush_ptp_authorize_to_stripe() {
 
   // Check for membership record.
   // We may need to fix for this scenario: https://lab.civicrm.org/dev/membership/issues/13#note_25614
-  $membership = civicrm_api3('Membership', 'getsingle', [ 'contribution_recur_id' => $recur['id'] ]);
-  if ($membership['id']) {
-    // Find the first contribution 
-    $orig_contribution = civicrm_api3('Contribution', 'get', [ 'contribution_recur_id' => $recur['id'], 'options' => [ 'limit' => 1]] );
-    $line_item = civicrm_api3('LineItem', 'getsingle', [ 'contribution_id' => $orig_contribution['id'] ] );
-    // Update the line item so civi knows it is a membership
-    if ($line_item['entity_table'] != 'civicrm_membership') {
-      drush_log("Updating line item table");
-      // You really can't do this via the API.
-      $sql = "UPDATE civicrm_line_item SET entity_table = 'civicrm_membership' AND entity_id = %0 WHERE id = %1";
-      $params = array(0 => array($membership['id'], 'Integer'), 1 => array($line_item['id'], 'Integer'));
-      CRM_Core_DAO::executeQuery($sql, $params);
+  $results = civicrm_api3('Membership', 'get', [ 'contribution_recur_id' => $recur['id'] ]);
+  $membership = array_pop($results['values']);
+  if ($results['count'] == 1) {
+    if ($membership['id']) {
+      // Find the first contribution 
+      $orig_contribution = civicrm_api3('Contribution', 'get', [ 'contribution_recur_id' => $recur['id'], 'options' => [ 'limit' => 1]] );
+      $line_item = civicrm_api3('LineItem', 'getsingle', [ 'contribution_id' => $orig_contribution['id'] ] );
+      // Update the line item so civi knows it is a membership
+      if ($line_item['entity_table'] != 'civicrm_membership') {
+        drush_log("Updating line item table");
+        // You really can't do this via the API.
+        $sql = "UPDATE civicrm_line_item SET entity_table = 'civicrm_membership' AND entity_id = %0 WHERE id = %1";
+        $params = array(0 => array($membership['id'], 'Integer'), 1 => array($line_item['id'], 'Integer'));
+        CRM_Core_DAO::executeQuery($sql, $params);
+      }
     }
   }
+  else {
+    drush_log("Found: " . $results['count'] . " memberships");
+  }
 }
+
 
 
 /**
