@@ -653,7 +653,7 @@ projects[authnetapi][type] = "library"
 projects[authnetapi][destination] = "extensions"
 projects[authnetapi][download][type] = "git"
 projects[authnetapi][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.authnetapi"
-projects[authnetapi][download][revision] = "c5dac4ee8ff2c468fecaf3aa64b77c47b3b785c3"
+projects[authnetapi][download][revision] = "917514eef877e3f8115647b2c0eca084ccd1f177"
 
 ;****************************************
 ; Drupal themes 

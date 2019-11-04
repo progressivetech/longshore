@@ -319,8 +319,8 @@ projects[uscounties][download][revision] = "bb7943c3b05c8f1a7f1f732dfc04dd87576b
 projects[stripe][type] = "library"
 projects[stripe][destination] = "extensions"
 projects[stripe][download][type] = "git"
-projects[stripe][download][url] = "https://lab.civicrm.org/jamie/stripe.git"
-projects[stripe][download][revision] = "6a5666ffddef5af1d18e882ff04b3fa43602ffc6"
+projects[stripe][download][url] = "https://lab.civicrm.org/extensions/stripe.git"
+projects[stripe][download][revision] = "4ffdc254c365a5648ec583bd6e974fb63f778650"
 
 projects[mjwshared][type] = "library"
 projects[mjwshared][destination] = "extensions"
@@ -656,7 +656,7 @@ projects[authnetapi][type] = "library"
 projects[authnetapi][destination] = "extensions"
 projects[authnetapi][download][type] = "git"
 projects[authnetapi][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.authnetapi"
-projects[authnetapi][download][revision] = "c5dac4ee8ff2c468fecaf3aa64b77c47b3b785c3"
+projects[authnetapi][download][revision] = "917514eef877e3f8115647b2c0eca084ccd1f177"
 
 ;****************************************
 ; Drupal themes 
