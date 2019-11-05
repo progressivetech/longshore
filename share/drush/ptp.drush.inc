@@ -683,10 +683,38 @@ function drush_ptp_authorize_to_stripe() {
     $authid = civicrm_api3('PaymentProcessor', 'getvalue', [ 'payment_processor_type_id' => $authorize_type_id, 'is_test' => 0, 'return' => 'id' ]);
   }
 
-  // Get the recurring contribution id associated with this contact.
-  $params = [ 'contact_id' => $id, 'payment_processor_id' => $authid, 'contribution_status_id' => "In Progress" ];
-  # This will throw an error if there is no matching recurring contribution with that id.
+  // Check for a single membership.
+  $params = [ 'contact_id' => $id  ];
+  $contribution_recur_id = NULL;
+  try {
+    $membership = civicrm_api3('Membership', 'getsingle', $params );
+    // We found just one membership. Excellent.
+    $contribution_recur_id = $membership['contribution_recur_id'];
+    drush_log("Found membership (" . $membership['id'] . ") and contribution recur id (" . $contribution_recur_id . ")");
+  }
+  catch (CiviCRM_API3_Exception $e) {
+    $err = $e->getMessage();
+    // Don't throw the error if the problem is a lack of a membership record
+    // because there might not be a membership record - just a recurring
+    // contribution record.
+    // 
+    if ($err != 'Expected one Membership but found 0') {
+      throw new CiviCRM_API3_Exception($err);
+    }
+    drush_log("No membership record, continuing");
+  }
+
+  if ($contribution_recur_id) {
+    $params = [ $id => $contribution_recur_id, 'payment_processor_id' => $authid ];
+  }
+  else {
+    // If we don't have a membership, then try to get the recurring contribution id associated with this contact.
+    $params = [ 'contact_id' => $id, 'payment_processor_id' => $authid, 'contribution_status_id' => "In Progress" ];
+  }
+
+  # This will throw an error if there is no matching recurring contribution. 
   $recur = civicrm_api3('ContributionRecur', 'getsingle', $params );
+  
 
   drush_log("Updating contribution recur id: " . $recur['id']);
   // Update it to use the stripe info.
