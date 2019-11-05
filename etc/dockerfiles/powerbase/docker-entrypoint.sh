@@ -20,18 +20,19 @@ if [ "$LONG_LIVE" = "n" ]; then
   printf "log_errors = On\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
 
   # Also, we enable xdebug
-  xdebug_file="/etc/php/7.3/mods-available/xdebug.ini"
-  xdebug_link="/etc/php/7.3/fpm/conf.d/20-xdebug.ini"
-  [ -f "$xdebug_file" ] && [ ! -e "$xdebug_link" ] && ln -s  "$xdebug_link"
+  # ARG. disabled because it makes everything too slow.
+  #xdebug_file="/etc/php/7.3/mods-available/xdebug.ini"
+  #xdebug_link="/etc/php/7.3/fpm/conf.d/20-xdebug.ini"
+  #[ -f "$xdebug_file" ] && [ ! -e "$xdebug_link" ] && ln -s  "$xdebug_link"
 
-  printf "xdebug.remote_enable=1\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.remote_connect_back=On\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.remote_port=9000\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.profiler_enable=1\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.remote_autostart=true\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.remote_handler=dbgp\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.remote_mode=req\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
-  printf "xdebug.remote_host=10.11.13.1\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  #printf "xdebug.remote_enable=1\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  #printf "xdebug.remote_connect_back=On\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  #printf "xdebug.remote_port=9000\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  #printf "xdebug.profiler_enable=1\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  #printf "xdebug.remote_autostart=true\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  #printf "xdebug.remote_handler=dbgp\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  #printf "xdebug.remote_mode=req\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
+  #printf "xdebug.remote_host=10.11.13.1\n" >> '/etc/php/7.3/fpm/conf.d/99-powerbase-dev.ini'
 
   # And we ensure the civix is installed. Sometimes download.civicrm.org is not 
   # available - we don't want to hang forever, so timeout after 30 seconds.
