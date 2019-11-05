@@ -705,7 +705,7 @@ function drush_ptp_authorize_to_stripe() {
   }
 
   if ($contribution_recur_id) {
-    $params = [ 'id' => $contribution_recur_id, 'payment_processor_id' => $authid ];
+    $params = [ 'id' => $contribution_recur_id ];
   }
   else {
     // If we don't have a membership, then try to get the recurring contribution id associated with this contact.
