@@ -685,6 +685,7 @@ function drush_ptp_authorize_to_stripe() {
 
   // Get the recurring contribution id associated with this contact.
   $params = [ 'contact_id' => $id, 'payment_processor_id' => $authid, 'contribution_status_id' => "In Progress" ];
+  # This will throw an error if there is no matching recurring contribution with that id.
   $recur = civicrm_api3('ContributionRecur', 'getsingle', $params );
 
   drush_log("Updating contribution recur id: " . $recur['id']);
@@ -693,6 +694,8 @@ function drush_ptp_authorize_to_stripe() {
   $recur['processor_id'] = $sub;
   $recur['payment_processor_id'] = $stripeid;
 
+  // And make sure it is in progress
+  $recur['contribution_status_id'] = 5;
   civicrm_api3('ContributionRecur', 'create', $recur);
 
   // Check for membership record.
