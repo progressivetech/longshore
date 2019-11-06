@@ -734,16 +734,27 @@ function drush_ptp_authorize_to_stripe() {
     if ($membership['id']) {
       // Find the first contribution 
       $orig_contribution = civicrm_api3('Contribution', 'get', [ 'contribution_recur_id' => $recur['id'], 'options' => [ 'limit' => 1]] );
-      $line_item = civicrm_api3('LineItem', 'getsingle', [ 'contribution_id' => $orig_contribution['id'] ] );
-      // Update the line item so civi knows it is a membership
-      if ($line_item['entity_table'] != 'civicrm_membership') {
-        drush_log("Updating line item table");
-        // You really can't do this via the API.
-        $sql = "UPDATE civicrm_line_item SET entity_table = 'civicrm_membership' AND entity_id = %0 WHERE id = %1";
-        $params = array(0 => array($membership['id'], 'Integer'), 1 => array($line_item['id'], 'Integer'));
-        CRM_Core_DAO::executeQuery($sql, $params);
+      try {
+        $line_item = civicrm_api3('LineItem', 'getsingle', [ 'contribution_id' => $orig_contribution['id'] ] );
+        // Update the line item so civi knows it is a membership
+        if ($line_item['entity_table'] != 'civicrm_membership') {
+          drush_log("Updating line item table");
+          // You really can't do this via the API.
+          $sql = "UPDATE civicrm_line_item SET entity_table = 'civicrm_membership' AND entity_id = %0 WHERE id = %1";
+          $params = array(0 => array($membership['id'], 'Integer'), 1 => array($line_item['id'], 'Integer'));
+          CRM_Core_DAO::executeQuery($sql, $params);
+        }
+      
       }
-    }
+      catch (CiviCRM_API3_Exception $e) {
+        $err = $e->getMessage();
+        // Don't throw the error if the problem is no single line item 
+        if (!preg_match('/Expected one LineItem but/', $err)) {
+          throw new CiviCRM_API3_Exception($err);
+        }
+        drush_log("Didn't find just one line item, continueing anyway", 'error');
+      }
+    } 
   }
   else {
     drush_log("Found: " . $results['count'] . " memberships");
