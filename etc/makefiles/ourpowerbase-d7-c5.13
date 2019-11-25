@@ -575,7 +575,7 @@ projects[constituentfields][type] = "library"
 projects[constituentfields][destination] = "extensions"
 projects[constituentfields][download][type] = "git"
 projects[constituentfields][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.constituentfields"
-projects[constituentfields][download][revision] = "b3fa2c4b1e6c3dfddc112cfa1e310feef8cce9b1"
+projects[constituentfields][download][revision] = "f187f0f8aea772cb48122cec993e0e0e661e0eb6"
 
 projects[foundationfields][type] = "library"
 projects[foundationfields][destination] = "extensions"
