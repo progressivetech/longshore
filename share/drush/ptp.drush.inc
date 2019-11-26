@@ -1452,3 +1452,82 @@ function ptp_find_possible_dupe_activities() {
     }
   }
 }
+
+function ptp_switch_custom_contact_group_to_custom_activity_group() {
+  _civicrm_init();
+  $custom_group_id = 13;
+  $activity_type_name = 'open-detention-case';
+  $ptp_contact_id = 2;
+
+
+  $sql = "UPDATE civicrm_contact SET contact_sub_type = NULL WHERE contact_sub_type LIKE '%Detainee%'";
+  CRM_Core_DAO::executeQuery($sql);
+
+  // See if we have added the activity type yet
+  $result = civicrm_api3('OptionValue', 'get', [ 'name' =>  $activity_type_name]);
+
+  if ($result['count'] == 0) {
+    // Get the max value so we can increment it.
+    $result = civicrm_api3('OptionValue', 'create', [
+      'option_group_id' => "activity_type",
+      'label' => "Open Detention Case",
+      'name' => $activity_type_name,
+    ]);
+  }
+
+  $activity_type = array_pop($result['values']);
+  $activity_type_id = $activity_type['value'];
+
+  // We have not dropped it, drop it.
+  try {
+    $sql = "ALTER TABLE `civicrm_value_detainee_deta_13` DROP FOREIGN KEY `FK_civicrm_value_detainee_deta_13_entity_id`";
+    $result = CRM_Core_DAO::executeQuery($sql);
+  }
+  catch (CiviCRM_CoreError $e) {
+    // pass. we get an error if it has already been dropped.
+  }
+
+  // For each existing custom value record, we create an activity
+  // and then reset the entity_id to the activity id.
+  $sql = "SELECT id, entity_id, approx_date_detained_88 FROM civicrm_value_detainee_deta_13";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  
+  while ($dao->fetch()) {
+    $contact_id = $dao->entity_id;
+    $date = $dao->approx_date_detained_88;
+    $id = $dao->id;
+
+    drush_log("Updating $id, $contact_id ");
+    // Create an activity.
+    $params = [
+      'target_id' => $contact_id,
+      'source_contact_id' => $ptp_contact_id,
+      'activity_type_id' => $activity_type_id,
+      'activity_date_time' => $date,
+    ];
+    $result = civicrm_api3('Activity', 'create', $params);
+
+    // And update the values table 
+    $sql = "UPDATE civicrm_value_detainee_deta_13 SET entity_id = %0 WHERE id = %1";
+    CRM_Core_DAO::executeQuery($sql, [ 0 => [ $result['id'], 'Integer' ], 1 => [ $id, 'Integer' ] ]);
+  }
+
+  // Now update the custom fields and we are done.
+  $sql = "UPDATE civicrm_custom_group SET extends = 'Activity', extends_entity_column_value = %0 WHERE id = %1";
+  $params = array(
+    0 => array(
+      CRM_Core_DAO::VALUE_SEPARATOR . $activity_type_id . CRM_Core_DAO::VALUE_SEPARATOR, 
+      'String',
+    ), 
+    1 => array(
+      $custom_group_id, 
+      'Integer',
+    )
+  );
+  CRM_Core_DAO::executeQuery($sql, $params);
+
+  // Put in a new foreign key constraint against the activity table 
+  $sql = "ALTER TABLE `civicrm_value_detainee_deta_13` ADD CONSTRAINT `FK_civicrm_value_detainee_deta_13_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `civicrm_activity` (`id`) ON DELETE CASCADE";
+  $result = CRM_Core_DAO::executeQuery($sql);
+
+}
