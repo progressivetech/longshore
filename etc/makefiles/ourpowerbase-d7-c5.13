@@ -20,7 +20,7 @@ projects[drupal][version] = "7.67"
 projects[civicrm][type] = "module" 
 projects[civicrm][directory_name] = "civicrm" 
 projects[civicrm][download][type] = "git" 
-projects[civicrm][download][revision] = "8cedfc8ff38b7402d452bdd5e35cdb867fd71993"
+projects[civicrm][download][revision] = "1bb346156b11ddd8b51ad2453a6807ca62d93eb0"
 projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
 
 ; Packages
@@ -563,7 +563,7 @@ projects[api4][type] = "library"
 projects[api4][destination] = "extensions"
 projects[api4][download][type] = "git"
 projects[api4][download][url] = "https://github.com/civicrm/org.civicrm.api4"
-projects[api4][download][revision] = "fafd48da288173dded6cedcd0a49d5578620b68d"
+projects[api4][download][revision] = "39df354cf942fc31cbe999c11e0be16c2ca0a264"
 
 projects[sqlexport][type] = "library"
 projects[sqlexport][destination] = "extensions"
