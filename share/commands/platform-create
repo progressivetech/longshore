@@ -169,7 +169,7 @@ if [ -z "$source_platform_path_temp" ]; then
   dm_install_drupal "$SRC/drupal" "$TRG/drupal" > /dev/null || long_die "Failed to dm_install_drupal"
 
   # Now download the internationalization file and unpack it.
-  if [ "$DM_VERSION" = "5.13.7" ]; then
+  if [ "$DM_VERSION" = "5.13.8" ]; then
     # Temp hack esr patches which doesn't
     # seem to have a translation file.
     l10n_file=civicrm-5.13.5-l10n.tar.gz
