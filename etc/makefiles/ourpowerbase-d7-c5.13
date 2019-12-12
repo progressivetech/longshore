@@ -280,7 +280,7 @@ projects[extendedreport][type] = "library"
 projects[extendedreport][destination] = "extensions"
 projects[extendedreport][download][type] = "git"
 projects[extendedreport][download][url] = "https://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport.git"
-projects[extendedreport][download][revision] = "216dfd3fd4955e7b7fb915678874771eee810329"
+projects[extendedreport][download][revision] = "776a3396396e28d27efdbc05176fde5c8569a5d3"
 
 
 projects[iats][type] = "library"
