@@ -2516,7 +2516,7 @@ long_generate_sibling_cache() {
       fi
     else
       local sites=$(ssh ${sibling}.mayfirst.org /srv/longshore/bin/longshore site-list "$sibling")
-      if [ "$?" -ne "0" ]
+      if [ "$?" -ne "0" ]; then
         long_log "The sibling I was trying to retrieve the cache for \
           (%s) Gave me a non-zero return code. That means when I pinged it \
           it worked, but when I ran ssh it failed. I'm bailing on cache \
