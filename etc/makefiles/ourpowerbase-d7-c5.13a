@@ -572,7 +572,7 @@ projects[sqlexport][type] = "library"
 projects[sqlexport][destination] = "extensions"
 projects[sqlexport][download][type] = "git"
 projects[sqlexport][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.sqlexport"
-projects[sqlexport][download][revision] = "6df5d8c7c1f19378e29dcd2fc197428da2153330"
+projects[sqlexport][download][revision] = "acb6cecf468ea9eb6ef0c6d50613c2f07f63df44"
 
 projects[constituentfields][type] = "library"
 projects[constituentfields][destination] = "extensions"
