@@ -148,7 +148,7 @@ function drush_pbd_setup_org_info() {
   // it to the ID and if we fail we bail.
   try {
     $state_province_id = civicrm_api3('StateProvince', 'getvalue', [
-      'abbreviation' => $state,
+      'abbreviation' => trim($state),
       'country_id' => 1228,
       'return' => 'id',
     ]);
