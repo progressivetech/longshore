@@ -655,6 +655,12 @@ projects[recentmenu][download][type] = "git"
 projects[recentmenu][download][url] = "https://github.com/civicrm/org.civicrm.recentmenu"
 projects[recentmenu][download][revision] = "33c9ca1da007c4e3d3ecc24edb5818e5f55e6dc6"
 
+projects[extrafee][type] = "library"
+projects[extrafee][destination] = "extensions"
+projects[extrafee][download][type] = "git"
+projects[extrafee][download][url] = "https://github.com/fuzionnz/nz.co.fuzion.extrafee"
+projects[extrafee][download][revision] = "902ae399eeb3ef648f4332fae1b009998034e2f7"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
