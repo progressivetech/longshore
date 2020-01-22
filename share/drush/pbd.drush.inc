@@ -355,7 +355,7 @@ function drush_pbd_configure() {
   variable_set('user_mail_status_activated_notify', 0);
 
   // Handle themes for all versions.
-  theme_enable(array('newsflash', 'iframe'));
+  theme_enable(array('newsflash', 'iframe', 'seven', 'shoreditch_companion_d7_theme'));
   pbd_set_iframe_settings();
   pbd_set_newsflash_settings();
   pbd_set_blocks_for_theme('newsflash');
@@ -506,7 +506,8 @@ function pbd_enable_one_time_extensions() {
     'eu.tttp.noverwrite',
     'uk.co.vedaconsulting.mosaico',
     'de.systopia.osm',
-    'org.civicrm.shoreditch'
+    'org.civicrm.shoreditch',
+    'org.civicrm.recentmenu',
   );
 
   foreach($keys as $key) {
@@ -515,7 +516,14 @@ function pbd_enable_one_time_extensions() {
     // enabling these in the same session.
     drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable $key");
   }
+
+  // Now modules
+  $modules = array('civicrmtheme');
+  module_enable($modules);
+
+
 }
+
 
 
 function pbd_configure_dev_site() {

@@ -133,9 +133,12 @@ if [ -z "$source_platform_path_temp" ]; then
   long_log "Running dm_generate_vendor" info
   dm_generate_vendor "$SRC" > /dev/null || long_die "Failed to dm_generate_vendor"
 
-  long_log "Running dm_generate_bower" info
-  dm_generate_bower "$SRC" > /dev/null || long_die "Failed to dm_generate_bower"
-  
+  if [ "$DM_VERSION" = "5.13.8" ]; then
+    # This is no longer needed after 5.13.
+    long_log "Running dm_generate_bower" info
+    dm_generate_bower "$SRC" > /dev/null || long_die "Failed to dm_generate_bower"
+  fi
+
   long_log "Running GenCode" info
   cwd=$(pwd)
   cd "$SRC/xml"
@@ -156,14 +159,11 @@ if [ -z "$source_platform_path_temp" ]; then
   long_log "Running dm_install_packages" info
   dm_install_packages "$SRC/packages" "$TRG/packages" > /dev/null || long_die "Failed to dm_install_packages"
 
-  if [ "$makefile" != "ourpowerbase-d7-c4.5" ]; then
-    # These functions only available in ourpowerbase-d7-c4.6 and higher.
-    long_log "Running dm_install_vendor" info
-    dm_install_vendor "$SRC/vendor" "$TRG/vendor" > /dev/null || long_die "Failed to dm_install_vendor"
+  long_log "Running dm_install_vendor" info
+  dm_install_vendor "$SRC/vendor" "$TRG/vendor" > /dev/null || long_die "Failed to dm_install_vendor"
 
-    long_log "Running dm_install_bower" info
-    dm_install_bower "$SRC/bower_components" "$TRG/bower_components" >/dev/null || long_die "Failed dm_install_bower"
-  fi
+  long_log "Running dm_install_bower" info
+  dm_install_bower "$SRC/bower_components" "$TRG/bower_components" >/dev/null || long_die "Failed dm_install_bower"
 
   long_log "Running dm_install_drupal" info
   dm_install_drupal "$SRC/drupal" "$TRG/drupal" > /dev/null || long_die "Failed to dm_install_drupal"
