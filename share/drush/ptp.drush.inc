@@ -886,7 +886,7 @@ function ptp_insert_org_contact() {
     'location_type_id' => 2
   );
 
-  if(count($org) != 0) {
+  if(is_array($org) && count($org) != 0) {
     // We have a record already in the database. Ensure it has the right
     // values set or update if necessary.
     drush_log(dt("PTP Organization record exists."));
