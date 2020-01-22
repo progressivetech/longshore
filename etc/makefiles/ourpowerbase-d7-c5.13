@@ -655,6 +655,12 @@ projects[authnetapi][download][type] = "git"
 projects[authnetapi][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.authnetapi"
 projects[authnetapi][download][revision] = "917514eef877e3f8115647b2c0eca084ccd1f177"
 
+projects[extrafee][type] = "library"
+projects[extrafee][destination] = "extensions"
+projects[extrafee][download][type] = "git"
+projects[extrafee][download][url] = "https://github.com/fuzionnz/nz.co.fuzion.extrafee"
+projects[extrafee][download][revision] = "902ae399eeb3ef648f4332fae1b009998034e2f7"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
