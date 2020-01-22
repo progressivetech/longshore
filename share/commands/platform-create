@@ -124,6 +124,8 @@ if [ -z "$source_platform_path_temp" ]; then
   # For easier compatibility with distmaker - using their variable names.
   TRG=$(mktemp -d)
   SRC="${source_platform_path_temp}/sites/all/modules/civicrm"
+  # Figure out the current version from civicrm-version.xml
+  DM_VERSION=$(grep version_no $SRC/xml/version.xml | sed 's#version_no##g' | tr -d '<>/ ')
 
   distmaker_functions="${SRC}/distmaker/dists/common.sh"
   [ ! -f "$distmaker_functions" ] && long_die "The distmaker common functions file doesn't exist."
@@ -147,8 +149,6 @@ if [ -z "$source_platform_path_temp" ]; then
   long_log "Resetting TRG directory" info
   dm_reset_dirs "$TRG"
 
-  # Figure out the current version from civicrm-version.xml
-  DM_VERSION=$(grep version_no $SRC/xml/version.xml | sed 's#version_no##g' | tr -d '<>/ ')
   long_log "Running dm_generate_version (%s)" info "$DM_VERSION"
   cp $SRC/drupal/civicrm.config.php.drupal $TRG/civicrm.config.php
   dm_generate_version "$TRG/civicrm-version.php" Drupal
