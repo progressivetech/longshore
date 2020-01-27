@@ -147,7 +147,7 @@ projects[activityical][download][revision] = "2d2e061bd5d99b3c51c21821a360ac98b1
 projects[opb][type] = "module"
 projects[opb][download][type] = "git"
 projects[opb][download][url] = "git://git.progressivetech.org/powerbase/opb.git"
-projects[opb][download][revision] = "85cb98ae642b870dc262fe8a9000900c4ef4c1a3"
+projects[opb][download][revision] = "b1cba92b9d35c15ad350537e9f2aea59b25a10f2"
 
 projects[civimigrate][type] = "module"
 projects[civimigrate][download][type] = "git"
@@ -611,7 +611,7 @@ projects[setup][type] = "library"
 projects[setup][destination] = "extensions"
 projects[setup][download][type] = "git"
 projects[setup][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.setup"
-projects[setup][download][revision] = "a896cbcebe951b0aae9c6a46d9fdb37ded6680a6"
+projects[setup][download][revision] = "e92950d233029f30313b294f04281a53aacb2ba2"
 
 projects[contactlayout][type] = "library"
 projects[contactlayout][destination] = "extensions"
