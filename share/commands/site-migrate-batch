@@ -169,20 +169,6 @@ for site in $sites; do
   long_log "upgrade:%s: Backed up site." info "$site"
   printf "."
 
-  if ! long_exec_drush_cmd "$site" "-y pm-disable civicrm_activity_ical"; then
-    long_log "upgrade:%s Failed to disable civicrm_activity_ical." error "$site"
-    continue
-  fi
-  long_log "upgrade:%s: civicrm_activity_ical disabled." info "$site"
-  printf "."
-
-  if ! long_exec_drush_cmd "$site" "-y pm-uninstall civicrm_activity_ical"; then
-    long_log "upgrade:%s Failed to uninstall civicrm_activity_ical." error "$site"
-    continue
-  fi
-  long_log "upgrade:%s: civicrm_activity_ical uninstalled." info "$site"
-  printf "."
-
   if ! long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"; then
     long_log "upgrade:%s Failed to set maintenance mode." error "$site"
     continue

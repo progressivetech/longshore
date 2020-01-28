@@ -335,6 +335,12 @@ function drush_pbd_configure() {
   );
   civicrm_api3('Extension', 'install', $params);
 
+  $codeVer = CRM_Utils_System::version();
+  if(version_compare($codeVer, '5.21', '>=')) {
+    // After 5.21, everyone gets setup.
+    drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable net.ourpowerbase.setup");
+  }
+
   /* Drupal Settings */
   pbd_enable_modules();
   pbd_configure_themekey();
@@ -458,6 +464,7 @@ function drush_pbd_configure_once() {
   pbd_lock_down_user_registration();
 
   pbd_enable_one_time_extensions();
+  
 
   variable_set('site_frontpage','civicrm');
 
