@@ -323,7 +323,7 @@ projects[mjwshared][type] = "library"
 projects[mjwshared][destination] = "extensions"
 projects[mjwshared][download][type] = "git"
 projects[mjwshared][download][url] = "https://lab.civicrm.org/extensions/mjwshared.git"
-projects[mjwshared][download][revision] = "1dd5a61c8a2a45f03cfa1c251b4a2fc6129398a7"
+projects[mjwshared][download][revision] = "d1f72da672b16228651ca6a2614f439dad3af3da"
 
 projects[civisualize][type] = "library"
 projects[civisualize][destination] = "extensions"
