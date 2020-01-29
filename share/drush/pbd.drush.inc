@@ -337,8 +337,9 @@ function drush_pbd_configure() {
 
   $codeVer = CRM_Utils_System::version();
   if(version_compare($codeVer, '5.21', '>=')) {
-    // After 5.21, everyone gets setup.
+    // After 5.21, everyone gets setup and recent items.
     drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable net.ourpowerbase.setup");
+    drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable org.civicrm.recentmenu");
   }
 
   /* Drupal Settings */
