@@ -340,6 +340,7 @@ function drush_pbd_configure() {
     // After 5.21, everyone gets setup and recent items.
     drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable net.ourpowerbase.setup");
     drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable org.civicrm.recentmenu");
+    module_enable(array('civicrmtheme'));
   }
 
   /* Drupal Settings */
