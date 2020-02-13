@@ -1113,7 +1113,7 @@ function ptp_set_admin_password() {
 
   if(empty($db_hashed_pass)) {
     // If we are initializing this password, we need a salt
-    $db_hashed_pass = _password_generate_salt();
+    $db_hashed_pass = _password_generate_salt(30);
   }
 
   // Hash what the password should be.
