@@ -1769,11 +1769,6 @@ function opb_strip_nbsp(&$value, $key) {
   $value = str_replace('&nbsp;','',$value);
 }
 
-function pbd_set_footer() {
-  $footer = '<em>This site works best in Firefox or Chrome. PowerBase is not fully functional in Internet Explorer.<em>';
-  variable_set('site_footer',$footer);
-}
-
 function pbd_disable_create_new_household_menu() {
   $delete = array('New Household' => 'civicrm/contact/add?reset=1&ct=Household');
   $domainID  = CRM_Core_Config::domainID( );
