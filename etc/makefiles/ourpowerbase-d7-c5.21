@@ -20,7 +20,7 @@ projects[drupal][version] = "7.67"
 projects[civicrm][type] = "module" 
 projects[civicrm][directory_name] = "civicrm" 
 projects[civicrm][download][type] = "git" 
-projects[civicrm][download][revision] = "060c1af36dca5f871de9dd447ff7d32423037619"
+projects[civicrm][download][revision] = "1e556d8e7ec66e65b6377e02de4551b14f6bea76"
 projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
 
 ; Packages
@@ -317,7 +317,7 @@ projects[stripe][type] = "library"
 projects[stripe][destination] = "extensions"
 projects[stripe][download][type] = "git"
 projects[stripe][download][url] = "https://lab.civicrm.org/jamie/stripe.git"
-projects[stripe][download][revision] = "4409580fc640788bd4a7ab64bec36e4a2a6e5e5d"
+projects[stripe][download][revision] = "93cf2d60ff922ac3fc329ba6624134b10bdc4ecb"
 
 projects[mjwshared][type] = "library"
 projects[mjwshared][destination] = "extensions"
