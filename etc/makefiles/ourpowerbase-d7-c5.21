@@ -554,10 +554,10 @@ projects[remoteform][download][revision] = "fc10c5e975e0d49662ca474bc824093ceac6
 projects[civimobileapi][type] = "library"
 projects[civimobileapi][destination] = "extensions"
 projects[civimobileapi][download][type] = "git"
-projects[civimobileapi][download][url] = "https://github.com/agiliway/com.agiliway.civimobileapi"
+projects[civimobileapi][download][url] = "https://dev.civicrm.org/jamie/civimobileapi"
 ; See https://github.com/agiliway/com.agiliway.civimobileapi/issues/19
 projects[civimobileapi][directory_name] = "com.agiliway.civimobileapi"
-projects[civimobileapi][download][revision] = "f545b01f69fe1a6506c92a69b1a18f12cbd0b538"
+projects[civimobileapi][download][revision] = "0bf2d9b59ea37a76a44736bf35cfd2693d06a5c0"
 
 projects[sqlexport][type] = "library"
 projects[sqlexport][destination] = "extensions"
@@ -611,7 +611,7 @@ projects[setup][type] = "library"
 projects[setup][destination] = "extensions"
 projects[setup][download][type] = "git"
 projects[setup][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.setup"
-projects[setup][download][revision] = "d0d3b25f5b9c9fabec384c0645412aa38cf651fb"
+projects[setup][download][revision] = "be435b0f20f6662a09be0e9822d6c1e4e7244eb1"
 
 projects[contactlayout][type] = "library"
 projects[contactlayout][destination] = "extensions"
