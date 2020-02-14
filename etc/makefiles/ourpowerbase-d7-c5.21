@@ -317,7 +317,7 @@ projects[stripe][type] = "library"
 projects[stripe][destination] = "extensions"
 projects[stripe][download][type] = "git"
 projects[stripe][download][url] = "https://lab.civicrm.org/jamie/stripe.git"
-projects[stripe][download][revision] = "93cf2d60ff922ac3fc329ba6624134b10bdc4ecb"
+projects[stripe][download][revision] = "6995250ad89aad55c552ea666b0ac541278aa85c"
 
 projects[mjwshared][type] = "library"
 projects[mjwshared][destination] = "extensions"
