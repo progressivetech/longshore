@@ -1408,6 +1408,7 @@ function demo_add_mosaico_template() {
   $results = civicrm_api3('MosaicoTemplate', 'get', [ 'title' => 'Special Announcement' ]);
   if ($results['count'] == 1) {
     drush_log("Not creating mosaico template, already there.");
+    return;
   }
   $params = array(
     'title' => 'Special Announcement',
