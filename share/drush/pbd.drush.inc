@@ -507,6 +507,7 @@ function pbd_enable_one_time_extensions() {
   $keys = array(
     'net.ourpowerbase.sumfields',
     'net.ourpowerbase.constituentfields',
+    'net.ourpowerbase.participantfields',
     'net.ourpowerbase.profiles',
     'net.ourpowerbase.engage',
     'net.ourpowerbase.search.eventcount',

@@ -1309,7 +1309,8 @@ function demo_enable_extensions() {
     'net.ourpowerbase.report.dbhealth',
     'net.ourpowerbase.search.eventcount',
     'net.ourpowerbase.turnout',
-    'net.ourpowerbase.voterfields' 
+    'net.ourpowerbase.voterfields',
+    'cc.tadpole.petitionemail',
   );
   foreach($keys as $key) {
     $key = escapeshellarg($key);
