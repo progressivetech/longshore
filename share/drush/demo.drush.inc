@@ -1403,8 +1403,8 @@ function demo_add_door_knocking_activity_type() {
 }
 
 function demo_add_mosaico_template() {
-  $html = file_get_contents('./templates/mosaico.special.announcement.html');
-  $metadata = file_get_contents('./templates/mosaico.special.announcement.metadata');
+  $html = file_get_contents('/var/www/.drush/templates/mosaico.special.announcement.html');
+  $metadata = file_get_contents('/var/www/.drush/templates/mosaico.special.announcement.metadata');
   $results = civicrm_api3('MosaicoTemplate', 'get', [ 'title' => 'Special Announcement' ]);
   if ($results['count'] == 1) {
     drush_log("Not creating mosaico template, already there.");
