@@ -1404,7 +1404,7 @@ function demo_add_door_knocking_activity_type() {
 
 function demo_add_mosaico_template() {
   $html = file_get_contents('/var/www/.drush/templates/mosaico.special.announcement.html');
-  $metadata = file_get_contents('/var/www/.drush/templates/mosaico.special.announcement.metadata');
+  $content = file_get_contents('/var/www/.drush/templates/mosaico.special.announcement.content');
   $results = civicrm_api3('MosaicoTemplate', 'get', [ 'title' => 'Special Announcement' ]);
   if ($results['count'] == 1) {
     drush_log("Not creating mosaico template, already there.");
@@ -1414,7 +1414,9 @@ function demo_add_mosaico_template() {
     'title' => 'Special Announcement',
     'base' => 'versafix-1',
     'html' => $html,
-    'metadata' => $metadata 
+    'content' => $content, 
+    'metadata' => '{"template":"' . CIVICRM_UF_BASEURL . '/sites/all/extensions/uk.co.vedaconsulting.mosaico/packages/mosaico/templates/versafix-1/template-versafix-1.html","name":"No name","created":1582654864626,"editorversion":"0.15.0","templateversion":"1.0.5","changed":1582655005246}',
+
   );
   civicrm_api3('MosaicoTemplate', 'create', $params);
 }
