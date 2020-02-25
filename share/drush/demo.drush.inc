@@ -55,6 +55,7 @@ function drush_demo_data() {
     demo_add_payment_processor();
     demo_set_contact_defaults();
     demo_add_door_knocking_activity_type();
+    demo_add_mosaico_template();
   }
   catch (CiviCRM_API3_Exception $e) {
     drush_log(dt("Failed to create demo data in the database."), 'error');
@@ -1399,4 +1400,20 @@ function demo_set_contact_defaults() {
 function demo_add_door_knocking_activity_type() {
   $option_group_id = civicrm_api3('option_group', 'getsingle', [ 'name' => 'activity_type', 'return' => 'id' ]);
   civicrm_api3('option_value', 'create', [ 'option_group_id' => $option_group_id['id'], 'name' => 'door_knocking', 'label' => 'Door Knocking', 'value' => '99']);
+}
+
+function demo_add_mosaico_template() {
+  $html = file_get_contents('./templates/mosaico.special.announcement.html');
+  $metadata = file_get_contents('./templates/mosaico.special.announcement.metadata');
+  $results = civicrm_api3('MosaicoTemplate', 'get', [ 'title' => 'Special Announcement' ]);
+  if ($results['count'] == 1) {
+    drush_log("Not creating mosaico template, already there.");
+  }
+  $params = array(
+    'title' => 'Special Announcement',
+    'base' => 'versafix-1',
+    'html' => $html,
+    'metadata' => $metadata 
+  );
+  civicrm_api3('MosaicoTemplate', 'create', $params);
 }
