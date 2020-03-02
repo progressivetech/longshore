@@ -661,6 +661,12 @@ projects[extrafee][download][type] = "git"
 projects[extrafee][download][url] = "https://github.com/mjwconsult/nz.co.fuzion.extrafee"
 projects[extrafee][download][revision] = "52755840b69257a9aff07c7da2d333493848db20"
 
+projects[qdep][type] = "library"
+projects[qdep][destination] = "extensions"
+projects[qdep][download][type] = "git"
+projects[qdep][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.qdep"
+projects[qdep][download][revision] = "bd40e2f443b82aee8f6dde91813ac004e4808785"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
