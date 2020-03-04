@@ -1987,7 +1987,7 @@ long_create_dns() {
       fi
     fi
   else
-    post="action=insert&output=text&object=item&set:service_id=${service_id}&set:hosting_order_id=${hosting_order_id}&set:dns_fqdn=${fqdn}&set:dns_type=a&set:dns_ttl=${dns_ttl}&set:dns_ip=${LONG_IP_ADDR}&user_name=$api_login&user_pass=$api_password&output_format=text"
+    post="action=insert&output=text&object=item&set:service_id=${service_id}&set:hosting_order_id=${hosting_order_id}&set:dns_fqdn=${fqdn}&set:dns_type=a&set:dns_ttl=${dns_ttl}&set:dns_ip=${LONG_IP_ADDR}&set:dns_sshfp_type=0&set:dns_sshfp_algorithm=0&user_name=$api_login&user_pass=$api_password&output_format=text"
   fi
 
   out=$(wget -q --post-data="$post" -O- "$url")
