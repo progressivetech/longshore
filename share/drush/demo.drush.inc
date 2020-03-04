@@ -746,7 +746,8 @@ function demo_interest_participation_status() {
     'is_reserved' => '0',
     'is_active' => '1',
     'is_counted' => '0',
-    'class' => 'Positive'
+    'class' => 'Positive',
+    'weight' => 0,
   ));
 }
 
