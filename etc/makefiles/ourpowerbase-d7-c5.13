@@ -557,7 +557,7 @@ projects[civimobileapi][download][type] = "git"
 projects[civimobileapi][download][url] = "https://lab.civicrm.org/jamie/civimobileapi"
 ; See https://github.com/agiliway/com.agiliway.civimobileapi/issues/19
 projects[civimobileapi][directory_name] = "com.agiliway.civimobileapi"
-projects[civimobileapi][download][revision] = "0bf2d9b59ea37a76a44736bf35cfd2693d06a5c0"
+projects[civimobileapi][download][revision] = "05c6597c8bfee059a501193cb810ae846b1e5aaa"
 
 projects[api4][type] = "library"
 projects[api4][destination] = "extensions"
