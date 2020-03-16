@@ -226,7 +226,7 @@ projects[civimobile][type] = "library"
 projects[civimobile][destination] = "extensions"
 projects[civimobile][download][type] = "git"
 projects[civimobile][download][url] = "https://github.com/webaccess/com.webaccessglobal.module.civimobile"
-projects[civimobile][download][revision] = "114980fbb78614c24c462c0ccd97a4abc2e3ee54"
+projects[civimobile][download][revision] = "05c6597c8bfee059a501193cb810ae846b1e5aaa"
 
 projects[yahooboss][type] = "library"
 projects[yahooboss][destination] = "extensions"
