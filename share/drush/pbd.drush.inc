@@ -31,7 +31,12 @@ function pbd_drush_command() {
   $items['pbd-obscure'] =
     array( 'description' => "Scrub all private data from the database. CAREFUL!!");
   $items['pbd-test-smart-groups'] =
-    array( 'description' => "Rebuild all smart groups to find ones that are broken.");
+    array(
+      'description' => "Rebuild all smart groups to find ones that are broken.",
+      'options' => array(
+        'group_id' => 'Limit to the given group id',
+        'after_group_id' => 'Only groups after thet given id'
+      ));
   $items['pbd-update-assessments'] =
     array( 'description' => "Update all assessments (depends on net.ourpowerbase.assess extension).");
   $items['pbd-prepare-theme'] =
