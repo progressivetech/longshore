@@ -743,13 +743,14 @@ function drush_pbd_test_smart_groups() {
 
   // See if group_id is being passed in.
   $given_group_id = drush_get_option('group_id', NULL);
+  $after_group_id = explode(',', drush_get_option('after_group_id', NULL));
   if(!empty($given_group_id)) {
     $group_ids[$given_group_id] = NULL;
   }
   else {
     // Fetch all active groups that are smart groups
-    $sql = 'SELECT id, title FROM civicrm_group WHERE saved_search_id IS NOT NULL AND is_active = 1 ORDER BY title';
-    $dao = CRM_Core_DAO::executeQuery($sql);
+    $sql = 'SELECT id, title FROM civicrm_group WHERE saved_search_id IS NOT NULL AND is_active = 1 ORDER BY id WHERE id > %0';
+    $dao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $after_group_id, 'Integer' ] ]);
     $total_duration = 0;
     while($dao->fetch()) {
       $group_ids[$dao->id] = $dao->title;
