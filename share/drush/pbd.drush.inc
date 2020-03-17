@@ -748,7 +748,7 @@ function drush_pbd_test_smart_groups() {
 
   // See if group_id is being passed in.
   $given_group_id = drush_get_option('group_id', NULL);
-  $after_group_id = explode(',', drush_get_option('after_group_id', NULL));
+  $after_group_id = drush_get_option('after_group_id', 0);
   if(!empty($given_group_id)) {
     $group_ids[$given_group_id] = NULL;
   }
