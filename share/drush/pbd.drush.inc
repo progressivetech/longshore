@@ -754,8 +754,10 @@ function drush_pbd_test_smart_groups() {
   }
   else {
     // Fetch all active groups that are smart groups
-    $sql = 'SELECT id, title FROM civicrm_group WHERE saved_search_id IS NOT NULL AND is_active = 1 ORDER BY id WHERE id > %0';
-    $dao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $after_group_id, 'Integer' ] ]);
+    $sql = 'SELECT id, title FROM civicrm_group WHERE saved_search_id IS NOT NULL AND is_active = 1 AND id > %0 ORDER BY id';
+    $params = [ 0 => [ $after_group_id, 'Integer' ] ];
+    print_r($params);
+    $dao = CRM_Core_DAO::executeQuery($sql, $params);
     $total_duration = 0;
     while($dao->fetch()) {
       $group_ids[$dao->id] = $dao->title;
