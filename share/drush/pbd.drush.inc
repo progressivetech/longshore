@@ -787,13 +787,14 @@ function drush_pbd_test_smart_groups() {
     $sql_params = array(0 => array($id, 'Integer'));
     try {
       $dao = CRM_Core_DAO::executeQuery($sql, $sql_params);
+      $dao->fetch();
+      $params['@count'] = $dao->count;
+      drush_log(dt("Completed loading Group @id in @duration minutes with @count contacts.", $params), 'ok');
     }
     catch (Exception $e) {
       drush_log(dt("Query failed or was canceled"), 'ok');
     }
-    $dao->fetch();
-    $params['@count'] = $dao->count;
-    drush_log(dt("Completed loading Group @id in @duration minutes with @count contacts.", $params), 'ok');
+    
   }
   $total_duration_formatted = number_format($total_duration/60, 2);
   drush_log(dt("Total duration: @total_duration minutes.", array('@total_duration' => $total_duration_formatted)), 'ok');
