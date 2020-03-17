@@ -785,7 +785,12 @@ function drush_pbd_test_smart_groups() {
     // Now get count of records returned
     $sql = "SELECT COUNT(*) AS count FROM civicrm_group_contact_cache WHERE group_id = %0";
     $sql_params = array(0 => array($id, 'Integer'));
-    $dao = CRM_Core_DAO::executeQuery($sql, $sql_params);
+    try {
+      $dao = CRM_Core_DAO::executeQuery($sql, $sql_params);
+    }
+    catch (Exception $e) {
+      drush_log(dt("Query failed or was canceled"), 'ok');
+    }
     $dao->fetch();
     $params['@count'] = $dao->count;
     drush_log(dt("Completed loading Group @id in @duration minutes with @count contacts.", $params), 'ok');
