@@ -347,8 +347,8 @@ projects[angularprofiles][download][revision] = "288432a3631b0e60319c5d324b3b170
 projects[simpledonate][type] = "library"
 projects[simpledonate][destination] = "extensions"
 projects[simpledonate][download][type] = "git"
-projects[simpledonate][download][url] = "https://github.com/webaccess/com.webaccessglobal.simpledonate.git"
-projects[simpledonate][download][revision] = "c5e5d532333fe386e5844a4758727d1c6b0ba2a5"
+projects[simpledonate][download][url] = "https://github.com/progressivetech/com.webaccessglobal.simpledonate.git"
+projects[simpledonate][download][revision] = "09ed729532d727e15e38fbe5e24e432f16fe792c"
 
 projects[zip2state][type] = "library"
 projects[zip2state][destination] = "extensions"
