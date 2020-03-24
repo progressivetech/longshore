@@ -665,7 +665,7 @@ projects[qdep][type] = "library"
 projects[qdep][destination] = "extensions"
 projects[qdep][download][type] = "git"
 projects[qdep][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.qdep"
-projects[qdep][download][revision] = "bd40e2f443b82aee8f6dde91813ac004e4808785"
+projects[qdep][download][revision] = "e60a1eb77fdf09dcebde176e4374772f8e3d7b6c"
 
 ;****************************************
 ; Drupal themes 
