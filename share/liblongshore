@@ -346,11 +346,18 @@ long_create_image() {
       # this is a special condition
       long_create_base_image
     else
+      # If we are forcing the image to be re-created, then we should not
+      # use the cache.
+      cache=
+      if [ "$LONG_FORCE" = "1" ]; then
+        cache="--no-cache"
+      fi
+
       # This sub-command seems to ignore the -l error flag.
       if [ "$LONG_LOG_LEVEL" = "error" ]; then
-        docker build -t "$image_tag" "$image_path" >/dev/null
+        docker build -t "$image_tag" "$cache" "$image_path" >/dev/null
       else
-        docker build -t "$image_tag" "$image_path"
+        docker build -t "$image_tag" "$cache" "$image_path"
       fi
     fi
   fi
