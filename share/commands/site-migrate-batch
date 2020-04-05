@@ -187,6 +187,15 @@ for site in $sites; do
   long_log "upgrade:%s Stopped and removed docker container." info "$site"
   printf "."
 
+  # Check if we have to rebuild the db container
+  built_new_container=n
+  dbcontainer="db${site}"
+  if ! docker inspect "$dbcontainer" | grep -q '"Created": "2020-04"' >/dev/null; then
+    docker stop "$dbcontainer"
+    docker rm "$dbcontainer"
+    built_new_container=y
+  fi
+
   # Send to /dev/null because even with --quiet docker emits some info.
   if ! long_container_up site "$site" "$db_host" "$new_platform" > /dev/null; then
     long_log "upgrade:%s Failed to bring up new container" error "$site"
@@ -201,6 +210,15 @@ for site in $sites; do
   fi
   long_log "upgrade:%s Reloaded nginx" info "$site"
   printf "."
+
+  if [ "$built_new_container" = "y" ]; then
+    printf ".rf."
+    if ! (LONG_LOG_LEVEL=error longshore db-fix-row-format "db${site}"); then
+      long_log "upgrade:%s Failed to fix row format." error "$site"
+      continue
+    fi
+    long_log "upgrade:%s Fixed row format." info "$site"
+  fi
 
   printf ".db."
   if ! long_exec_drush_cmd "$site" "-y civicrm-upgrade-db"; then
