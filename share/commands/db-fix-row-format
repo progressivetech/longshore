@@ -12,6 +12,7 @@ long_check_args "$2" "$#" 1
 
 dbhost="$2"
 db=$(echo "$dbhost" | sed 's/^db//')
+db="${db//-/_}" 
 
 select_temp=$(mktemp)
 alter_temp=$(mktemp)
