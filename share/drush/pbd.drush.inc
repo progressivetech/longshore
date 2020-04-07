@@ -344,9 +344,14 @@ function drush_pbd_configure() {
   $codeVer = CRM_Utils_System::version();
   if(version_compare($codeVer, '5.21', '>=')) {
     // After 5.21, everyone gets setup and recent items.
-    drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable net.ourpowerbase.setup");
-    drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable org.civicrm.recentmenu");
-    drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable org.civicrm.shoreditch");
+    $exts = [ "net.ourpowerbase.setup", "org.civicrm.recentmenu", "org.civicrm.shoreditch"  ];
+    foreach($exts as $ext) {
+      $sql = "SELECT id FROM civicrm_extension WHERE full_name = %0 AND is_active = 1";
+      $dao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $ext, 'String' ] ]);
+      if ($dao->N == 0) {
+        drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable $ext");
+      }
+    }
     module_enable(array('civicrmtheme'));
   }
 
