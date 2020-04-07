@@ -119,12 +119,19 @@ function ptp_drush_command() {
 }
 
 function drush_ptp_stripe_webhooks() {
+  _civicrm_init();
   if (class_exists('CRM_Stripe_Webhook')) {
     $msg = [];
+    drush_log("Stripe is installed.", 'info');
     CRM_Stripe_Webhook::check($msg, TRUE);
     if (count($msg) > 0) {
-      print_r($msg);
+    	drush_log("Messages populated.", 'info');
+    	drush_log(array_pop($msg)->getMessage(), 'error');
     }
+  	drush_log("Messages NOT populated.", 'info');
+  }
+  else {
+    drush_log("Stripe is NOT installed.", 'info');
   }
 }
 
