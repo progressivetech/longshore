@@ -112,9 +112,21 @@ function ptp_drush_command() {
       'stripeid' => dt("Optionally, provide the payment processor id number for stripe"),
     )
   );
+  $item['ptp-stripe-webhooks'] = array(
+    'description' => "Ensure Stripe webhooks are set properly",
+  );
   return $items;
 }
 
+function drush_ptp_stripe_webhooks() {
+  if (class_exists('CRM_Stripe_Webhook')) {
+    $msg = [];
+    CRM_Stripe_Webhook::check($msg, TRUE);
+    if (count($msg) > 0) {
+      print_r($msg);
+    }
+  }
+}
 
 function drush_ptp_get_site_info() {
   _civicrm_init();
