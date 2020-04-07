@@ -112,7 +112,7 @@ function ptp_drush_command() {
       'stripeid' => dt("Optionally, provide the payment processor id number for stripe"),
     )
   );
-  $item['ptp-stripe-webhooks'] = array(
+  $items['ptp-stripe-webhooks'] = array(
     'description' => "Ensure Stripe webhooks are set properly",
   );
   return $items;
