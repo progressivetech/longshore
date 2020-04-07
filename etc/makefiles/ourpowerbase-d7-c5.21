@@ -317,7 +317,13 @@ projects[stripe][type] = "library"
 projects[stripe][destination] = "extensions"
 projects[stripe][download][type] = "git"
 projects[stripe][download][url] = "https://lab.civicrm.org/jamie/stripe.git"
-projects[stripe][download][revision] = "6995250ad89aad55c552ea666b0ac541278aa85c"
+projects[stripe][download][revision] = "38fbea04d5d7a7601ba56e57c1c59d04550dac1a"
+
+projects[firewall][type] = "library"
+projects[firewall][destination] = "extensions"
+projects[firewall][download][type] = "git"
+projects[firewall][download][url] = "https://lab.civicrm.org/extensions/firewall.git"
+projects[firewall][download][revision] = "70ce90b97053d90f657463071f4b654c14c502a5"
 
 projects[mjwshared][type] = "library"
 projects[mjwshared][destination] = "extensions"
@@ -557,7 +563,7 @@ projects[civimobileapi][download][type] = "git"
 projects[civimobileapi][download][url] = "https://lab.civicrm.org/jamie/civimobileapi"
 ; See https://github.com/agiliway/com.agiliway.civimobileapi/issues/19
 projects[civimobileapi][directory_name] = "com.agiliway.civimobileapi"
-projects[civimobileapi][download][revision] = "0bf2d9b59ea37a76a44736bf35cfd2693d06a5c0"
+projects[civimobileapi][download][revision] = "62a1d77224b60eb85a9bae6c764ffef47bcdcccc"
 
 projects[sqlexport][type] = "library"
 projects[sqlexport][destination] = "extensions"
