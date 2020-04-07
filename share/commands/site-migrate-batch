@@ -213,7 +213,7 @@ for site in $sites; do
 
   if [ "$built_new_container" = "y" ]; then
     printf ".rf."
-    if ! (LONG_LOG_LEVEL=error longshore db-fix-row-format "db${site}"); then
+    if ! (LONG_LOG_LEVEL=error longshore db-fix-row-format "db${site}" 2>/dev/null); then
       long_log "upgrade:%s Failed to fix row format." error "$site"
       continue
     fi
