@@ -225,15 +225,15 @@ for site in $sites; do
   temp=$(mktemp)
   long_execute_site_query "$site" "/srv/longshore/etc/makefiles/5.21.2.upgrade.sql" | grep -v CONCAT > "$temp" 
   if [ -s "$temp" ]; then
-    long_log "upgrade:%s Found entities of type PaymentProcessorType." info "$site"
+    long_log "upgrade:%s Found entities of type PaymentProcessorType/ContactType." info "$site"
     reload_entities="$temp"
     # Make new sql file and dlete these entites
     temp=$(mktemp)
-    echo "DELETE FROM civicrm_managed WHERE entity_type = 'PaymentProcessorType';" > "$temp"
+    echo "DELETE FROM civicrm_managed WHERE entity_type = 'PaymentProcessorType' OR entity_type = 'ContactType';" > "$temp"
     long_execute_site_query "$site" "$temp" 
     rm "$temp"
   else
-    long_log "upgrade:%s Did not find entities of type PaymentProcessorType." info "$site"
+    long_log "upgrade:%s Did not find entities of type PaymentProcessorType/ContactType." info "$site"
     reload_entities=
     rm "$temp"
   fi
