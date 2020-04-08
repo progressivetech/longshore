@@ -336,15 +336,11 @@ function drush_pbd_configure() {
   // Fix demographics custom group:
   $sql = "UPDATE civicrm_custom_group SET style = 'Inline' WHERE name = 'Demographics'";
   CRM_Core_DAO::executeQuery($sql);
-  $params['keys'] = array(
-    'net.ourpowerbase.spouse'
-  );
-  civicrm_api3('Extension', 'install', $params);
 
   $codeVer = CRM_Utils_System::version();
   if(version_compare($codeVer, '5.21', '>=')) {
     // After 5.21, everyone gets setup and recent items.
-    $exts = [ "net.ourpowerbase.setup", "org.civicrm.recentmenu", "org.civicrm.shoreditch"  ];
+    $exts = [ "net.ourpowerbase.setup", "org.civicrm.recentmenu", "org.civicrm.shoreditch", "net.ourpowerbase.spouse", "firewall" ];
     foreach($exts as $ext) {
       $sql = "SELECT id FROM civicrm_extension WHERE full_name = %0 AND is_active = 1";
       $dao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $ext, 'String' ] ]);
