@@ -242,7 +242,10 @@ function drush_ptp_upgrade_fix() {
       ['civicrm_value_proposal_info_8', 'civicrm_value_proposal_info_20'],
       ['civicrm_value_turnout_field_10', 'civicrm_value_turnout_field_22'],
       ['civicrm_value_voter_info_11', 'civicrm_value_voter_info_23']
-    ]
+    ],
+    'gbm' => [
+      ['civicrm_value_participant_i_57', 'civicrm_value_participant_i_58'],
+    ],
 
   ];
   if (!array_key_exists($site, $tables)) {
