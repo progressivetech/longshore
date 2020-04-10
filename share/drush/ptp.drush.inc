@@ -122,6 +122,97 @@ function ptp_drush_command() {
   return $items;
 }
 
+function ptp_create_option_group_and_values($name, $old_option_group_id, $cdb, $odb, $current_option_group_id = NULL) {
+  // We assume we will have to create the option group and the option group values.
+  // But first, check if an option_group exists with the old id - it might not have been deleted.
+  $sql = "SELECT id FROM $odb.civicrm_option_group WHERE id = %0";
+  $dao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $old_option_group_id, 'Integer' ] ]);
+  if ($dao->N == 1) {
+    // W00t. we have it. We assume it is still populated.
+    return $old_option_group_id;
+  }
+  $create_option_values = TRUE;
+  echo "We need an option_group id for $name\n";
+  echo "Getting option_group info for $name\n";
+  $sql = "SELECT name, title, description, data_type FROM $odb.civicrm_option_group WHERE id = %0";
+  $ogdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $old_option_group_id, 'Integer' ] ]);
+  $ogdao->fetch();
+
+  if (is_null($current_option_group_id)) {
+    // See if we already have an option group with this name.
+    $sql = "SELECT id FROM $cdb.civicrm_option_group WHERE name = %0";
+    $ogcheckdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $ogdao->name, 'String' ] ]);
+    if ($ogcheckdao->N == 0) {
+      // It doesn't exist, create it.
+      $params = [ 
+        'name' => $ogdao->name,
+        'title' => $ogdao->title,
+        'description' => $ogdao->description,
+        'data_type' => $ogdao->data_type,
+        'is_reserved' => $ogdao->is_reserved,
+        'is_active' => $ogdao->is_active,
+        'is_locked' => $ogdao->is_locked
+      ];
+      $result = civicrm_api3('OptionGroup', 'create', $params);
+      $current_option_group_id = $result['id'];
+      //print_r($params);
+    }
+    else {
+      // It does exist, let's record the id.
+      $ogcheckdao->fetch();
+      $current_option_group_id = $ogcheckdao->id;
+    }
+  }
+
+  // Let's see if there are any values. If there are values, we are not
+  // going to try to re-create them.
+  $sql = "SELECT id FROM $cdb.civicrm_option_value WHERE option_group_id = %0";
+  $ogvcheckdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $current_option_group_id, 'Integer' ] ]);
+  if ($ogvcheckdao->N != 0) {
+    // Don't create option values please
+    echo "Found option values, not creating them for field $name option_group_id $current_option_group_id\n ";
+    $create_option_values = FALSE;
+  }
+
+  // Now let's handle the option values.
+  if ($create_option_values) {
+    echo "Creating option values for $name\n";
+    $sql = "SELECT * FROM $odb.civicrm_option_value WHERE option_group_id = %0";
+    $options_dao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $old_option_group_id, 'Integer' ] ]);
+    $o_options = array();
+    while($options_dao->fetch()) {
+      $o_options[] = [
+        empty($options_dao->label) ? "NULl" :  "'" . addslashes($options_dao->label) . "'",
+        empty($options_dao->value) ? "NULL" :  "'" . addslashes($options_dao->value) . "'",
+        empty($options_dao->name) ? "NULL" :  "'$options_dao->name'",
+        empty($options_dao->grouping) ? "NULL" :  "'$options_dao->grouping'",
+        empty($options_dao->filter) ? "NULL" :  "'$options_dao->filter'",
+        empty($options_dao->is_default) ? 0 :  $options_dao->is_default,
+        empty($options_dao->weight) ? "NULL" :  $options_dao->weight,
+        empty($options_dao->description) ? "NULL" :  "'$options_dao->description'",
+        empty($options_dao->is_optgroup) ? 0 :  $options_dao->is_optgroup,
+        empty($options_dao->is_reserved) ? 0 :  $options_dao->is_reserved,
+        empty($options_dao->is_active) ? 1 :  $options_dao->is_active,
+        empty($options_dao->component_id) ? "NULL" :  $options_dao->component_id,
+        empty($options_dao->domain_id) ? "NULL" :  $options_dao->domain_id,
+        empty($options_dao->visibility_id) ? "NULL" :  $options_dao->visibility_id,
+        empty($options_dao->icon) ? 'NULL' :  "'$options_dao->icon'",
+        empty($options_dao->color) ? 'NULL' : "'$options_dao->color'",
+      ];
+    }
+    $insert_options = [];
+    if (count($o_options) == 0) {
+      echo "No option values for field $name in old database.\n";
+    }
+    else {
+      foreach($o_options as $ov) {
+        $sql = "INSERT INTO $cdb.civicrm_option_value VALUES(NULL, $current_option_group_id, $ov[0], $ov[1], $ov[2], $ov[3], $ov[4], $ov[5], $ov[6], $ov[7], $ov[8], $ov[9], $ov[10], $ov[11], $ov[12], $ov[13], $ov[14], $ov[15] );\n";
+        CRM_Core_DAO::executeQuery($sql);
+      }
+    }
+  }
+}
+
 function drush_ptp_upgrade_fix() {
   _civicrm_init();
   $site = ptp_get_subdomain();
@@ -136,7 +227,21 @@ function drush_ptp_upgrade_fix() {
       ['civicrm_value_proposal_info_11', 'civicrm_value_proposal_info_20'],
       ['civicrm_value_turnout_field_13', 'civicrm_value_turnout_field_22'],
       ['civicrm_value_voter_info_14', 'civicrm_value_voter_info_23']
+    ],
+    'garmentworkercenter' => [
+      ['civicrm_value_communication_4', 'civicrm_value_communication_18' ],
+      ['civicrm_value_constituent_i_2', 'civicrm_value_constituent_i_16'],
+      ['civicrm_value_constituent_i_3', 'civicrm_value_constituent_i_17'],
+      ['civicrm_value_elected_offic_12', 'civicrm_value_elected_offic_24'],
+      ['civicrm_value_foundation_in_7', 'civicrm_value_foundation_in_19'],
+      ['civicrm_value_media_contact_13', 'civicrm_value_media_contact_25'],
+      ['civicrm_value_media_outlet__14', 'civicrm_value_media_outlet__26'],
+      ['civicrm_value_participant_i_9', 'civicrm_value_participant_i_21'],
+      ['civicrm_value_proposal_info_8', 'civicrm_value_proposal_info_20'],
+      ['civicrm_value_turnout_field_10', 'civicrm_value_turnout_field_22'],
+      ['civicrm_value_voter_info_11', 'civicrm_value_voter_info_23']
     ]
+
   ];
   if (!array_key_exists($site, $tables)) {
     echo "Failed to find tables for $site\n";
@@ -166,44 +271,36 @@ function drush_ptp_upgrade_fix() {
     $sql = "SELECT cf.* FROM $odb.civicrm_custom_field cf JOIN  $odb.civicrm_custom_group cg ON cf.custom_group_id = cg.id WHERE cg.table_name = %0";
     $ofdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $otable, 'String' ] ]);
     while ($ofdao->fetch()) {
+      $current_option_group_id = NULL;
       $name = $ofdao->name;
 
       // Check if this field is in the new database.
-      $sql = "SELECT cf.name FROM $cdb.civicrm_custom_field cf JOIN $cdb.civicrm_custom_group cg ON cf.custom_group_id = cg.id WHERE cg.table_name = %0 AND cf.name = %1";
+      $sql = "SELECT cf.name, option_group_id FROM $cdb.civicrm_custom_field cf JOIN $cdb.civicrm_custom_group cg ON cf.custom_group_id = cg.id WHERE cg.table_name = %0 AND cf.name = %1";
       $nfdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $ctable, 'String' ], 1 => [ $name, 'String' ] ]);
       $nfdao->fetch();
-      if ($nfdao->N == 0) {
-        // It's not!
+      // If the old field name was constituentfields_preferred_gender_pronouns we should skip
+      // because it is almost certainly re-created as constituentfields_gender_pronouns
+      if ($nfdao->N == 0 and $name != 'constituentfields_preferred_gender_pronouns') {
+        // It's not in the  new database!
         echo "Missing field: $name\n";
-        // Get the custom_group_id for this table.
+        
+        // Get the custom_group_id for this table in the current database.
         $sql = "SELECT cg.id AS id FROM $cdb.civicrm_custom_group cg WHERE cg.table_name = %0";
         $nfdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $ctable, 'String' ]]);
         $nfdao->fetch();
-        $custom_group_id = $nfdao->id;
+        $current_custom_group_id = $nfdao->id;
 
-        // Check for option groups in the old database.
-        $option_group_id = NULL;
-        if (!empty($ofdao->option_group_id)) {
-          echo "Creating missing option_group id for $name\n";
-          $sql = "SELECT name, title, description, data_type FROM $odb.civicrm_option_group WHERE id = %0";
-          $ogdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $ofdao->option_group_id, 'Integer' ] ]);
-          $ogdao->fetch();
-          $params = [ 
-            'name' => $ogdao->name,
-            'title' => $ogdao->title,
-            'description' => $ogdao->description,
-            'data_type' => $ogdao->data_type,
-            'is_reserved' => $ogdao->is_reserved,
-            'is_active' => $ogdao->is_active,
-            'is_locked' => $ogdao->is_locked
-          ];
-          $result = civicrm_api3('OptionGroup', 'create', $params);
-          $option_group_id = $result['id'];
-          //print_r($params);
+        // Check for option groups in the old database and see if we need to create a new one.
+        $old_option_group_id = $ofdao->option_group_id;
+        if (!empty($old_option_group_id)) {
+          $current_option_group_id = ptp_create_option_group_and_values($name, $old_option_group_id, $cdb, $odb);
         }
+
+        // Lastly create the custom field.
+        echo "Creating field: $name\n";
         $params = [
-          'custom_group_id' => $custom_group_id,
-          'name' => $ofdao->name,
+          'custom_group_id' => $current_custom_group_id,
+          'name' => $name,
           'label' => $ofdao->label,
           'data_type' => $ofdao->data_type,
           'html_type' => $ofdao->html_type,
@@ -227,66 +324,30 @@ function drush_ptp_upgrade_fix() {
           'time_format' => $ofdao->time_format,
           'note_columns' => $ofdao->note_columns,
           'note_rows' => $ofdao->note_rows,
-          'option_group_id' => $option_group_id,
+          'option_group_id' => $current_option_group_id,
           'filter' => $ofdao->filter,
           'in_selector' => $ofdao->in_selector,
         ];
         $result = civicrm_api3('CustomField', 'create', $params);
+        if ($result['is_error']) {
+          echo "Error creating $name\n";
+          print_r($result);
+        }
         //print_r($params);
       }
-    }
-    // Populate option values
-    $o_options = [];
-    $sql = "SELECT option_group_id, cf.name  FROM $odb.civicrm_custom_field cf JOIN $odb.civicrm_custom_group cg ON cf.custom_group_id = cg.id WHERE cf.option_group_id IS NOT NULL AND cg.table_name = %0";
-    $dao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $otable, 'String' ] ]);
-    while ($dao->fetch()) {
-      $o_field_name = $dao->name;
-      $o_option_group_id = $dao->option_group_id;
-      $sql = "SELECT * FROM $odb.civicrm_option_value WHERE option_group_id = %0";
-      $options_dao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $o_option_group_id, 'Integer' ] ]);
-      while($options_dao->fetch()) {
-        $o_options[$o_field_name][] = [
-          empty($options_dao->label) ? "NULl" :  "'$options_dao->label'",
-          empty($options_dao->value) ? "NULL" :  "'$options_dao->value'",
-          empty($options_dao->name) ? "NULL" :  "'$options_dao->name'",
-          empty($options_dao->grouping) ? "NULL" :  "'$options_dao->grouping'",
-          empty($options_dao->filter) ? "NULL" :  "'$options_dao->filter'",
-          empty($options_dao->is_default) ? 0 :  $options_dao->is_default,
-          empty($options_dao->weight) ? "NULL" :  $options_dao->weight,
-          empty($options_dao->description) ? "NULL" :  "'$options_dao->description'",
-          empty($options_dao->is_optgroup) ? 0 :  $options_dao->is_optgroup,
-          empty($options_dao->is_reserved) ? 0 :  $options_dao->is_reserved,
-          empty($options_dao->is_active) ? 1 :  $options_dao->is_active,
-          empty($options_dao->component_id) ? "NULL" :  $options_dao->component_id,
-          empty($options_dao->domain_id) ? "NULL" :  $options_dao->domain_id,
-          empty($options_dao->visibility_id) ? "NULL" :  $options_dao->visibility_id,
-          empty($options_dao->icon) ? 'NULL' :  "'$options_dao->icon'",
-          empty($options_dao->color) ? 'NULL' : "'$options_dao->color'",
-        ];
-      }
-    }
-    $insert_options = [];
-    $sql = "SELECT option_group_id, cf.name  FROM $cdb.civicrm_custom_field cf JOIN $cdb.civicrm_custom_group cg ON cf.custom_group_id = cg.id WHERE cf.option_group_id IS NOT NULL AND cg.table_name = %0";
-    $dao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $ctable, 'String' ] ]);
-    while ($dao->fetch()) {
-      $c_field_name = $dao->name;
-      $c_option_group_id = $dao->option_group_id;
-      if (!array_key_exists($c_field_name, $o_options)) {
-        echo "Can't match field $c_field_name\n";
-      }
       else {
-        foreach($o_options[$c_field_name] as $ov) {
-          $sql = "INSERT INTO civicrm_option_value VALUES(NULL, $c_option_group_id, $ov[0], $ov[1], $ov[2], $ov[3], $ov[4], $ov[5], $ov[6], $ov[7], $ov[8], $ov[9], $ov[10], $ov[11], $ov[12], $ov[13], $ov[14], $ov[15] );\n";
-          CRM_Core_DAO::executeQuery($sql);
+        if (!empty($ofdao->option_group_id)) {
+          $nfdao->fetch();
+          ptp_create_option_group_and_values($name, $ofdao->option_group_id, $cdb, $odb, $nfdao->option_group_id);
         }
       }
-    }    
-
+    }
     // Insert data from old table into new table.
     if (in_array($ctable, $skip_dump)) {
       echo "Skipping dump for $ctable / $otable\n";
     }
     else {
+      echo "REPLACING INTO: $otable => $ctable\n";
       $sql = "REPLACE INTO $cdb.$ctable SELECT * FROM $odb.$otable";
       CRM_Core_DAO::executeQuery($sql);
     
