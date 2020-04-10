@@ -246,6 +246,13 @@ function drush_ptp_upgrade_fix() {
     'gbm' => [
       ['civicrm_value_participant_i_57', 'civicrm_value_participant_i_58'],
     ],
+    'idepsca' => [
+      ['civicrm_value_communication_4', 'civicrm_value_communication_12'],
+      ['civicrm_value_constituent_i_2', 'civicrm_value_constituent_i_10'],
+      ['civicrm_value_constituent_i_3', 'civicrm_value_constituent_i_11'],
+      ['civicrm_value_foundation_in_5', 'civicrm_value_foundation_in_13'],
+      ['civicrm_value_proposal_info_6', 'civicrm_value_proposal_info_14' ]
+    ],
 
   ];
   if (!array_key_exists($site, $tables)) {
