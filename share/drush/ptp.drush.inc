@@ -123,9 +123,10 @@ function ptp_drush_command() {
 }
 
 function ptp_create_option_group_and_values($name, $old_option_group_id, $cdb, $odb, $current_option_group_id = NULL) {
+
   // We assume we will have to create the option group and the option group values.
   // But first, check if an option_group exists with the old id - it might not have been deleted.
-  $sql = "SELECT id FROM $odb.civicrm_option_group WHERE id = %0";
+  $sql = "SELECT id FROM $cdb.civicrm_option_group WHERE id = %0";
   $dao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $old_option_group_id, 'Integer' ] ]);
   if ($dao->N == 1) {
     // W00t. we have it. We assume it is still populated.
@@ -176,7 +177,7 @@ function ptp_create_option_group_and_values($name, $old_option_group_id, $cdb, $
 
   // Now let's handle the option values.
   if ($create_option_values) {
-    echo "Creating option values for $name\n";
+    echo "Creating option values for $name \n";
     $sql = "SELECT * FROM $odb.civicrm_option_value WHERE option_group_id = %0";
     $options_dao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $old_option_group_id, 'Integer' ] ]);
     $o_options = array();
@@ -211,6 +212,7 @@ function ptp_create_option_group_and_values($name, $old_option_group_id, $cdb, $
       }
     }
   }
+  return $current_option_group_id;
 }
 
 function drush_ptp_upgrade_fix() {
@@ -275,9 +277,8 @@ function drush_ptp_upgrade_fix() {
       $name = $ofdao->name;
 
       // Check if this field is in the new database.
-      $sql = "SELECT cf.name, option_group_id FROM $cdb.civicrm_custom_field cf JOIN $cdb.civicrm_custom_group cg ON cf.custom_group_id = cg.id WHERE cg.table_name = %0 AND cf.name = %1";
+      $sql = "SELECT cf.id, cf.name, option_group_id FROM $cdb.civicrm_custom_field cf JOIN $cdb.civicrm_custom_group cg ON cf.custom_group_id = cg.id WHERE cg.table_name = %0 AND cf.name = %1";
       $nfdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $ctable, 'String' ], 1 => [ $name, 'String' ] ]);
-      $nfdao->fetch();
       // If the old field name was constituentfields_preferred_gender_pronouns we should skip
       // because it is almost certainly re-created as constituentfields_gender_pronouns
       if ($nfdao->N == 0 and $name != 'constituentfields_preferred_gender_pronouns') {
@@ -286,9 +287,9 @@ function drush_ptp_upgrade_fix() {
         
         // Get the custom_group_id for this table in the current database.
         $sql = "SELECT cg.id AS id FROM $cdb.civicrm_custom_group cg WHERE cg.table_name = %0";
-        $nfdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $ctable, 'String' ]]);
-        $nfdao->fetch();
-        $current_custom_group_id = $nfdao->id;
+        $ngdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $ctable, 'String' ]]);
+        $ngdao->fetch();
+        $current_custom_group_id = $ngdao->id;
 
         // Check for option groups in the old database and see if we need to create a new one.
         $old_option_group_id = $ofdao->option_group_id;
@@ -338,7 +339,12 @@ function drush_ptp_upgrade_fix() {
       else {
         if (!empty($ofdao->option_group_id)) {
           $nfdao->fetch();
-          ptp_create_option_group_and_values($name, $ofdao->option_group_id, $cdb, $odb, $nfdao->option_group_id);
+          $current_option_group_id = ptp_create_option_group_and_values($name, $ofdao->option_group_id, $cdb, $odb, $nfdao->option_group_id);
+          if ($current_option_group_id != $nfdao->option_group_id) {
+            // Update the option_group_id for this field.
+            $sql = "UPDATE civicrm_custom_field SET option_group_id = %0 WHERE id = %1";
+            CRM_Core_DAO::executeQuery($sql, [0 => [ $current_option_group_id, 'Integer' ], 1 => [ $nfdao->id, 'Integer' ]]);
+          }
         }
       }
     }
