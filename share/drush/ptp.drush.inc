@@ -258,6 +258,19 @@ function drush_ptp_upgrade_fix() {
       ['civicrm_value_constituent_i_30', 'civicrm_value_constituent_i_33'],
       ['civicrm_value_constituent_i_31', 'civicrm_value_constituent_i_34'],
     ],
+    'houstoninaction' => [
+      ['civicrm_value_communication_4', 'civicrm_value_communication_21'],
+      ['civicrm_value_constituent_i_2', 'civicrm_value_constituent_i_19'],
+      ['civicrm_value_constituent_i_3', 'civicrm_value_constituent_i_20'],
+      ['civicrm_value_elected_offic_14', 'civicrm_value_elected_offic_29'],
+      ['civicrm_value_foundation_in_7', 'civicrm_value_foundation_in_22'],
+      ['civicrm_value_media_contact_9', 'civicrm_value_media_contact_24'],
+      ['civicrm_value_media_outlet__10', 'civicrm_value_media_outlet__25'],
+      ['civicrm_value_participant_i_11', 'civicrm_value_participant_i_26'],
+      ['civicrm_value_proposal_info_8', 'civicrm_value_proposal_info_23'],
+      ['civicrm_value_turnout_field_12', 'civicrm_value_turnout_field_27'],
+      ['civicrm_value_voter_info_13', 'civicrm_value_voter_info_28'],
+    ]
 
   ];
   if (!array_key_exists($site, $tables)) {
