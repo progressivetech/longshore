@@ -270,6 +270,17 @@ function drush_ptp_upgrade_fix() {
       ['civicrm_value_proposal_info_8', 'civicrm_value_proposal_info_23'],
       ['civicrm_value_turnout_field_12', 'civicrm_value_turnout_field_27'],
       ['civicrm_value_voter_info_13', 'civicrm_value_voter_info_28'],
+    ],
+    'interfaithallianceiowa' => [
+      ['civicrm_value_communication_4', 'civicrm_value_communication_18'],
+      ['civicrm_value_constituent_i_2', 'civicrm_value_constituent_i_16'],
+      ['civicrm_value_constituent_i_3', 'civicrm_value_constituent_i_17'],
+      ['civicrm_value_elected_offic_11', 'civicrm_value_elected_offic_23'],
+      ['civicrm_value_foundation_in_7', 'civicrm_value_foundation_in_19'],
+      ['civicrm_value_participant_i_9', 'civicrm_value_participant_i_21'],
+      ['civicrm_value_proposal_info_8', 'civicrm_value_proposal_info_20'],
+      ['civicrm_value_turnout_field_12', 'civicrm_value_turnout_field_24'],
+      ['civicrm_value_voter_info_10', 'civicrm_value_voter_info_22'],
     ]
 
   ];
@@ -382,6 +393,7 @@ function drush_ptp_upgrade_fix() {
     }
     else {
       echo "REPLACING INTO: $otable => $ctable\n";
+      CRM_Core_DAO::executeQuery("SET FOREIGN_KEY_CHECKS=0");
       $sql = "REPLACE INTO $cdb.$ctable SELECT * FROM $odb.$otable";
       CRM_Core_DAO::executeQuery($sql);
     
