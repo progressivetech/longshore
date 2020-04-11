@@ -203,7 +203,7 @@ function ptp_create_option_group_and_values($name, $old_option_group_id, $cdb, $
     }
     $insert_options = [];
     if (count($o_options) == 0) {
-      echo "No option values for field $name in old database.\n";
+      echo "\n\nNo option values for field $name in old database.\n\n";
     }
     else {
       foreach($o_options as $ov) {
@@ -252,6 +252,11 @@ function drush_ptp_upgrade_fix() {
       ['civicrm_value_constituent_i_3', 'civicrm_value_constituent_i_11'],
       ['civicrm_value_foundation_in_5', 'civicrm_value_foundation_in_13'],
       ['civicrm_value_proposal_info_6', 'civicrm_value_proposal_info_14' ]
+    ],
+    'iorcinfo' => [
+      ['civicrm_value_communication_32', 'civicrm_value_communication_35'],
+      ['civicrm_value_constituent_i_30', 'civicrm_value_constituent_i_33'],
+      ['civicrm_value_constituent_i_31', 'civicrm_value_constituent_i_34'],
     ],
 
   ];
