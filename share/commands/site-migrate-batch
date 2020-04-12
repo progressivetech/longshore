@@ -220,23 +220,11 @@ for site in $sites; do
     long_log "upgrade:%s Fixed row format." info "$site"
   fi
 
-  # Check for PaymentProcessorType in civicrm_managed table and delete and record
-  # id.
+  # Ensure all managed entities have cleanup set to never.
   temp=$(mktemp)
-  long_execute_site_query "$site" "/srv/longshore/etc/makefiles/5.21.2.upgrade.sql" | grep -v CONCAT > "$temp" 
-  if [ -s "$temp" ]; then
-    long_log "upgrade:%s Found entities of type PaymentProcessorType/ContactType." info "$site"
-    reload_entities="$temp"
-    # Make new sql file and dlete these entites
-    temp=$(mktemp)
-    echo "DELETE FROM civicrm_managed WHERE entity_type = 'PaymentProcessorType' OR entity_type = 'ContactType';" > "$temp"
-    long_execute_site_query "$site" "$temp" 
-    rm "$temp"
-  else
-    long_log "upgrade:%s Did not find entities of type PaymentProcessorType/ContactType." info "$site"
-    reload_entities=
-    rm "$temp"
-  fi
+  echo "UPDATE civicrm_managed SET cleanup = 'never';" > "$temp"
+  long_execute_site_query "$site" "$temp" 
+  rm "$temp"
 
   # Strip out any .beta2 tags.
   post_upgrade_version=$(long_execute_site_query "$site" "$temp" | tail -n1 | sed "s/\.beta[0-9]*$//") 
@@ -263,12 +251,6 @@ for site in $sites; do
     fi
   fi
   long_log "upgrade:%s Confirmed post upgrade database version" info "$site"
-
-  if [ -n "$reload_entities" ]; then
-    long_log "upgrade:%s Reloading entities." info "$site"
-    long_execute_site_query "$site" "$reload_entities" 
-    rm "$reload_entities"
-  fi
 
   if ! long_exec_drush_cmd "$site" "-y pbd-rebuild-multilingual-schema"; then
     long_log "upgrade:%s Failed to rebuild multilingual schemas" error "$site"
