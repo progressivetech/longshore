@@ -119,7 +119,34 @@ function ptp_drush_command() {
   $items['ptp-upgrade-fix'] = array(
     'description' => 'Fix upgrade fiasco'
   );
+
+  $items['ptp-mjwshared'] = array(
+    'description' => 'Install mjwshared extension of stripe is installed.',
+  );
   return $items;
+}
+
+function drush_ptp_mjwshared() {
+
+  // First check the status of both stripe and mjwshared.
+  $sql = "SELECT name FROM civicrm_extension WHERE (name = 'Stripe' OR name = 'mjwshared') AND is_active = 1";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  $stripe = FALSE;
+  $mjwshared = FALSE;
+  while ($dao->fetch()) {
+    if ($dao->name == 'Stripe') {
+      $stripe = TRUE;
+    }
+    elseif ($dao->name == 'MJWShared') {
+      $mjwshared = TRUE;
+    
+    }
+  }
+  if ($stripe && !$mjwshared) {
+    drush_log("Installing MJWshared", "ok");
+    drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable mjwshared");
+  }
+
 }
 
 function ptp_create_option_group_and_values($name, $old_option_group_id, $cdb, $odb, $current_option_group_id = NULL) {
