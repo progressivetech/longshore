@@ -220,6 +220,14 @@ for site in $sites; do
     long_log "upgrade:%s Fixed row format." info "$site"
   fi
 
+  # Ensure mjwshared is installed if stripe is installed.
+  if ! long_exec_drush_cmd "$site" "ptp-mjwshared"; then
+    long_log "upgrade:%s Failed to install mjwshared." error "$site"
+    continue
+  fi
+  long_log "upgrade:%s: Checked mjwshared ." info "$site"
+  printf "."
+
   # Ensure all managed entities have cleanup set to never.
   temp=$(mktemp)
   echo "UPDATE civicrm_managed SET cleanup = 'never';" > "$temp"
