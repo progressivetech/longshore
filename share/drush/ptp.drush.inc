@@ -127,7 +127,7 @@ function ptp_drush_command() {
 }
 
 function drush_ptp_mjwshared() {
-
+  _civicrm_init();
   // First check the status of both stripe and mjwshared.
   $sql = "SELECT name FROM civicrm_extension WHERE (name = 'Stripe' OR name = 'mjwshared') AND is_active = 1";
   $dao = CRM_Core_DAO::executeQuery($sql);
