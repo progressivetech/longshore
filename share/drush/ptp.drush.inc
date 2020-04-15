@@ -1537,7 +1537,7 @@ function ptp_create_help_menu() {
     'Upcoming Trainings' =>
       'https://ptp.ourpowerbase.net/civicrm/event/ical?reset=1&list=1&html=1',
     'CiviCRM - The Book' =>
-      'https://docs.civicrm.org/user/en/stable/',
+      'https://docs.civicrm.org/user/en/latest/',
     'CiviCRM Community Forums' =>
       'https://civicrm.stackexchange.com/',
     'PowerBase FAQs' =>
