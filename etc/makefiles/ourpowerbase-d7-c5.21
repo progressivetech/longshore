@@ -20,7 +20,7 @@ projects[drupal][version] = "7.67"
 projects[civicrm][type] = "module" 
 projects[civicrm][directory_name] = "civicrm" 
 projects[civicrm][download][type] = "git" 
-projects[civicrm][download][revision] = "d3a40241d4f0a6ec81e071e64e32f60bc536abda"
+projects[civicrm][download][revision] = "4fb2a7ab516bc51c55d42dfb8fde250ff4f501b7"
 projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
 
 ; Packages
@@ -47,7 +47,7 @@ projects[page_theme][type] = "module"
 projects[page_theme][version] = "1.1"
 
 projects[captcha][type] = "module"
-projects[captcha][version] = "1.6"
+projects[captcha][version] = "1.7"
 
 projects[recaptcha][type] = "module"
 projects[recaptcha][version] = "2.3"
