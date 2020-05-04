@@ -4,9 +4,11 @@ longshore helps configure [Progressive Technology Project](http://progressivetec
 
 It is a set of bash helper scripts providing a thin wrapper around docker commands.
 
-== Installing on Debian Stretch ==
+== Installing on Debian Buster ==
 
- * Install docker from docker repos. 
+ * Install docker.io and debootstrap from debian 
+
+ * Create `longshore` user.
 
  * mkdir /srv && chown longshore /srv
 
