@@ -45,6 +45,9 @@ function drush_stripe_fix_customers() {
   while($dao->fetch()) {
     $customer_id = $dao->id;
     $processor_id = $dao->processor_id;
+    if ($processor_id == 3) {
+      continue;
+    }
 
     if (!in_array($processor_id, $seen )){
       drush_log("Checking processor id $processor_id");
