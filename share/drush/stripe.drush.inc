@@ -37,7 +37,7 @@ function drush_stripe_fix_customers() {
   }
 
   // Iterate over all customers and search for the customer id in the pp id it's coded to
-  $sql = "SELECT id, processor_id FROM civicrm_stripe_customers ORDER BY processor_id";
+  $sql = "SELECT id, processor_id, email FROM civicrm_stripe_customers ORDER BY processor_id";
   $dao = CRM_Core_DAO::executeQuery($sql);
 
   $seen = [];
@@ -65,9 +65,12 @@ function drush_stripe_fix_customers() {
     catch (Stripe\Error\InvalidRequest $e) {
       drush_log("Could not find customer $customer_id in $processor_id");
       if (!array_key_exists($customer_id, $not_found)) {
-        $not_found[$customer_id] = [];
+        $not_found[$customer_id] = [
+          'processor_ids' => [],
+          'email' => $dao->email,
+        ];
       }
-      $not_found[$customer_id][] = $processor_id; 
+      $not_found[$customer_id]['processor_ids'][] = $processor_id;
     }
   }
 
@@ -76,17 +79,20 @@ function drush_stripe_fix_customers() {
   foreach($ppids as $processor_id => $apikey) {
     \Stripe\Stripe::setApiKey($apikey);
 
-    foreach($not_found as $customer_id => $not_found_in_processor_ids) {
+    foreach($not_found as $customer_id => $values) {
+
+      $not_found_in_processor_ids = $values['processor_ids'];
       if (!in_array($processor_id, $not_found_in_processor_ids)) {
         try {
           $cust = \Stripe\Customer::retrieve($customer_id);
           // We found it! Make sure there isn't already one in there.
-          $sql = "SELECT id FROM civicrm_stripe_customers WHERE processor_id = $processor_id AND id = '$customer_id'";
+          $sql = "SELECT id FROM civicrm_stripe_customers WHERE processor_id = $processor_id AND email = '$email'";
           $dao = CRM_Core_DAO::executeQuery($sql);
           if ($dao->N == 0) {
             $sql = "UPDATE civicrm_stripe_customers SET processor_id = $processor_id WHERE id = '$customer_id';";
           }
           else {
+            // We already have this email with this processor_id, we can simply delete this extra one.
             $sql = "DELETE from civicrm_stripe_customers WHERE id = '$customer_id'";
           }
           echo "$sql\n";
