@@ -80,7 +80,15 @@ function drush_stripe_fix_customers() {
       if (!in_array($processor_id, $not_found_in_processor_ids)) {
         try {
           $cust = \Stripe\Customer::retrieve($customer_id);
-          $sql = "UPDATE civicrm_stripe_customers SET processor_id = $processor_id WHERE id = '$customer_id';";
+          // We found it! Make sure there isn't already one in there.
+          $sql = "SELECT id FROM civicrm_customers WHERE processor_id = $processor_id AND id = '$customer_id'";
+          $dao = CRM_Core_DAO::executeQuery($sql);
+          if ($dao->N == 0) {
+            $sql = "UPDATE civicrm_stripe_customers SET processor_id = $processor_id WHERE id = '$customer_id';";
+          }
+          else {
+            $sql = "DELETE from civicrm_stripe_customers WHERE id = '$customer_id'";
+          }
           echo "$sql\n";
         }
         catch (Stripe\Error\InvalidRequest $e) {
