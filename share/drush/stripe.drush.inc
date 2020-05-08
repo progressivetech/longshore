@@ -13,6 +13,8 @@ function stripe_drush_command() {
   $items = array();
   $items['stripe-sync-plans'] =
     array('description' => "Ensure all stripe recurring payment plans in database are configured in stripe.");
+  $items['stripe-fix-customers'] =
+    array('description' => "Ensure all stripe customers are assigned to the right ppid.");
   $items['stripe-repair-subs'] = array(
     'description' => "Given a file with a list of subscription/customer pairs, try to re-create the right data so they get processed.",
     'options' => array(
@@ -23,6 +25,71 @@ function stripe_drush_command() {
   return $items;
 }
 
+
+function drush_stripe_fix_customers() {
+  _civicrm_init();
+  // First, get a list of all payment processor ids
+  $sql = "SELECT pp.id, password FROM civicrm_payment_processor pp JOIN civicrm_payment_processor_type pt ON pp.payment_processor_type_id = pt.id WHERE pt.name = 'Stripe'";
+  $ppids = [];
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  while ($dao->fetch()) {
+    $ppids[$dao->id] = $dao->password;
+  }
+
+  // Iterate over all customers and search for the customer id in the pp id it's coded to
+  $sql = "SELECT id, processor_id FROM civicrm_stripe_customers ORDER BY processor_id";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+
+  $seen = [];
+  $not_found = [];
+  while($dao->fetch()) {
+    $customer_id = $dao->id;
+    $processor_id = $dao->processor_id;
+
+    if (!in_array($processor_id, $seen )){
+      drush_log("Checking processor id $processor_id");
+      $apikey = $ppids[$processor_id];
+      \Stripe\Stripe::setApiKey($apikey);
+      $seen[] = $processor_id;
+    }
+
+    //drush_log("Looking for customer $customer_id");
+    echo ".";
+    try {
+      $cust = \Stripe\Customer::retrieve($customer_id);
+      // drush_log("Found customer $customer_id");
+      if(isset($cust->deleted) && $cust->deleted) {
+        drush_log("customer $customer_id is deleted");
+      }
+    }
+    catch (Stripe\Error\InvalidRequest $e) {
+      drush_log("Could not find customer $customer_id in $processor_id");
+      if (!array_key_exists($customer_id, $not_found)) {
+        $not_found[$customer_id] = [];
+      }
+      $not_found[$customer_id][] = $processor_id; 
+    }
+  }
+
+  // Now iterate over the ones not found and see if we can find them.
+  drush_log("Looking for not founds...");
+  foreach($ppids as $processor_id => $apikey) {
+    \Stripe\Stripe::setApiKey($apikey);
+
+    foreach($not_found as $customer_id => $not_found_in_processor_ids) {
+      if (!in_array($processor_id, $not_found_in_processor_ids)) {
+        try {
+          $cust = \Stripe\Customer::retrieve($customer_id);
+          $sql = "UPDATE civicrm_stripe_customers SET processor_id = $processor_id WHERE id = '$customer_id';";
+          echo "$sql\n";
+        }
+        catch (Stripe\Error\InvalidRequest $e) {
+          continue; 
+        }     
+      }
+    }
+  }
+}
 /*
  * If a stripe subscription doesn't match anything in the civicrm_stripe_subscription table
  * we may be able to fix it. You first have to use the Stripe.ListEvents api to find all the
