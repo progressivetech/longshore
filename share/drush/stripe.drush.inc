@@ -29,7 +29,7 @@ function stripe_drush_command() {
 function drush_stripe_fix_customers() {
   _civicrm_init();
   // First, get a list of all payment processor ids
-  $sql = "SELECT pp.id, password FROM civicrm_payment_processor pp JOIN civicrm_payment_processor_type pt ON pp.payment_processor_type_id = pt.id WHERE pt.name = 'Stripe'";
+  $sql = "SELECT pp.id, password FROM civicrm_payment_processor pp JOIN civicrm_payment_processor_type pt ON pp.payment_processor_type_id = pt.id WHERE pt.name = 'Stripe' AND id != 3";
   $ppids = [];
   $dao = CRM_Core_DAO::executeQuery($sql);
   while ($dao->fetch()) {
@@ -82,6 +82,7 @@ function drush_stripe_fix_customers() {
     foreach($not_found as $customer_id => $values) {
 
       $not_found_in_processor_ids = $values['processor_ids'];
+      $email = $values['email'];
       if (!in_array($processor_id, $not_found_in_processor_ids)) {
         try {
           $cust = \Stripe\Customer::retrieve($customer_id);
