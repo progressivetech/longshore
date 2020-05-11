@@ -18,7 +18,11 @@ db="$3"
 # Platform can either be the name or the path. But, we want the name.
 platform=$(basename "$4")
 
-[ -z "$db" ] && db="db${site}"
+if [ -z "$db" ]; then
+  long_set_default_db "$site"
+  db="$LONG_DEFAULT_DB"
+fi
+
 [ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
 
 long_log "Site: %s, DB: %s, Platform: %s\n" info "$site" "$db" "$platform"
