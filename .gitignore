@@ -1,6 +1,7 @@
 platforms
 services
 etc/longshore.conf
+etc/my.cnf
 share/drush/pbd
 backups
 ptp-backups
