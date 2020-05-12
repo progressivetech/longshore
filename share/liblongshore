@@ -120,7 +120,7 @@ long_container_running() {
   local name="$1"
   [ -z "$name" ] && return 1
 
-  if [ "$name" = "dockerhost" ];then
+  if [ "$name" = "mysqlhost" ];then
     return 0
   fi
 
@@ -395,8 +395,8 @@ long_container_up() {
   local db="$3"
   local platform="$4"
 
-  if [ "$type" = "mysql" -a "$name" = "dockerhost" ]; then
-    # dockerhost mysql server should always be running.
+  if [ "$type" = "mysql" -a "$name" = "mysqlhost" ]; then
+    # mysqlhost mysql server should always be running.
     return
   fi
 
@@ -411,7 +411,7 @@ long_container_up() {
 
   if ! long_container_running "$label"; then
     long_log "Starting container (%s)" info "$label"
-    if [ "$type" = "site"  -a "$db" != "dockerhost" ]; then
+    if [ "$type" = "site"  -a "$db" != "mysqlhost" ]; then
       # Ensure db container is running first.
       long_set_site_db_host "$name"
       long_container_up mysql "$LONG_SITE_DB_HOST"
@@ -443,7 +443,7 @@ long_nginx_reload() {
 long_set_mysql_port() {
   local name="$1"
 
-  if [ "$name" == "dockerhost" ]; then
+  if [ "$name" == "mysqlhost" ]; then
     LONG_DB_PORT=3306
     return
   fi
@@ -547,7 +547,7 @@ long_create_db() {
     long_generate_my_cnf "$dir" "$LONG_PASSWORD" "$LONG_DB_PORT" "$dbuser" "$dbname"
   fi
 
-  if [ "$dbhost" != "dockerhost" ]; then
+  if [ "$dbhost" != "mysqlhost" ]; then
     while ! long_up_long_enough "$dbhost" 60; do
       long_log "Waiting 10 more seconds to ensure database has started." info
       sleep 10 
@@ -596,7 +596,7 @@ long_execute_site_query() {
 
   long_set_site_db_host "$site"
 
-  if [ "$LONG_SITE_DB_HOST" != "dockerhost" ]; then
+  if [ "$LONG_SITE_DB_HOST" != "mysqlhost" ]; then
     # Make sure the db container exists
     long_container_exists "$LONG_SITE_DB_HOST"
 
@@ -636,8 +636,8 @@ long_execute_root_query() {
     long_die "Can't find file with queries to execute."
   fi
 
-  # "dockerhost" means use the one central database, not a designated container.
-  if [ "$db" == "dockerhost" ]; then
+  # "mysqlhost" means use the one central database, not a designated container.
+  if [ "$db" == "mysqlhost" ]; then
     mycnf="${LONG_ETC}/my.cnf"
   else
     # Make sure the db container exists
@@ -801,8 +801,8 @@ long_exec_in_container() {
 long_create_mysql_container() {
   local name="$1"
 
-  if [ "$name" = "dockerhost" ]; then
-    long_die "Not creating dockerhost database. Fix this code."
+  if [ "$name" = "mysqlhost" ]; then
+    long_die "Not creating mysqlhost database. Fix this code."
   fi
 
   if [ -z "$name" ]; then
@@ -1037,7 +1037,7 @@ long_create_site_container() {
     fi
   fi
 
-  if [ "$db" != "dockerhost" ]; then
+  if [ "$db" != "mysqlhost" ]; then
     # Ensure that the database container exists and is running. It has to
     # be running, not just created, so we can create the database and database
     # username/password.
@@ -1085,10 +1085,20 @@ long_create_site_container() {
   # Ensure the container is accessible on localhost so nginx can reach it.
   local publish="-p 127.0.0.1:$LONG_PHP_PORT:9000"
 
+  # We need to add an /etc/hosts entry for the host so that esmtp-run 
+  # can relay email via the host (it's configured in the container in
+  # /etc/esmtprc).
+  local ip=$(ip addr show dev docker0 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
+
   # Make sure we can communicate with the db container.
   local link=
-  if [ "$db" != "dockerhost" ]; then
+  local addhost=
+
+  if [ "$db" != "mysqlhost" ]; then
     link="--link $db:$db"
+    addhost="--add-host dockerhost:$ip"
+  else
+    addhost="--add-host dockerhost:$ip --add-host mysqlhost:$LONG_MYSQL_HOST_IP"
   fi
 
   # If this is a dev site, we also need to link to the smtp container
@@ -1097,14 +1107,9 @@ long_create_site_container() {
     link="$link --link smtp:smtp"
   fi
 
-  # We need to add an /etc/hosts entry for the host so that esmtp-run 
-  # can relay email via the host (it's configured in the container in
-  # /etc/esmtprc).
-  local ip=$(ip addr show dev docker0 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
-  
   # Docker
   docker $LONG_DOCKER_LOG_ARG create --log-driver "$LONG_DEFAULT_LOG_DRIVER" --name "$site" \
-    --add-host "dockerhost:$ip" \
+    $addhost \
     -v "${LONG_SRV}/platforms/${platform}:/var/www/powerbase" \
     -v "${dir}/drupal:/var/www/powerbase/sites/default" \
     -v "${LONG_SHARE}/drush:/var/www/.drush" \
@@ -1198,7 +1203,7 @@ long_create_container() {
       if [ -z "$db_host" ]; then
         local settings="${LONG_SRV}/services/sites/${name}/drupal/settings.php"
         if [ -f "$settings" ]; then
-          db_host=$(egrep "'host' => '(dockerhost|db[0-9a-z-]+)'," "$settings" | cut -d'>' -f2 | tr -d "', ")
+          db_host=$(egrep "'host' => '(mysqlhost|db[0-9a-z-]+)'," "$settings" | cut -d'>' -f2 | tr -d "', ")
         fi 
         
       fi
@@ -1239,10 +1244,10 @@ long_set_site_db_host() {
   local site="$1"
   LONG_SITE_DB_HOST=$(docker $LONG_DOCKER_LOG_ARG inspect -f '{{.HostConfig.Links}}' "$site"|  egrep -o "/db[0-9a-z-]+:" | tr -d '/:')
 
-  # If not database container is set in the site container, then we assume it's using the shared dockerhost
+  # If not database container is set in the site container, then we assume it's using the shared mysqlhost
   # container.
   if [ -z "$LONG_SITE_DB_HOST" ]; then
-    LONG_SITE_DB_HOST=dockerhost
+    LONG_SITE_DB_HOST=mysqlhost
   fi
 }
 
@@ -1654,7 +1659,7 @@ long_destroy_site() {
   if [ -n "$LONG_SITE_DB_HOST" -a "$LONG_SITE_DB_HOST" != "<no value>" ]; then
 
     # Ensure the db container is running so we can drop the database.
-    if [ $"LONG_SITE_DB_HOST" != "dockerhost" ]; then
+    if [ $"LONG_SITE_DB_HOST" != "mysqlhost" ]; then
       long_container_up mysql "$LONG_SITE_DB_HOST"
       while ! long_up_long_enough "$LONG_SITE_DB_HOST" 60; do
         long_log "Waiting 10 more seconds to ensure database has started." info
@@ -1789,7 +1794,7 @@ long_set_disabled_sites() {
 long_set_default_db() {
   site="$1"
   if [ -f "$LONG_ETC"/my.cnf ]; then
-    LONG_DEFAULT_DB="dockerhost"
+    LONG_DEFAULT_DB="mysqlhost"
   else
     LONG_DEFAULT_DB="db${site}"
   fi
@@ -1854,7 +1859,7 @@ long_launch_site_sql_cli() {
 # Access the given database as root via mysql cli
 long_launch_root_sql_cli() {
   local db="$1"
-  if [ "$db" == "dockerhost" ]; then
+  if [ "$db" == "mysqlhost" ]; then
     local mycnf="${LONG_ETC}/my.cnf"
   else
     local mycnf="${LONG_SRV}/services/databases/${db}/my.cnf"
@@ -2172,7 +2177,7 @@ long_recreate_container() {
       # looking at the settings.php file
       local settings="${LONG_SRV}/services/sites/${container}/drupal/settings.php"
       if [ -f "$settings" ]; then
-        LONG_SITE_DB_HOST=$(egrep "'host' => '(dockerhost|db[0-9a-z-]+)'," "$settings" | cut -d'>' -f2 | tr -d "', ")
+        LONG_SITE_DB_HOST=$(egrep "'host' => '(mysqlhost|db[0-9a-z-]+)'," "$settings" | cut -d'>' -f2 | tr -d "', ")
       fi
       if [ -z "$LONG_SITE_DB_HOST" -o -z "$LONG_SITE_PLATFORM" -o "$LONG_SITE_DB_HOST" = "<no value>" ]; then
         # Die before we actually delete this container.
