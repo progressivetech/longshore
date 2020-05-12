@@ -1,0 +1,11 @@
+#!/bin/bash
+
+site="$1"
+
+sibling=$(ptp-get-sibling "$site")
+filename="/srv/longshore/backups/${site}.preupgrade.tar.gz"
+#filename="/srv/longshore/backups/${site}.20200401.tar.gz"
+ssh "root@${sibling}.mayfirst.org" "cd /tmp && tar -xzvf '$filename' '$site/backup/$site.sql.gz'"
+rsync --progress "root@$sibling.mayfirst.org:/tmp/$site/backup/$site.sql.gz" .
+ssh "root@${sibling}.mayfirst.org" "rm '/tmp/$site/backup/$site.sql.gz' && rmdir '/tmp/$site/backup' && rmdir '/tmp/$site'"
+
