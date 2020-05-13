@@ -159,8 +159,13 @@ long_generate_my_cnf() {
 
 # Generate a random password
 long_pwgen() {
+  size="$1"
+
+  if [ -z "$size" ]; then
+    size=25
+  fi
   # Excluding characters that commonly cause problems. Sigh.
-  LONG_PASSWORD=$(hexdump -e '"%_p"' /dev/urandom | tr -d '[:punct:] \n' | head -c 25)
+  LONG_PASSWORD=$(hexdump -e '"%_p"' /dev/urandom | tr -d '[:punct:] \n' | head -c "$size")
 }
 
 # Output logging info based on log level
@@ -899,7 +904,7 @@ long_create_phpmyadmin_container() {
   publish="-p 127.0.0.1:$LONG_PHP_PORT:9000"
 
   # Copy in the config.inc.php.sample file with blowfish secret
-  long_pwgen
+  long_pwgen "50"
   cat ${LONG_SHARE}/templates/phpmyadmin.config.inc.php.sample | sed "s/BLOWFISHSECRET/$LONG_PASSWORD/" \
     > "${dir}/src/config.inc.php" 
 
