@@ -1098,7 +1098,7 @@ long_create_site_container() {
     link="--link $db:$db"
     addhost="--add-host dockerhost:$ip"
   else
-    addhost="--add-host dockerhost:$ip --add-host mysqlhost:$LONG_MYSQL_HOST_IP"
+    addhost="--add-host dockerhost:$ip --add-host mysqlhost:$ip"
   fi
 
   # If this is a dev site, we also need to link to the smtp container
