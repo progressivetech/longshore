@@ -314,6 +314,10 @@ long_phpmyadmin_is_latest() {
 # This variable containing the names of all database containers
 long_set_db_containers() {
   LONG_DB_CONTAINERS=$(ls "${LONG_SRV}/services/databases/" | grep -v "lost+found")
+  if [ -f "$LONG_ETC"/my.cnf ]; then
+    local ip=$(ip addr show dev docker0 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
+    LONG_DB_CONTAINERS="$LONG_DB_CONTAINERS $ip"
+  fi
 }
 
 # Create if necessary the given image
