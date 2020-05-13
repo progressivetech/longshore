@@ -881,7 +881,7 @@ long_create_phpmyadmin_container() {
 
   if [ -f "$LONG_ETC/my.cnf" ]; then
     # We need the address of the central db
-    ip addr show dev docker0 | grep "inet " | awk '{print $2}' | cut -d/ -f1 >> "${dir}/src/servers.list"
+    echo "$LONG_MYSQL_HOST_IP" >> "${dir}/src/servers.list"
   fi
 
   # Create the --link argument
@@ -1103,7 +1103,7 @@ long_create_site_container() {
     link="--link $db:$db"
     addhost="--add-host dockerhost:$ip"
   else
-    addhost="--add-host dockerhost:$ip --add-host mysqlhost:$ip"
+    addhost="--add-host dockerhost:$ip --add-host mysqlhost:$LONG_MYSQL_HOST_IP"
   fi
 
   # If this is a dev site, we also need to link to the smtp container
