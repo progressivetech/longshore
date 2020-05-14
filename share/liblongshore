@@ -1678,7 +1678,7 @@ long_destroy_site() {
   if [ -n "$LONG_SITE_DB_HOST" -a "$LONG_SITE_DB_HOST" != "<no value>" ]; then
 
     # Ensure the db container is running so we can drop the database.
-    if [ $"LONG_SITE_DB_HOST" != "mysqlhost" ]; then
+    if [ "$LONG_SITE_DB_HOST" != "mysqlhost" ]; then
       long_container_up mysql "$LONG_SITE_DB_HOST"
       while ! long_up_long_enough "$LONG_SITE_DB_HOST" 60; do
         long_log "Waiting 10 more seconds to ensure database has started." info
