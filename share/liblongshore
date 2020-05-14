@@ -1687,9 +1687,10 @@ long_destroy_site() {
     rm "$temp"
     # If we are using new style db hosts - one per site - we should drop the db
     # host. If we are using old style hosts (db01, db02, which are sometimes shared)
-    # we should not drop the host.
-    # Only prompt to drop the db host if we are NOT using the db01 style name.
-    if ! echo "$LONG_SITE_DB_HOST" | egrep 'db[0-9]+$'; then
+    # we should not drop the host. Also, don't try to drop the db host if we are using
+    # brand new mysqlhost.
+    # Only prompt to drop the db host if we are NOT using the db01 style name and NOT mysqlhost.
+    if "$LONG_SITE_DB_HOST" != "mysqlhost" && ! echo "$LONG_SITE_DB_HOST" | egrep 'db[0-9]+$'; then
       long_prompt "Deleting DB host" "$LONG_SITE_DB_HOST"
       if [ "$reply" = "y" ]; then
         long_log "Stopping and Dropping db container (%s)." info "$LONG_SITE_DB_HOST"
