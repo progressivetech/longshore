@@ -147,7 +147,12 @@ long_generate_my_cnf() {
 
   [ -z "$user" ] && user=root
 
-  printf "[client]\nuser=%s\npassword=%s\nport=%s\nhost=127.0.0.1\n" \
+  host_ip=127.0.0.1
+  if [ -f "$LONG_ETC/my.cnf" ]; then
+    # We need the address of the central db
+    host_ip="$LONG_MYSQL_HOST_IP"
+  fi
+  printf "[client]\nuser=%s\npassword=%s\nport=%s\nhost=$host_ip\n" \
     "$user" "$password" "$port" > \
     "$dir"/my.cnf
 
