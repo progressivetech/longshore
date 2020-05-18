@@ -1,11 +1,12 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-transfer <site> <sibling>
+long_usage_message="usage: $(basename $0) site-transfer <site> <sibling> [db-host]
 Move a site from the current sibling to a new sibling.
 
 Arguments
   <site> - The site to transfer.
-  <sibling> - The sibling to transfer the site to."
+  <sibling> - The sibling to transfer the site to.
+  <db-host> - Optionally provide db host on target"
 
 long_check_args "$2" "$#" 2
 
