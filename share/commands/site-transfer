@@ -11,6 +11,7 @@ long_check_args "$2" "$#" 2
 
 site="$2"
 sibling="$3"
+db_host="$4"
 
 # Run some sanity checks.
 if [ ! -d "${LONG_SRV}/services/sites/${site}" ]; then
@@ -35,7 +36,11 @@ fi
 # Record existing platform
 long_set_site_platform "$site"
 platform="$LONG_SITE_PLATFORM"
-db_host="db${site}"
+
+if [ -z "$db_host" ]; then
+  db_host=$(long_set_default_db "$site")
+fi
+
 
 # Empty sessions table for quicker restore and to ensure everyone is 
 # logged out for upgrade.
