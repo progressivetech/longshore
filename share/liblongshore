@@ -1485,7 +1485,7 @@ long_configure_site() {
 
   # Set PTP configurations. 
   long_log "Running drush ptp-configure" info
-  long_exec_drush_cmd "$site" "ptp-configure" "LONG_LIVE"
+  long_exec_drush_cmd "$site" "ptp-configure" "LONG_LIVE LONG_OUTBOUND_MAIL_HOST"
 
   # Ensure CIVICRM_MAIL_SMARTY is configured so we can use smarty in our
   # mail templates.
@@ -1513,7 +1513,7 @@ long_configure_site() {
   long_configure_imap "$site"
   long_log "Running drush pbd-configure" info
 
-  local envvars="LONG_GOOGLE_RECAPTCHA_SECRET_KEY LONG_GOOGLE_RECAPTCHA_SITE_KEY LONG_GOOGLE_MAP_GEO_API_KEY LONG_LIVE LONG_OUTBOUND_MAIL_HOST"
+  local envvars="LONG_GOOGLE_RECAPTCHA_SECRET_KEY LONG_GOOGLE_RECAPTCHA_SITE_KEY LONG_GOOGLE_MAP_GEO_API_KEY LONG_LIVE"
   long_exec_drush_cmd "$site" "-y pbd-configure" "$envvars"
 }
 
