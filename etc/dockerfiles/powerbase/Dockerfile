@@ -16,6 +16,7 @@ RUN apt-get update && \
     php-gd \
     php-xml \
     php-soap \
+    php-bcmath \
     php-mbstring \
     php-imagick \
     php-zip \
