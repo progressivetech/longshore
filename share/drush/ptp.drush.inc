@@ -945,7 +945,12 @@ function drush_ptp_configure() {
 
   // These functions are running everytime site-configure is run.
   ptp_insert_contacts();
-  ptp_set_outbound_mail_settings();
+
+  $host = getenv('LONG_OUTBOUND_MAIL_HOST');
+  if (empty($host)) {
+    $host = 'bulk.ourpowerbase.net';
+  }
+  ptp_set_outbound_mail_settings($host);
   ptp_set_admin_password();
   ptp_create_help_menu();
 }

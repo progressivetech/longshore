@@ -108,3 +108,5 @@ LONG_SIBLING_CACHE=~/.long-sibling-cache
 
 # Set to IP of mysql dedicated kvm guest.
 LONG_MYSQL_HOST_IP=172.17.0.1
+
+LONG_OUTBOUND_MAIL_HOST=newyork.bulk.ourpowerbase.net
