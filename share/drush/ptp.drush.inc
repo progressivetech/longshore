@@ -1864,4 +1864,37 @@ function ptp_switch_custom_contact_group_to_custom_activity_group() {
   $sql = "ALTER TABLE `civicrm_value_detainee_deta_13` ADD CONSTRAINT `FK_civicrm_value_detainee_deta_13_entity_id` FOREIGN KEY (`entity_id`) REFERENCES `civicrm_activity` (`id`) ON DELETE CASCADE";
   $result = CRM_Core_DAO::executeQuery($sql);
 
+
+}
+
+/**
+ * Fix accidental merger of two similar iowacci contacts
+ */
+function ptp_iowacci_fix() {
+  // Iterate over the three backup data tables
+  //
+  $tables = [ 
+    'jamie_activities' => 'civicrm_activity_contact',
+    'jamie_contributions' => 'civicrm_contribution',
+    'jamie_participants' => 'civicrm_participant' 
+  ];
+
+  foreach($tables as $backup => $live) {
+    $sql = "SELECT * FROM $backup";
+
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    while ($dao->fetch()) {
+      $sql = "SELECT contact_id FROM $live WHERE id = %0";
+      $cdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $dao->id, 'Integer' ] ]);
+      $cdao->fetch();
+      if ($cdao->contact_id != $dao->contact_id) {
+        $sql = "UPDATE $live SET contact_id = %1 WHERE id = %0";
+        $args = [ 0 => [ $dao->id, 'Integer' ], 1 => [ $dao->contact_id, 'Integer' ]];
+        print_r($args);
+        echo "$sql\n";
+        // CRM_Core_DAO::executeQuery($sql, $args );
+      }
+
+    }
+  }
 }
