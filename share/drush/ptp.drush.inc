@@ -1892,7 +1892,7 @@ function ptp_iowacci_fix() {
         $args = [ 0 => [ $dao->id, 'Integer' ], 1 => [ $dao->contact_id, 'Integer' ]];
         print_r($args);
         echo "$sql\n";
-        // CRM_Core_DAO::executeQuery($sql, $args );
+        CRM_Core_DAO::executeQuery($sql, $args );
       }
 
     }
