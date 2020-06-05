@@ -10,7 +10,7 @@ api = "2"
 ;****************************************
 
 core = "7.x" 
-projects[drupal][version] = "7.70"
+projects[drupal][version] = "7.71"
 
 ;****************************************
 ; CiviCRM Core
@@ -317,7 +317,7 @@ projects[stripe][type] = "library"
 projects[stripe][destination] = "extensions"
 projects[stripe][download][type] = "git"
 projects[stripe][download][url] = "https://lab.civicrm.org/jamie/stripe.git"
-projects[stripe][download][revision] = "c415d58e3c2e7d6d8847f81e051dffe4ff341255"
+projects[stripe][download][revision] = "d9247368487bc42af7d92a96772d3b64c6d824b3"
 
 projects[firewall][type] = "library"
 projects[firewall][destination] = "extensions"
@@ -329,7 +329,7 @@ projects[mjwshared][type] = "library"
 projects[mjwshared][destination] = "extensions"
 projects[mjwshared][download][type] = "git"
 projects[mjwshared][download][url] = "https://lab.civicrm.org/extensions/mjwshared.git"
-projects[mjwshared][download][revision] = "d1f72da672b16228651ca6a2614f439dad3af3da"
+projects[mjwshared][download][revision] = "4a8f827a49f4f30c34d44ac8fe3e1c431353f738"
 
 projects[civisualize][type] = "library"
 projects[civisualize][destination] = "extensions"
