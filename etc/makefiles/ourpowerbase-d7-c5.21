@@ -279,8 +279,8 @@ projects[supersearchvsea][download][revision] = "2356b1361c97ccfb8c1ee2154ea1981
 projects[extendedreport][type] = "library"
 projects[extendedreport][destination] = "extensions"
 projects[extendedreport][download][type] = "git"
-projects[extendedreport][download][url] = "https://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport.git"
-projects[extendedreport][download][revision] = "ca1f2ce08c5de752dd5319aba5ab52f0e8a292d4"
+projects[extendedreport][download][url] = "git://dorvalina.mayfirst.org/extensions/nz.co.fuzion.extendedreport"
+projects[extendedreport][download][revision] = "4a731fcdc5bf4420c52de1a93c15320486a3409f"
 
 
 projects[iats][type] = "library"
