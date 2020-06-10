@@ -679,6 +679,12 @@ projects[doctorwhen][download][type] = "git"
 projects[doctorwhen][download][url] = "https://github.com/civicrm/org.civicrm.doctorwhen"
 projects[doctorwhen][download][revision] = "bd0b8d83cb947c17d660633b5c39e1aae2f2c06d"
 
+projects[civicontactapi][type] = "library"
+projects[civicontactapi][destination] = "extensions"
+projects[civicontactapi][download][type] = "git"
+projects[civicontactapi][download][url] = "https://github.com/agileware/au.com.agileware.civicontactapi"
+projects[civicontactapi][download][revision] = "f2aeb838d1f2d570bd997f579bba5a9165b9e518"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
