@@ -22,16 +22,16 @@ LONG_CRITICAL_EMAIL="pb-alert-critical@progressivetech.org"
 LONG_DEFAULT_LOG_LEVEL=error
 LONG_DEFAULT_LOG_DRIVER=journald
 
-LONG_NON_PRODUCTION_REGEXP="^(clone|sandbox|demo|training|henry|tomas|mark|alice|grits|bacon|granola)"
-LONG_DEFAULT_PLATFORM=ourpowerbase-d7-c4.6
-LONG_DEFAULT_DOMAIN=animal
+LONG_NON_PRODUCTION_REGEXP="^(clone|sandbox|demo|training|alice)"
+LONG_DEFAULT_PLATFORM=ourpowerbase-d7-c5.21
+LONG_DEFAULT_DOMAIN=ourpowerbase.net
 
 # When setting up web sites, should we enable https?
-LONG_HTTPS_ENABLED=n
+LONG_HTTPS_ENABLED=y
 
 # Allow us to override how drush is invoked using the LONG_DRUSH_ARGS
 # environment variable.
-LONG_DRUSH="/usr/bin/drush $LONG_DRUSH_ARGS"
+LONG_DRUSH="/usr/local/bin/drush $LONG_DRUSH_ARGS"
 
 # phpmyadmin URL
 LONG_PHPMYADMIN_URL=p1.ourpowerbase.net
@@ -40,20 +40,21 @@ LONG_PHPMYADMIN_URL=p1.ourpowerbase.net
 LONG_NGINX_SITES_ENABLED=/etc/nginx/sites-enabled
 
 # Whether or not this is a live server as opposed to a local dev instance
-LONG_LIVE=n
+LONG_LIVE=y
 
 # Path to tls related files  for nginx (optional)
 # If you comment out these variables, then https won't be enabled.
-# LONG_TLS_KEY_PATH=/etc/ssl/private/wildcard.ourpowerbase.net.key
-# LONG_X509_CERT_PATH=/etc/ssl/wildcard.ourpowerbase.net.crt
-# LONG_DH_PARAM_PATH=/etc/ssl/dhparam.pem
+LONG_TLS_KEY_PATH=/etc/ssl/private/wildcard.ourpowerbase.net.key
+LONG_X509_CERT_PATH=/etc/ssl/wildcard.ourpowerbase.net.crt
+LONG_DH_PARAM_PATH=/etc/ssl/dhparam.pem
 # This path holds the generic nginx tls configuration.
-# LONG_NGINX_TLS_PATH=/etc/nginx/tls.conf
+LONG_NGINX_TLS_PATH=/etc/nginx/tls.conf
 
 # Indicate the starting port that MySQL containers should listen on from 
 # the host. The first MySQL db will use this port. The next will use this
 # port + 1, etc.
 LONG_MYSQL_START_PORT=10000
+-LONG_MYSQL_HOST_IP=1.1.1.1
 
 # Indicate the starting port that PHP containers should listen on from 
 # the host. The first PHP container will use this port. The next will use this
@@ -61,7 +62,7 @@ LONG_MYSQL_START_PORT=10000
 LONG_PHP_START_PORT=11000
 
 # The public IP address of the host computer
-LONG_IP_ADDR=
+LONG_IP_ADDR=1.1.1.1
 
 # The command used to manage IMAP user accounts. Set to /bin/true to
 # disable configuring IMAP users. Or set to: sudo /usr/local/sbin/opb-manage-user
@@ -69,7 +70,7 @@ LONG_IP_ADDR=
 # or set to "ssh longshore@augusto.mayfirst.org sudo /usr/local/sbin/opb-manage-user"
 # to enable remote execution on a remote server (be sure to configure ssh
 # access on the remote server).
-LONG_MANAGE_IMAP_USER_CMD=/bin/true
+LONG_MANAGE_IMAP_USER_CMD="ssh aegir@augusto.mayfirst.org sudo /usr/local/sbin/opb-manage-user"
 
 # The host to configure CiviCRM to connect to when checking IMAP commands.
 # If LONG_MANAGE_IMAP_USER_CMD is set to /bin/true then this variable
@@ -83,11 +84,11 @@ LONG_IMAP_HOST=civimail.ourpowerbase.net
 # or set to "ssh longshore@marti.mayfirst.org sudo /usr/local/bin/longshore-dkim-generator"
 # to enable remote execution on a remote server (be sure to configure ssh
 # access on the remote server).
-LONG_GENERATE_DKIM_CMD=/bin/true
+LONG_GENERATE_DKIM_CMD="ssh longshore@marti.mayfirst.org sudo /usr/local/bin/longshore-dkim-generator"
 
 # If the host supports it, you can set a default memory limit for each
 # container (you have to edit /etc/default/grub and add GRUB_CMDLINE_LINUX="cgroup_enable=memory"
-LONG_DOCKER_MEMORY_LIMIT="-m 1GB"
+LONG_DOCKER_MEMORY_LIMIT="-m 8GB"
 
 # Set the name of the local user on the host. We have to ensure this user
 # has proper permissions.
@@ -97,17 +98,15 @@ LONG_HOST_USER=longshore
 # E_ERROR on production or E_ALL on dev.
 LONG_ERROR_REPORTING=E_ERROR
 
-# Set our Yahoo api key values
-LONG_YAHOO_BOSS_API_KEY=""
-LONG_YAHOO_BOSS_API_SECRET=""
+# Set our Google api key values
+LONG_GOOGLE_RECAPTCHA_SECRET_KEY=""
+LONG_GOOGLE_RECAPTCHA_SITE_KEY=""
 
 LONG_SIBLING_CACHE=~/.long-sibling-cache
 
+LONG_DEBIAN_VERSION=buster
 # Only used on dev sites - the host used when getting info about a site.
 # LONG_DEFAULT_HOST=neruda
-
-# Set to IP of mysql dedicated kvm guest.
-LONG_MYSQL_HOST_IP=172.17.0.1
 
 LONG_OUTBOUND_MAIL_HOST=newyork.bulk.ourpowerbase.net
 
