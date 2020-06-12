@@ -98,13 +98,13 @@ LONG_ERROR_REPORTING=E_ERROR
 # Set our Google api key values
 LONG_GOOGLE_RECAPTCHA_SECRET_KEY=""
 LONG_GOOGLE_RECAPTCHA_SITE_KEY=""
+LONG_GOOGLE_MAP_GEO_API_KEY=""
 
 LONG_SIBLING_CACHE=~/.long-sibling-cache
 
 LONG_DEBIAN_VERSION=buster
 # Only used on dev sites - the host used when getting info about a site.
 # LONG_DEFAULT_HOST=neruda
-
 LONG_OUTBOUND_MAIL_HOST=newyork.bulk.ourpowerbase.net
 
 LONG_BACKUPS=/var/lib/longshore/backups
