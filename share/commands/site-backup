@@ -27,6 +27,11 @@ long_check_args "$2" "$#" 0
 
 hostname=$(hostname)
 backup_dir="${LONG_BACKUPS}"
+
+if [ -z "$backup_dir" ]; then
+  long_die "LONG_BACKUPS is not defined.\n"
+fi
+
 my_backup_dir="${backup_dir}/${hostname}"
 
 [ ! -d "${my_backup_dir}" ] && mkdir -p "${my_backup_dir}"
