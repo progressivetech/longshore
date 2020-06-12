@@ -22,7 +22,7 @@ LONG_CRITICAL_EMAIL="pb-alert-critical@progressivetech.org"
 LONG_DEFAULT_LOG_LEVEL=error
 LONG_DEFAULT_LOG_DRIVER=journald
 
-LONG_NON_PRODUCTION_REGEXP="^(clone|sandbox|demo|training|alice)"
+LONG_NON_PRODUCTION_REGEXP="^(clone\.|sandbox\.|demo\.|training\.|alice\.)"
 LONG_DEFAULT_PLATFORM=ourpowerbase-d7-c5.21
 LONG_DEFAULT_DOMAIN=ourpowerbase.net
 
