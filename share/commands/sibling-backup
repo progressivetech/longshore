@@ -5,10 +5,10 @@ Sync backups from this sibling to the other siblings."
 
 long_check_args "$2" "$#" 0
 host=$(hostname)
-backups_path="/srv/longshore/ptp-backups/${host}"
+backups_path="${LONG_BACKUPS}/${host}"
 
-# We only rsync files younger than 6 months to all servers to save disk space.
+# We only rsync files younger than 3 months to all servers to save disk space.
 for sibling in $LONG_SIBLINGS; do
-  find "$backups_path" -type f -mtime -180 -exec rsync -t "{}" ${sibling}.mayfirst.org:"${backups_path}/" \;
+  find "$backups_path" -type f -mtime -90 -exec rsync -t "{}" ${sibling}.mayfirst.org:"${backups_path}/" \;
 done
 

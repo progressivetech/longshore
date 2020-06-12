@@ -58,11 +58,11 @@ if [ "$reply" = "y" ]; then
 fi
 
 me=$(hostname)
-backup_target_path="${LONG_SRV}/ptp-backups/${me}/${site}.daily.tar.gz"
+backup_target_path="${LONG_BACKUPS}/${me}/${site}.daily.tar.gz"
 
 long_prompt "Copying backup to new sibling..."
 if [ "$reply" = "y" ]; then
-  scp "${LONG_SRV}/backups/${site}.daily.tar.gz" "${sibling}.mayfirst.org:${backup_target_path}" || long_die "Failed to copy backup"
+  rsync "${LONG_BACKUPS}/${me}/${site}.daily.tar.gz" "${sibling}.mayfirst.org:${backup_target_path}" || long_die "Failed to copy backup"
 fi
 
 long_prompt "Disabing site on old sibling..."

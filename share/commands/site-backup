@@ -12,8 +12,9 @@ long_check_args "$2" "$#" 0
 
 # Our backup strategy is:
 # 1. Make daily backups that overwrite the previous day's backup
-# 2. Make first of the month backups that persist for 12 months
-# 3. Copy daily backups and the last 6 months backups to every server to
+# 2. Make first of the month backups that persist for 12 months on the server
+#    on which the database lives.
+# 3. Copy daily backups and the last 3 months backups to every server to
 #    facilitate restoring in case a server is lost (this step is handled by
 #    the sibling-backup script).
 
@@ -24,10 +25,11 @@ long_check_args "$2" "$#" 0
 # deleted from all directories. Backups older than 3 months are deleted from
 # directories not matching $hostname.
 
-backup_dir="${LONG_SRV}/backups"
 hostname=$(hostname)
+backup_dir="${LONG_BACKUPS}"
+my_backup_dir="${backup_dir}/${hostname}"
 
-[ ! -d "$backup_dir" ] && mkdir "$backup_dir"
+[ ! -d "${my_backup_dir}" ] && mkdir -p "${my_backup_dir}"
 
 # delete all backups older than one year from this server's backup directory.
 for file in $(find "${backup_dir}/" -mtime +365); do
@@ -35,10 +37,10 @@ for file in $(find "${backup_dir}/" -mtime +365); do
   rm "$file"
 done
 
-# delete all backups older than 6 months from non-$hostname directories..
-for dir in $(ls "${LONG_SRV}/ptp-backups/"); do
+# delete all backups older than 3 months from other servers backups to save
+for dir in $(ls "${backup_dir}/"); do
   if [ "$hostname" != "$dir" ]; then
-    for file in $(find "${LONG_SRV}/ptp-backups/${dir}" -type f -mtime +180 2>/dev/null); do
+    for file in $(find "${backup_dir}/${dir}" -type f -mtime +90 2>/dev/null); do
       long_log "Deleting %s because it is more than 3 months old." info "$file"
       rm "$file"
     done
@@ -133,11 +135,11 @@ for site in $sites; do
     # risk of overwriting a good backup, but I expect that all read errors will be
     # about a handful of temporary files. We don't want to abort the entire backup
     # because a few files were un-readable.
-    daily_path="$backup_dir/${site}.${base_name}.tar.gz"
+    daily_path="$my_backup_dir/${site}.${base_name}.tar.gz"
     long_log "Moving %s to %s." info "$target" "$daily_path"
     mv "$target" "$daily_path"
     if [ "$day" == "01" ]; then
-      monthly_path="$backup_dir/${site}.$date.tar.gz"
+      monthly_path="$my_backup_dir/${site}.$date.tar.gz"
       long_log "Creating monthly backup of %s to %s" "$site" "$monthly_path"
       cp "$daily_path" "$monthly_path"
     fi

@@ -65,7 +65,7 @@ for site in $sites; do
     # Copy the file to the sibling - use a temp file to avoid clobbering 
     # a file on the other side.
     dest=$(ssh "${LONG_SITE_SIBLING}.mayfirst.org" "mktemp")
-    scp -q "$query" "${LONG_SITE_SIBLING}.mayfirst.org:$dest"
+    rsync "$query" "${LONG_SITE_SIBLING}.mayfirst.org:$dest"
     ssh "${LONG_SITE_SIBLING}.mayfirst.org" LONG_LOG_LEVEL="$LONG_LOG_LEVEL" /srv/longshore/bin/longshore site-sqlq "$site" "$dest"
     if [ "$?" != "0" ]; then
       long_log "Rerunning %s for site %s over network failed." error "site-sqlq" "$site"

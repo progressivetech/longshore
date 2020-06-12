@@ -110,3 +110,5 @@ LONG_SIBLING_CACHE=~/.long-sibling-cache
 LONG_MYSQL_HOST_IP=172.17.0.1
 
 LONG_OUTBOUND_MAIL_HOST=newyork.bulk.ourpowerbase.net
+
+LONG_BACKUPS=/var/lib/longshore/backups
