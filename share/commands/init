@@ -231,6 +231,11 @@ if [ ! -d "$bash_completion_path" ] || [ ! -f "${bash_completion_path}/longshore
   fi
 fi
 
+# Add to PATH
+if ! grep /srv/longshore/bin /home/longshore/.profile > /dev/null; then
+  echo 'PATH="/srv/longshore/bin:$PATH"' >> /home/longshore/.profile
+fi
+
 # Check for some settings that should be set manually.
 
 # Ensure cron job is set.
