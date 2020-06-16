@@ -236,6 +236,13 @@ if ! grep /srv/longshore/bin /home/longshore/.profile > /dev/null; then
   echo 'PATH="/srv/longshore/bin:$PATH"' >> /home/longshore/.profile
 fi
 
+if ! grep '.config/bash_completion.d' /home/longshore/.profile >/dev/null; then
+  echo '
+for file in $(find ~/.config/bash_completion.d/ -type f -o -type l); do
+  source "$file"
+done' >> /home/longshore/.profile
+fi
+
 # Check for some settings that should be set manually.
 
 # Ensure cron job is set.
