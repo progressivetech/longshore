@@ -10,7 +10,7 @@ api = "2"
 ;****************************************
 
 core = "7.x" 
-projects[drupal][version] = "7.71"
+projects[drupal][version] = "7.72"
 
 ;****************************************
 ; CiviCRM Core
