@@ -317,7 +317,7 @@ projects[stripe][type] = "library"
 projects[stripe][destination] = "extensions"
 projects[stripe][download][type] = "git"
 projects[stripe][download][url] = "https://lab.civicrm.org/jamie/stripe.git"
-projects[stripe][download][revision] = "c415d58e3c2e7d6d8847f81e051dffe4ff341255"
+projects[stripe][download][revision] = "051b943baf5859d39d975dee07bb5eb49e05412b"
 
 projects[firewall][type] = "library"
 projects[firewall][destination] = "extensions"
@@ -329,7 +329,7 @@ projects[mjwshared][type] = "library"
 projects[mjwshared][destination] = "extensions"
 projects[mjwshared][download][type] = "git"
 projects[mjwshared][download][url] = "https://lab.civicrm.org/extensions/mjwshared.git"
-projects[mjwshared][download][revision] = "d1f72da672b16228651ca6a2614f439dad3af3da"
+projects[mjwshared][download][revision] = "b28b7af70e887b1e885643771b0f8b013d05be8d"
 
 projects[civisualize][type] = "library"
 projects[civisualize][destination] = "extensions"
@@ -684,6 +684,12 @@ projects[civicontactapi][destination] = "extensions"
 projects[civicontactapi][download][type] = "git"
 projects[civicontactapi][download][url] = "https://github.com/agileware/au.com.agileware.civicontactapi"
 projects[civicontactapi][download][revision] = "f2aeb838d1f2d570bd997f579bba5a9165b9e518"
+
+projects[sweetalert][type] = "library"
+projects[sweetalert][destination] = "extensions"
+projects[sweetalert][download][type] = "git"
+projects[sweetalert][download][url] = "https://lab.civicrm.org/extensions/sweetalert"
+projects[sweetalert][download][revision] = "dfc1d87b2a99674a490834cc500d66ca5090993e"
 
 ;****************************************
 ; Drupal themes 
