@@ -105,6 +105,6 @@ LONG_SIBLING_CACHE=~/.long-sibling-cache
 LONG_DEBIAN_VERSION=buster
 # Only used on dev sites - the host used when getting info about a site.
 # LONG_DEFAULT_HOST=neruda
-LONG_OUTBOUND_MAIL_HOST=newyork.bulk.ourpowerbase.net
+LONG_OUTBOUND_MAIL_HOST=newyork.bulk.progressivetech.org
 
 LONG_BACKUPS=/var/lib/longshore/backups
