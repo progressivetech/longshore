@@ -65,7 +65,7 @@ projects[views_data_export][type] = "module"
 projects[views_data_export][version] = "3.1"
 
 projects[webform][type] = "module"
-projects[webform][version] = "4.21"
+projects[webform][version] = "4.23"
 ; Path to fix obscure conditional bug. See https://www.drupal.org/node/2682441
 projects[webform][patch][] = "/srv/longshore/etc/makefiles/webform.patch"
 
@@ -76,7 +76,7 @@ projects[themekey][type] = "module"
 projects[themekey][version] = "3.4"
 
 projects[webform_civicrm][type] = "module"
-projects[webform_civicrm][version] = "4.28"
+projects[webform_civicrm][version] = "5.1"
 
 projects[options_element][type] = "module"
 projects[options_element][version] = "1.12"
