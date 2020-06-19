@@ -565,9 +565,9 @@ long_create_db() {
   fi
   long_execute_root_query "$dbhost" "$temp"
   # Refresh the list of mysql user into proxysql.
-  if [ -f /usr/local/sbin/proxysql-load ]; then
-    sudo /usr/local/sbin/proxysql-load
-  fi
+  #if [ -f /usr/local/sbin/proxysql-load ]; then
+  #  sudo /usr/local/sbin/proxysql-load
+  #fi
   rm "$temp"
 }
 
