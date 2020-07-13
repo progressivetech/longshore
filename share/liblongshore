@@ -737,6 +737,7 @@ long_set_docker_log_arg() {
 # Create civicrm settings file.
 long_create_civicrm_settings() {
   local site="$1"
+  local dir="${LONG_SRV}/services/sites/${site}"
 
   # Grant the longshore-php group write access to the container default dir so
   # it can create the civicrm.settings.php file (the longshore-php user should
