@@ -428,7 +428,7 @@ projects[flexmailer][download][revision] = "482da627d8c47843195d336d9e37521a7586
 projects[shoreditch][type] = "library"
 projects[shoreditch][destination] = "extensions"
 projects[shoreditch][download][type] = "git"
-projects[shoreditch][download][url] = "https://github.com/progressivetech/org.civicrm.shoreditch"
+projects[shoreditch][download][url] = "https://github.com/civicrm/org.civicrm.shoreditch.git"
 projects[shoreditch][download][revision] = "9d71e2974d1db00f0c08f42bfac6cab9d9f78c19"
 
 projects[exportpermission][type] = "library"
@@ -560,7 +560,7 @@ projects[remoteform][download][revision] = "989a4edbae48528d03a1dac81f50c0b3d4c0
 projects[civimobileapi][type] = "library"
 projects[civimobileapi][destination] = "extensions"
 projects[civimobileapi][download][type] = "git"
-projects[civimobileapi][download][url] = "https://lab.civicrm.org/jamie/civimobileapi"
+projects[civimobileapi][download][url] = "https://lab.civicrm.org/extensions/civimobileapi"
 ; See https://github.com/agiliway/com.agiliway.civimobileapi/issues/19
 projects[civimobileapi][directory_name] = "com.agiliway.civimobileapi"
 projects[civimobileapi][download][revision] = "035a456d3dfd594264d5b4a80f90c22d34d436c2"
@@ -664,7 +664,7 @@ projects[recentmenu][download][revision] = "33c9ca1da007c4e3d3ecc24edb5818e5f55e
 projects[extrafee][type] = "library"
 projects[extrafee][destination] = "extensions"
 projects[extrafee][download][type] = "git"
-projects[extrafee][download][url] = "https://github.com/mjwconsult/nz.co.fuzion.extrafee"
+projects[extrafee][download][url] = "https://github.com/fuzionnz/nz.co.fuzion.extrafee"
 projects[extrafee][download][revision] = "6bab6819f38a9bc6a20188bbc78db0feb1fe69a9"
 
 projects[qdep][type] = "library"
