@@ -39,6 +39,7 @@ RUN apt-get update && \
     xfonts-75dpi \
     xfonts-base \
     php-xdebug \
+    php-intl \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
