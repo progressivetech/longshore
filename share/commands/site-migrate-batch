@@ -220,13 +220,6 @@ for site in $sites; do
     long_log "upgrade:%s Fixed row format." info "$site"
   fi
 
-
-  # Ensure all managed entities have cleanup set to never.
-  temp=$(mktemp)
-  echo "UPDATE civicrm_managed SET cleanup = 'never';" > "$temp"
-  long_execute_site_query "$site" "$temp" 
-  rm "$temp"
-
   # Strip out any .beta2 tags.
   post_upgrade_version=$(long_execute_site_query "$site" "$temp" | tail -n1 | sed "s/\.beta[0-9]*$//") 
 
@@ -253,11 +246,6 @@ for site in $sites; do
   fi
   long_log "upgrade:%s Confirmed post upgrade database version" info "$site"
 
-  # Ensure mjwshared is installed if stripe is installed.
-  if ! long_exec_drush_cmd "$site" "ptp-mjwshared"; then
-    long_log "upgrade:%s Failed to install mjwshared." error "$site"
-    continue
-  fi
   long_log "upgrade:%s: Checked mjwshared ." info "$site"
   printf "."
 
