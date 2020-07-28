@@ -697,6 +697,18 @@ projects[contributiontransactlegacy][download][type] = "git"
 projects[contributiontransactlegacy][download][url] = "https://lab.civicrm.org/extensions/contributiontransactlegacy"
 projects[contributiontransactlegacy][download][revision] = "ae525ed70bcb5885b96ac95e45dd8389ccf7cb4e"
 
+projects[callnext][type] = "library"
+projects[callnext][destination] = "extensions"
+projects[callnext][download][type] = "git"
+projects[callnext][download][url] = "https://lab.civicrm.org/extensions/callnext"
+projects[callnext][download][revision] = "f1823a2e57069842d3bf9ba7830650874c7f2384"
+
+projects[civicase][type] = "library"
+projects[civicase][destination] = "extensions"
+projects[civicase][download][type] = "git"
+projects[civicase][download][url] = "https://lab.civicrm.org/extensions/civicase"
+projects[civicase][download][revision] = "2cb01d16ed69b22e728551222384a409ce3902ef"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
