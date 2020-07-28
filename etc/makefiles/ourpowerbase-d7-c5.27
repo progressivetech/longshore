@@ -706,7 +706,7 @@ projects[callnext][download][revision] = "f1823a2e57069842d3bf9ba7830650874c7f23
 projects[civicase][type] = "library"
 projects[civicase][destination] = "extensions"
 projects[civicase][download][type] = "git"
-projects[civicase][download][url] = "https://lab.civicrm.org/extensions/civicase"
+projects[civicase][download][url] = "https://github.com/civicrm/org.civicrm.civicase"
 projects[civicase][download][revision] = "2cb01d16ed69b22e728551222384a409ce3902ef"
 
 ;****************************************
