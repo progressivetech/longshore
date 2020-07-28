@@ -83,6 +83,14 @@ if [ -z "$source_platform_path_temp" ]; then
     long_die "Failed to make the site!"
   fi
 
+  # CiviCRM ship core extensions, which also have to be available in our special
+  # extensions directory.
+  if [ -d  ${source_platform_path_temp}/sites/all/modules/civicrm/ext ]; then
+    for ext in $(ls ${source_platform_path_temp}/sites/all/modules/civicrm/ext/); do
+      mv "${source_platform_path_temp}/sites/all/modules/civicrm/ext/$ext" ${source_platform_path_temp}/sites/all/extensions/
+    done
+  fi
+
   # Remove the install.php file. We don't need it becase we install via
   # drush and leaving it around is a security risk.
   # See https://www.drupal.org/PSA-2015-001.
@@ -114,6 +122,7 @@ if [ -z "$source_platform_path_temp" ]; then
   done
   cd "${source_platform_path_temp}"
 
+  
   # There is a complicated process for taking a CiviCRM git repo and turning it
   # into a safe and functional folder that can be used on a production CiviCRM
   # site. Our strategy is to use as much code as possible from the distmaker
@@ -134,12 +143,6 @@ if [ -z "$source_platform_path_temp" ]; then
   # These functions only available in ourpowerbase-d7-c4.6 and higher.
   long_log "Running dm_generate_vendor" info
   dm_generate_vendor "$SRC" > /dev/null || long_die "Failed to dm_generate_vendor"
-
-  if [ "$DM_VERSION" = "5.13.8" ]; then
-    # This is no longer needed after 5.13.
-    long_log "Running dm_generate_bower" info
-    dm_generate_bower "$SRC" > /dev/null || long_die "Failed to dm_generate_bower"
-  fi
 
   long_log "Running GenCode" info
   cwd=$(pwd)
@@ -204,6 +207,8 @@ if [ -z "$source_platform_path_temp" ]; then
   # Now, put our custom fonts in place. This allows for korean fonts in mailing
   # labels
   rsync -a "${LONG_SHARE}/fonts" "${source_platform_path_temp}/sites/all/libraries/"
+
+
 fi
 
 long_log "Moving platform into place." info

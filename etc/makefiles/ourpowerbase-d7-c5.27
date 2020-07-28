@@ -691,6 +691,12 @@ projects[deleteoldbulkmailings][download][type] = "git"
 projects[deleteoldbulkmailings][download][url] = "https://github.com/jitendrapurohit/nz.co.fuzion.deleteoldbulkmailings"
 projects[deleteoldbulkmailings][download][revision] = "759a2665d44d53bea3630d073b53385ee66ab017"
 
+projects[contributiontransactlegacy][type] = "library"
+projects[contributiontransactlegacy][destination] = "extensions"
+projects[contributiontransactlegacy][download][type] = "git"
+projects[contributiontransactlegacy][download][url] = "https://lab.civicrm.org/extensions/contributiontransactlegacy"
+projects[contributiontransactlegacy][download][revision] = "ae525ed70bcb5885b96ac95e45dd8389ccf7cb4e"
+
 ;****************************************
 ; Drupal themes 
 ;****************************************
