@@ -262,10 +262,10 @@ if ! grep 'cgroup_enable=memory swapaccount=1' /etc/default/grub >/dev/null; the
   printf "FYI, 'cgroup_enable=memory swapaccount=1' not set in /etc/default/grub.\n"
 fi
 
-if ! su - 'git config --global user.email' longshore >/dev/null; then
+if ! su - -c 'git config --global user.email' longshore >/dev/null; then
   printf "Please set git user email address for the longshore user with: git config --global user.email support@progressivetech.org\n";
 fi
 
-if ! su - 'git config --global user.name' longshore >/dev/null; then
+if ! su - -c 'git config --global user.name' longshore >/dev/null; then
   printf "Please set git user name address for the longshore user with: git config --global user.name 'PTP Support'\n";
 fi
