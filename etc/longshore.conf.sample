@@ -51,7 +51,7 @@ LONG_NGINX_TLS_PATH=/etc/nginx/tls.conf
 # the host. The first MySQL db will use this port. The next will use this
 # port + 1, etc.
 LONG_MYSQL_START_PORT=10000
--LONG_MYSQL_HOST_IP=1.1.1.1
+LONG_MYSQL_HOST_IP=1.1.1.1
 
 # Indicate the starting port that PHP containers should listen on from 
 # the host. The first PHP container will use this port. The next will use this
@@ -81,7 +81,7 @@ LONG_IMAP_HOST=civimail.ourpowerbase.net
 # or set to "ssh longshore@marti.mayfirst.org sudo /usr/local/bin/longshore-dkim-generator"
 # to enable remote execution on a remote server (be sure to configure ssh
 # access on the remote server).
-LONG_GENERATE_DKIM_CMD="ssh longshore@marti.mayfirst.org sudo /usr/local/bin/longshore-dkim-generator"
+LONG_GENERATE_DKIM_CMD=""ssh opendkim-creator@mailbulk001.mayfirst.org sudo /usr/local/bin/dkim-generate"
 
 # If the host supports it, you can set a default memory limit for each
 # container (you have to edit /etc/default/grub and add GRUB_CMDLINE_LINUX="cgroup_enable=memory"
