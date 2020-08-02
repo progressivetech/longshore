@@ -268,11 +268,11 @@ for site in $sites; do
   long_log "upgrade:%s Removed maintenance mode" info "$site"
   printf "."
 
-  if ! long_configure_site "$site"; then
-    long_log "upgrade:%s Failed to configure site" error "$site"
-    continue
-  fi
-  long_log "upgrade:%s Ran site-configure." info "$site"
+  #if ! long_configure_site "$site"; then
+  #  long_log "upgrade:%s Failed to configure site" error "$site"
+  #  continue
+  #fi
+  #long_log "upgrade:%s Ran site-configure." info "$site"
 
   if ! long_clear_cache "$site" all; then
     long_log "upgrade:%s Failed to clear cache" error "$site"
