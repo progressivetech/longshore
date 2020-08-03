@@ -31,7 +31,7 @@ startdate="$4"
 
 [ -z "$LONG_UPGRADE_VERSION" ] && long_die "Please set LONG_UPGRADE_VERSION to the version (e.g. 5.7.3) you expect the database to report when complete."
 
-if [ -n "$LONG_MIGRATE_CONF" ]
+if [ -n "$LONG_MIGRATE_CONF" ]; then
   path="$LONG_MIGRATE_CONF"
 else
   path="$HOME/.longshore.batch.migrate"
