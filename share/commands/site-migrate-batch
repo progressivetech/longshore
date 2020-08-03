@@ -125,6 +125,10 @@ for site in $sites; do
   if [ -z "$new_platform" -o -z "$new_version" ]; then
     long_die "Failed to parse new platform or new version. Check .longshore.batch.migrate file"
   fi
+  if [ ! -d "${LONG_SRV}/platforms/${new_platform}" ]; then
+    long_die "Can't find the new platform (%s)." 1 "$new_platform"
+  fi
+
   printf "\n____Migrating %s to platform %s running %s.____\n" "$site" "$new_platform" "$new_version"
   # Run some sanity checks.
   if ! long_check_site_exists "$site"; then
