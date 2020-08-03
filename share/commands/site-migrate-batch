@@ -113,8 +113,11 @@ long_prompt "Starting migration..."
 LONG_LOG_LEVEL=error
 
 for site in $sites; do
-  new_platform=$(grep ":$site:" "$path" | cut -d: -f3)
-  new_version=$(echo "$new_platform" | egrep -o "[0-9]+\.[0-9]+(\.[0-9]+)?$")
+  new_platform=$(grep ":$site:" "$path" | cut -d: -f3 | tr -d ' ')
+  new_version=$(echo "$new_platform" | egrep -o "[0-9]+\.[0-9]+(\.[0-9]+)?$" | tr -d ' ')
+  if [ -z "$new_platform" -o -z "$new_version" ]; then
+    long_die "Failed to parse new platform or new version. Check .longshore.batch.migrate file"
+  fi
   printf "\n____Migrating %s to platform %s running %s.____\n" "$site" "$new_platform" "$new_version"
   # Run some sanity checks.
   if ! long_check_site_exists "$site"; then
