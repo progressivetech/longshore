@@ -96,6 +96,12 @@ if [ "$action" = "create" ]; then
   long_die "Batch file created (%s)." 0 "$path"
 fi
 
+# Make a copy of $path to ensure we are working with consistent data
+# (the file might get changed while we are running).
+temp=$(mktemp)
+cp "$path" "$temp"
+path="$temp"
+
 # Get list of sites to upgrade today.
 today=$(date +%Y-%m-%d)
 sites=$(grep "^$today" "$path" | cut -d: -f2)
