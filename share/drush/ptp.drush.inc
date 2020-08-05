@@ -123,7 +123,18 @@ function ptp_drush_command() {
   $items['ptp-mjwshared'] = array(
     'description' => 'Install mjwshared extension of stripe is installed.',
   );
+
+  $items['ptp-ico'] = array(
+    'description' => 'Set favicon properly as global theme default',
+  );
   return $items;
+}
+
+function drush_ptp_ico() {
+  $theme_settings = variable_get('theme_settings');
+  $theme_settings['favicon_path'] = 'sites/all/extensions/setup/images/poweron.ico';
+  $theme_settings['default_favicon'] = 0;
+  variable_set('theme_settings', $theme_settings);
 }
 
 function drush_ptp_mjwshared() {
