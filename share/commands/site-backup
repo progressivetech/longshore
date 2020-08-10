@@ -37,7 +37,7 @@ my_backup_dir="${backup_dir}/${hostname}"
 [ ! -d "${my_backup_dir}" ] && mkdir -p "${my_backup_dir}"
 
 # delete all backups older than one year from this server's backup directory.
-for file in $(find "${backup_dir}/" ! -name 'lost+found' -type f -mtime +365); do
+for file in $(find "${backup_dir}/" -type f -mtime +365 2>/dev/null); do
   long_log "Deleting %s because it is more than a year old." info "$file"
   rm "$file"
 done
