@@ -88,7 +88,7 @@ projects[masquerade][type] = "module"
 projects[masquerade][version] = "1.0-rc7"
 
 projects[token][type] = "module"
-projects[token][version] = "1.6"
+projects[token][version] = "1.7"
 
 projects[migrate][type] = "module"
 projects[migrate][version] = "2.8"
