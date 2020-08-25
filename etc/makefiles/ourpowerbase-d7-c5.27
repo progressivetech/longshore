@@ -280,7 +280,7 @@ projects[extendedreport][type] = "library"
 projects[extendedreport][destination] = "extensions"
 projects[extendedreport][download][type] = "git"
 projects[extendedreport][download][url] = "git://git.progressivetech.org/extensions/nz.co.fuzion.extendedreport"
-projects[extendedreport][download][revision] = "d990e5ccac69500186773ba7daaf2c865f2d640d"
+projects[extendedreport][download][revision] = "524b307932b87a48b735fe1120c98dc86d040d8c"
 
 
 projects[iats][type] = "library"
