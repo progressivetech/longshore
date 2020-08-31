@@ -1,20 +1,28 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-cron [<site>]
-Runs both the drupal and CiviCRM cron job on the specified site or all
+long_usage_message="usage: $(basename $0) site-cron <site> <action>
+Runs drupal, civimail, and civicrm cron job on the specified site or all
 sites on this frontend of site is ommitted.
 
 Arguments
-  <site> - Optionally pass the site if you only want to run cron on that site."
+  <site> - Pass either the site you want to run on or --all for all on the
+given sibling
+  <action> - Which cron job to run. Either drupal, civimail or civicrm. If you
+  pass civicrm it will run all civi jobs, including civimail."
 
-long_check_args "$2" "$#" 0
+long_check_args "$2" "$#" 2
 
-# This scripts is designed to be run by a cron job that runs every 10 minutes.
-
-# If the site is specified, run on that site regardless of which sibling it is
-# on. However, if the site is not specified, run for all sites on this, and
-# only this, sibling (so it can be called by a cron job and not overlap with the
-# other siblings).
+# This scripts is designed to be run by a cron job. We are aiming for the following
+# times:
+#
+# drupal: all drupal cron jobs (typically none) every 4 hours
+# civicrm: all civicrm cron jobs, including mail and sms every 30 minutes
+# civimail: only civimail and civisms every 5 minutes (exluding 30 and 00)
+#
+# If the site is specified, run on that site (must be on the right sibling).
+# However, if --all is specificed, run for all sites on this, and only this,
+# sibling (so it can be called by a cron job and not overlap with the other
+# siblings).
 
 # Additinally, if we are called without specifying "site" - then we run for all
 # sites *in parallel* by calling this script a second time with the site
@@ -22,30 +30,45 @@ long_check_args "$2" "$#" 0
 # because we don't want one stuck cron job to stop other cron jobs from being
 # executed.
 
+sites="$2"
+action="$3"
 background=no
-if [ -n "$2" ]; then
-  sites="$2"
-else
-  # No site is specified, so we iterate over all of them, backgrounding
+
+if [ "$sites" = "--all" ]; then
+  # --all is specified, so we iterate over all of them, backgrounding
   # each one.
   background=yes
   hostname=$(hostname)
   long_set_sites "$hostname"
   sites="$LONG_SITES"
 fi
+
+if [ "$action" != "drupal" -a "$action" != "civimail" -a "$action" != "civicrm" ]; then
+  long_die "Please pass drupal, civimail or civicrm as the action."
+fi
+
+sleep_time=0
+
+# We want to spread out the cron jobs depending on how frequently they are run. This
+# helps us keep the CPU usage more consistent and avoid giant spikes on each cron job
+# run.
+if [ "$action" = "drupal" ]; then
+  sleep_time="60"
+elif [ "$action" = "civicrm" ]; then
+  sleep_time="10"
+elif [ "$action" = "civimail" ]; then
+  sleep_time="3"
+fi
+
 for site in $sites; do
   if [ "$background" = "yes" ]; then
     # Sleep for a brief interval between each job to avoid having all jobs hitting
     # the server at exactly the same time.
-    sleep 10 
-    $LONG_SRV/bin/longshore site-cron "$site" &
+    sleep "$sleep_time" 
+    $LONG_SRV/bin/longshore site-cron "$site" "$action" &
     continue
   fi
 
-  # This command never has more arguments than site-cron and the site. And
-  # if we just pass "$@" like we do for the other commands, we will lose
-  # the <site> if this command was called without a site argument.
-  long_rerun_over_network site-cron "$site" && continue
   # If the site is not running we can't run cron.
   if ! long_container_running "$site"; then
     long_log "Not executing cron for %s because it is not running." info "$site"
@@ -55,12 +78,18 @@ for site in $sites; do
   # Keep track of whether there is an error running this cron job or not.
   err=0
   declare -i start_ts=$(date +%s)
-  long_exec_drush_cmd "$site" "core-cron"
-  if [ "$?" -ne "0" ]; then
-    err="$?"
+
+  if [ "$action" = "drupal" ]; then
+    long_exec_drush_cmd "$site" "core-cron"
+  elif [ "$action" = "civimail" ]; then
+    long_exec_in_container "$site" "/usr/local/bin/cv api job.process_mailing --user=admin --cwd=/var/www/powerbase" >/dev/null
+    if [ "$?" -eq "0" ]; then
+      long_exec_in_container "$site" "/usr/local/bin/cv api job.process_sms --user=admin --cwd=/var/www/powerbase" >/dev/null
+    fi
+  elif [ "$action" = "civicrm" ]; then
+    long_exec_in_container "$site" "/usr/local/bin/cv api job.execute --user=admin --cwd=/var/www/powerbase" >/dev/null
   fi
-  declare -i end_drupal_ts=$(date +%s)
-  long_exec_drush_cmd "$site" "-u 1 -r /var/www/powerbase civicrm-api job.execute auth=0 -y"
+
   if [ "$?" -ne "0" ]; then
     err="$?"
   fi
@@ -76,27 +105,5 @@ for site in $sites; do
     echo $msg | \
       /usr/bin/mail -s "PowerBase site with cron job failing to run" \
       pb-alert-warning@progressivetech.org
-  fi
-
-  # Check for cron jobs that take longer then 20 minutes to complete.
-  declare -i elapsed=$(( $end_ts - $start_ts ))
-  declare -i limit=$(( 60 * 40 ))
-  if [ $elapsed -gt $limit ]; then
-    # Generate human readable numbers.
-    drupal_elapsed_minutes=$(echo "($end_drupal_ts - $start_ts)/60" | bc)
-    civicrm_elapsed_minutes=$(echo "($end_ts - $end_drupal_ts)/60" | bc)
-
-
-    msg=$(printf "Site: %s. Total elapsed: %s. It took %s minutes to complete the drupal cron job and %s minutes to complete the civicrm cron job.\n" \
-      "$site" "$elapsed" "$drupal_elapsed_minutes" "$civicrm_elapsed_minutes")
-
-    # Log it.
-    logger -t powerbase "$msg"
-
-    # Email it (no thanks - too much email!).
-    #echo $msg | \
-    #  /usr/bin/mail -s "PowerBase site with slow cron job" \
-    #  pb-alert-warning@progressivetech.org
-
   fi
 done
