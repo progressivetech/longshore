@@ -1416,7 +1416,7 @@ function ptp_get_subdomain() {
  * CiviCRM to login to the returns and Activities email boxes.
  *
  */
-function ptp_configure_imap_user($user, $pass, $host) {
+function ptp_configure_imap_user($user, $pass, $host, $domain = 'civimail.ourpowerbase.net') {
   _civicrm_init();
 
   $mailSettings = new CRM_Core_DAO_MailSettings( );
@@ -1434,7 +1434,7 @@ function ptp_configure_imap_user($user, $pass, $host) {
   $mailSettings->server = $host;
   $mailSettings->username = $user;
   $mailSettings->password = $pass;
-  $mailSettings->domain = $host;
+  $mailSettings->domain = $domain;
 
   // hard coded settings...
   $mailSettings->protocol = 1;  // 1 is imap

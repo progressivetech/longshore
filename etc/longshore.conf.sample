@@ -67,13 +67,14 @@ LONG_IP_ADDR=1.1.1.1
 # or set to "ssh longshore@augusto.mayfirst.org sudo /usr/local/sbin/opb-manage-user"
 # to enable remote execution on a remote server (be sure to configure ssh
 # access on the remote server).
-LONG_MANAGE_IMAP_USER_CMD="ssh aegir@augusto.mayfirst.org sudo /usr/local/sbin/opb-manage-user"
+LONG_MANAGE_IMAP_USER_CMD="ssh imap-creator@mailstore001.mayfirst.org sudo /usr/local/sbin/longshore-manage-user"
 
 # The host to configure CiviCRM to connect to when checking IMAP commands.
 # If LONG_MANAGE_IMAP_USER_CMD is set to /bin/true then this variable
 # will never be used. Otherwise, it will be used MailSettings "server"
 # in CiviCRM.
-LONG_IMAP_HOST=civimail.ourpowerbase.net
+LONG_IMAP_HOST=mailstore.ourpowerbase.net
+LONG_IMAP_DOMAIN=civimail.ourpowerbase.net
 
 # The command used to generate DKIM keys. Set to /bin/true to
 # disable configuring DKIM. Or set to: sudo /usr/local/bin/longshore-dkim-generator

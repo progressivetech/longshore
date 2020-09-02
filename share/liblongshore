@@ -1584,7 +1584,7 @@ long_configure_civicrm_imap_user() {
   local imap_file=$(mktemp "${LONG_SITE_TMP}/imap.XXXXXXX.php");
 cat << EOF > "$imap_file"
   <?php
-  ptp_configure_imap_user('$user', '$pass', '$LONG_IMAP_HOST');
+  ptp_configure_imap_user('$user', '$pass', '$LONG_IMAP_HOST', '$LONG_IMAP_DOMAIN');
 EOF
 
   # Ensure that the www-data user can read it.
