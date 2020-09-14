@@ -1893,7 +1893,7 @@ function pbd_set_optin_defaults() {
 
 function pbd_default_geo_settings() {
   _civicrm_init();
-  $mapProvider = 'Google';
+  $mapProvider = 'OpenStreetMaps';
   $geoProvider = 'Google';
   pbd_setting('mapProvider', $mapProvider);
   pbd_setting('geoProvider', $geoProvider);
