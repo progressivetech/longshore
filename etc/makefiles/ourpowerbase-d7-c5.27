@@ -549,7 +549,7 @@ projects[relationshipblock][type] = "library"
 projects[relationshipblock][destination] = "extensions"
 projects[relationshipblock][download][type] = "git"
 projects[relationshipblock][download][url] = "https://github.com/eileenmcnaughton/org.wikimedia.relationshipblock"
-projects[relationshipblock][download][revision] = "68580834be22bb1bf7f4cd452bccb6b855ce3618"
+projects[relationshipblock][download][revision] = "e9fe0e416e183f9f3c079c9c4cce0dc34945685f"
 
 projects[remoteform][type] = "library"
 projects[remoteform][destination] = "extensions"
@@ -708,6 +708,19 @@ projects[civicase][destination] = "extensions"
 projects[civicase][download][type] = "git"
 projects[civicase][download][url] = "https://github.com/civicrm/org.civicrm.civicase"
 projects[civicase][download][revision] = "2cb01d16ed69b22e728551222384a409ce3902ef"
+
+projects[civicalendar][type] = "library"
+projects[civicalendar][destination] = "extensions"
+projects[civicalendar][download][type] = "git"
+projects[civicalendar][download][url] = "https://github.com/agiliway/com.agiliway.civicalendar"
+projects[civicalendar][download][revision] = "a7f6d9c2aab38fe0efdb2435fc3a006e363bbf29"
+
+projects[birthdays][type] = "library"
+projects[birthdays][destination] = "extensions"
+projects[birthdays][download][type] = "git"
+projects[birthdays][download][url] = "https://github.com/systopia/de.systopia.birthdays"
+projects[birthdays][download][revision] = "9790e5c0692c15ded25450b90852dacd53e56376"
+
 
 ;****************************************
 ; Drupal themes 
