@@ -265,6 +265,10 @@ function lsd_install_prep() {
  */
 function drush_lsd_extensions_update() {
   _civicrm_init();
+  if (! CRM_Extension_Upgrades::hasPending()) {
+    // Return early if no pending updates.
+    return;
+  }
   $queue = CRM_Extension_Upgrades::createQueue();
   $runner = new CRM_Queue_Runner(array(
     'title' => ts('Database Upgrades'),
