@@ -721,6 +721,12 @@ projects[birthdays][download][type] = "git"
 projects[birthdays][download][url] = "https://github.com/systopia/de.systopia.birthdays"
 projects[birthdays][download][revision] = "9790e5c0692c15ded25450b90852dacd53e56376"
 
+projects[civiversafix][type] = "library"
+projects[civiversafix][destination] = "extensions"
+projects[civiversafix][download][type] = "git"
+projects[civiversafix][download][url] = "https://lab.civicrm.org:jamie/CiviVersafix.git"
+projects[civiversafix][download][revision] = "efdd78dcec971dd52f61bee3eba8789ca2124139"
+
 
 ;****************************************
 ; Drupal themes 
