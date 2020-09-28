@@ -36,8 +36,12 @@ function lsd_drush_command() {
   $items['lsd-set-paths'] = array(
     'description' => 'Ensure all Drupal and CiviCRM paths and URLs are set correctly.',
   );
-  $items['lsd-extensions-update'] =
-    array('description' => "Do database updates for all extensions.");
+  $items['lsd-extensions-update'] = array(
+    'description' => "Do database updates for all extensions.",
+    'options' => array(
+      'extensions' => 'Only check for updates if any of the given comma-separate list of extensions are enabled'
+    ),
+  );
 
   return $items;
 }
@@ -264,9 +268,28 @@ function lsd_install_prep() {
  * Run all extension database upgrades.
  */
 function drush_lsd_extensions_update() {
+
+  $extensions = drush_get_option('extensions', NULL);
+  if ($extensions) {
+    // Only check and run updates if the extensions in the restrct array
+    // are enabled on this site.
+    // We use addslashes to avoid funny business.
+    $restrict = explode(',', addslashes($extensions));
+    $clause = '("' . implode('","', $restrict) . '")';
+    $sql = "SELECT COUNT(*) AS count FROM civicrm_extension WHERE is_active = 1 AND name IN $clause";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    $dao->fetch();
+    if ($dao->count == 0) {
+      // None of the given extensions are enabled, short circuit.
+      drush_log("Not running extensions update, no extensions specified.", 'info');
+      return;
+    }
+  }
+
   _civicrm_init();
   if (! CRM_Extension_Upgrades::hasPending()) {
     // Return early if no pending updates.
+    drush_log("No pending updates.", 'info');
     return;
   }
   $queue = CRM_Extension_Upgrades::createQueue();
