@@ -409,13 +409,9 @@ projects[mosaico][destination] = "extensions"
 projects[mosaico][directory_name] = "uk.co.vedaconsulting.mosaico"
 projects[mosaico][download][type] = "file"
 ; Use file download because  mosaico has a build script that won't get executed.
-; This one is built from git commit 43895c97eea365d085eb32056d2c814c979075c4
-; to build a new one, cd into the git repo then
-; cd bin
-; ./setup.sh -a; setup.sh -z
-; then scp the results to 
-; root@dorvalina.mayfirst.org:/srv/releases/
-projects[mosaico][download][url] = "https://releases.ourpowerbase.net/uk.co.vedaconsulting.mosaico-ptp-modified.zip"
+; Check for latest release and download link here:
+; https://civicrm.org/extensions/email-template-builder
+projects[mosaico][download][url] = "https://download.civicrm.org/extension/uk.co.vedaconsulting.mosaico/2.5.1597918155/uk.co.vedaconsulting.mosaico-2.5.1597918155.zip"
 
 ; Required for mosaico.
 projects[flexmailer][type] = "library"

@@ -292,6 +292,7 @@ function drush_lsd_extensions_update() {
     drush_log("No pending updates.", 'info');
     return;
   }
+  drush_log("Running updates.", 'info');
   $queue = CRM_Extension_Upgrades::createQueue();
   $runner = new CRM_Queue_Runner(array(
     'title' => ts('Database Upgrades'),
