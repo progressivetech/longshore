@@ -619,7 +619,7 @@ projects[contactlayout][type] = "library"
 projects[contactlayout][destination] = "extensions"
 projects[contactlayout][download][type] = "git"
 projects[contactlayout][download][url] = "https://github.com/civicrm/org.civicrm.contactlayout"
-projects[contactlayout][download][revision] = "d4944395ccdb383608f98949365c1f6d28257282"
+projects[contactlayout][download][revision] = "988d9125dd8dbd4708bd71f54a92fc5161f7763d"
 
 projects[onenorthside][type] = "library"
 projects[onenorthside][destination] = "extensions"
