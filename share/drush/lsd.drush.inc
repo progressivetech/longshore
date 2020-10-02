@@ -276,7 +276,7 @@ function drush_lsd_extensions_update() {
     // We use addslashes to avoid funny business.
     $restrict = explode(',', addslashes($extensions));
     $clause = '("' . implode('","', $restrict) . '")';
-    $sql = "SELECT COUNT(*) AS count FROM civicrm_extension WHERE is_active = 1 AND name IN $clause";
+    $sql = "SELECT COUNT(*) AS count FROM civicrm_extension WHERE is_active = 1 AND full_name IN $clause";
     drush_log("SQL: $sql", 'info');
     $dao = CRM_Core_DAO::executeQuery($sql);
     $dao->fetch();
