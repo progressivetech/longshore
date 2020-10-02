@@ -3720,9 +3720,9 @@ function pbd_transactlegacy_go_away() {
     drush_log("Stripe active", 'info');
     // Insert new notice configuration if it doesn't already exist. 
     $sql = "SELECT COUNT(*) FROM civicrm_status_pref WHERE name = 'checkExtensionContributiontransactlegacymjwshared_recommended'";
-    $dao = CRM_Core_DAO::executeQuery($sql);
-    $dao->fetch();
-    if ($dao->count == 0) {
+    $dao_pref = CRM_Core_DAO::executeQuery($sql);
+    $dao_pref->fetch();
+    if ($dao_pref->count == 0) {
       drush_log("Notice does not exist.", 'info');
       $sql = "INSERT INTO civicrm_status_pref VALUES( NULL, 1, 'checkExtensionContributiontransactlegacymjwshared_recommended', NULL, 3, NULL, NULL, 1)";
       CRM_Core_DAO::executeQuery($sql);
