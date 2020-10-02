@@ -3706,4 +3706,20 @@ function pbd_dedupe_rules() {
   CRM_Core_DAO::executeQuery($sql, array(0 => array($dao->id, 'Integer')));
 
 }
+
+/**
+ * quick fix to make warning about transaction legacy go away.
+ */
+function pbd_transactlegacy_go_away() {
+  // First check if stripe is installed.
+  _civicrm_init();
+  $sql = "SELECT COUNT(*) AS count FROM civicrm_extension WHERE name = 'stripe' and is_active = 1";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  $dao->fetch();
+  if ($dao->count == 1) {
+    // Insert new notice configuration. 
+    $sql = "INSERT INTO civicrm_status_pref VALUES( NULL, 1, 'checkExtensionContributiontransactlegacymjwshared_recommended', NULL, 3, NULL, NULL, 1)";
+    CRM_Core_DAO::executeQuery($sql);
+  }
+}
 ?>
