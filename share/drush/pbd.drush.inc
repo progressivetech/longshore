@@ -3729,4 +3729,20 @@ function pbd_transactlegacy_go_away() {
     }
   }
 }
+
+/**
+ * quick fix to update stripe webhooks.
+ */
+function pbd_stripe_webhooks() {
+  // First check if stripe is installed.
+  _civicrm_init();
+  $sql = "SELECT COUNT(*) AS count FROM civicrm_extension WHERE name = 'stripe' and is_active = 1";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  $dao->fetch();
+  if ($dao->count == 1) {
+    drush_log("Stripe active", 'info');
+    $message = [];
+    CRM_Stripe_Webhook::check($messages, TRUE);
+  }
+}
 ?>
