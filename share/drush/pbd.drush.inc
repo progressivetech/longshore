@@ -3719,7 +3719,7 @@ function pbd_transactlegacy_go_away() {
   if ($dao->count == 1) {
     drush_log("Stripe active", 'info');
     // Insert new notice configuration if it doesn't already exist. 
-    $sql = "SELECT COUNT(*) FROM civicrm_status_pref WHERE name = 'checkExtensionContributiontransactlegacymjwshared_recommended'";
+    $sql = "SELECT COUNT(*) AS count FROM civicrm_status_pref WHERE name = 'checkExtensionContributiontransactlegacymjwshared_recommended'";
     $dao_pref = CRM_Core_DAO::executeQuery($sql);
     $dao_pref->fetch();
     if ($dao_pref->count == 0) {
