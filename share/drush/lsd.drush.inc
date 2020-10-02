@@ -268,8 +268,8 @@ function lsd_install_prep() {
  * Run all extension database upgrades.
  */
 function drush_lsd_extensions_update() {
-
   $extensions = drush_get_option('extensions', NULL);
+  _civicrm_init();
   if ($extensions) {
     // Only check and run updates if the extensions in the restrct array
     // are enabled on this site.
@@ -286,7 +286,6 @@ function drush_lsd_extensions_update() {
     }
   }
 
-  _civicrm_init();
   if (! CRM_Extension_Upgrades::hasPending()) {
     // Return early if no pending updates.
     drush_log("No pending updates.", 'info');
