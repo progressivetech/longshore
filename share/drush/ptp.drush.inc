@@ -537,7 +537,18 @@ function drush_ptp_parse_addresses() {
     }
     // Eliminate double spaces in address - we consider space differences to not be worth mentioning.
     $street_address = str_replace('  ', ' ', $street_address);
+
+    // Let's be optimistic
+    $correctly_parsed = TRUE;
+
+    if (empty($street_number) || empty($street_name)) {
+      // Not parsed at all.
+      $correctly_parsed = FALSE;
+    }
     if (!preg_match("|" . preg_quote($street_number) . " ?(" . preg_quote($street_number_suffix) . ")? ?" . preg_quote($street_name) . "|i", $street_address)) {
+      $correctly_parsed = FALSE;
+    }
+    if (!$correctly_parsed) {
       $count++;
       $msg = dt(
         "@id / @contact_id - @street_number @street_number_suffix @street_name doesn't match @street_address",
