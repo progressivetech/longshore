@@ -679,7 +679,7 @@ projects[sweetalert][type] = "library"
 projects[sweetalert][destination] = "extensions"
 projects[sweetalert][download][type] = "git"
 projects[sweetalert][download][url] = "https://lab.civicrm.org/extensions/sweetalert"
-projects[sweetalert][download][revision] = "dfc1d87b2a99674a490834cc500d66ca5090993e"
+projects[sweetalert][download][revision] = "8f8c11e9fa6038483a59b25b685ea22328c87758"
 
 projects[deleteoldbulkmailings][type] = "library"
 projects[deleteoldbulkmailings][destination] = "extensions"
