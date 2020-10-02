@@ -277,11 +277,12 @@ function drush_lsd_extensions_update() {
     $restrict = explode(',', addslashes($extensions));
     $clause = '("' . implode('","', $restrict) . '")';
     $sql = "SELECT COUNT(*) AS count FROM civicrm_extension WHERE is_active = 1 AND name IN $clause";
+    drush_log("SQL: $sql", 'info');
     $dao = CRM_Core_DAO::executeQuery($sql);
     $dao->fetch();
     if ($dao->count == 0) {
       // None of the given extensions are enabled, short circuit.
-      drush_log("Not running extensions update, no extensions specified.", 'info');
+      drush_log("Not running extensions update, no extensions specified are installed.", 'info');
       return;
     }
   }
