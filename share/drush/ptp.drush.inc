@@ -561,8 +561,8 @@ function drush_ptp_parse_addresses() {
           continue;
         }
         $params = array_merge($result, $parsed);
-        $result = civicrm_api3('Address', 'create', $params);
-        if($result['is_error'] == 0) {
+        $create_result = civicrm_api3('Address', 'create', $params);
+        if($create_result['is_error'] == 0) {
           drush_log(dt("Reparse @street_address", array('@street_address' => $result['street_address'])));
           $reparsed++;
         }
