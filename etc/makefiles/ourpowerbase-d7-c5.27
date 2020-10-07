@@ -718,6 +718,13 @@ projects[birthdays][download][url] = "https://github.com/systopia/de.systopia.bi
 projects[birthdays][download][revision] = "9790e5c0692c15ded25450b90852dacd53e56376"
 
 
+projects[countylookup][type] = "library"
+projects[countylookup][destination] = "extensions"
+projects[countylookup][download][type] = "git"
+projects[countylookup][download][url] = "https://github.com/MegaphoneJon/coop.palantetech.countylookup"
+projects[countylookup][download][revision] = "367fdb760f9753510bfb5328392bd98dc92a851e"
+
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
