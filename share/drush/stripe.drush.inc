@@ -15,6 +15,10 @@ function stripe_drush_command() {
     array('description' => "Ensure all stripe recurring payment plans in database are configured in stripe.");
   $items['stripe-fix-customers'] =
     array('description' => "Ensure all stripe customers are assigned to the right ppid.");
+  $items['stripe-add-missing-customers'] = array(
+    'description' => "Ensure a stripe customer record is created for all active recurring contributions",
+    'ppid' => "The stripe processor id"
+  );
   $items['stripe-repair-subs'] = array(
     'description' => "Given a file with a list of subscription/customer pairs, try to re-create the right data so they get processed.",
     'options' => array(
@@ -25,6 +29,51 @@ function stripe_drush_command() {
   return $items;
 }
 
+function drush_stripe_add_missing_customers() {
+  $ppid = drush_get_option('ppid', NULL);
+
+  if (empty($ppid)) {
+    drush_log("Please pass ppid.", 'error');
+    return;
+  }
+  // Get a list of the last month's recurring contributions so we will have the subscription and customer
+  // ids.
+  $result = civicrm_api3('Stripe', 'ListEvents', [ 'ppid' => $ppid, 'limit' => 100 ]);
+  $stripe_data = $result['values'];
+  // Iterate over list of active recurring contributions for which we have a valid subscription id.
+  $sql = "SELECT contact_id, trxn_id FROM civicrm_contribution_recur WHERE trxn_id LIKE 'sub_%' AND contribution_status_id = 5";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  while($dao->fetch()) {
+    $contact_id = $dao->id;
+    $trxn_id = $dao->trxn_id;
+    // See if it exists already.
+    $sql = "SELECT COUNT(*) AS count FROM civicrm_stripe_customers WHERE contact_id = %0 AND processor_id = %1";
+    $cdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $contact_id, 'Integer' ], 1 => [ $ppid, "Integer" ] ]);
+    $cdao->fetch();
+    if ($cdao->count > 0) {
+      drush_log("Customer record exists for contact id $contact_id, skipping.", 'info');
+      continue;
+    }
+    drush_log("No customer record exists for contact id $contact_id, searching.", 'info');
+
+    // It does not exist! Try to match with stripe data.
+    $found = FALSE;
+    foreach($stripe_data as $event) {
+      if ($event['subscription'] == $trxn_id) {
+        $found = TRUE;
+        // We have a match.
+        $sql = "INSERT INTO civicrm_stripe_customers VALUES(%0, %1, NULL, %2)";
+        $args = [ 0 => [ $event['customer'], 'String' ], 1 => [ $contact_id, 'Integer' ], [ 2 => [ $ppid, 'Integer' ] ] ];
+        drush_log($sql, 'info');
+        drush_log(print_r($args, TRUE));
+      }
+    }
+    if ($found === FALSE) {
+      drush_log("Failed to insert customer for $contact_id", 'error');
+    }
+
+  }
+}
 
 function drush_stripe_fix_customers() {
   _civicrm_init();
