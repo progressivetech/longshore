@@ -58,8 +58,8 @@ function drush_stripe_add_missing_customers() {
 					$reprocess_events[] = $event['id'];
 				}
 				// See if it exists already.
-				$sql = "SELECT COUNT(*) AS count FROM civicrm_stripe_customers WHERE contact_id = %0 AND processor_id = %1 AND id = %2";
-				$cdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $contact_id, 'Integer' ], 1 => [ $ppid, "Integer" ], 2 => [ $event['customer'], 'String' ]]);
+				$sql = "SELECT COUNT(*) AS count FROM civicrm_stripe_customers WHERE id = %0";
+				$cdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $event['customer'], 'String' ]]);
 				$cdao->fetch();
 				if ($cdao->count > 0) {
 					continue;
