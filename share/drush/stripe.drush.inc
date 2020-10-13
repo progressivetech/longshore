@@ -46,6 +46,7 @@ function drush_stripe_add_missing_customers() {
   $sql = "SELECT contact_id, trxn_id FROM civicrm_contribution_recur WHERE trxn_id LIKE 'sub_%' AND contribution_status_id = 5";
   $dao = CRM_Core_DAO::executeQuery($sql);
   while($dao->fetch()) {
+    drush_log("Contact id: $contact_id", 'info');
     $contact_id = $dao->id;
     $trxn_id = $dao->trxn_id;
     // See if it exists already.
