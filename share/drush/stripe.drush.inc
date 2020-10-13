@@ -17,7 +17,9 @@ function stripe_drush_command() {
     array('description' => "Ensure all stripe customers are assigned to the right ppid.");
   $items['stripe-add-missing-customers'] = array(
     'description' => "Ensure a stripe customer record is created for all active recurring contributions",
-    'ppid' => "The stripe processor id"
+    'options' => [
+      'ppid' => "The stripe processor id"
+    ]
   );
   $items['stripe-repair-subs'] = array(
     'description' => "Given a file with a list of subscription/customer pairs, try to re-create the right data so they get processed.",
