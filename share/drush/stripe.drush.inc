@@ -48,10 +48,6 @@ function drush_stripe_add_missing_customers() {
   while($dao->fetch()) {
     $contact_id = $dao->contact_id;
     $trxn_id = $dao->trxn_id;
-          drush_log("Customer record exists for contact id $contact_id, skipping.", 'info');
-      continue;
-    }
-    // It does not exist! Try to match with stripe data.
     $found = FALSE;
     $reprocess_events = [];
     foreach($stripe_data as $event) {
@@ -84,7 +80,8 @@ function drush_stripe_add_missing_customers() {
         drush_log("Reprocseeing $evtid", 'info');
         civicrm_api3('Stripe', 'Ipn', [ 'evtid' => $evtid, 'ppid' => $ppid ]);
       }
-   }
+    }
+  }
 }
 
 function drush_stripe_fix_customers() {
