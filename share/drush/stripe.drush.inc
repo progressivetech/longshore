@@ -43,39 +43,48 @@ function drush_stripe_add_missing_customers() {
   $result = civicrm_api3('Stripe', 'ListEvents', [ 'ppid' => $ppid, 'limit' => 100 ]);
   $stripe_data = $result['values'];
   // Iterate over list of active recurring contributions for which we have a valid subscription id.
-  $sql = "SELECT contact_id, trxn_id FROM civicrm_contribution_recur WHERE trxn_id LIKE 'sub_%' AND contribution_status_id = 5";
+  $sql = "SELECT DISTINCT contact_id, trxn_id FROM civicrm_contribution_recur WHERE trxn_id LIKE 'sub_%' AND contribution_status_id = 5";
   $dao = CRM_Core_DAO::executeQuery($sql);
   while($dao->fetch()) {
-    drush_log("Contact id: $contact_id", 'info');
-    $contact_id = $dao->id;
+    $contact_id = $dao->contact_id;
     $trxn_id = $dao->trxn_id;
-    // See if it exists already.
-    $sql = "SELECT COUNT(*) AS count FROM civicrm_stripe_customers WHERE contact_id = %0 AND processor_id = %1";
-    $cdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $contact_id, 'Integer' ], 1 => [ $ppid, "Integer" ] ]);
-    $cdao->fetch();
-    if ($cdao->count > 0) {
-      drush_log("Customer record exists for contact id $contact_id, skipping.", 'info');
+          drush_log("Customer record exists for contact id $contact_id, skipping.", 'info');
       continue;
     }
-    drush_log("No customer record exists for contact id $contact_id, searching.", 'info');
-
     // It does not exist! Try to match with stripe data.
     $found = FALSE;
+    $reprocess_events = [];
     foreach($stripe_data as $event) {
       if ($event['subscription'] == $trxn_id) {
-        $found = TRUE;
+	      $found = TRUE;
         // We have a match.
-        $sql = "INSERT INTO civicrm_stripe_customers VALUES(%0, %1, NULL, %2)";
-        $args = [ 0 => [ $event['customer'], 'String' ], 1 => [ $contact_id, 'Integer' ], [ 2 => [ $ppid, 'Integer' ] ] ];
-        drush_log($sql, 'info');
-        drush_log(print_r($args, TRUE));
+				if ($event['processed'] == 'no') {
+					$reprocess_events[] = $event['id'];
+				}
+				// See if it exists already.
+				$sql = "SELECT COUNT(*) AS count FROM civicrm_stripe_customers WHERE contact_id = %0 AND processor_id = %1 AND id = %2";
+				$cdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $contact_id, 'Integer' ], 1 => [ $ppid, "Integer" ], 2 => [ $event['customer'], 'String' ]]);
+				$cdao->fetch();
+				if ($cdao->count > 0) {
+					continue;
+				}
+
+				$sql = "INSERT INTO civicrm_stripe_customers VALUES(%0, %1, NULL, %2)";
+				$args = [ 0 => [ $event['customer'], 'String' ], 1 => [ $contact_id, 'Integer' ], 2 => [ $ppid, 'Integer' ] ] ;
+				drush_log($sql . ";" .  $event['customer'] . ":" . $contact_id . ":" . $ppid, 'info');
+				CRM_Core_DAO::executeQuery($sql, $args);
+				
       }
     }
     if ($found === FALSE) {
       drush_log("Failed to insert customer for $contact_id", 'error');
     }
-
-  }
+    else {
+      foreach($reprocess_events as $evtid) {
+        drush_log("Reprocseeing $evtid", 'info');
+        civicrm_api3('Stripe', 'Ipn', [ 'evtid' => $evtid, 'ppid' => $ppid ]);
+      }
+   }
 }
 
 function drush_stripe_fix_customers() {
