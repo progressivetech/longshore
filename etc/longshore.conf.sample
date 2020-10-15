@@ -67,7 +67,7 @@ LONG_IP_ADDR=1.1.1.1
 # or set to "ssh longshore@augusto.mayfirst.org sudo /usr/local/sbin/opb-manage-user"
 # to enable remote execution on a remote server (be sure to configure ssh
 # access on the remote server).
-LONG_MANAGE_IMAP_USER_CMD="ssh imap-creator@mailstore001.mayfirst.org sudo /usr/local/sbin/longshore-manage-user"
+LONG_MANAGE_IMAP_USER_CMD="ssh imap-creator@mailstore001.mayfirst.org sudo /usr/local/bin/longshore-manage-user"
 
 # The host to configure CiviCRM to connect to when checking IMAP commands.
 # If LONG_MANAGE_IMAP_USER_CMD is set to /bin/true then this variable
