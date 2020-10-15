@@ -731,8 +731,8 @@ projects[countylookup][download][revision] = "367fdb760f9753510bfb5328392bd98dc9
 projects[CiviVersafix][type] = "library"
 projects[CiviVersafix][destination] = "templates/mosaico_tpl"
 projects[CiviVersafix][download][type] = "git"
-projects[CiviVersafix][download][url] = "https://lab.civicrm.org/jamie/CiviVersafix.git"
-projects[CiviVersafix][download][revision] = "efdd78dcec971dd52f61bee3eba8789ca2124139"
+projects[CiviVersafix][download][url] = "https://lab.civicrm.org/MikeyMJCO/CiviVersafix"
+projects[CiviVersafix][download][revision] = "de570084e26d427ead39689f70d95bc060404b33"
 
 
 ;****************************************
