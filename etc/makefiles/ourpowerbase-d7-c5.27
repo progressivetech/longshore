@@ -538,8 +538,8 @@ projects[grantapplications][download][revision] = "23a7be52d8185c312bd49ee5e6c48
 projects[jsumfields][type] = "library"
 projects[jsumfields][destination] = "extensions"
 projects[jsumfields][download][type] = "git"
-projects[jsumfields][download][url] = "https://github.com/progressivetech/com.joineryhq.jsumfields"
-projects[jsumfields][download][revision] = "294cf718ee90b95345d01581296b6029a805bfed"
+projects[jsumfields][download][url] = "https://github.com/twomice/com.joineryhq.jsumfields"
+projects[jsumfields][download][revision] = "b044aa42cc291f4da55165a83793b16440dc4349"
 
 projects[relationshipblock][type] = "library"
 projects[relationshipblock][destination] = "extensions"
