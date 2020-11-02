@@ -717,13 +717,17 @@ projects[birthdays][download][type] = "git"
 projects[birthdays][download][url] = "https://github.com/systopia/de.systopia.birthdays"
 projects[birthdays][download][revision] = "9790e5c0692c15ded25450b90852dacd53e56376"
 
-
 projects[countylookup][type] = "library"
 projects[countylookup][destination] = "extensions"
 projects[countylookup][download][type] = "git"
 projects[countylookup][download][url] = "https://github.com/MegaphoneJon/coop.palantetech.countylookup"
 projects[countylookup][download][revision] = "367fdb760f9753510bfb5328392bd98dc92a851e"
 
+projects[allcontactinfo][type] = "library"
+projects[allcontactinfo][destination] = "extensions"
+projects[allcontactinfo][download][type] = "git"
+projects[allcontactinfo][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.allcontactinfo"
+projects[allcontactinfo][download][revision] = "d604975b78ae04ec07266a77b3a8bd79c53087be""
 
 ;########
 ; CiviCRM Mosaico Templates
