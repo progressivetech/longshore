@@ -667,7 +667,7 @@ projects[qdep][type] = "library"
 projects[qdep][destination] = "extensions"
 projects[qdep][download][type] = "git"
 projects[qdep][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.qdep"
-projects[qdep][download][revision] = "e60a1eb77fdf09dcebde176e4374772f8e3d7b6c"
+projects[qdep][download][revision] = "ab0aaf9fd3bca81f3896dd0162fa6dbe0df7160b"
 
 projects[doctorwhen][type] = "library"
 projects[doctorwhen][destination] = "extensions"
