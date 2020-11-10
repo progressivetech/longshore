@@ -323,7 +323,7 @@ projects[firewall][type] = "library"
 projects[firewall][destination] = "extensions"
 projects[firewall][download][type] = "git"
 projects[firewall][download][url] = "https://lab.civicrm.org/extensions/firewall.git"
-projects[firewall][download][revision] = "998d4f450f14e6f38d29adf30058b4405d22641c"
+projects[firewall][download][revision] = "f1357b225d27272401d728773a87be36f76bb884"
 
 projects[mjwshared][type] = "library"
 projects[mjwshared][destination] = "extensions"
