@@ -1445,12 +1445,12 @@ long_setup_site() {
   long_exec_drush_cmd "$site" "lsd-set-paths"
 
   # Ensure the esmtprc is properly configured to forward email to the right
-  # host (bulk.ourpowerbase.net:25 on live sites which is configured by
+  # host (bulk.progressivetech.org:25 on live sites which is configured by
   # default) and the smtp:25 on dev sites, which expects the dev host
   # to be running the mail container.
   
   if [ "$LONG_LIVE" = "n" ]; then
-    docker $LONG_DOCKER_LOG_ARG exec "$site" /bin/sed -i 's/^hostname=bulk.ourpowerbase.net:25$/hostname=smtp:25/' \
+    docker $LONG_DOCKER_LOG_ARG exec "$site" /bin/sed -i 's/^hostname=bulk.progressivetech.org:25$/hostname=smtp:25/' \
       /etc/esmtprc
   fi
 
