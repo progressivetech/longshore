@@ -340,8 +340,8 @@ projects[civisualize][download][revision] = "4b0169dc1a69a289602e6c2ebcf6de1233d
 projects[civivolunteer][type] = "library"
 projects[civivolunteer][destination] = "extensions"
 projects[civivolunteer][download][type] = "git"
-projects[civivolunteer][download][url] = "https://github.com/civicrm/org.civicrm.volunteer.git"
-projects[civivolunteer][download][revision] = "f2331cd2354e62f980e9add3f6fa8621602ac343"
+projects[civivolunteer][download][url] = "https://github.com/progressivetech/org.civicrm.volunteer.git"
+projects[civivolunteer][download][revision] = "894cb50e8b767113cc4696865fad2775a237424b"
 
 ; required for civivolunteer
 projects[angularprofiles][type] = "library"
