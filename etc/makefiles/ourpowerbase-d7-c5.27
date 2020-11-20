@@ -729,6 +729,12 @@ projects[allcontactinfo][download][type] = "git"
 projects[allcontactinfo][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.report.allcontactinfo"
 projects[allcontactinfo][download][revision] = "c49a0bd412a6984a7e80592d390883cd63526afc"
 
+projects[contributeprogress][type] = "library"
+projects[contributeprogress][destination] = "extensions"
+projects[contributeprogress][download][type] = "git"
+projects[contributeprogress][download][url] = "https://lab.civicrm.org/extensions/contributeprogress"
+projects[contributeprogress][download][revision] = "f11ef9a7b498f20bd62b2eba0baac55934bb6300"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
