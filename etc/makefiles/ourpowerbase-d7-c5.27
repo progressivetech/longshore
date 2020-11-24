@@ -214,7 +214,7 @@ projects[surveylinks][type] = "library"
 projects[surveylinks][destination] = "extensions"
 projects[surveylinks][download][type] = "git"
 projects[surveylinks][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.surveylinks.git"
-projects[surveylinks][download][revision] = "c340b1fe8ad6902e0e674a6dcb66664e5ecdd938"
+projects[surveylinks][download][revision] = "e5355fc580064eb8fc783703d76a77601fc93c40"
 
 projects[engage][type] = "library"
 projects[engage][destination] = "extensions"
