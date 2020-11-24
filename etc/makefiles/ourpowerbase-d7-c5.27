@@ -190,7 +190,7 @@ projects[statelegemail][type] = "library"
 projects[statelegemail][destination] = "extensions"
 projects[statelegemail][download][type] = "git"
 projects[statelegemail][download][url] = "https://github.com/progressivetech/com.aghstrategies.statelegemail"
-projects[statelegemail][download][revision] = "184dcff5b7206bb0efc6af193cfbd49ef23d7cf6"
+projects[statelegemail][download][revision] = "2acf2eda93f76baf4bcc9d219e031d5ab3a98666"
 
 projects[advancedfundraising][type] = "library"
 projects[advancedfundraising][destination] = "extensions"
