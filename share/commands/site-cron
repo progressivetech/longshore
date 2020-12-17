@@ -102,8 +102,6 @@ for site in $sites; do
     logger -t powerbase "$msg"
 
     # Email it.
-    echo $msg | \
-      /usr/bin/mail -s "PowerBase site with cron job failing to run" \
-      pb-alert-warning@progressivetech.org
+    echo $msg | /srv/longshore/bin/longshore notify warning
   fi
 done
