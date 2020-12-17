@@ -1,0 +1,35 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) <priority>
+Send a message to all configured critical or warning email addresses.  The message should be sent
+to standard in.
+
+Arguments
+  <priority> - Either warning or critical. Critical will typically send to cell phones, warning to email addresses.
+"
+
+long_check_args "$2" "$#" 1
+
+priority="$2"
+
+email=
+if [ "$priority" = "warning" ]; then
+  email="$LONG_WARNING_EMAIL"
+elif [ "$priority" = "critical" ]; then
+  email="$LONG_CRITICAL_EMAIL"
+else
+  # Don't use long_die or any library calls that might create an infinite loop
+  # of failures.
+  printf "The priority must be either critical or warning, not '%s'.\n" "$priority"
+  exit 1
+fi
+
+if [ -z "$email" ]; then
+  printf "Can't send to empty email address.\n"
+  exit 1
+fi
+
+msg=$(cat)
+subject=$(printf "longshore %s alert" "$priority")
+
+echo $msg | mail -s "$subject" "$email"
