@@ -907,11 +907,11 @@ function drush_ptp_update_site_stats() {
   );
   $results = civicrm_api('Contact','get', $params);
   if($results['is_error'] != 0) {
-    drush_log(dt("Error in api call to find contact id."), 'error');
+    drush_log(dt("Error in api call to find contact id on $site."), 'error');
     return;
   }
   if(count($results['values']) == 0) {
-    drush_log(dt("Unable to find contact record for the site passed."), 'error');
+    drush_log(dt("Unable to find contact record for the site passed ('$site')."), 'error');
     return;
   }
   $contact = array_pop($results['values']);
@@ -945,7 +945,7 @@ function drush_ptp_update_site_stats() {
   }
   $results = civicrm_api('Contact', 'update', $params);
   if($results['is_error'] != 0) {
-    drush_log(dt("Unable to update the record.") . print_r($results), 'error');
+    drush_log(dt("Unable to update the record on '$site'.") . print_r($results), 'error');
     return;
   }
   drush_log(dt("Record value has been updated."), 'notice');
