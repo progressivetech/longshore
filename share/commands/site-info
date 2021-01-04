@@ -86,11 +86,8 @@ for site in $sites; do
 
   sibling=$(hostname)
   if [ "$option" = "-u" ]; then
-    # Pass on sites that we know are not in our database.
-    if [ "$site" != "demo" -a "$site" != "alice" -a "$site" != "mark" -a "$site" != "training" ]; then
-      # Call external longshore command to update the results
-      ${LONG_SRV}/bin/longshore site-drush ptp ptp-update-site-stats "--site=$site" "--contacts=$LONG_SITE_CONTACTS_COUNT" "--logins=$LONG_SITE_RECENT_LOGINS_COUNT" "--sibling=$sibling"
-    fi
+    # Call external longshore command to update the results
+    ${LONG_SRV}/bin/longshore site-drush ptp ptp-update-site-stats "--site=$site" "--contacts=$LONG_SITE_CONTACTS_COUNT" "--logins=$LONG_SITE_RECENT_LOGINS_COUNT" "--sibling=$sibling"
   elif [ "$option" = "-r" ]; then
     # Report output - design to be imported into a spreadsheet program.
     printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" "$site" "$LONG_SITE_DB_HOST" "$LONG_SITE_PLATFORM" "$sibling" \
