@@ -738,7 +738,7 @@ projects[contributeprogress][download][revision] = "f11ef9a7b498f20bd62b2eba0baa
 projects[smsinbox][type] = "library"
 projects[smsinbox][destination] = "extensions"
 projects[smsinbox][download][type] = "git"
-projects[smsinbox][download][url] = "https://github.com/progressivetech/SMS-Inbox.git
+projects[smsinbox][download][url] = "https://github.com/progressivetech/SMS-Inbox.git"
 projects[smsinbox][download][revision] = "e8b46bc0a555c953deedd109389c6d21958abe3e"
 
 ;########
