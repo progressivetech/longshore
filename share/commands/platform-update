@@ -98,7 +98,8 @@ else
   sites=$(ssh longshore /srv/longshore/bin/longshore site-list)
   for site in $sites; do
     long_log "Checking: %s" info "$site"
-    ssh longshore /srv/longshore/bin/longshore site-drush "$site" "lsd-unused-addons '--addons=$addons' --include=uninstalled"
+    container=$(ptp-get-sibling "$site")
+    echo ssh longshore@$container.mayfirst.org /srv/longshore/bin/longshore site-drush "$site" "'lsd-unused-addons --addons=$addons --include=uninstalled'"
     #addons=$(ssh longshore /srv/longshore/bin/longshore site-drush "$site" "lsd-unused-addons --addons=$addons --include=uninstalled")
     #longshore site-drush ptp "lsd-unused-addons --addons=$addons --include=disabled"
   done
