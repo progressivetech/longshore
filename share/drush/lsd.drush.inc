@@ -57,7 +57,7 @@ function lsd_drush_command() {
  *
  **/
 function drush_lsd_unused_addons() {
-  _civi_init();
+  _civirm_init();
   $addons = drush_get_option('addons', '');
   $include_status = drush_get_option('include', 'uninstalled');
   if (empty($addons)) {
