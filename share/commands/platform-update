@@ -95,15 +95,26 @@ else
   done
 
   # Now, addons is a variable containing our initial list.
+  disabled_addons="$addons"
+  uninstalled_addons="$addons"
   sites=$(ssh longshore /srv/longshore/bin/longshore site-list)
   for site in $sites; do
     long_log "Checking: %s" info "$site"
+    disabled_count=$(echo "$disabled_addons" | grep ',' -o |wc -w)
+    uninstalled_count=$(echo "$uninstalled_addons" | grep ',' -o |wc -w)
+    printf "Disabled addons: %s, Uninstalled addons: %s\n" "$disabled_count" "$uninstalled_count"
     container=$(ptp-get-sibling "$site")
-    echo ssh longshore@$container.mayfirst.org /srv/longshore/bin/longshore site-drush "$site" "'lsd-unused-addons --addons=$addons --include=uninstalled'"
-    #addons=$(ssh longshore /srv/longshore/bin/longshore site-drush "$site" "lsd-unused-addons --addons=$addons --include=uninstalled")
-    #longshore site-drush ptp "lsd-unused-addons --addons=$addons --include=disabled"
+    disabled_addons=$(ssh longshore@$container.mayfirst.org /srv/longshore/bin/longshore site-drush "$site" "lsd-unused-addons --addons=$disabled_addons --include=disabled")
+    uninstalled_addons=$(ssh longshore@$container.mayfirst.org /srv/longshore/bin/longshore site-drush "$site" "lsd-unused-addons --addons=$uninstalled_addons --include=uninstalled")
   done
 
-  echo $addons;
+  printf "Final count:\n"
+  printf "Uninstalled: %s\n" "$uninstalled_count"
+  printf "Disabled: %s\n" "$disabled_count"
+  printf "\n\n"
+
+  printf "Uninstalled: %s\n" "$uninstalled_addons"
+  printf "\n"
+  printf "Disabled: %s\n" "$disabled_addons"
 
 fi
