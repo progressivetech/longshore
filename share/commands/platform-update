@@ -95,9 +95,11 @@ else
   done
 
   # Now, addons is a variable containing our initial list.
-  sites=$(ssh longshore longshore site-list)
+  sites=$(ssh longshore /srv/longshore/bin/longshore site-list)
   for site in $sites; do
-    addons=$(ssh longshore longshore site-drush "$site" "lsd-unused-addons --addons=$addons --include=uninstalled")
+    long_log "Checking: %s" info "$site"
+    ssh longshore /srv/longshore/bin/longshore site-drush "$site" "lsd-unused-addons '--addons=$addons' --include=uninstalled"
+    #addons=$(ssh longshore /srv/longshore/bin/longshore site-drush "$site" "lsd-unused-addons --addons=$addons --include=uninstalled")
     #longshore site-drush ptp "lsd-unused-addons --addons=$addons --include=disabled"
   done
 
