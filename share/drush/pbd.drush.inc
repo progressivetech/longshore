@@ -1282,7 +1282,7 @@ function pbd_get_templates() {
       'msg_html' => file_get_contents($base_dir . '/powerbase-responsive-one-column-no-graphics.html'),
       'is_active' => 1,
     ),
-    'Powerbase Thank You Letter Template v1' => array(
+    'Powerbase Thank You Letter Template v2' => array(
       'msg_title' => 'Powerbase Thank You Letter Template v1',
       'msg_subject' => '',
       'msg_text' => '',
