@@ -10,7 +10,7 @@ api = "2"
 ;****************************************
 
 core = "7.x" 
-projects[drupal][version] = "7.77"
+projects[drupal][version] = "7.78"
 
 ;****************************************
 ; CiviCRM Core
@@ -107,9 +107,6 @@ projects[autologout][version] = "4.6"
 
 projects[civicrm_cicero][type] = "module"
 projects[civicrm_cicero][version] = "1.17"
-
-projects[cd_sunlight][type] = "module"
-projects[cd_sunlight][version] = "1.0-beta7"
 
 projects[css_injector][type] = "module"
 projects[css_injector][version] = "1.8" 
@@ -474,12 +471,6 @@ projects[fastactionlinks][download][type] = "git"
 projects[fastactionlinks][download][url] = "https://github.com/MegaphoneJon/com.megaphonetech.fastactionlinks"
 projects[fastactionlinks][download][revision] = "f9555deedf7a86598e6df485b0c95ccfc7405733"
 
-projects[donorsearch][type] = "library"
-projects[donorsearch][destination] = "extensions"
-projects[donorsearch][download][type] = "git"
-projects[donorsearch][download][url] = "https://github.com/civicrm/org.civicrm.donorsearch"
-projects[donorsearch][download][revision] = "6729134913f91382f41c9f5e57bce1f8a0413487"
-
 projects[checksum][type] = "library"
 projects[checksum][destination] = "extensions"
 projects[checksum][download][type] = "git"
@@ -538,7 +529,7 @@ projects[remoteform][type] = "library"
 projects[remoteform][destination] = "extensions"
 projects[remoteform][download][type] = "git"
 projects[remoteform][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.remoteform"
-projects[remoteform][download][revision] = "4991a933974b224be794a878c06e53214d069eed"
+projects[remoteform][download][revision] = "816d3b278a060f3435ddec0c6522b8562877655c"
 
 projects[civimobileapi][type] = "library"
 projects[civimobileapi][destination] = "extensions"
