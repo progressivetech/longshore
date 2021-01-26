@@ -94,11 +94,11 @@ if [ "$action" = "create" ]; then
   for site in $LONG_SITES; do
     if [ "$index" -gt "$perday" ]; then
       # Add a day or a few days to avoid the weekend.
-      day=$(date "@startts" "+%a")
+      day=$(date -d "@$startts" "+%a")
       if [ "$day" = "Fri" ]; then
-        multiplier = 3
+        multiplier=3
       else
-        multiplier = 1
+        multiplier=1
       fi
       startts=$(( $startts + 86400 * $multiplier ))
       index=0
