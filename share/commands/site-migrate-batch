@@ -281,11 +281,25 @@ for site in $sites; do
   long_log "upgrade:%s Updated drupal modules" info "$site"
   printf "."
 
+  if ! long_exec_drush_cmd "$site" "civiapi system.utf8conversion"; then
+    long_log "upgrade:%s Failed utf8 conversion" error "$site"
+    continue
+  fi
+  long_log "upgrade:%s completed utf8 conversion" info "$site"
+  printf "."
+
   if ! long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"; then
     long_log "upgrade:%s Failed to remove maintenance mode" error "$site"
     continue
   fi
   long_log "upgrade:%s Removed maintenance mode" info "$site"
+  printf "."
+
+  if ! long_exec_drush_cmd "$site" "php-eval 'pbd_add_message_templates();'"; then
+    long_log "upgrade:%s Failed to add message templates" error "$site"
+    continue
+  fi
+  long_log "upgrade:%s added message templates" info "$site"
   printf "."
 
   #if ! long_configure_site "$site"; then
