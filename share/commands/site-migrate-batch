@@ -88,13 +88,19 @@ if [ "$action" = "create" ]; then
   long_set_sites $(hostname)
   count=$(echo $LONG_SITES |wc -w)
   index=0
-  # Try to get the bulk down mon-thu, with a few remainders on friday.
+  # Try to schedule over a two week period, mon-fri only.
   perday=$(( $count / 9 ))
   truncate -s 0 "$path"
   for site in $LONG_SITES; do
     if [ "$index" -gt "$perday" ]; then
-      # Add a day.
-      startts=$(( $startts + 86400 ))
+      # Add a day or a few days to avoid the weekend.
+      day=$(date "@startts" "+%a")
+      if [ "$day" = "Fri" ]; then
+        multiplier = 3
+      else
+        multiplier = 1
+      fi
+      startts=$(( $startts + 86400 * $multiplier ))
       index=0
     fi
     printf "%s:%s:%s\n" $(date -d "@$startts" +%Y-%m-%d) "$site" "$platform" >> "$path"
