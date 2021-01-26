@@ -281,7 +281,7 @@ for site in $sites; do
   long_log "upgrade:%s Updated drupal modules" info "$site"
   printf "."
 
-  if ! long_exec_drush_cmd "$site" "civiapi system.utf8conversion"; then
+  if ! long_exec_drush_cmd "$site" "cvapi System.utf8conversion"; then
     long_log "upgrade:%s Failed utf8 conversion" error "$site"
     continue
   fi
