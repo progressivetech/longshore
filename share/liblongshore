@@ -2493,7 +2493,7 @@ long_is_host_reachable() {
       return 1
     fi
     long_log "Failed attempt number %s when testing reachability of %s\n" \
-      error "$try" "$host"
+      info "$try" "$host"
     # Pause for a second and continue loop.
     try=$(( $try + 1 ))
     sleep 1
