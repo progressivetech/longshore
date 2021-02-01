@@ -17,7 +17,11 @@ if ! long_check_alpha_numeric "$dbname"; then
   long_die "Your dbname should only contain alpha numeric characters."
 fi
 
-mycnf="${LONG_SRV}/services/databases/${dbhost}/my.cnf"
+if [ "$dbhost" = "mysqlhost" ]; then
+  mycnf="${LONG_SRV}/etc/my.cnf"
+else
+  mycnf="${LONG_SRV}/services/databases/${dbhost}/my.cnf"
+fi
 if [ ! -f "$mycnf" ]; then
   long_die "The my.cnf file doesn't exist for this database (%s)" 1 "$mycnf"
 fi
@@ -32,6 +36,7 @@ mysql --defaults-file="$mycnf" --skip-column-names "$dbname" < "$get_tables" | w
   if [ "$table_type" == "VIEW" ]; then
     entity=VIEW
   fi
+  long_log "Dropping $entity $table."  info
   printf "SET FOREIGN_KEY_CHECKS=0; DROP %s %s;\n" "$entity" "$table" >> "$drop_tables"
 done
 

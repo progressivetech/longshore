@@ -32,7 +32,11 @@ rm "$temp"
 # Now import. We need to specify the db name so we can't
 # use the liblongshore function. And we need root to avoid
 # permission problems with definers.
-mycnf="${LONG_SRV}/services/databases/${dbhost}/my.cnf"
+if [ "$dbhost" = "mysqlhost" ]; then
+  mycnf="${LONG_SRV}/etc/my.cnf"
+else
+  mycnf="${LONG_SRV}/services/databases/${dbhost}/my.cnf"
+fi
 if [ ! -f "$mycnf" ]; then
   long_die "The my.cnf file doesn't exist for this database (%s)" 1 "$mycnf"
 fi

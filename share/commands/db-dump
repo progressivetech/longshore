@@ -16,7 +16,11 @@ if ! long_check_alpha_numeric "$dbname"; then
   long_die "Your dbname should only contain alpha numeric characters."
 fi
 
-mycnf="${LONG_SRV}/services/databases/${dbhost}/my.cnf"
+if [ "$dbhost" = "mysqlhost" ]; then
+  mycnf="${LONG_SRV}/etc/my.cnf"
+else
+  mycnf="${LONG_SRV}/services/databases/${dbhost}/my.cnf"
+fi
 if [ ! -f "$mycnf" ]; then
   long_die "The my.cnf file doesn't exist for this database (%s)" 1 "$mycnf"
 fi
