@@ -140,7 +140,7 @@ function drush_pbd_setup_org_info() {
 
   // Let's make all fields required so we don't accidentally set things up
   // partially.
-  $required = [ 'name', 'email', 'phone', 'state', 'address', 'city', 'zip' ];
+  $required = [ 'name', 'email', 'state', 'address', 'city', 'zip' ];
   foreach($required as $req) {
     $val = $$req;
     if (empty($val)) {
@@ -198,6 +198,7 @@ function drush_pbd_setup_org_info() {
   );
   civicrm_api3('Contact', 'create', $params);
 
+
   // Only add email, phone and address if they don't already exist.
   // Test by trying to retrieve them.
 
@@ -221,23 +222,25 @@ function drush_pbd_setup_org_info() {
     }
   }
 
-  $phone_params = array(
-    'contact_id' => $contact_id,
-    'location_type_id' => 2,
-    'phone' => $phone,
-    'is_primary' => 1,
-  );
-  try {
-    civicrm_api3('Phone', 'getsingle', $phone_params);
-  }
-  catch (CiviCRM_API3_Exception $e) {
-    if ($e->getMessage() == 'Expected one Phone but found 0') {
-      // It has not been added, so add it.
-      civicrm_api3('Phone', 'create', $phone_params);
+  if ($phone) {
+    $phone_params = array(
+      'contact_id' => $contact_id,
+      'location_type_id' => 2,
+      'phone' => $phone,
+      'is_primary' => 1,
+    );
+    try {
+      civicrm_api3('Phone', 'getsingle', $phone_params);
     }
-    else {
-      drush_log($e->getMessage(), 'error');
-      return;
+    catch (CiviCRM_API3_Exception $e) {
+      if ($e->getMessage() == 'Expected one Phone but found 0') {
+        // It has not been added, so add it.
+        civicrm_api3('Phone', 'create', $phone_params);
+      }
+      else {
+        drush_log($e->getMessage(), 'error');
+        return;
+      }
     }
   }
 
