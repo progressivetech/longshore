@@ -1349,7 +1349,7 @@ function demo_add_payment_processor() {
   $params1 = array(
     "domain_id" => "1",
     "name" => "Fake Payment Processor",
-    "payment_processor_type_id" => "8",
+    "payment_processor_type_id" => "6",
     "is_active" => "1",
     "is_default" => "1",
     "is_test" => "0",
@@ -1365,7 +1365,7 @@ function demo_add_payment_processor() {
   $params2 = array(
     "domain_id" => "1",
     "name" => "Fake Payment Processor",
-    "payment_processor_type_id" => "8",
+    "payment_processor_type_id" => "6",
     "is_active" => "1",
     "is_default" => "1",
     "is_test" => "1",
