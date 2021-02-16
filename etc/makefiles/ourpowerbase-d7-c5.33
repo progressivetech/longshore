@@ -206,7 +206,7 @@ projects[quickentry][type] = "library"
 projects[quickentry][destination] = "extensions"
 projects[quickentry][download][type] = "git"
 projects[quickentry][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.quickentry.git"
-projects[quickentry][download][revision] = "ac934bf507c82e718357167bba730aeba799952d"
+projects[quickentry][download][revision] = "9ac2582db4427b64802066d6f5edada619e57bb5"
 
 projects[surveylinks][type] = "library"
 projects[surveylinks][destination] = "extensions"
