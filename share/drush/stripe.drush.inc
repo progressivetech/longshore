@@ -53,13 +53,13 @@ function drush_stripe_retry() {
       $params = [ 'ppid' => $ppid, 'evtid' => $value['id'] ];
       $ipn_results = civicrm_api3('Stripe', 'Ipn', $params);
       if ($ipn_results['is_error'] == 0) {
-	$unprocessed_success++;
+	      $unprocessed_success++;
         drush_log("No error");
       }
       else {
-	$unprocessed_fail++;
+	      $unprocessed_fail++;
         drush_log("Error!", 'error');
-	drush_log(print_r($ipn_results, TRUE), 'error');
+	      drush_log(print_r($ipn_results, TRUE), 'error');
       }	
     }
   }
