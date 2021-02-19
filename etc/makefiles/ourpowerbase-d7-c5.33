@@ -115,7 +115,7 @@ projects[js_injector][type] = "module"
 projects[js_injector][version] = "2.1" 
 
 projects[l10n_update][type] = "module"
-projects[l10n_update][version] = "1.0"
+projects[l10n_update][version] = "2.4"
 
 projects[node_clone][type] = "module"
 projects[node_clone][version] = "1.0-rc2"
