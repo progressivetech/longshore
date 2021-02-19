@@ -20,7 +20,7 @@ projects[drupal][version] = "7.78"
 projects[civicrm][type] = "module" 
 projects[civicrm][directory_name] = "civicrm" 
 projects[civicrm][download][type] = "git" 
-projects[civicrm][download][revision] = "314e5ca4af6757b29b7cc0e36d3c53cad45fd0d7"
+projects[civicrm][download][revision] = "f71cc01a74d7dfcf0ee37477921aadd165ca9585"
 projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
 
 ; Packages
