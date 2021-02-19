@@ -44,13 +44,28 @@ function drush_stripe_retry() {
     'limit' => 100
   ];
   $results = civicrm_api3('Stripe', 'ListEvents', $params);
+  $total = count($results['values']);
+  $unprocessed_success = 0;
+  $unprocessed_fail = 0;
   foreach($results['values'] as $value) {
     if ($value['processed'] == 'no') {
+      drush_log("Processing event id " . $value['id']);
       $params = [ 'ppid' => $ppid, 'evtid' => $value['id'] ];
       $ipn_results = civicrm_api3('Stripe', 'Ipn', $params);
-      print_r($ipn_results);
+      if ($ipn_results['is_error'] == 0) {
+	$unprocessed_success++;
+        drush_log("No error");
+      }
+      else {
+	$unprocessed_fail++;
+        drush_log("Error!", 'error');
+	drush_log(print_r($ipn_results, TRUE), 'error');
+      }	
     }
   }
+  drush_log("Total: $total");
+  drush_log("Total Unprocessed (success): $unprocessed_success");
+  drush_log("Total Unprocessed (fail): $unprocessed_fail");
 }
 
 function drush_stripe_add_missing_customers() {
