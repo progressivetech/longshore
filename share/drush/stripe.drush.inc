@@ -28,7 +28,29 @@ function stripe_drush_command() {
       'ppid' => "The stripe processor id if more than one."
     ),
   );
+  $items['stripe-retry'] = array(
+    'description' => "Re-try all transactions that are pending in Powerbase but succeeded in stripe.",
+    'options' => array(
+      'ppid' => "The payment processor id"
+    ),
+  );
   return $items;
+}
+
+function drush_stripe_retry() {
+  $ppid = drush_get_option('ppid', NULL);
+  $params = [
+    'ppid' => $ppid,
+    'limit' => 100
+  ];
+  $results = civicrm_api3('Stripe', 'ListEvents', $params);
+  foreach($results['values'] as $value) {
+    if ($value['processed'] == 'no') {
+      $params = [ 'ppid' => $ppid, 'evtid' => $value['id'] ];
+      $ipn_results = civicrm_api3('Stripe', 'Ipn', $params);
+      print_r($ipn_results);
+    }
+  }
 }
 
 function drush_stripe_add_missing_customers() {
