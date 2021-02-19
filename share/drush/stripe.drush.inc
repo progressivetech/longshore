@@ -38,6 +38,7 @@ function stripe_drush_command() {
 }
 
 function drush_stripe_retry() {
+  _civicrm_init();
   $ppid = drush_get_option('ppid', NULL);
   $params = [
     'ppid' => $ppid,
