@@ -980,15 +980,8 @@ function pbd_set_setting($key, $value) {
  * for this extension.
  **/
 function pbd_get_setting($key, $default = NULL) {
-  $group = 'PowerBase Drush';
-  $codeVer = CRM_Utils_System::version();
-  if(version_compare($codeVer, '4.7', '>=')) {
-    $params['name'] = $key;
-    $ret = civicrm_api3('Setting', 'getvalue', $params);
-  }
-  else {
-    $ret = CRM_Core_BAO_Setting::getItem($group, $key);
-  }
+  $params['name'] = $key;
+  $ret = civicrm_api3('Setting', 'getvalue', $params);
   if(empty($ret)) return $default;
   return $ret;
 }
@@ -3538,39 +3531,13 @@ function pbd_configure_google_geo_map() {
 }
 
 /**
- * Add settings properly based on version
  *
- * Rip out everything except the api call after we upgrade to 4.7
+ * Add settings
  *
- * 4.7 introduced a new method for adding settings.
- * Previously, we used either:
- *   CRM_Core_BAO_ConfigSetting::add($config);
- * or
- *   CRM_Core_BAO_Setting::setItem($value, $group, $key);
- *
- * If version is earlier than 4.7 and $group is specified
- * then use the setItem method, otherwise use the add method.
  */
 function pbd_setting($key, $value, $group = NULL) {
-  $codeVer = CRM_Utils_System::version();
   $params = array($key => $value);
-  if(version_compare($codeVer, '4.7', '>=')) {
-    civicrm_api3('setting', 'create', $params);
-  }
-  else {
-    if($group) {
-      require_once "CRM/Core/BAO/Setting.php";
-      if(is_array($value)) {
-        // arrays have to be converted to strings first.
-        $value = CRM_Core_DAO::VALUE_SEPARATOR . implode(CRM_Core_DAO::VALUE_SEPARATOR, $value) . CRM_Core_DAO::VALUE_SEPARATOR;
-      }
-      CRM_Core_BAO_Setting::setItem($value, $group, $key);
-    }
-    else {
-      require_once "CRM/Core/BAO/ConfigSetting.php";
-      CRM_Core_BAO_ConfigSetting::add($params);
-    }
-  }
+  civicrm_api3('setting', 'create', $params);
 }
 
 /**

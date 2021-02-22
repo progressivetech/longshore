@@ -1402,10 +1402,9 @@ function ptp_set_outbound_mail_settings($host = 'bulk.ourpowerbase.net') {
     $new['outBound_option'] = 3;  // 3 is for mail()
   }
 
-  $group_name = CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME;
-  $mailingBackend = CRM_Core_BAO_Setting::getItem($group_name, 'mailing_backend' );
+  $mailingBackend = Civi::settings()->get('mailing_backend');
   $mailingBackend = array_merge($mailingBackend, $new);
-  CRM_Core_BAO_Setting::setItem( $mailingBackend, $group_name, 'mailing_backend' );
+  Civi::settings()->set('mailing_backend', $mailingBackend);
 }
 
 /**
