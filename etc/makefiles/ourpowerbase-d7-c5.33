@@ -59,7 +59,7 @@ projects[advanced_help][type] = "module"
 projects[advanced_help][version] = "1.6"
 
 projects[ctools][type] = "module"
-projects[ctools][version] = "1.17"
+projects[ctools][version] = "1.19"
 
 projects[views_data_export][type] = "module"
 projects[views_data_export][version] = "3.2"
