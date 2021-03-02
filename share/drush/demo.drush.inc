@@ -1176,13 +1176,22 @@ function demo_random_date_in_last_year() {
   return date('Y-m-d H:i:s', $rand_epoch);
 }
 
+function demo_random_date_in_last_five_years() {
+  // Set parameters for random dates.
+  $min_epoch = strtotime("5 years ago");
+  $max_epoch = strtotime("today");
+
+  $rand_epoch = rand($min_epoch, $max_epoch);
+  return date('Y-m-d H:i:s', $rand_epoch);
+}
+
 function demo_random_donation_amount() {
   // Donations aren't that random...
   $possible = array(
-    '10', '10', '10', '25', '25', '25', '25', '25', '25', '25', '25' ,'25', 
-    '50', '50', '50', '50', '50', '50', '50', '50', '50', '50', '50', '50',
-    '50', '50', '50', '50', '50', '75', '75', '75', '75', '100','100', '100',
-    '100', '100', '100', '500', '500', '1000');
+    '10', '25', '25' ,'25', '50', ,'50', '75', '75', '75', '75', '100','100',
+    '100', '100', '100', '100', '500', '500', '500', '1000', '1000', '1000',
+    '1000', '5000', '5000', '5000');
+
   return $possible[array_rand($possible)]; 
 }
 
@@ -1234,7 +1243,7 @@ function demo_contributions() {
     $params = array(
       "contact_id" => $i,
       "currency" => "USD",
-      "receive_date" => demo_random_date_in_last_year(),
+      "receive_date" => demo_random_date_in_last_five_years(),
       "non_deductible_amount" => "0.00",
       "total_amount" => demo_random_donation_amount(),
       "fee_amount" => "",
