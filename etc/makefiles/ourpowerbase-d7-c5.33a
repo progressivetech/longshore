@@ -308,7 +308,7 @@ projects[stripe][type] = "library"
 projects[stripe][destination] = "extensions"
 projects[stripe][download][type] = "git"
 projects[stripe][download][url] = "https://lab.civicrm.org/extensions/stripe.git"
-projects[stripe][download][revision] = "5fda4ea3a22a8baed21cecd627d38c9907ab4192"
+projects[stripe][download][revision] = "77b138ba658eb0d2628e53d6280716196ae31177"
 
 projects[firewall][type] = "library"
 projects[firewall][destination] = "extensions"
