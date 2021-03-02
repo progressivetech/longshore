@@ -900,7 +900,7 @@ function demo_memberships() {
   $contact_id = 575;
   while($contact_id < 626) {
     // First the contribution. Let's keep it simple - everyone pays by check.
-    $join_date = demo_random_date_in_last_year();
+    $join_date = demo_random_date_since();
     $params = array(
         "contact_id" => $contact_id,
         "currency" => "USD",
@@ -1167,18 +1167,9 @@ function demo_campaign() {
   $results = civicrm_api3('Campaign', 'create', $params);
 }
 
-function demo_random_date_in_last_year() {
+function demo_random_date_since($since = 1) {
   // Set parameters for random dates.
-  $min_epoch = strtotime("1 year ago");
-  $max_epoch = strtotime("today");
-
-  $rand_epoch = rand($min_epoch, $max_epoch);
-  return date('Y-m-d H:i:s', $rand_epoch);
-}
-
-function demo_random_date_in_last_five_years() {
-  // Set parameters for random dates.
-  $min_epoch = strtotime("5 years ago");
+  $min_epoch = strtotime("$since year ago");
   $max_epoch = strtotime("today");
 
   $rand_epoch = rand($min_epoch, $max_epoch);
@@ -1188,13 +1179,62 @@ function demo_random_date_in_last_five_years() {
 function demo_random_donation_amount() {
   // Donations aren't that random...
   $possible = array(
-    '10', '25', '25' ,'25', '50', ,'50', '75', '75', '75', '75', '100','100',
+    '10', '25', '25' ,'25', '25', '25', '25', '50', '50', '75', '75', '75', '75', '100','100',
     '100', '100', '100', '100', '500', '500', '500', '1000', '1000', '1000',
     '1000', '5000', '5000', '5000');
 
   return $possible[array_rand($possible)]; 
 }
 
+function demo_add_contribution_to_contact($contact_id, $amount = NULL, $since = 5) {
+  $campaign_id = civicrm_api3('Campaign', 'getvalue', array('return' => 'id'));
+  $contribution_page_id = civicrm_api3('ContributionPage', 'getvalue', array('return' => 'id'));
+
+  // One out of three are checks, the rest credit cards.
+  if(rand(1, 3) == 3) {
+    // Check
+    $trxn_id = NULL;
+    $payment_instrument_id = 4;
+    $check_number = rand(1,4000);
+    $contribution_status_id = 1;
+  }
+  else {
+    // Credit cardd.
+    $trxn_id = substr(md5(rand()), 0, 12);
+    $payment_instrument_id = 1;
+    $check_number = NULL;
+
+    // One out of ten are failed
+    if(rand(1, 10) == 10) {
+      $contribution_status_id = 4;
+    }
+    else {
+      $contribution_status_id = 1;
+    }
+  }
+
+  $params = array(
+    "contact_id" => $contact_id,
+    "currency" => "USD",
+    "receive_date" => demo_random_date_since($since),
+    "non_deductible_amount" => "0.00",
+    "total_amount" => $amount ? $amount : demo_random_donation_amount(),
+    "fee_amount" => "",
+    "net_amount" => "",
+    "trxn_id" => $trxn_id,
+    "is_test" => "0",
+    "is_pay_later" => "0",
+    "contribution_status_id" => $contribution_status_id,
+    "check_number" => $check_number,
+    "contribution_campaign_id" => $campaign_id,
+    "contribution_page_id" => $contribution_page_id,
+    "contribution_recur_id" => "",
+    "payment_instrument_id" => $payment_instrument_id,
+    "financial_type_id" => 1 // Donation.
+  );
+  civicrm_api3('Contribution', 'create', $params);
+
+}
 function demo_contributions() {
   $results = civicrm_api3('Contribution', 'get', array());
   if($results['count'] >= 1) {
@@ -1202,9 +1242,7 @@ function demo_contributions() {
     return;
   }
 
-  $campaign_id = civicrm_api3('Campaign', 'getvalue', array('return' => 'id'));
-  $contribution_page_id = civicrm_api3('ContributionPage', 'getvalue', array('return' => 'id'));
-
+  
   // We assume we have contacts in the database and that the contact ids
   // span consecutively from 100 - 600. 
   // We will create contributions for those 500 contacts.
@@ -1216,52 +1254,34 @@ function demo_contributions() {
     if ($i % 100 == 0) {
       drush_log(dt("Adding $i Contribution", array('@i' => $i)), 'ok');
     }
-  
-    // One out of three are checks, the rest credit cards.
-    if(rand(1, 3) == 3) {
-      // Check
-      $trxn_id = NULL;
-      $payment_instrument_id = 4;
-      $check_number = rand(1,4000);
-      $contribution_status_id = 1;
-    }
-    else {
-      // Credit cardd.
-      $trxn_id = substr(md5(rand()), 0, 12);
-      $payment_instrument_id = 1;
-      $check_number = NULL;
 
-      // One out of ten are failed
-      if(rand(1, 10) == 10) {
-        $contribution_status_id = 4;
-      }
-      else {
-        $contribution_status_id = 1;
+    // Make one contribution.
+    demo_add_contribution_to_contact($i); 
+
+    // One out of 10 make more then one contribution.
+    if(rand(1, 10) == 10) {
+      demo_add_contribution_to_contact($i); 
+
+      // And one out of thirty make another contribution.
+      if(rand(1, 30) == 30) {
+        demo_add_contribution_to_contact($i); 
       }
     }
-
-    $params = array(
-      "contact_id" => $i,
-      "currency" => "USD",
-      "receive_date" => demo_random_date_in_last_five_years(),
-      "non_deductible_amount" => "0.00",
-      "total_amount" => demo_random_donation_amount(),
-      "fee_amount" => "",
-      "net_amount" => "",
-      "trxn_id" => $trxn_id,
-      "is_test" => "0",
-      "is_pay_later" => "0",
-      "contribution_status_id" => $contribution_status_id,
-      "check_number" => $check_number,
-      "contribution_campaign_id" => $campaign_id,
-      "contribution_page_id" => $contribution_page_id,
-      "contribution_recur_id" => "",
-      "payment_instrument_id" => $payment_instrument_id,
-      "financial_type_id" => 1 // Donation.
-    );
-    civicrm_api3('Contribution', 'create', $params);
     $i++;
   }
+  
+  // Now ensure we have at least two contacts with three donations over $250 each.
+  $id = 700;
+  $amount = '250';
+  demo_add_contribution_to_contact($id, $amount, 1); 
+  demo_add_contribution_to_contact($id, $amount, 1); 
+  demo_add_contribution_to_contact($id, $amount, 1); 
+
+  $id = 701;
+  demo_add_contribution_to_contact($id, $amount, 1); 
+  demo_add_contribution_to_contact($id, $amount, 1); 
+  demo_add_contribution_to_contact($id, $amount, 1); 
+
 }
 
 function demo_contribution_page() {
