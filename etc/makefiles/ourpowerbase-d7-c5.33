@@ -754,7 +754,7 @@ projects[basic][version] = "4.2"
 projects[pb_custom_theme_elements][type] = "theme"
 projects[pb_custom_theme_elements][download][type] = "git"
 projects[pb_custom_theme_elements][download][url] = "git://git.progressivetech.org/powerbase/pb_custom_theme_elements.git"
-projects[pb_custom_theme_elements][download][revision] = "2817eb9147ac0c0adffe7ada23f5cc5a4ce721d8"
+projects[pb_custom_theme_elements][download][revision] = "8c3079594a444a78748e3e13ea1477247c0777d0"
 
 projects[powerbase][type] = "theme"
 projects[powerbase][download][type] = "git"
