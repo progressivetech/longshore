@@ -716,8 +716,8 @@ projects[contributeprogress][download][revision] = "f11ef9a7b498f20bd62b2eba0baa
 projects[smsinbox][type] = "library"
 projects[smsinbox][destination] = "extensions"
 projects[smsinbox][download][type] = "git"
-projects[smsinbox][download][url] = "https://github.com/progressivetech/SMS-Inbox.git"
-projects[smsinbox][download][revision] = "b1a4e3978abfa93501b3df4106bb87c8f84eaf72"
+projects[smsinbox][download][url] = "https://github.com/JohnFF/SMS-Inbox"
+projects[smsinbox][download][revision] = "3f4e36c1540926609545cbef78dea06ddff10649"
 
 projects[relationreport][type] = "library"
 projects[relationreport][destination] = "extensions"
