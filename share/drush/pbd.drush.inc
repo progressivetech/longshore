@@ -1737,6 +1737,16 @@ function pbd_grant_anonymous_and_authenticated_role_access($one_time = FALSE) {
     'access uploaded files'
   );
 
+  // If stripe is enabled, we have to provide anonymous access to
+  // access AJAX API.
+  $sql = "SELECT COUNT(*) AS count FROM civicrm_payment_processor p JOIN 
+    civicrm_payment_processor_type pt ON p.payment_processor_type_id = pt.id
+    WHERE pt.name = 'Stripe' AND p.is_active = 1";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  $dao->fetch();
+  if ($dao->count > 0) {
+    $default_anon_perms[] = 'access AJAX API';
+  }
   // Unset some permissions that should only be set on the first time
   // we run (so they can be un-checked on a site-by-site basis
   if(!$one_time) {
