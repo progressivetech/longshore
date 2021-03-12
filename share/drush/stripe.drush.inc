@@ -53,7 +53,7 @@ function drush_stripe_retry() {
   $unprocessed_success = 0;
   $unprocessed_fail = 0;
   foreach($results['values'] as $value) {
-    if ($value['processed'] == 'no') {
+    if ($value['processed'] == 'no' && isset($value['system_log_id'])) {
       drush_log("Processing system log id " . $value['system_log_id']);
       $params = [ 'ppid' => $ppid, 'id' => $value['system_log_id'] ];
       $ipn_results = civicrm_api3('Stripe', 'Ipn', $params);
