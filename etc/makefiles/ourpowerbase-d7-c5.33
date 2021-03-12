@@ -726,6 +726,12 @@ projects[relationreport][download][type] = "git"
 projects[relationreport][download][url] = "https://github.com/systopia/de.systopia.relationreport"
 projects[relationreport][download][revision] = "2de4b311ede3e6035986642d3a54288cb25a57f8"
 
+projects[signagain][type] = "library"
+projects[signagain][destination] = "extensions"
+projects[signagain][download][type] = "git"
+projects[signagain][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.signagain"
+projects[signagain][download][revision] = "bd82ffffb11d21730f4eb811d1bb981943e564b0"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
