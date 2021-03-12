@@ -42,7 +42,9 @@ function drush_stripe_retry() {
   $ppid = drush_get_option('ppid', NULL);
   $params = [
     'ppid' => $ppid,
-    'limit' => 100
+    'limit' => 100,
+    'filter_processed' => 1,
+    'source' => 'systemlog'
   ];
   $results = civicrm_api3('Stripe', 'ListEvents', $params);
   $total = count($results['values']);
@@ -50,8 +52,8 @@ function drush_stripe_retry() {
   $unprocessed_fail = 0;
   foreach($results['values'] as $value) {
     if ($value['processed'] == 'no') {
-      drush_log("Processing event id " . $value['id']);
-      $params = [ 'ppid' => $ppid, 'evtid' => $value['id'] ];
+      drush_log("Processing system log id " . $value['system_log_id']);
+      $params = [ 'ppid' => $ppid, 'id' => $value['system_log_id'] ];
       $ipn_results = civicrm_api3('Stripe', 'Ipn', $params);
       if ($ipn_results['is_error'] == 0) {
 	      $unprocessed_success++;
