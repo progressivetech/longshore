@@ -41,7 +41,7 @@ function stripe_drush_command() {
 function drush_stripe_retry() {
   _civicrm_init();
   $ppid = drush_get_option('ppid', NULL);
-  $limit = drush_get_option('ppid', 100);
+  $limit = drush_get_option('limit', 100);
   $params = [
     'ppid' => $ppid,
     'limit' => $limit,
