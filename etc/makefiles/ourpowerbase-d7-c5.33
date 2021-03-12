@@ -730,7 +730,7 @@ projects[signagain][type] = "library"
 projects[signagain][destination] = "extensions"
 projects[signagain][download][type] = "git"
 projects[signagain][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.signagain"
-projects[signagain][download][revision] = "bd82ffffb11d21730f4eb811d1bb981943e564b0"
+projects[signagain][download][revision] = "3afc1d434784cbf1e05476b1a677e0341c10ffd9"
 
 ;########
 ; CiviCRM Mosaico Templates
