@@ -31,7 +31,8 @@ function stripe_drush_command() {
   $items['stripe-retry'] = array(
     'description' => "Re-try all transactions that are pending in Powerbase but succeeded in stripe.",
     'options' => array(
-      'ppid' => "The payment processor id"
+      'ppid' => "The payment processor id",
+      'limit' => "The number of previous transactions to search"
     ),
   );
   return $items;
@@ -40,9 +41,10 @@ function stripe_drush_command() {
 function drush_stripe_retry() {
   _civicrm_init();
   $ppid = drush_get_option('ppid', NULL);
+  $limit = drush_get_option('ppid', 100);
   $params = [
     'ppid' => $ppid,
-    'limit' => 100,
+    'limit' => $limit,
     'filter_processed' => 1,
     'source' => 'systemlog'
   ];
