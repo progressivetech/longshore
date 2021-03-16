@@ -1467,10 +1467,10 @@ long_configure_site_once() {
 
   # Set PTP configurations. 
   if [ "$force" = "force" ]; then
-    long_log "Running drush ptp-configure-once --force" info
+    long_log "Running drush pbd-configure-once --force" info
     long_exec_drush_cmd "$site" "pbd-configure-once --force" "LONG_LIVE"
   else
-    long_log "Running drush ptp-configure-once" info
+    long_log "Running drush pbd-configure-once" info
     long_exec_drush_cmd "$site" "pbd-configure-once" "LONG_LIVE"
   fi
 }
