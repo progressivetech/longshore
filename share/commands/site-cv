@@ -1,0 +1,50 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-cv <site> <command>
+Run the specified cv command in the context of the specified site.
+
+Arguments
+  <site> - The site database to login to or --all to run on all.
+  <command> - The cv command to execute, together with all arguments.
+  e.g. site-cv flush"
+
+long_check_args "$2" "$#" 2
+
+sites="$2"
+
+# Accept all arguments as the cv command
+shift 2
+cmd="$@"
+
+if [ "$sites" = "--all" ]; then
+  long_set_sites
+  sites="$LONG_SITES"
+fi
+
+me=$(hostname)
+for site in $sites; do
+  long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+
+  # We can't use the re-run over network helper function because the command has to
+  # be fully quoted. So, re-implementing here.
+  long_set_site_sibling "$site"
+  if [ -z "$LONG_SITE_SIBLING" ]; then
+    # This could mean the site name was mis-typed.
+    long_log "Can't determine where to run this command because site doesn't have sibling (%s)." error "$site"
+    continue
+  fi
+  if [ "$LONG_SITE_SIBLING" = "$me" ]; then
+    # Run locally.
+    # If the site is not running we can't run a command.
+    if ! long_container_running "$site"; then
+      long_log "Not executing command for %s because it is not running." info "$site"
+    else
+      long_exec_cv_cmd "$site" "$cmd"
+    fi
+  else
+    # Run over the network.
+    cmd=$(echo "$cmd" | sed "s#'#\\\'#g")
+    cmd=$(echo "$cmd" | sed 's#"#\\\"#g')
+    ssh -q -t "${LONG_SITE_SIBLING}.mayfirst.org" "/srv/longshore/bin/longshore site-cv '$site' '$cmd'" 
+  fi
+done

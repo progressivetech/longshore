@@ -756,6 +756,23 @@ long_create_civicrm_settings() {
   # Remove write access.
   chmod 755 "${dir}/drupal"
 }
+# Execute the given cv command in the given container as the www-data user.
+long_exec_cv_cmd() {
+  local site="$1"
+  local cmd="$2"
+  local -i return=0
+
+  long_init_site_tmp_var "$site"
+  local file=$(mktemp "${LONG_SITE_TMP}/drupal.XXXXXXX");
+  chmod 755 "$file"
+  printf "#!/bin/bash\n" > "$file"
+  printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
+  printf "cv $cmd\n" >> "$file"
+  long_exec_in_container "$site" "$file"
+  return="$?"
+  rm "$file"
+  return "$return"
+}
 
 # Execute the given drush command in the given container as the www-data user.
 long_exec_drush_cmd() {
