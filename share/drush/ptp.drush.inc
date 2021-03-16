@@ -1212,7 +1212,7 @@ function ptp_insert_org_contact() {
   // These are the values we want.
   $want_values = array(
     'email' => 'info@progressivetech.org',
-    'phone' => '512-782-8478',
+    'phone' => '612-351-3479',
     'street_address' => 'PO Box 303190',
     'city' => 'Austin',
     'state_province_id' => '1042',
@@ -1558,7 +1558,7 @@ function ptp_create_help_menu() {
 
   // Build out the submenus now.
   $submenus = array(
-    'For Support, click this link, email support@progressivetech.org or call 512-782-8478' =>
+    'For Support, click this link, email support@progressivetech.org or call (612) 351-3479' =>
       'https://ptp.ourpowerbase.net/help',
     'Upcoming Trainings' =>
       'https://ptp.ourpowerbase.net/civicrm/event/ical?reset=1&list=1&html=1',
