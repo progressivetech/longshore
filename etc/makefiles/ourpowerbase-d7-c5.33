@@ -69,6 +69,9 @@ projects[webform][version] = "4.23"
 ; Path to fix obscure conditional bug. See https://www.drupal.org/node/2682441
 projects[webform][patch][] = "/srv/longshore/etc/makefiles/webform.patch"
 
+projects[webform_draggable_list][type] = "module"
+projects[webform_draggable_list][version] = "1.4"
+
 projects[libraries][type] = "module"
 projects[libraries][version] = "2.5"
 
