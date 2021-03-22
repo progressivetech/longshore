@@ -49,7 +49,7 @@ RUN cd /usr/local/bin && wget -q -O drush https://github.com/drush-ops/drush/rel
 # Listen on 127.0.0.1 
 RUN sed -i 's#listen = /run/php/php7.3-fpm.sock#listen = 9000#' /etc/php/7.3/fpm/pool.d/www.conf
 
-# User arbitrary high UID so we can more easily understand UIDs on the host
+# Use arbitrary high UID so we can more easily understand UIDs on the host
 RUN groupmod -g 5001 www-data
 RUN usermod -u 5001 www-data 
 RUN usermod -s /bin/bash www-data
@@ -57,6 +57,11 @@ RUN usermod -s /bin/bash www-data
 # Create drush directory under the www-data's home directory so the create
 # command can mount our drush scripts.
 RUN mkdir -p /var/www/.drush
+
+# Create a directory for cv use so commands like upgrade:db can write temp data
+# to a writable location
+RUN mkdir -p /var/www/.cv
+RUN chown www-data:www-data /var/www/.cv
 
 # Create a .ssh directory in case we need this container to scp/ssh out
 RUN mkdir -p /var/www/.ssh
