@@ -1924,14 +1924,18 @@ function ptp_find_broken_custom_fields() {
   _civicrm_init();
   $sql = "SELECT g.id AS group_id, g.name AS group_name, g.title AS group_title, table_name, f.id AS field_id, f.name AS field_name, f.label AS field_label, column_name FROM civicrm_custom_field f JOIN civicrm_custom_group g ON f.custom_group_id = g.id";
   $dao = CRM_Core_DAO::executeQuery($sql);
+  $count = 0;
   while($dao->fetch()) {
+    $count++;
     $column = $dao->column_name;
     $sql = "SELECT COUNT(*) AS count FROM information_schema.COLUMNS WHERE COLUMN_NAME = %0";
-    $dao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $column, 'String' ] ]);
-    $dao->fetch();
-    if ($dao->count == 0) {
+    $cdao = CRM_Core_DAO::executeQuery($sql, [ 0 => [ $column, 'String' ] ]);
+    $cdao->fetch();
+    //drush_log("Checking: $column...", 'info');
+    if ($cdao->count == 0) {
       // We have a problem.
       drush_log("Missing field: $dao->group_name : $dao->group_label : $dao->table_name and $dao->field_label : $dao->field_name : $dao->column_name ", 'error');
     }
   }
+  drush_log("Checked $count columns.", 'info');
 }
