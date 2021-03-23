@@ -1921,6 +1921,7 @@ function ptp_iowacci_fix() {
 }
 
 function ptp_find_broken_custom_fields() {
+  _civicrm_init();
   $sql = "SELECT g.id AS group_id, g.name AS group_name, g.title AS group_title, table_name, f.id AS field_id, f.name AS field_name, f.label AS field_label, column_name FROM civicrm_custom_field f JOIN civicrm_custom_group g ON f.custom_group_id = g.id";
   $dao = CRM_Core_DAO::executeQuery($sql);
   while($dao->fetch()) {
