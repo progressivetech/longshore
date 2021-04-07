@@ -33,7 +33,7 @@ for site in $sites; do
       if [[ "$pid" =~ ^[0-9]+$ ]]; then
         # Silently email the passed contact
         msg=$(printf "The database %s has a process running for %s seconds. Kill with: longshore site-sqlt %s %s.\n" $db $time $db $pid)
-        long_log $msg  'info'
+        long_log "$msg" info
         echo "$msg" | /srv/longshore/bin/longshore notify warning
       fi
     fi
