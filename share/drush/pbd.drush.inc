@@ -3725,4 +3725,173 @@ function pbd_stripe_webhooks() {
     CRM_Stripe_Webhook::check($messages, TRUE);
   }
 }
+
+function pbd_undocufund_report($csv = FALSE) {
+
+  $greatest_need_options = CRM_Core_OptionGroup::values("use_of_funds_greatest_need_20210303195412");
+
+  $result = [];
+  // Get the plain contact records first.
+  $sql_group = "
+    SELECT DISTINCT
+      c.id,
+      c.first_name, 
+      c.last_name
+    FROM civicrm_contact c 
+      JOIN civicrm_group_contact gc ON c.id = gc.contact_id
+      JOIN civicrm_activity_contact ac_internal ON c.id = ac_internal.contact_id AND ac_internal.record_type_id = 3  
+      JOIN civicrm_value_undocufund_on_60 internal ON ac_internal.activity_id = internal.entity_id 
+      LEFT JOIN civicrm_activity_contact ac_cirf ON c.id = ac_cirf.contact_id AND ac_cirf.record_type_id = 3
+      LEFT JOIN civicrm_activity a_cirf ON a_cirf.id = ac_cirf.activity_id AND a_cirf.activity_type_id = 100  
+    WHERE 
+      internal.disbursement_decision_501 = 1 AND 
+      (
+        ( gc.group_id = 654 AND a_cirf.id IS NOT NULL ) OR 
+        gc.group_id = 676 OR 
+        gc.group_id=687 OR 
+        gc.group_id=702 OR 
+        gc.group_id=705
+      ) 
+    ";
+
+  $sql_decision = "
+    SELECT DISTINCT
+      c.id,
+      c.first_name, 
+      c.last_name,
+      a.activity_date_time as decision_date
+    FROM civicrm_contact c 
+      JOIN civicrm_activity_contact ac_internal ON c.id = ac_internal.contact_id AND ac_internal.record_type_id = 3  
+      JOIN civicrm_activity a ON ac_internal.activity_id = a.id
+      JOIN civicrm_value_undocufund_on_60 internal ON ac_internal.activity_id = internal.entity_id 
+    WHERE 
+      internal.disbursement_decision_501 = 1 AND 
+      a.activity_date_time > '2021-02-15' 
+    ";
+
+
+    $contact_dao = \CRM_Core_DAO::executeQuery($sql_decision);
+    while ($contact_dao->fetch()) {
+      $contact_id = $contact_dao->id;
+      $record = [
+        'id' => $contact_id,
+        'first_name' => $contact_dao->first_name,
+        'last_name' => $contact_dao->last_name,
+        'decision_date' => $contact_dao->decision_date
+      ];
+
+      // These are the only params we need for each query.
+      $params = [ 0 => [ $contact_id, 'Integer' ] ];
+
+      // For each record, do a best effort to get the demographic and survey data.
+
+      // GENDER
+      $sql = "SELECT DISTINCT ov.label as gender
+        FROM civicrm_value_undocufund_in_57 demo
+          JOIN civicrm_option_value ov ON 
+            ov.value = demo.gender_cirf_defined__525 AND ov.option_group_id = 283 
+        WHERE demo.entity_id = %0";
+
+      $dao = CRM_Core_DAO::executeQuery($sql, $params);
+      $dao->fetch();
+      $record['gender'] = $dao->gender;
+
+      // RACE 
+      $sql = "SELECT DISTINCT ov.label as race 
+        FROM civicrm_value_undocufund_in_57 demo
+          JOIN civicrm_option_value ov ON 
+            ov.value = demo.race_and_ethnicity_cirf_defined__587 AND ov.option_group_id = 301 
+        WHERE demo.entity_id = %0";
+
+      $dao = \CRM_Core_DAO::executeQuery($sql, $params);
+      $dao->fetch();
+      $record['race'] = $dao->race;
+
+      // NUMBER 18 AND OVER
+      $sql = "
+        SELECT DISTINCT demo.number_of_adults_in_the_househol_437 AS household_members_18_and_over
+        FROM civicrm_value_undocufund_in_57 demo
+        WHERE 
+          demo.entity_id = %0 AND 
+          demo.number_of_adults_in_the_househol_437 IS NOT NULL
+      ";
+      $params = [ 0 => [ $contact_id, 'Integer' ] ];
+      $dao = \CRM_Core_DAO::executeQuery($sql, $params);
+      $dao->fetch();
+      $record['household_members_18_and_over'] = $dao->household_members_18_and_over;
+
+      // NUMBER UNDER 18
+      $sql = "
+        SELECT DISTINCT demo.number_of_children_in_the_househ_438 AS household_members_under_18
+        FROM civicrm_value_undocufund_in_57 demo
+        WHERE 
+          demo.entity_id = %0 AND 
+          demo.number_of_children_in_the_househ_438 IS NOT NULL
+      ";
+      $params = [ 0 => [ $contact_id, 'Integer' ] ];
+      $dao = \CRM_Core_DAO::executeQuery($sql, $params);
+      $dao->fetch();
+      $record['household_members_under_18'] = $dao->household_members_under_18;
+
+      // PRIMARY SOURCE OF INCOME
+      $sql = "
+        SELECT DISTINCT ov.label AS primary_source_of_income
+        FROM civicrm_activity_contact ac JOIN 
+          civicrm_value_undocufund_on_58 survey ON ac.activity_id = survey.entity_id JOIN
+          civicrm_option_value ov ON ov.value = survey.employment_industry_type_of_work_528 AND
+		        ov.option_group_id = 286
+        WHERE 
+          record_type_id = 3 AND 
+          ac.contact_id = %0 AND 
+          survey.employment_industry_type_of_work_528 IS NOT NULL
+      ";
+
+      $params = [ 0 => [ $contact_id, 'Integer' ] ];
+      $dao = \CRM_Core_DAO::executeQuery($sql, $params);
+      $dao->fetch();
+      $record['primary_source_of_income'] = $dao->primary_source_of_income;
+
+      // GREATEST NEED 
+      $sql = "
+        SELECT DISTINCT survey.use_of_funds_greatest_need_585 AS greatest_need 
+        FROM civicrm_activity_contact ac JOIN 
+          civicrm_value_undocufund_on_58 survey ON ac.activity_id = survey.entity_id
+        WHERE 
+          record_type_id = 3 AND 
+          ac.contact_id = %0 AND 
+          survey.employment_industry_type_of_work_528 IS NOT NULL
+      ";
+
+      $params = [ 0 => [ $contact_id, 'Integer' ] ];
+      $dao = \CRM_Core_DAO::executeQuery($sql, $params);
+      $dao->fetch();
+      $greatest_need_ids = explode(CRM_Core_DAO::VALUE_SEPARATOR,$dao->greatest_need);
+      $greatest_needs = [];
+      foreach ($greatest_need_ids as $greatest_need_id) {
+        $val = trim($greatest_need_options[$greatest_need_id]);
+        if ($val) {
+          $greatest_needs[] = $greatest_need_options[$greatest_need_id];
+        }
+      }
+
+      $record['greatest_need'] = implode(",",$greatest_needs);
+      $result[] = $record; 
+
+    }
+    if (!$csv) {
+      print_r($result);
+      echo "Count: " . count($result) . "\n";
+    }
+    else {
+      $out = fopen('php://output', 'w');
+      $header = array_keys($result);
+      fputcsv($out, $header);
+      foreach($result as $row) {
+        fputcsv($out, $row);
+      }
+      fclose($out);
+    }
+}
+
+
 ?>
