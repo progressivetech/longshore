@@ -81,6 +81,14 @@ function pbd_drush_command() {
     array(
       'description' => 'If site is multi-lingual, rebuilds the schema.'
     );
+  $items['pbd-undocufund-report'] = 
+    array(
+      'description' => 'Run custom report.',
+      'options' => [
+        'csv' => "Set to 1 to output in CSV format. Otherwise print_r will be used."
+      ],
+    );
+
   return $items;
 }
 
@@ -3726,9 +3734,18 @@ function pbd_stripe_webhooks() {
   }
 }
 
-function pbd_undocufund_report($csv = FALSE) {
+function drush_pbd_undocufund_report() {
+
+  $csv = drush_get_option('csv', 0);
 
   $greatest_need_options = CRM_Core_OptionGroup::values("use_of_funds_greatest_need_20210303195412");
+
+  $missing_gender = 0;
+  $missing_race = 0;
+  $missing_greatest_need = 0;
+  $missing_primary_source_of_income = 0;
+  $missing_under_18 = 0;
+  $missing_over_18 = 0;
 
   $result = [];
   // Get the plain contact records first.
@@ -3794,7 +3811,13 @@ function pbd_undocufund_report($csv = FALSE) {
 
       $dao = CRM_Core_DAO::executeQuery($sql, $params);
       $dao->fetch();
-      $record['gender'] = $dao->gender;
+      if (!isset($dao->gender)) {
+        $missing_gender++;
+        $record['gender'] = '';
+      }
+      else {
+        $record['gender'] = $dao->gender;
+      }
 
       // RACE 
       $sql = "SELECT DISTINCT ov.label as race 
@@ -3805,7 +3828,13 @@ function pbd_undocufund_report($csv = FALSE) {
 
       $dao = \CRM_Core_DAO::executeQuery($sql, $params);
       $dao->fetch();
-      $record['race'] = $dao->race;
+      if (!isset($dao->race)) {
+        $missing_race++;
+        $record['race'] = '';
+      }
+      else {
+        $record['race'] = $dao->race;
+      }
 
       // NUMBER 18 AND OVER
       $sql = "
@@ -3818,7 +3847,13 @@ function pbd_undocufund_report($csv = FALSE) {
       $params = [ 0 => [ $contact_id, 'Integer' ] ];
       $dao = \CRM_Core_DAO::executeQuery($sql, $params);
       $dao->fetch();
-      $record['household_members_18_and_over'] = $dao->household_members_18_and_over;
+      if (!isset($dao->household_members_18_and_over)) {;
+        $missing_over_18++;
+        $record['household_members_18_and_over'] = '';
+      }
+      else {
+        $record['household_members_18_and_over'] = $dao->household_members_18_and_over;
+      }
 
       // NUMBER UNDER 18
       $sql = "
@@ -3831,7 +3866,14 @@ function pbd_undocufund_report($csv = FALSE) {
       $params = [ 0 => [ $contact_id, 'Integer' ] ];
       $dao = \CRM_Core_DAO::executeQuery($sql, $params);
       $dao->fetch();
-      $record['household_members_under_18'] = $dao->household_members_under_18;
+
+      if (!isset($dao->household_members_under_18)) {
+        $missing_under_18++;
+        $record['household_members_under_18'] = '';
+      }
+      else {
+        $record['household_members_under_18'] = $dao->household_members_under_18;
+      }
 
       // PRIMARY SOURCE OF INCOME
       $sql = "
@@ -3849,7 +3891,13 @@ function pbd_undocufund_report($csv = FALSE) {
       $params = [ 0 => [ $contact_id, 'Integer' ] ];
       $dao = \CRM_Core_DAO::executeQuery($sql, $params);
       $dao->fetch();
-      $record['primary_source_of_income'] = $dao->primary_source_of_income;
+      if (!isset($dao->primary_source_of_income)) {
+        $missing_primary_source_of_income++;
+        $record['primary_source_of_income'] = '';
+      }
+      else {
+        $record['primary_source_of_income'] = $dao->primary_source_of_income;
+      }
 
       // GREATEST NEED 
       $sql = "
@@ -3865,22 +3913,34 @@ function pbd_undocufund_report($csv = FALSE) {
       $params = [ 0 => [ $contact_id, 'Integer' ] ];
       $dao = \CRM_Core_DAO::executeQuery($sql, $params);
       $dao->fetch();
-      $greatest_need_ids = explode(CRM_Core_DAO::VALUE_SEPARATOR,$dao->greatest_need);
-      $greatest_needs = [];
-      foreach ($greatest_need_ids as $greatest_need_id) {
-        $val = trim($greatest_need_options[$greatest_need_id]);
-        if ($val) {
-          $greatest_needs[] = $greatest_need_options[$greatest_need_id];
-        }
+      if (!isset($dao->greatest_need)) {
+        $missing_greatest_need++;
+        $record['greatest_need'] = '';
       }
-
-      $record['greatest_need'] = implode(",",$greatest_needs);
+      else {
+        $greatest_need_ids = explode(CRM_Core_DAO::VALUE_SEPARATOR,$dao->greatest_need);
+        $greatest_needs = [];
+        foreach ($greatest_need_ids as $greatest_need_id) {
+          $raw_value = trim($greatest_need_id);
+          if (empty($raw_value)) {
+            continue;
+          }
+          $greatest_needs[] = $greatest_need_options[$raw_value];
+        }
+        $record['greatest_need'] = implode(",",$greatest_needs);
+      }
       $result[] = $record; 
 
     }
-    if (!$csv) {
+    if ($csv == 0) {
       print_r($result);
       echo "Count: " . count($result) . "\n";
+      echo "Missing Gender: " . $missing_gender . "\n";
+      echo "Missing Race: " . $missing_race . "\n";
+      echo "Missing Under 18: " . $missing_under_18 . "\n";
+      echo "Missing Over 18: " . $missing_over_18 . "\n";
+      echo "Missing Greatest Need: " . $missing_greatest_need . "\n";
+      echo "Missing Primary source of income: " . $missing_primary_source_of_income . "\n";
     }
     else {
       $out = fopen('php://output', 'w');
