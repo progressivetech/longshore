@@ -3739,6 +3739,7 @@ function drush_pbd_undocufund_report() {
   $csv = drush_get_option('csv', 0);
 
   $greatest_need_options = CRM_Core_OptionGroup::values("use_of_funds_greatest_need_20210303195412");
+  $race_options = CRM_Core_OptionGroup::values("race_and_ethnicity_cirf_defined__20210303201040");
 
   $missing_gender = 0;
   $missing_race = 0;
@@ -3820,10 +3821,8 @@ function drush_pbd_undocufund_report() {
       }
 
       // RACE 
-      $sql = "SELECT DISTINCT ov.label as race 
+      $sql = "SELECT DISTINCT race_and_ethnicity_cirf_defined__587 as race 
         FROM civicrm_value_undocufund_in_57 demo
-          JOIN civicrm_option_value ov ON 
-            ov.value = demo.race_and_ethnicity_cirf_defined__587 AND ov.option_group_id = 301 
         WHERE demo.entity_id = %0";
 
       $dao = \CRM_Core_DAO::executeQuery($sql, $params);
@@ -3833,7 +3832,16 @@ function drush_pbd_undocufund_report() {
         $record['race'] = '';
       }
       else {
-        $record['race'] = $dao->race;
+        $race_ids = explode(CRM_Core_DAO::VALUE_SEPARATOR,$dao->race);
+        $races = [];
+        foreach ($race_ids as $race_id) {
+          $raw_value = trim($race_id);
+          if (empty($raw_value)) {
+            continue;
+          }
+          $races[] = $race_options[$raw_value];
+        }
+        $record['race'] = implode(",",$races);
       }
 
       // NUMBER 18 AND OVER
