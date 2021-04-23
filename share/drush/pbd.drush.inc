@@ -3739,6 +3739,7 @@ function drush_pbd_undocufund_report() {
   $csv = drush_get_option('csv', 0);
 
   $greatest_need_options = CRM_Core_OptionGroup::values("use_of_funds_greatest_need_20210303195412");
+  $primary_source_of_income_options = CRM_Core_OptionGroup::values("employment_industry_type_of_work_20200615112452");
   $race_options = CRM_Core_OptionGroup::values("race_and_ethnicity_cirf_defined__20210303201040");
 
   $missing_gender = 0;
@@ -3885,27 +3886,36 @@ function drush_pbd_undocufund_report() {
 
       // PRIMARY SOURCE OF INCOME
       $sql = "
-        SELECT DISTINCT ov.label AS primary_source_of_income
+        SELECT DISTINCT survey.employment_industry_type_of_work_528 as primary_source_of_income
         FROM civicrm_activity_contact ac JOIN 
-          civicrm_value_undocufund_on_58 survey ON ac.activity_id = survey.entity_id JOIN
-          civicrm_option_value ov ON ov.value = survey.employment_industry_type_of_work_528 AND
-		        ov.option_group_id = 286
+          civicrm_value_undocufund_on_58 survey ON ac.activity_id = survey.entity_id
         WHERE 
-          record_type_id = 3 AND 
           ac.contact_id = %0 AND 
           survey.employment_industry_type_of_work_528 IS NOT NULL
       ";
 
       $params = [ 0 => [ $contact_id, 'Integer' ] ];
       $dao = \CRM_Core_DAO::executeQuery($sql, $params);
-      $dao->fetch();
-      if (!isset($dao->primary_source_of_income)) {
+      $primary_source_of_income = NULL;
+      while ($dao->fetch()) {
+        if (isset($dao->primary_source_of_income)) {
+          $primary_source_of_income_ids = explode(CRM_Core_DAO::VALUE_SEPARATOR,$dao->primary_source_of_income);
+          $primary_source_of_incomes = [];
+          foreach ($primary_source_of_income_ids as $primary_source_of_income_id) {
+            $raw_value = trim($primary_source_of_income_id);
+            if (empty($raw_value)) {
+              continue;
+            }
+            $primary_source_of_incomes[] = $primary_source_of_income_options[$raw_value];
+          }
+          $primary_source_of_income = implode(",",$primary_source_of_incomes);
+          break;
+        }
+      }
+      if (!$primary_source_of_income) {
         $missing_primary_source_of_income++;
-        $record['primary_source_of_income'] = '';
       }
-      else {
-        $record['primary_source_of_income'] = $dao->primary_source_of_income;
-      }
+      $record['primary_source_of_income'] = $primary_source_of_income;
 
       // GREATEST NEED 
       $sql = "
@@ -3915,30 +3925,33 @@ function drush_pbd_undocufund_report() {
         WHERE 
           record_type_id = 3 AND 
           ac.contact_id = %0 AND 
-          survey.employment_industry_type_of_work_528 IS NOT NULL
+          survey.use_of_funds_greatest_need_585 IS NOT NULL
       ";
 
       $params = [ 0 => [ $contact_id, 'Integer' ] ];
       $dao = \CRM_Core_DAO::executeQuery($sql, $params);
-      $dao->fetch();
-      if (!isset($dao->greatest_need)) {
-        $missing_greatest_need++;
-        $record['greatest_need'] = '';
-      }
-      else {
-        $greatest_need_ids = explode(CRM_Core_DAO::VALUE_SEPARATOR,$dao->greatest_need);
-        $greatest_needs = [];
-        foreach ($greatest_need_ids as $greatest_need_id) {
-          $raw_value = trim($greatest_need_id);
-          if (empty($raw_value)) {
-            continue;
+      $greatest_need = NULL;
+      while($dao->fetch()) {
+        if ($dao->greatest_need) {
+          $greatest_need_ids = explode(CRM_Core_DAO::VALUE_SEPARATOR,$dao->greatest_need);
+          $greatest_needs = [];
+          foreach ($greatest_need_ids as $greatest_need_id) {
+            $raw_value = trim($greatest_need_id);
+            if (empty($raw_value)) {
+              continue;
+            }
+            $greatest_needs[] = $greatest_need_options[$raw_value];
           }
-          $greatest_needs[] = $greatest_need_options[$raw_value];
+          if (count($greatest_needs) > 0) {
+            $greatest_need = implode(",",$greatest_needs);
+          }
         }
-        $record['greatest_need'] = implode(",",$greatest_needs);
       }
+      if (!$greatest_need) {
+        $missing_greatest_need++;
+      }
+      $record['greatest_need'] = $greatest_need;
       $result[] = $record; 
-
     }
     if ($csv == 0) {
       print_r($result);
