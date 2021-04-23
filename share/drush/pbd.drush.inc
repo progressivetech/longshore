@@ -3944,7 +3944,7 @@ function drush_pbd_undocufund_report() {
     }
     else {
       $out = fopen('php://output', 'w');
-      $header = array_keys($result);
+      $header = array_keys($result[0]);
       fputcsv($out, $header);
       foreach($result as $row) {
         fputcsv($out, $row);
