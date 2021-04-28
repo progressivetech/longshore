@@ -3756,7 +3756,7 @@ function drush_pbd_cicero_users() {
   $sql = "SELECT FROM_UNIXTIME(date_to_run) AS last_run FROM civicrm_cicero_sync_runs ORDER BY date_to_run DESC LIMIT 1";
   $dao = CRM_Core_DAO::executeQuery($sql);
   $dao->fetch();
-  $last_run = $dao->last_run;
+  $last_run = substr($dao->last_run, 0, 10);
   drush_log(CIVICRM_UF_BASEURL . ": Last run: $last_run", 'error');
 
 }
