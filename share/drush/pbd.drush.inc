@@ -88,6 +88,10 @@ function pbd_drush_command() {
         'csv' => "Set to 1 to output in CSV format. Otherwise print_r will be used."
       ],
     );
+  $items['pbd-cicero-users'] = 
+    array(
+      'description' => 'Check for cicero usage',
+    );
 
   return $items;
 }
@@ -3732,6 +3736,29 @@ function pbd_stripe_webhooks() {
     $message = [];
     CRM_Stripe_Webhook::check($messages, TRUE);
   }
+}
+
+function drush_pbd_cicero_users() {
+  // Check if civicrm_cicero_sync_runs table exists.
+  _civicrm_init();
+  $sql = "SELECT COUNT(*) AS count  FROM information_schema.tables WHERE table_name = 'civicrm_cicero_sync_runs'";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  $dao->fetch();
+  if ($dao->count == 0) {
+    return;
+  }
+  $key = variable_get('civicrm_cicero_api_key');
+  $user = variable_get('civicrm_cicero_account_name');
+
+  if (empty($key) && empty($user)) {
+    return;
+  }
+  $sql = "SELECT FROM_UNIXTIME(date_to_run) AS last_run FROM civicrm_cicero_sync_runs ORDER BY date_to_run DESC LIMIT 1";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  $dao->fetch();
+  $last_run = $dao->last_run;
+  drush_log("Last run: $last_run", 'error');
+
 }
 
 function drush_pbd_undocufund_report() {
