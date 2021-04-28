@@ -735,6 +735,18 @@ projects[signagain][download][type] = "git"
 projects[signagain][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.signagain"
 projects[signagain][download][revision] = "3afc1d434784cbf1e05476b1a677e0341c10ffd9"
 
+projects[radiobuttons][type] = "library"
+projects[radiobuttons][destination] = "extensions"
+projects[radiobuttons][download][type] = "git"
+projects[radiobuttons][download][url] = "https://lab.civicrm.org/extensions/radiobuttons.git/"
+projects[signagain][download][revision] = "925e1c562d6c9d4c530a376f30d8db4a2aafd272"
+
+projects[recurringbuttons][type] = "library"
+projects[recurringbuttons][destination] = "extensions"
+projects[recurringbuttons][download][type] = "git"
+projects[recurringbuttons][download][url] = "https://lab.civicrm.org/extensions/recurringbuttons.git/"
+projects[signagain][download][revision] = "03c2aeb4782b86d562a1ecfe736ab16d9f194044"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
