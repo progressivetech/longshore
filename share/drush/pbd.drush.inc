@@ -3757,7 +3757,7 @@ function drush_pbd_cicero_users() {
   $dao = CRM_Core_DAO::executeQuery($sql);
   $dao->fetch();
   $last_run = $dao->last_run;
-  drush_log("Last run: $last_run", 'error');
+  drush_log(CIVICRM_UF_BASEURL . ": Last run: $last_run", 'error');
 
 }
 
