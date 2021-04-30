@@ -3757,7 +3757,13 @@ function drush_pbd_cicero_users() {
   $dao = CRM_Core_DAO::executeQuery($sql);
   $dao->fetch();
   $last_run = substr($dao->last_run, 0, 10);
-  drush_log(CIVICRM_UF_BASEURL . ": Last run: $last_run", 'error');
+
+  $sql = "SELECT MAX(created_date) AS created FROM civicrm_survey s JOIN civicrm_petition_email e ON s.id = e.petition_id WHERE is_active = 1";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  $dao->fetch();
+  $last_petition = substr($dao->created, 0, 10);
+
+  drush_log(CIVICRM_UF_BASEURL . ": Last run: $last_run, Last petition: $last_petition", 'error');
 
 }
 
