@@ -3744,25 +3744,34 @@ function drush_pbd_cicero_users() {
   $sql = "SELECT COUNT(*) AS count  FROM information_schema.tables WHERE table_name = 'civicrm_cicero_sync_runs'";
   $dao = CRM_Core_DAO::executeQuery($sql);
   $dao->fetch();
-  if ($dao->count == 0) {
-    return;
-  }
-  $key = variable_get('civicrm_cicero_api_key');
-  $user = variable_get('civicrm_cicero_account_name');
+  $latest_run = NULL;
+  $last_petition = NULL;
+  if ($dao->count != 0) {
+    $key = variable_get('civicrm_cicero_api_key');
+    $user = variable_get('civicrm_cicero_account_name');
 
-  if (empty($key) && empty($user)) {
-    return;
+    if (!empty($key) || !empty($user)) {
+      $sql = "SELECT FROM_UNIXTIME(date_to_run) AS last_run FROM civicrm_cicero_sync_runs ORDER BY date_to_run DESC LIMIT 1";
+      $dao = CRM_Core_DAO::executeQuery($sql);
+      $dao->fetch();
+      $last_run = substr($dao->last_run, 0, 10);
+    }
   }
-  $sql = "SELECT FROM_UNIXTIME(date_to_run) AS last_run FROM civicrm_cicero_sync_runs ORDER BY date_to_run DESC LIMIT 1";
+  // Check if civicrm_petition_email table exists.
+  _civicrm_init();
+  $sql = "SELECT COUNT(*) AS count  FROM information_schema.tables WHERE table_name = 'civicrm_petition_email'";
   $dao = CRM_Core_DAO::executeQuery($sql);
   $dao->fetch();
-  $last_run = substr($dao->last_run, 0, 10);
+  if ($dao->count != 0) {
+    $sql = "SELECT MAX(created_date) AS created FROM civicrm_survey s JOIN civicrm_petition_email e ON s.id = e.petition_id WHERE is_active = 1";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    $dao->fetch();
+    $last_petition = substr($dao->created, 0, 10);
+  }
 
-  $sql = "SELECT MAX(created_date) AS created FROM civicrm_survey s JOIN civicrm_petition_email e ON s.id = e.petition_id WHERE is_active = 1";
-  $dao = CRM_Core_DAO::executeQuery($sql);
-  $dao->fetch();
-  $last_petition = substr($dao->created, 0, 10);
-
+  if (empty($last_petition) && empty($last_run)) {
+    return;
+  }
   drush_log(CIVICRM_UF_BASEURL . ": Last run: $last_run, Last petition: $last_petition", 'error');
 
 }
