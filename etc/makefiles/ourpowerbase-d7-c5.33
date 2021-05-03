@@ -747,6 +747,12 @@ projects[recurringbuttons][download][type] = "git"
 projects[recurringbuttons][download][url] = "https://lab.civicrm.org/extensions/recurringbuttons.git/"
 projects[recurringbuttons][download][revision] = "03c2aeb4782b86d562a1ecfe736ab16d9f194044"
 
+projects[pricesetbuttons][type] = "library"
+projects[pricesetbuttons][destination] = "extensions"
+projects[pricesetbuttons][download][type] = "git"
+projects[pricesetbuttons][download][url] = "https://lab.civicrm.org/jamie/pricesetbuttons.git/"
+projects[pricesetbuttons][download][revision] = "41ed37f7e77db4066a1fda1c2035ea400e67fa96"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
