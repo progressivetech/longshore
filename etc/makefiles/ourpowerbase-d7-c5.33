@@ -753,6 +753,12 @@ projects[pricesetbuttons][download][type] = "git"
 projects[pricesetbuttons][download][url] = "https://lab.civicrm.org/jamie/pricesetbuttons.git/"
 projects[pricesetbuttons][download][revision] = "3a34f526fb83a7dc18034ec7e3169e87f828fa8e"
 
+projects[electoral][type] = "library"
+projects[electoral][destination] = "extensions"
+projects[electoral][download][type] = "git"
+projects[electoral][download][url] = "https://github.com/progressivetech/com.jlacey.electoral"
+projects[electoral][download][revision] = "192f4e41f607483f2ed0a2049356b7bad0e31dd9"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
