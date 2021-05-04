@@ -751,7 +751,7 @@ projects[pricesetbuttons][type] = "library"
 projects[pricesetbuttons][destination] = "extensions"
 projects[pricesetbuttons][download][type] = "git"
 projects[pricesetbuttons][download][url] = "https://lab.civicrm.org/jamie/pricesetbuttons.git/"
-projects[pricesetbuttons][download][revision] = "41ed37f7e77db4066a1fda1c2035ea400e67fa96"
+projects[pricesetbuttons][download][revision] = "3a34f526fb83a7dc18034ec7e3169e87f828fa8e"
 
 ;########
 ; CiviCRM Mosaico Templates
