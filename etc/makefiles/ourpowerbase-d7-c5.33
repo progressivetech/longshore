@@ -738,8 +738,8 @@ projects[signagain][download][revision] = "3afc1d434784cbf1e05476b1a677e0341c10f
 projects[radiobuttons][type] = "library"
 projects[radiobuttons][destination] = "extensions"
 projects[radiobuttons][download][type] = "git"
-projects[radiobuttons][download][url] = "https://lab.civicrm.org/extensions/radiobuttons.git/"
-projects[radiobuttons][download][revision] = "925e1c562d6c9d4c530a376f30d8db4a2aafd272"
+projects[radiobuttons][download][url] = "https://lab.civicrm.org/jamie/radiobuttons.git/"
+projects[radiobuttons][download][revision] = "19daf9a740f74c730d96500e1954d5715aa0e4c4"
 
 projects[recurringbuttons][type] = "library"
 projects[recurringbuttons][destination] = "extensions"
