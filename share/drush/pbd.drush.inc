@@ -3723,6 +3723,24 @@ function pbd_transactlegacy_go_away() {
 }
 
 /**
+ * find stripe intalls without anon ajax api permission. 
+ */
+function pbd_report_stripe_installs_without_anon_ajax_perm() {
+  // First check if stripe is installed.
+  _civicrm_init();
+  $sql = "SELECT COUNT(*) AS count FROM civicrm_extension WHERE name = 'stripe' and is_active = 1";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  $dao->fetch();
+  if ($dao->count == 1) {
+    // Stripe is active
+    $perms = user_role_permissions([1 => "anonymous"]);
+    if (!array_key_exists('access AJAX API', $perms[1])) {
+      drush_log("Access API not set: " . CIVICRM_UF_BASEURL);
+    }
+  }
+}
+
+/**
  * quick fix to update stripe webhooks.
  */
 function pbd_stripe_webhooks() {
