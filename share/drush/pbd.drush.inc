@@ -3751,11 +3751,24 @@ function pbd_stripe_webhooks() {
   $dao->fetch();
   if ($dao->count == 1) {
     drush_log("Stripe active", 'info');
-    $message = [];
+    $messages = [];
     CRM_Stripe_Webhook::check($messages, TRUE);
   }
 }
 
+/**
+ * clear stripe 6.6 upgrade message.
+ */
+function pbd_stripe_66() {
+  // First check if stripe is installed.
+  _civicrm_init();
+  $sql = "SELECT COUNT(*) AS count FROM civicrm_extension WHERE name = 'stripe' and is_active = 1";
+  $dao = CRM_Core_DAO::executeQuery($sql);
+  $dao->fetch();
+  if ($dao->count == 1) {
+    civicrm_api3('Setting', 'create', [ 'stripe_upgrade66message' => 0 ]);
+  }
+}
 function drush_pbd_cicero_users() {
   // Check if civicrm_cicero_sync_runs table exists.
   _civicrm_init();
