@@ -20,7 +20,7 @@ projects[drupal][version] = "7.80"
 projects[civicrm][type] = "module" 
 projects[civicrm][directory_name] = "civicrm" 
 projects[civicrm][download][type] = "git" 
-projects[civicrm][download][revision] = "23fac809caccc3fb1fe6449bc25ec273ea8e8693"
+projects[civicrm][download][revision] = "0bb37ab324e243ed15bd7867a49b155ad5ab8f34"
 projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
 
 ; Packages
@@ -532,7 +532,7 @@ projects[remoteform][type] = "library"
 projects[remoteform][destination] = "extensions"
 projects[remoteform][download][type] = "git"
 projects[remoteform][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.remoteform"
-projects[remoteform][download][revision] = "ee78a6dcacd248793efa08344009bb6087aba3a3"
+projects[remoteform][download][revision] = "1ce6560e84d0bb19c1bcb8535f49a68aa2dfa670"
 
 projects[civimobileapi][type] = "library"
 projects[civimobileapi][destination] = "extensions"
