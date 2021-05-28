@@ -142,13 +142,13 @@ function drush_pbd_restore_dedupe_rules() {
  * Update organization info
  */
 function drush_pbd_setup_org_info() {
-  $name = drush_get_option('name', null);
-  $email = drush_get_option('email', null);
-  $phone = drush_get_option('phone', null);
-  $state = drush_get_option('state', null);
-  $address = drush_get_option('address', null);
-  $city = drush_get_option('city', null);
-  $zip = drush_get_option('zip', null);
+  $name = trim(drush_get_option('name', null));
+  $email = trim(drush_get_option('email', null));
+  $phone = trim(drush_get_option('phone', null));
+  $state = trim(drush_get_option('state', null));
+  $address = trim(drush_get_option('address', null));
+  $city = trim(drush_get_option('city', null));
+  $zip = trim(drush_get_option('zip', null));
 
   // Let's make all fields required so we don't accidentally set things up
   // partially.
@@ -280,7 +280,7 @@ function drush_pbd_setup_org_info() {
   }
 
   // More CiviCRM settings.
-  $emailName = '"' . $name . '" <' . $email. '>';
+  $emailName = '"' . $name . '" <' . $email . '>';
   civicrm_api3('optionValue', 'create', array(
     'label' => $emailName,
     'option_group_id' => 'from_email_address',
