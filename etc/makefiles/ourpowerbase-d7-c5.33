@@ -759,6 +759,12 @@ projects[electoral][download][type] = "git"
 projects[electoral][download][url] = "https://github.com/progressivetech/com.jlacey.electoral"
 projects[electoral][download][revision] = "a74fe8922c427e320ed7fa18d83ed9a4caac3a54"
 
+projects[templateredact][type] = "library"
+projects[templateredact][destination] = "extensions"
+projects[templateredact][download][type] = "git"
+projects[templateredact][download][url] = "https://git.progressivetech.org/extensions/net.ourpowerbase.templateredact"
+projects[templateredact][download][revision] = "37fcd118adf35a05581f71b144bd25e252beb1aa"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
