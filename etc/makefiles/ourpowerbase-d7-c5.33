@@ -762,7 +762,7 @@ projects[electoral][download][revision] = "a74fe8922c427e320ed7fa18d83ed9a4caac3
 projects[templateredact][type] = "library"
 projects[templateredact][destination] = "extensions"
 projects[templateredact][download][type] = "git"
-projects[templateredact][download][url] = "https://git.progressivetech.org/extensions/net.ourpowerbase.templateredact"
+projects[templateredact][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.templateredact"
 projects[templateredact][download][revision] = "37fcd118adf35a05581f71b144bd25e252beb1aa"
 
 ;########
