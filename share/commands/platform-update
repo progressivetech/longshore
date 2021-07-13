@@ -23,6 +23,9 @@ if [ "$check" != "new" -a "$check" != "unused" ]; then
   long_die "Please pass either new or unused as the check argument, not $check."
 fi
 
+# Prevent extra noise from cd printing the current working directory.
+CDPATH=
+
 # First check out all git repos and look for updates
 
 if [ "$check" = "new" ]; then
