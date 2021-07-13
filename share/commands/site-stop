@@ -1,0 +1,18 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-stop <site>
+Stop just the docker container for this site.
+
+Arguments
+  <site> - The site to stop."
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+if ! long_container_exists "$site"; then
+  long_die "The site (%s) doesn't exist. Maybe it's on a different server?" \
+    1 "$site"
+fi
+
+docker stop "$site"
