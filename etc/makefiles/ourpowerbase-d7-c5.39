@@ -341,7 +341,7 @@ projects[civivolunteer][download][revision] = "f80259fffec617c5ca91c902eca3ab8e0
 projects[angularprofiles][type] = "library"
 projects[angularprofiles][destination] = "extensions"
 projects[angularprofiles][download][type] = "git"
-projects[angularprofiles][download][url] = "https://github.com/ginkgostreet/org.civicrm.angularprofiles.git"
+projects[angularprofiles][download][url] = "https://lab.civicrm.org/extensions/angularprofiles"
 projects[angularprofiles][download][revision] = "43286551a5df5c2c979516965293396272839360"
 
 projects[simpledonate][type] = "library"
@@ -501,7 +501,7 @@ projects[csvimport][download][revision] = "034bb284ccacd3de9cf2e5717b7f38e5002bf
 projects[bugp][type] = "library"
 projects[bugp][destination] = "extensions"
 projects[bugp][download][type] = "git"
-projects[bugp][download][url] = "https://github.com/JMAConsulting/biz.jmaconsulting.bugp"
+projects[bugp][download][url] = "https://lab.jmaconsulting.biz/extensions/bugp"
 projects[bugp][download][revision] = "c6eae2f354cb312daba977f93d2248be315dc0fc"
 
 projects[printgrantpdfs][type] = "library"
@@ -756,7 +756,7 @@ projects[pricesetbuttons][download][revision] = "3a34f526fb83a7dc18034ec7e3169e8
 projects[electoral][type] = "library"
 projects[electoral][destination] = "extensions"
 projects[electoral][download][type] = "git"
-projects[electoral][download][url] = "https://github.com/progressivetech/com.jlacey.electoral"
+projects[electoral][download][url] = "https://github.com/MegaphoneJon/com.jlacey.electoral"
 projects[electoral][download][revision] = "1e8631e47467f8374e69c5f3314861dfb257ad02"
 
 projects[templateredact][type] = "library"
