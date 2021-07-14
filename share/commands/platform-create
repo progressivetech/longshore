@@ -140,10 +140,9 @@ if [ -z "$source_platform_path_temp" ]; then
   [ ! -f "$distmaker_functions" ] && long_die "The distmaker common functions file doesn't exist."
   source "$distmaker_functions"
 
-  # These functions only available in ourpowerbase-d7-c4.6 and higher.
   long_log "Running dm_generate_vendor" info
-  dm_generate_vendor "$SRC" > /dev/null || long_die "Failed to dm_generate_vendor"
-
+  dm_generate_vendor "$SRC" || long_die "Failed to dm_generate_vendor"
+  
   long_log "Running GenCode" info
   cwd=$(pwd)
   cd "$SRC/xml"
