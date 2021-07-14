@@ -83,14 +83,6 @@ if [ -z "$source_platform_path_temp" ]; then
     long_die "Failed to make the site!"
   fi
 
-  # CiviCRM ship core extensions, which also have to be available in our special
-  # extensions directory.
-  if [ -d  ${source_platform_path_temp}/sites/all/modules/civicrm/ext ]; then
-    for ext in $(ls ${source_platform_path_temp}/sites/all/modules/civicrm/ext/); do
-      mv "${source_platform_path_temp}/sites/all/modules/civicrm/ext/$ext" ${source_platform_path_temp}/sites/all/extensions/
-    done
-  fi
-
   # Remove the install.php file. We don't need it becase we install via
   # drush and leaving it around is a security risk.
   # See https://www.drupal.org/PSA-2015-001.
@@ -99,28 +91,6 @@ if [ -z "$source_platform_path_temp" ]; then
   # Hackish way to get symlink to wkhtmltopdf - which is needed if anyone
   # enables the print module
   ln -s /usr/bin/wkhtmltopdf "${source_platform_path_temp}/sites/all/libraries/"
-
-  # The CiviCRM extensions directory is in sites/all/extensions, which is
-  # sensible. However, CiviCRM will want to create a tmp and cache directory
-  # in that directory to keep information about the extensions for the given
-  # site. The php user can't write to this directory, so we create a symlink
-  # to the default sites directory where the PHP user can write.
-  ln -s ../../../default/private/extensions/tmp  \
-    "${source_platform_path_temp}/sites/all/extensions/tmp"
-  ln -s ../../../default/private/extensions/cache  \
-    "${source_platform_path_temp}/sites/all/extensions/cache"
-
-  # And more hacks... The CiviMobile extension will try to include js files
-  # expecting to be installed in com.webaccessglobal.module.civimobile, however
-  # we have it installed in civimobile. Create symlink.
-  extension_maps='civimobile:com.webaccessglobal.module.civimobile'
-  cd "${source_platform_path_temp}/sites/all/extensions"
-  for map in $extension_maps; do
-    source=$(echo "$map" | cut -d: -f1)
-    target=$(echo "$map" | cut -d: -f2)
-    ln -s "$source" "$target"
-  done
-  cd "${source_platform_path_temp}"
 
   
   # There is a complicated process for taking a CiviCRM git repo and turning it
@@ -143,6 +113,36 @@ if [ -z "$source_platform_path_temp" ]; then
   long_log "Running dm_generate_vendor" info
   dm_generate_vendor "$SRC" || long_die "Failed to dm_generate_vendor"
   
+  # CiviCRM ship core extensions, which also have to be available in our special
+  # extensions directory.
+  if [ -d  ${source_platform_path_temp}/sites/all/modules/civicrm/ext ]; then
+    for ext in $(ls ${source_platform_path_temp}/sites/all/modules/civicrm/ext/); do
+      mv "${source_platform_path_temp}/sites/all/modules/civicrm/ext/$ext" ${source_platform_path_temp}/sites/all/extensions/
+    done
+  fi
+  
+  # The CiviCRM extensions directory is in sites/all/extensions, which is
+  # sensible. However, CiviCRM will want to create a tmp and cache directory
+  # in that directory to keep information about the extensions for the given
+  # site. The php user can't write to this directory, so we create a symlink
+  # to the default sites directory where the PHP user can write.
+  ln -s ../../../default/private/extensions/tmp  \
+    "${source_platform_path_temp}/sites/all/extensions/tmp"
+  ln -s ../../../default/private/extensions/cache  \
+    "${source_platform_path_temp}/sites/all/extensions/cache"
+
+  # And more hacks... The CiviMobile extension will try to include js files
+  # expecting to be installed in com.webaccessglobal.module.civimobile, however
+  # we have it installed in civimobile. Create symlink.
+  extension_maps='civimobile:com.webaccessglobal.module.civimobile'
+  cd "${source_platform_path_temp}/sites/all/extensions"
+  for map in $extension_maps; do
+    source=$(echo "$map" | cut -d: -f1)
+    target=$(echo "$map" | cut -d: -f2)
+    ln -s "$source" "$target"
+  done
+  cd "${source_platform_path_temp}"
+
   long_log "Running GenCode" info
   cwd=$(pwd)
   cd "$SRC/xml"
