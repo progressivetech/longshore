@@ -1,6 +1,6 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-restore <site> <path> <db> [<platform>]
+long_usage_message="usage: $(basename $0) site-restore <site> <path> [<platform>] [<db>] 
 Setup a new site from the files in the backed up tar ball provided by the
 <path> argument. This command ensures that the new site is installed on the
 provided database (not necessarily the same database as the one specified
@@ -9,18 +9,23 @@ in the backup). Can be used to clone and rename sites.
 Arguments
   <site> - The site you want to restore. Might be different from tar ball. 
   <path> - The path to the tar ball containing the backup.
-  <db> - Provide the database you'd like it restored to.
   <platform> - Optionally provide the platform. If ommitted use the 
-  default platform."
+  default platform.
+  <db> - Provide the database you'd like it restored to."
 
 long_check_args "$2" "$#" 3
 
 site="$2"
 path="$3"
-db="$4"
-platform="$5"
+platform="$4"
+db="$5"
 
 [ -z "$platform" ] && platform="$LONG_DEFAULT_PLATFORM"
+
+if [ -z "$db" ]; then
+  long_set_default_db "$site"
+  db="$LONG_DEFAULT_DB"
+fi
 
 long_container_exists "$site" && long_die "The site '%s' already exists. \
   Please site-destroy it before restoring it." 1 "$site"

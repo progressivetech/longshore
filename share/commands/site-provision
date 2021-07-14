@@ -1,22 +1,21 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-provision <site> [<db>] [<platform>]
+long_usage_message="usage: $(basename $0) site-provision <site> [<platform>] [<db>] 
 Provision a site. This is a single command to create a new site from scratch
 and start it. It handles site-create, site-setup and site-configure.  
 
 Arguments
   <site> - The site you want to create, e.g. ptp 
-  <db> - The db container you want to link this site to. If blank, use default.
   <platform> - The platform you want this site to use. If blank, use default.
-    You can also pass the path to the platform."
+    You can also pass the path to the platform.
+  <db> - The db container you want to link this site to. If blank, use default."
 
 long_check_args "$2" "$#" 1
 
 site="$2"
-db="$3"
-
 # Platform can either be the name or the path. But, we want the name.
-platform=$(basename "$4")
+platform=$(basename "$3")
+db="$4"
 
 if [ -z "$db" ]; then
   long_set_default_db "$site"

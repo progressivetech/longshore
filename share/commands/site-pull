@@ -1,6 +1,6 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-pull <site> [<db>] [<platform>]
+long_usage_message="usage: $(basename $0) site-pull <site> [<platform>] [<db>]
 
 Pull in a live site and then provision it locally. This is a single command,
 designed to be used on a dev server only, to create a new site and start it. It
@@ -8,14 +8,14 @@ handles site-create, site-setup and site-configure.
 
 Arguments
   <site> - The site you want to create, e.g. ptp 
-  <db> - The db container you want to link this site to. If blank, use default.
-  <platform> - The platform you want this site to use. If blank, use default"
+  <platform> - The platform you want this site to use. If blank, use default
+  <db> - The db container you want to link this site to. If blank, use default."
 
 long_check_args "$2" "$#" 1
 
 site="$2"
-db="$3"
-platform="$4"
+platform="$3"
+db="$4"
 
 if [ -z "$db" ]; then 
   long_set_default_db "$site"

@@ -1,21 +1,21 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-create <site> [<db>] [<platform>]
+long_usage_message="usage: $(basename $0) site-create <site> [<platform>] [<db>] 
 Create a site. This is a thin wrapper around container-create for sites. 
 
 Arguments
   <site> - The site you want to create, e.g. ptp 
+  <platform> - The platform you want this site to use. If blank, use default
   <db> - The db container you want to link this site to. If blank, try to
     lookup it up if the container exists or has existed. For brand new sites
     this is a required value. For existing sites, the value should be blank
-    or must match the database it's currently on.
-  <platform> - The platform you want this site to use. If blank, use default"
+    or must match the database it's currently on."
 
 long_check_args "$2" "$#" 1
 
 site="$2"
-db="$3"
-platform="$4"
+platform="$3"
+db="$4"
 
 if ! long_check_alpha_numeric "$site"; then
   long_die "Please ensure your site name only has letters and numbers."
