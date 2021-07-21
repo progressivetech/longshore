@@ -418,7 +418,7 @@ projects[exportpermission][type] = "library"
 projects[exportpermission][destination] = "extensions"
 projects[exportpermission][download][type] = "git"
 projects[exportpermission][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.exportpermission.git"
-projects[exportpermission][download][revision] = "4812f88956e65e6bf47ac9f0c20972f024d4cb17"
+projects[exportpermission][download][revision] = "c13a893f16fec9ebaf9be9bca68e9af970fc3aac"
 
 projects[mailchimp][type] = "library"
 projects[mailchimp][destination] = "extensions"
