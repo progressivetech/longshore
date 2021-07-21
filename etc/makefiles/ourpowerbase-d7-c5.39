@@ -765,6 +765,13 @@ projects[templateredact][download][type] = "git"
 projects[templateredact][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.templateredact"
 projects[templateredact][download][revision] = "c15d16031e1113c8b74bec78fa35f07991e239f2"
 
+projects[civicrm-sms-conversation][type] = "library"
+projects[civicrm-sms-conversation][destination] = "extensions"
+projects[civicrm-sms-conversation][download][type] = "git"
+projects[civicrm-sms-conversation][download][url] = "https://github.com/3sd/civicrm-sms-conversation"
+projects[civicrm-sms-conversation][download][revision] = "808848fb26e85a281d2f92cb9ea5a7ce4fbae682"
+
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
