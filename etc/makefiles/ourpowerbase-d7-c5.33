@@ -10,7 +10,7 @@ api = "2"
 ;****************************************
 
 core = "7.x" 
-projects[drupal][version] = "7.80"
+projects[drupal][version] = "7.82"
 
 ;****************************************
 ; CiviCRM Core
@@ -501,7 +501,7 @@ projects[csvimport][download][revision] = "36d72880c2cea2e147b72b398eb4c7a6dacee
 projects[bugp][type] = "library"
 projects[bugp][destination] = "extensions"
 projects[bugp][download][type] = "git"
-projects[bugp][download][url] = "https://github.com/JMAConsulting/biz.jmaconsulting.bugp"
+projects[bugp][download][url] = "https://lab.jmaconsulting.biz/extensions/bugp"
 projects[bugp][download][revision] = "c6eae2f354cb312daba977f93d2248be315dc0fc"
 
 projects[printgrantpdfs][type] = "library"
