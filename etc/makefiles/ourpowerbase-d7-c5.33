@@ -765,6 +765,12 @@ projects[templateredact][download][type] = "git"
 projects[templateredact][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.templateredact"
 projects[templateredact][download][revision] = "c15d16031e1113c8b74bec78fa35f07991e239f2"
 
+projects[mosaicomsgtpl][type] = "library"
+projects[mosaicomsgtpl][destination] = "extensions"
+projects[mosaicomsgtpl][download][type] = "git"
+projects[mosaicomsgtpl][download][url] = "https://lab.civicrm.org/extensions/mosaicomsgtpl"
+projects[mosaicomsgtpl][download][revision] = "d4f75a5ddaa2ab0e8bf1b8296937c7b06be6da68"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
