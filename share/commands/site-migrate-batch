@@ -222,15 +222,6 @@ for site in $sites; do
   long_log "upgrade:%s Reloaded nginx" info "$site"
   printf "."
 
-  if [ "$built_new_container" = "y" ]; then
-    printf ".rf."
-    if ! (LONG_LOG_LEVEL=error longshore db-fix-row-format "db${site}" >/dev/null); then
-      long_log "upgrade:%s Failed to fix row format." error "$site"
-      continue
-    fi
-    long_log "upgrade:%s Fixed row format." info "$site"
-  fi
-
   # Strip out any .beta2 tags.
   post_upgrade_version=$(long_execute_site_query "$site" "$temp" | tail -n1 | sed "s/\.beta[0-9]*$//") 
 
@@ -279,13 +270,6 @@ for site in $sites; do
     continue
   fi
   long_log "upgrade:%s Updated drupal modules" info "$site"
-  printf "."
-
-  if ! long_exec_drush_cmd "$site" "cvapi System.utf8conversion"; then
-    long_log "upgrade:%s Failed utf8 conversion" error "$site"
-    continue
-  fi
-  long_log "upgrade:%s completed utf8 conversion" info "$site"
   printf "."
 
   if ! long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"; then
