@@ -490,7 +490,7 @@ projects[qrcodecheckin][type] = "library"
 projects[qrcodecheckin][destination] = "extensions"
 projects[qrcodecheckin][download][type] = "git"
 projects[qrcodecheckin][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.qrcodecheckin"
-projects[qrcodecheckin][download][revision] = "064b845c4f08bd514d20a8b85401ff39d313f415"
+projects[qrcodecheckin][download][revision] = "31d2cec68610a1f2cdc330f17d843b6f68eb2dcd"
 
 projects[csvimport][type] = "library"
 projects[csvimport][destination] = "extensions"
