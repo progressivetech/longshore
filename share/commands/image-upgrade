@@ -75,3 +75,6 @@ if [ -n "$danglers" ]; then
     docker $LONG_DOCKER_LOG_ARG rmi "$dangler" 2>&1 | egrep -v "(conflict: unable to delete|Conflict, cannot delete|Error: failed to remove one or more images|Deleted: )"
   done
 fi
+
+# We give a clean exit since an error deleting dangling images should not register as a problem.
+exit 0

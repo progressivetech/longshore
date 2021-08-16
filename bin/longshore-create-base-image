@@ -4,25 +4,27 @@
 # Exit on error (-e)
 temp=$(mktemp -d)
 
+dist=bullseye
+
 # Ensure we don't create a 700 permission root file system in our container.
 chmod 755 "$temp"
 
 echo "Running debootstrap"
-export LC_ALL=C && debootstrap --variant=minbase --include=apt-utils,less,iputils-ping,iproute2,vim,locales,libterm-readline-gnu-perl,dnsutils,procps buster "$temp" http://http.us.debian.org/debian/
+export LC_ALL=C && debootstrap --variant=minbase --include=apt-utils,less,iputils-ping,iproute2,vim,locales,libterm-readline-gnu-perl,dnsutils,procps $dist "$temp" http://http.us.debian.org/debian/
 
 # Make all servers America/New_York
 echo "America/New_York" > "$temp/etc/timezone"
 chroot "$temp" /usr/sbin/dpkg-reconfigure --frontend noninteractive tzdata
 
 # Upgrade
-echo "deb http://security.debian.org/ buster/updates main" > "$temp/etc/apt/sources.list.d/security.list"
-echo "deb http://ftp.us.debian.org/debian/ buster-updates main" > "$temp/etc/apt/sources.list.d/update.list"
+echo "deb http://security.debian.org/debian-security $dist-security main" > "$temp/etc/apt/sources.list.d/security.list"
+echo "deb http://ftp.us.debian.org/debian/ $dist-updates main" > "$temp/etc/apt/sources.list.d/update.list"
 echo "Upgrading"
 chroot "$temp" apt-get update
 chroot "$temp" apt-get -y dist-upgrade
 
 echo "Importing into docker"
-cd "$temp" && tar -c . | docker import - my-buster
+cd "$temp" && tar -c . | docker import - my-$dist
 cd
 echo "Removing temp directory"
 rm -rf "$temp"

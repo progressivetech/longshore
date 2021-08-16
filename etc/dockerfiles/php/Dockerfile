@@ -1,6 +1,8 @@
 # Based on https://github.com/AsavarTzeth/docker-php5-fpm
 # Minimal PHP server used for phpmyadmin
-FROM my-buster:latest
+FROM my-bullseye:latest
+
+ARG php_version=7.4
 
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 
@@ -11,11 +13,12 @@ RUN apt-get update && \
     php-fpm \
     php-apcu \
     php-mbstring \
+    php-xml \
     php-mysql && \
     rm -rf /var/lib/apt/lists/*
 
 # Listen on 127.0.0.1 
-RUN sed -i 's#listen = /run/php/php7.3-fpm.sock#listen = 9000#' /etc/php/7.3/fpm/pool.d/www.conf
+RUN sed -i "s#listen = /run/php/php${php_version}-fpm.sock#listen = 9000#" "/etc/php/${php_version}/fpm/pool.d/www.conf"
 
 COPY ./docker-entrypoint.sh /entrypoint.sh
 

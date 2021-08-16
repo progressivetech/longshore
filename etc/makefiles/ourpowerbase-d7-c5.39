@@ -77,6 +77,8 @@ projects[libraries][version] = "2.5"
 
 projects[themekey][type] = "module"
 projects[themekey][version] = "3.4"
+; https://www.drupal.org/project/themekey/issues/3128131
+projects[themekey][path][] = "/srv/longshore/etc/makefiles/themekey.patch"
 
 projects[webform_civicrm][type] = "module"
 projects[webform_civicrm][version] = "5.5"

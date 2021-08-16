@@ -1,4 +1,4 @@
-FROM my-buster:latest
+FROM my-bullseye:latest
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 RUN apt-get update && \
   export DEBIAN_FRONTEND=noninteractive && \

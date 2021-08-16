@@ -5,15 +5,6 @@ Start the phpmyadmin container and all linked db containers."
 
 long_check_args "$2" "$#" 0
 
-# First ensure all database containers are running since we link to them.
-# Populate the long_db_containers variable.
-long_set_db_containers
-
-for db in $LONG_DB_CONTAINERS; do
-  # Create and start all db containers. 
-  long_container_up mysql "$db"
-done
-
 # Start.
 long_container_up phpmyadmin
 long_nginx_reload
