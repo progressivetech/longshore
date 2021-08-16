@@ -231,12 +231,6 @@ projects[civimobile][download][type] = "git"
 projects[civimobile][download][url] = "https://github.com/webaccess/com.webaccessglobal.module.civimobile"
 projects[civimobile][download][revision] = "114980fbb78614c24c462c0ccd97a4abc2e3ee54"
 
-projects[yahooboss][type] = "library"
-projects[yahooboss][destination] = "extensions"
-projects[yahooboss][download][type] = "git"
-projects[yahooboss][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.geocoder.yahooboss.git"
-projects[yahooboss][download][revision] = "6bceed9ae5e0cbe7d48ba69aeff5e266d2796663"
-
 projects[noverwrite][type] = "library"
 projects[noverwrite][destination] = "extensions"
 projects[noverwrite][download][type] = "git"
