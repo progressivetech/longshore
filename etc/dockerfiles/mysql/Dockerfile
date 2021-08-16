@@ -6,10 +6,6 @@ RUN apt-get update && \
   mariadb-server && \
   rm -rf /var/lib/apt/lists/*
 
-# Shutdown mysql so we can manipulate it's user and
-# data directories.
-RUN /etc/init.d/mysql stop 
-
 # Remove the default databases that are created becuase
 # we will be mounting a new data directory over this one
 # when we start.
