@@ -344,7 +344,7 @@ projects[simpledonate][type] = "library"
 projects[simpledonate][destination] = "extensions"
 projects[simpledonate][download][type] = "git"
 projects[simpledonate][download][url] = "https://github.com/progressivetech/com.webaccessglobal.simpledonate.git"
-projects[simpledonate][download][revision] = "09ed729532d727e15e38fbe5e24e432f16fe792c"
+projects[simpledonate][download][revision] = "911c58ac7b4096c2945a7ad37f4d087d68d6688d"
 
 projects[zip2state][type] = "library"
 projects[zip2state][destination] = "extensions"
@@ -401,7 +401,7 @@ projects[mosaico][download][type] = "file"
 ; Use file download because  mosaico has a build script that won't get executed.
 ; Check for latest release and download link here:
 ; https://civicrm.org/extensions/email-template-builder
-projects[mosaico][download][url] = "https://download.civicrm.org/extension/uk.co.vedaconsulting.mosaico/2.6.1610013608/uk.co.vedaconsulting.mosaico-2.6.1610013608.zip"
+projects[mosaico][download][url] = "https://download.civicrm.org/extension/uk.co.vedaconsulting.mosaico/2.7.1621893607/uk.co.vedaconsulting.mosaico-2.7.1621893607.zip"
 
 ; Required for mosaico
 projects[shoreditch][type] = "library"
