@@ -175,6 +175,8 @@ if [ -z "$source_platform_path_temp" ]; then
     # Temp hack esr patches which doesn't
     # seem to have a translation file.
     l10n_file=civicrm-5.33.2-l10n.tar.gz
+  elif [ "$DM_VERSION" = "5.39.2" ]; then
+    l10n_file=civicrm-5.39.0-l10n.tar.gz
   else
     l10n_file="civicrm-${DM_VERSION}-l10n.tar.gz"
   fi
