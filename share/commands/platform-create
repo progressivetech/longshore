@@ -194,6 +194,26 @@ if [ -z "$source_platform_path_temp" ]; then
   # Clean up the left over tar ball.
   rm "$l10n_file"
 
+  # Just for 5.33 ... we have to replace ckeditor with a secure version
+  if [ "$DM_VERSION" = "5.33.5" ]; then
+    # Download secure ckeditor release.
+    cktemp=$(mktemp --directory)
+    wget -O "${cktemp}/ckeditor.zip" https://github.com/ckeditor/ckeditor-releases/archive/4.16.2.zip
+
+    # Delete the insecure version shipped with 5.33
+    bower_path="bower_components/"
+    rm -rf "${bower_path}/ckeditor"
+
+    # Unpack the secure version in the right spot.
+    unzip -d "$bower_path" "${cktemp}/ckeditor.zip" 
+
+    # Rename
+    mv "${bower_path}/ckeditor4-releases-4.16.2" "${bower_path}/ckeditor"
+
+    # Clean up.
+    rm "${cktemp}/ckeditor.zip"
+    rmdir "$cktemp"
+  fi
   # Kill our src civicrm directory and replace with our newly created one.
   # Avoid getcwd errors by switching to our original directory before deleting
   # this one.
