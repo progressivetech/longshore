@@ -504,7 +504,7 @@ projects[printgrantpdfs][type] = "library"
 projects[printgrantpdfs][destination] = "extensions"
 projects[printgrantpdfs][download][type] = "git"
 projects[printgrantpdfs][download][url] = "https://github.com/JMAConsulting/biz.jmaconsulting.printgrantpdfs.git"
-projects[printgrantpdfs][download][revision] = "b125ed5dd970ecbc88a5c4b7b0865d260b4aa0d6"
+projects[printgrantpdfs][download][revision] = "fa277480c9bf7a56bf4fd72cfa1c8b5fa3501138"
 
 projects[grantapplications][type] = "library"
 projects[grantapplications][destination] = "extensions"
