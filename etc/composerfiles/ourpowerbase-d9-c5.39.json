@@ -25,6 +25,13 @@
               "reference": "master"
             }
           }
+        },
+        {
+          "type": "git",
+          "url": "https://github.com/iATSPayments/com.iatspayments.civicrm.git",
+          "package": {
+            "type": "civicrm-extension"
+          }
         }
     ],
     "require": {
@@ -37,7 +44,8 @@
         "drupal/core-project-message": "^9.2",
         "drupal/core-recommended": "^9.2",
         "drush/drush": "^10.5",
-        "progressivetech/setup": "~1"
+        "progressivetech/setup": "~1",
+        "iats-payments/civicrm": "master"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -97,5 +105,8 @@
         },
         "enable-patching": "true",
         "compile-whitelist": ["civicrm/civicrm-core", "civicrm/composer-compile-lib"]
+    },
+    "scripts": {
+      "post-install-cmd": "/usr/bin/echo install extensions > /tmp/foo"
     }
 }
