@@ -1,4 +1,4 @@
-# Each line is an extension to install. There are three fields separated by tabs:
+# Each line is an extension to install. There are three fields separated by commas. 
 #
 # Directory URL Version
 #
@@ -6,10 +6,10 @@
 # as the primary key for the extension.
 #
 
-nz.co.fuzion.extrafee|https://github.com/fuzionnz/nz.co.fuzion.extrafee|master
-net.ourpowerbase.qdep|git://git.progressivetech.org/extensions/net.ourpowerbase.qdep|master
-com.webaccessglobal.simpledonate|https://github.com/progressivetech/com.webaccessglobal.simpledonate.git|911c58ac7b4096c2945a7ad37f4d087d68d6688d
-uk.co.vedaconsulting.mosaico|https://download.civicrm.org/extension/uk.co.vedaconsulting.mosaico/2.7.1621893607/uk.co.vedaconsulting.mosaico-2.7.1621893607.zip|
+nz.co.fuzion.extrafee,https://github.com/fuzionnz/nz.co.fuzion.extrafee,master
+net.ourpowerbase.qdep,git://git.progressivetech.org/extensions/net.ourpowerbase.qdep,master
+com.webaccessglobal.simpledonate,https://github.com/progressivetech/com.webaccessglobal.simpledonate.git,911c58ac7b4096c2945a7ad37f4d087d68d6688d
+uk.co.vedaconsulting.mosaico,https://download.civicrm.org/extension/uk.co.vedaconsulting.mosaico/2.7.1621893607/uk.co.vedaconsulting.mosaico-2.7.1621893607.zip,
 
 
 

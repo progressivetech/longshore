@@ -21,12 +21,13 @@
 # extensions to our platform. We expect to be called from the root directory,
 # just above the "web" directory.
 
-cwd=$(pwd)
+# We expect to start in the root directory, with a web directory available.
 if [ ! -d "web" ]; then
   printf "Can't find the web directory. Something is wrong. I'm in %s.\n" "$(cwd)"
   exit 1
 fi
 
+cwd=$(pwd)
 path="${cwd}/web/extensions"
 mkdir -p "$path"
 
@@ -37,14 +38,13 @@ active_extensions_file=
 # The tmp path to a new lock file we are creating, if a lock file does not already exist.
 extensions_tmp_lock_file=
 
-if [ ! -f extensions.lock ]; then
+if [ ! -f "${cwd}/extensions.lock" ]; then
   # Start a new lock file in a temporary file. We will move it into place when done.
   extensions_tmp_lock_file=$(mktemp)
-  active_extensions_file=extensions.txt
+  active_extensions_file="${cwd}/extensions.txt"
 else
-  active_extensions_file=extensions.lock
+  active_extensions_file="${cwd}/extensions.lock"
 fi
-
 if [ ! -f "$active_extensions_file" ]; then
   printf "I need either extensions.txt or extensions.lock. I am using: '%s'.\n" "$active_extensions_file"
   exit 1
@@ -53,9 +53,9 @@ fi
 # Find all lines excluding comments and empty lines.
 for line in $(grep -E -v '(^[[:space:]]|^#|^$)' "$active_extensions_file"); do
   cd "$path" >/dev/null
-  dir=$(echo "$line" | cut -d\| -f1)
-  url=$(echo "$line" | cut -d\| -f2)
-  version=$(echo "$line" | cut -d\| -f3)
+  dir=$(echo "$line" | cut -d, -f1)
+  url=$(echo "$line" | cut -d, -f2)
+  version=$(echo "$line" | cut -d, -f3)
   printf "Examining %s. " "$dir"
 
   # Calculate basename from url
@@ -76,55 +76,48 @@ for line in $(grep -E -v '(^[[:space:]]|^#|^$)' "$active_extensions_file"); do
     if [ -n "$extensions_tmp_lock_file" ]; then
       commit=$(git log --format="%H" -n 1)
       printf "Updating lockfile. "
-      printf '%s|%s|%s\n' "$dir" "$url" "$commit" >> "$extensions_tmp_lock_file"
+      printf '%s,%s,%s\n' "$dir" "$url" "$commit" >> "$extensions_tmp_lock_file"
     fi
   else
     # Handle a zip file.
     # We have a few possible situations:
-    # 1. No existing directory: Download directly and update lockfile if necessary
-    # 2. Directory exists, no lock file: Download, rsync over existing directory, and update lockfile
+    # 1. No existing directory: Download, rsync over, and update lockfile if necessary
+    # 2. Directory exists, no lock file: Download, rsync over, and update lockfile
     # 3. Directory exists, lock file exists: compare URL between lock file and txt file:
     #    a. If they are the same, do nothing
     #    b. If they are different, download, rsync over existing directory, and don't update lock file.
     zip_temp=$(mktemp) 
+    zip_download=n
     if [ ! -d "$dir" ]; then
-      printf "Downloading and unzipping. "
-      wget --quiet -O "$zip_temp" "$url"
-      unzip -qq -d "$dir" "$zip_temp"
-      if [ -n "$extensions_tmp_lock_file" ]; then
-        printf '%s|%s|\n' "$dir" "$url" >> "$extensions_tmp_lock_file"
-      fi
-    else 
-      # The directory exists.
-      zip_download_again=n
-      if [ -z "$extensions_tmp_lock_file" ]; then
-        # We have an existing lock file. Does it have the same version as the
-        # txt file?
-        canonical_line=$(grep "^${dir}\t" extensions.txt)
-        canonical_url=$(echo "$canonical_line | cut -f2")
-        if [ "$canonical_url" != "$url" ]; then
-          # They are different. Download it again.
-          zip_download_again=y
-        fi
-      else
-        # We don't have an existing lock file so we really have no idea what
-        # version is here. So we download again and rsync over it.
-        zip_download_again=y
-      fi
-
-      if [ "$download_again" = "y" ]; then
-        printf "Downloading, unzipping and rsyncing. "
-        wget --quiet -O "$zip_temp" "$url"
-        unzip_temp=$(mkdir -d)
-        unzip -qq -d "$unzip_temp" "$zip_temp"
-        rsync -a --delete "${unzip_temp}/" "${dir}/"
-        if [ -n "$extensions_tmp_lock_file" ]; then
-          printf '%s|%s|\n' "$dir" "$url" >> "$extensions_tmp_lock_file"
-        fi
-        rm -rf "$unzip_temp"
-      fi 
-      rm "$zip_temp"
+      zip_download=y
+      mkdir "$dir"
     fi
+    if [ -z "$extensions_tmp_lock_file" ]; then
+      # We have an existing lock file. Does it have the same version as the
+      # txt file?
+      canonical_line=$(grep "^${dir}," "${cwd}/extensions.txt")
+      canonical_url=$(echo "$canonical_line" | cut -d, -f2)
+      if [ "$canonical_url" != "$url" ]; then
+        # They are different. Download it again.
+        zip_download=y
+      fi
+    else
+      # We don't have an existing lock file so we download and rsync over.
+      zip_download=y
+    fi
+
+    if [ "$zip_download" = "y" ]; then
+      printf "Downloading, unzipping and rsyncing. "
+      wget --quiet -O "$zip_temp" "$url"
+      unzipped_temp=$(mktemp -d)
+      unzip -qq -d "$unzipped_temp" "$zip_temp"
+      rsync -r --delete "${unzipped_temp}/${dir}/" "${dir}/"
+      if [ -n "$extensions_tmp_lock_file" ]; then
+        printf '%s,%s,\n' "$dir" "$url" >> "$extensions_tmp_lock_file"
+      fi
+      rm -rf "$unzipped_temp"
+    fi 
+    rm "$zip_temp"
   fi
   printf "Done with %s.\n" "$dir"
 done

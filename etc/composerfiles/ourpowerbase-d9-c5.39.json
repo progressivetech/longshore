@@ -107,6 +107,6 @@
         "compile-whitelist": ["civicrm/civicrm-core", "civicrm/composer-compile-lib"]
     },
     "scripts": {
-      "post-install-cmd": "/usr/bin/echo install extensions > /tmp/foo"
+      "post-update-cmd": "./extensions-installer"
     }
 }
