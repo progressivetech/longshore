@@ -1,0 +1,75 @@
+#!/usr/bin/php
+<?php
+# This script takes our drush make file and generates an extensions.txt file
+# based on those settings.
+
+$path = NULL;
+
+if (isset($_SERVER['argv'][1])) {
+  $path = $_SERVER['argv'][1];
+}
+
+if(!file_exists($path)) {
+  echo "Can't find file '$path'\n";
+  exit(1);
+}
+$extensions = [];
+$regexp = '#^projects\[([a-zA-Z_]+)\]\[(destination|download)\](\[(url|revision)\])? = "(.*)"#';
+$lines = file($path);
+
+// Enter the names of extensions that we do not want to pull in the master tip for.
+$custom_versions = [
+  'simpledonate',
+  'simplepetitionemail',
+];
+
+foreach ($lines as $line) {
+  if (preg_match($regexp, $line, $matches)) {
+    $name = $matches[1];
+    $line_type = $matches[2];
+    $var_type = $matches[4];
+    $value = $matches[5];
+    // echo "$name $line_type $var_type $value\n";
+    if ($line_type == 'destination') {
+      if ($value == 'extensions') {
+        // We want this one, so add the key.
+        $extensions[$name] = [];
+      }
+      // We don't want this line - we just needed to make sure it's an extension.
+      continue;
+    }
+    if (array_key_exists($name, $extensions)) {
+      if ($var_type == 'url') {
+        // Fix ptp git urls
+        $value = str_replace('git://git.progressivetech.org', 'https://git.progressivetech.org', $value);
+        // Add the directory name.
+        // The mosaico URL is a zip file. Needs special attention.
+        if (preg_match('/uk\.co\.vedaconsulting\.mosaico/', $value)) {
+          $basename = 'uk.co.vedaconsulting.mosaico';
+        }
+        else {
+          $url_parts = parse_url($value);
+          $basename = basename($url_parts['path'], '.git');
+        }
+        $extensions[$name]['dir'] = $basename;
+      }
+      elseif ($var_type == 'revision') {
+        if (!in_array($name, $custom_versions)) {
+          $value = 'master';
+        }
+      }
+      $extensions[$name][$var_type] = $value;
+    }
+  }
+}
+
+foreach($extensions as $extension) {
+  $dir = $extension['dir'];
+  $url = $extension['url'];
+  $revision = NULL;
+  if (isset($extension['revision'])) {
+    $revision = $extension['revision'];
+  }
+  echo "${dir},${url},${revision}\n";
+}
+//print_r($extensions);
