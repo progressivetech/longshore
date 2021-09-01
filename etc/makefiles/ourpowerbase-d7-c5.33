@@ -720,7 +720,7 @@ projects[smsinbox][type] = "library"
 projects[smsinbox][destination] = "extensions"
 projects[smsinbox][download][type] = "git"
 projects[smsinbox][download][url] = "https://github.com/JohnFF/SMS-Inbox"
-projects[smsinbox][download][revision] = "3f4e36c1540926609545cbef78dea06ddff10649"
+projects[smsinbox][download][revision] = "44d423aa7101ad21daaa2dcb78a1b9106b56ff2a"
 
 
 projects[relationreport][type] = "library"
