@@ -741,7 +741,7 @@ projects[recurringbuttons][type] = "library"
 projects[recurringbuttons][destination] = "extensions"
 projects[recurringbuttons][download][type] = "git"
 projects[recurringbuttons][download][url] = "https://lab.civicrm.org/extensions/recurringbuttons.git/"
-projects[recurringbuttons][download][revision] = "03c2aeb4782b86d562a1ecfe736ab16d9f194044"
+projects[recurringbuttons][download][revision] = "476b930192b3868c882f8fae3ee61eac9aa9ffe6"
 
 projects[pricesetbuttons][type] = "library"
 projects[pricesetbuttons][destination] = "extensions"
