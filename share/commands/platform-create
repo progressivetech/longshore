@@ -41,6 +41,13 @@ fi
 # By default, we should prompt the user to sync the platform to other servers.
 sync=y
 
+# See if we have other servers to copy the code to 
+siblings="$LONG_SIBLINGS"
+if [[ $(echo "$siblings" | wc -w) -lt "1" ]]; then
+  # Don't prompt to sync if we have nobody to sync to.
+  sync=n
+fi
+
 if [ -n "$source_platform_path_temp" ]; then
   # If we are passing a build platform path, do some sanity checking.
   [ -d "$source_platform_path_temp" ] || long_die "Can't find build-platform-path."
@@ -275,13 +282,6 @@ if [ "$build_system" = "drushmake" ]; then
     done
   fi
 
-  # See if we have other servers to copy the code to 
-  siblings="$LONG_SIBLINGS"
-  if [[ $(echo "$siblings" | wc -w) -lt "1" ]]; then
-    # Don't prompt to sync if we have nobody to sync to.
-    sync=n
-  fi
-
   if [ "$sync" = "y" ]; then
     long_prompt "rsync'ing platform to other siblings."
     if [ "$reply" == "y" ]; then
@@ -373,4 +373,20 @@ else
     rm civicrm-${civicrm_post_full_version}-l10n.tar.gz
   fi
 
+  if [ "$sync" = "y" ]; then
+    long_prompt "Building/Updating platform on other siblings."
+    if [ "$reply" == "y" ]; then
+      long_log "Running platform-create on siblings (%s)." info "$siblings"
+      long_log " -----------" "info"
+      echo $siblings | tr " " "\n" | \
+        parallel -v ssh "$LONG_HOST_USER"@{}.mayfirst.org \
+        LONG_RUN_DB_UPDATES=$LONG_RUN_DB_UPDATES \
+        /srv/longshore/bin/longshore \
+        platform-create "$makefile_path"
+      long_log " -----------" "info"
+
+    fi
+  else
+    long_log "No siblings to rsync with." "info"
+  fi
 fi
