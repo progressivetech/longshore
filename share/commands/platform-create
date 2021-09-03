@@ -56,270 +56,321 @@ mkdir -p "$base"
 
 # Drush make expects absolute path to make file
 first=$(echo "${makefile_path:0:1}")
-if [ "$first" != "/" ] && [ "$first" != "~" ]; then
-  makefile_path="$(pwd)/$makefile_path"
+if [ "$first" != "/" ]; then
+  long_die "Please pass absolute path to make/composer file."
 fi
 
 if [ ! -f "$makefile_path" ]; then
-	long_die "Can't find makefile path: %s\n"  1 "$makefile_path"
+	long_die "Can't find makefile/composer path: %s\n"  1 "$makefile_path"
 	exit
 fi
 
-makefile=$(basename "$makefile_path")
-source_platform_path="${base}/${makefile}"
+build_system=drushmake
+platform_name=$(basename "$makefile_path")
+if [ "${platform_name: -5}" == ".json" ]; then
+  # Not a drush make file. This is a composer file.
+  build_system=composer
+  platform_name=$(basename "$platform_name" .json)
+fi
 
-# If we don't already have a built platform path, then build one.
-if [ -z "$source_platform_path_temp" ]; then
-  source_platform_path_temp=$(mktemp -d --tmpdir="$base")
+source_platform_path="${base}/${platform_name}"
 
-  long_log "Creating platform." info
-  cd "$source_platform_path_temp"
-  $LONG_DRUSH -q -y make "$makefile_path"
+if [ "$build_system" = "drushmake" ]; then
+  # If we don't already have a built platform path, then build one.
+  if [ -z "$source_platform_path_temp" ]; then
+    source_platform_path_temp=$(mktemp -d --tmpdir="$base")
 
-  # Do a sanity check. drush make will not leave any files in the target
-  # if just one download failed.
+    long_log "Creating platform." info
+    cd "$source_platform_path_temp"
+    $LONG_DRUSH -q -y make "$makefile_path"
 
-  if [ ! -f "${source_platform_path_temp}/index.php" ]; then
-    long_die "Failed to make the site!"
+    # Do a sanity check. drush make will not leave any files in the target
+    # if just one download failed.
+
+    if [ ! -f "${source_platform_path_temp}/index.php" ]; then
+      long_die "Failed to make the site!"
+    fi
+
+    # Remove the install.php file. We don't need it becase we install via
+    # drush and leaving it around is a security risk.
+    # See https://www.drupal.org/PSA-2015-001.
+    rm ${source_platform_path_temp}/install.php
+
+    # Hackish way to get symlink to wkhtmltopdf - which is needed if anyone
+    # enables the print module
+    ln -s /usr/bin/wkhtmltopdf "${source_platform_path_temp}/sites/all/libraries/"
+
+    
+    # There is a complicated process for taking a CiviCRM git repo and turning it
+    # into a safe and functional folder that can be used on a production CiviCRM
+    # site. Our strategy is to use as much code as possible from the distmaker
+    # bash utility that is used by the core developers to create the official
+    # tarballs.
+    long_log "Running distmaker..." info
+
+    # For easier compatibility with distmaker - using their variable names.
+    TRG=$(mktemp -d)
+    SRC="${source_platform_path_temp}/sites/all/modules/civicrm"
+    # Figure out the current version from civicrm-version.xml
+    DM_VERSION=$(grep version_no $SRC/xml/version.xml | sed 's#version_no##g' | tr -d '<>/ ')
+
+    distmaker_functions="${SRC}/distmaker/dists/common.sh"
+    [ ! -f "$distmaker_functions" ] && long_die "The distmaker common functions file doesn't exist."
+    source "$distmaker_functions"
+
+    long_log "Running dm_generate_vendor" info
+    dm_generate_vendor "$SRC" || long_die "Failed to dm_generate_vendor"
+    
+    # CiviCRM ship core extensions, which also have to be available in our special
+    # extensions directory.
+    if [ -d  ${source_platform_path_temp}/sites/all/modules/civicrm/ext ]; then
+      for ext in $(ls ${source_platform_path_temp}/sites/all/modules/civicrm/ext/); do
+        mv "${source_platform_path_temp}/sites/all/modules/civicrm/ext/$ext" ${source_platform_path_temp}/sites/all/extensions/
+      done
+    fi
+    
+    # The CiviCRM extensions directory is in sites/all/extensions, which is
+    # sensible. However, CiviCRM will want to create a tmp and cache directory
+    # in that directory to keep information about the extensions for the given
+    # site. The php user can't write to this directory, so we create a symlink
+    # to the default sites directory where the PHP user can write.
+    ln -s ../../../default/private/extensions/tmp  \
+      "${source_platform_path_temp}/sites/all/extensions/tmp"
+    ln -s ../../../default/private/extensions/cache  \
+      "${source_platform_path_temp}/sites/all/extensions/cache"
+
+    # And more hacks... The CiviMobile extension will try to include js files
+    # expecting to be installed in com.webaccessglobal.module.civimobile, however
+    # we have it installed in civimobile. Create symlink.
+    extension_maps='civimobile:com.webaccessglobal.module.civimobile'
+    cd "${source_platform_path_temp}/sites/all/extensions"
+    for map in $extension_maps; do
+      source=$(echo "$map" | cut -d: -f1)
+      target=$(echo "$map" | cut -d: -f2)
+      ln -s "$source" "$target"
+    done
+    cd "${source_platform_path_temp}"
+
+    long_log "Running GenCode" info
+    cwd=$(pwd)
+    cd "$SRC/xml"
+    php GenCode.php schema/Schema.xml > /dev/null || long_die "Failed to GenCode.php"
+
+    long_log "Resetting TRG directory" info
+    dm_reset_dirs "$TRG"
+
+    long_log "Running dm_generate_version (%s)" info "$DM_VERSION"
+    cp $SRC/drupal/civicrm.config.php.drupal $TRG/civicrm.config.php
+    dm_generate_version "$TRG/civicrm-version.php" Drupal
+
+    long_log "Running dm_install_core" info
+    dm_install_core "$SRC" "$TRG" > /dev/null || long_die "Failed to dm_install_core"
+
+    long_log "Running dm_install_packages" info
+    dm_install_packages "$SRC/packages" "$TRG/packages" > /dev/null || long_die "Failed to dm_install_packages"
+
+    long_log "Running dm_install_vendor" info
+    dm_install_vendor "$SRC/vendor" "$TRG/vendor" > /dev/null || long_die "Failed to dm_install_vendor"
+
+    long_log "Running dm_install_bower" info
+    dm_install_bower "$SRC/bower_components" "$TRG/bower_components" >/dev/null || long_die "Failed dm_install_bower"
+
+    long_log "Running dm_install_drupal" info
+    dm_install_drupal "$SRC/drupal" "$TRG/drupal" > /dev/null || long_die "Failed to dm_install_drupal"
+
+    # Now download the internationalization file and unpack it.
+    if [ "$DM_VERSION" = "5.33.5" ]; then
+      # Temp hack esr patches which doesn't
+      # seem to have a translation file.
+      l10n_file=civicrm-5.33.2-l10n.tar.gz
+    elif [ "$DM_VERSION" = "5.39.2" ]; then
+      l10n_file=civicrm-5.39.0-l10n.tar.gz
+    else
+      l10n_file="civicrm-${DM_VERSION}-l10n.tar.gz"
+    fi
+
+    l10n_url="https://download.civicrm.org/${l10n_file}"
+    cd "$TRG"
+    long_log "Downloading %s to %s." info "$l10n_url" "$TRG"
+    wget -q "$l10n_url" || long_die "Failed to download l10n file (%s)." 1 "$l10n_url"
+    tar -xzf "$l10n_file" || long_die "Failed to unpack l10n file (%s)." 1 "$l10n_file"
+    # Unpacking creates a civicrm folder with an l10n and sql folder inside. However,
+    # we are already in the base civicrm folder - so we have to move these files and
+    # directories up one level.
+    mv civicrm/l10n .
+    mv civicrm/sql/* sql/
+    rmdir civicrm/sql
+    rmdir civicrm
+    # Clean up the left over tar ball.
+    rm "$l10n_file"
+
+    # Just for 5.33 ... we have to replace ckeditor with a secure version
+    if [ "$DM_VERSION" = "5.33.5" ]; then
+      # Download secure ckeditor release.
+      cktemp=$(mktemp --directory)
+      wget -O "${cktemp}/ckeditor.zip" https://github.com/ckeditor/ckeditor-releases/archive/4.16.2.zip
+
+      # Delete the insecure version shipped with 5.33
+      bower_path="bower_components/"
+      rm -rf "${bower_path}/ckeditor"
+
+      # Unpack the secure version in the right spot.
+      unzip -d "$bower_path" "${cktemp}/ckeditor.zip" 
+
+      # Rename
+      mv "${bower_path}/ckeditor4-releases-4.16.2" "${bower_path}/ckeditor"
+
+      # Clean up.
+      rm "${cktemp}/ckeditor.zip"
+      rmdir "$cktemp"
+    fi
+    # Kill our src civicrm directory and replace with our newly created one.
+    # Avoid getcwd errors by switching to our original directory before deleting
+    # this one.
+    cd "$cwd"
+    rm -rf "$SRC"
+    long_log "Replacing civicrm with newly generated civicrm code." info
+    mv "$TRG" "$SRC"
+    rm -rf $TRG
+
+    # Now, put our custom fonts in place. This allows for korean fonts in mailing
+    # labels
+    rsync -a "${LONG_SHARE}/fonts" "${source_platform_path_temp}/sites/all/libraries/"
+
+
   fi
 
-  # Remove the install.php file. We don't need it becase we install via
-  # drush and leaving it around is a security risk.
-  # See https://www.drupal.org/PSA-2015-001.
-  rm ${source_platform_path_temp}/install.php
+  long_log "Moving platform into place." info
+  # mktemp will restrict read access - we need to ensure www-data on the
+  # container can read it.
+  chmod 0755 "$source_platform_path_temp"
 
-  # Hackish way to get symlink to wkhtmltopdf - which is needed if anyone
-  # enables the print module
-  ln -s /usr/bin/wkhtmltopdf "${source_platform_path_temp}/sites/all/libraries/"
+  # If the platform doesn't already exist - create it. 
+  # NOTE: don't just move it into place, otherwise steps below that depend
+  # on the temp path existing will fail.
+  if [ ! -d "$source_platform_path" ]; then
+    mkdir "$source_platform_path"
+  fi
 
-  
-  # There is a complicated process for taking a CiviCRM git repo and turning it
-  # into a safe and functional folder that can be used on a production CiviCRM
-  # site. Our strategy is to use as much code as possible from the distmaker
-  # bash utility that is used by the core developers to create the official
-  # tarballs.
-  long_log "Running distmaker..." info
+  # It would be nice to do an atomic move, however, if the platform is being
+  # used by a running container, we can't just move it out of the way. So, we
+  # have to rsync and deal with the possibility that there may be a weird error
+  # while the sync'ing is happened. I learned about the proper rsync arguments
+  # by reading the output of `aubrsync -h`.
+  rsync -aHSx --devices --specials --delete-before \
+    "${source_platform_path_temp}/" \
+    "${source_platform_path}/" 
 
-  # For easier compatibility with distmaker - using their variable names.
-  TRG=$(mktemp -d)
-  SRC="${source_platform_path_temp}/sites/all/modules/civicrm"
-  # Figure out the current version from civicrm-version.xml
-  DM_VERSION=$(grep version_no $SRC/xml/version.xml | sed 's#version_no##g' | tr -d '<>/ ')
-
-  distmaker_functions="${SRC}/distmaker/dists/common.sh"
-  [ ! -f "$distmaker_functions" ] && long_die "The distmaker common functions file doesn't exist."
-  source "$distmaker_functions"
-
-  long_log "Running dm_generate_vendor" info
-  dm_generate_vendor "$SRC" || long_die "Failed to dm_generate_vendor"
-  
-  # CiviCRM ship core extensions, which also have to be available in our special
-  # extensions directory.
-  if [ -d  ${source_platform_path_temp}/sites/all/modules/civicrm/ext ]; then
-    for ext in $(ls ${source_platform_path_temp}/sites/all/modules/civicrm/ext/); do
-      mv "${source_platform_path_temp}/sites/all/modules/civicrm/ext/$ext" ${source_platform_path_temp}/sites/all/extensions/
+  if [ "$LONG_RUN_DB_UPDATES" = "1" ]; then
+    # Now ensure all sites have db updates run.
+    for site in $(/srv/longshore/bin/longshore site-list $(hostname) ); do
+      if long_container_running "$site"; then
+        long_set_site_platform "$site"
+        if [ "$LONG_SITE_PLATFORM" = "$platform_name" ]; then
+          /srv/longshore/bin/longshore site-updatedb "$site"
+        fi
+      else
+        long_log "Not updating non-running container (%s)" info "$site"
+      fi
     done
   fi
-  
-  # The CiviCRM extensions directory is in sites/all/extensions, which is
-  # sensible. However, CiviCRM will want to create a tmp and cache directory
-  # in that directory to keep information about the extensions for the given
-  # site. The php user can't write to this directory, so we create a symlink
-  # to the default sites directory where the PHP user can write.
-  ln -s ../../../default/private/extensions/tmp  \
-    "${source_platform_path_temp}/sites/all/extensions/tmp"
-  ln -s ../../../default/private/extensions/cache  \
-    "${source_platform_path_temp}/sites/all/extensions/cache"
 
-  # And more hacks... The CiviMobile extension will try to include js files
-  # expecting to be installed in com.webaccessglobal.module.civimobile, however
-  # we have it installed in civimobile. Create symlink.
-  extension_maps='civimobile:com.webaccessglobal.module.civimobile'
-  cd "${source_platform_path_temp}/sites/all/extensions"
-  for map in $extension_maps; do
-    source=$(echo "$map" | cut -d: -f1)
-    target=$(echo "$map" | cut -d: -f2)
-    ln -s "$source" "$target"
-  done
-  cd "${source_platform_path_temp}"
-
-  long_log "Running GenCode" info
-  cwd=$(pwd)
-  cd "$SRC/xml"
-  php GenCode.php schema/Schema.xml > /dev/null || long_die "Failed to GenCode.php"
-
-  long_log "Resetting TRG directory" info
-  dm_reset_dirs "$TRG"
-
-  long_log "Running dm_generate_version (%s)" info "$DM_VERSION"
-  cp $SRC/drupal/civicrm.config.php.drupal $TRG/civicrm.config.php
-  dm_generate_version "$TRG/civicrm-version.php" Drupal
-
-  long_log "Running dm_install_core" info
-  dm_install_core "$SRC" "$TRG" > /dev/null || long_die "Failed to dm_install_core"
-
-  long_log "Running dm_install_packages" info
-  dm_install_packages "$SRC/packages" "$TRG/packages" > /dev/null || long_die "Failed to dm_install_packages"
-
-  long_log "Running dm_install_vendor" info
-  dm_install_vendor "$SRC/vendor" "$TRG/vendor" > /dev/null || long_die "Failed to dm_install_vendor"
-
-  long_log "Running dm_install_bower" info
-  dm_install_bower "$SRC/bower_components" "$TRG/bower_components" >/dev/null || long_die "Failed dm_install_bower"
-
-  long_log "Running dm_install_drupal" info
-  dm_install_drupal "$SRC/drupal" "$TRG/drupal" > /dev/null || long_die "Failed to dm_install_drupal"
-
-  # Now download the internationalization file and unpack it.
-  if [ "$DM_VERSION" = "5.33.5" ]; then
-    # Temp hack esr patches which doesn't
-    # seem to have a translation file.
-    l10n_file=civicrm-5.33.2-l10n.tar.gz
-  elif [ "$DM_VERSION" = "5.39.2" ]; then
-    l10n_file=civicrm-5.39.0-l10n.tar.gz
-  else
-    l10n_file="civicrm-${DM_VERSION}-l10n.tar.gz"
+  # See if we have other servers to copy the code to 
+  siblings="$LONG_SIBLINGS"
+  if [[ $(echo "$siblings" | wc -w) -lt "1" ]]; then
+    # Don't prompt to sync if we have nobody to sync to.
+    sync=n
   fi
 
-  l10n_url="https://download.civicrm.org/${l10n_file}"
-  cd "$TRG"
-  long_log "Downloading %s to %s." info "$l10n_url" "$TRG"
-  wget -q "$l10n_url" || long_die "Failed to download l10n file (%s)." 1 "$l10n_url"
-  tar -xzf "$l10n_file" || long_die "Failed to unpack l10n file (%s)." 1 "$l10n_file"
-  # Unpacking creates a civicrm folder with an l10n and sql folder inside. However,
-  # we are already in the base civicrm folder - so we have to move these files and
-  # directories up one level.
-  mv civicrm/l10n .
-  mv civicrm/sql/* sql/
-  rmdir civicrm/sql
-  rmdir civicrm
-  # Clean up the left over tar ball.
-  rm "$l10n_file"
+  if [ "$sync" = "y" ]; then
+    long_prompt "rsync'ing platform to other siblings."
+    if [ "$reply" == "y" ]; then
+      # Copy to all siblings in parallel
+      long_log "Creating temp directory on '%s' in parallel" "info" "$siblings"
+      long_log " -----------" "info"
+      echo $siblings | tr " " "\n" | \
+        parallel -v ssh $LONG_HOST_USER@{}.mayfirst.org \
+        "mkdir -p $source_platform_path_temp"
+      long_log " -----------" "info"
+      if [ "$?" != "0" ]; then
+        rm -rf "$source_platform_path_temp"
+        long_die "Failed to create directories on %s" 1 "$frontend" 
+        return
+      fi 
 
-  # Just for 5.33 ... we have to replace ckeditor with a secure version
-  if [ "$DM_VERSION" = "5.33.5" ]; then
-    # Download secure ckeditor release.
-    cktemp=$(mktemp --directory)
-    wget -O "${cktemp}/ckeditor.zip" https://github.com/ckeditor/ckeditor-releases/archive/4.16.2.zip
-
-    # Delete the insecure version shipped with 5.33
-    bower_path="bower_components/"
-    rm -rf "${bower_path}/ckeditor"
-
-    # Unpack the secure version in the right spot.
-    unzip -d "$bower_path" "${cktemp}/ckeditor.zip" 
-
-    # Rename
-    mv "${bower_path}/ckeditor4-releases-4.16.2" "${bower_path}/ckeditor"
-
-    # Clean up.
-    rm "${cktemp}/ckeditor.zip"
-    rmdir "$cktemp"
-  fi
-  # Kill our src civicrm directory and replace with our newly created one.
-  # Avoid getcwd errors by switching to our original directory before deleting
-  # this one.
-  cd "$cwd"
-  rm -rf "$SRC"
-  long_log "Replacing civicrm with newly generated civicrm code." info
-  mv "$TRG" "$SRC"
-  rm -rf $TRG
-
-  # Now, put our custom fonts in place. This allows for korean fonts in mailing
-  # labels
-  rsync -a "${LONG_SHARE}/fonts" "${source_platform_path_temp}/sites/all/libraries/"
-
-
-fi
-
-long_log "Moving platform into place." info
-# mktemp will restrict read access - we need to ensure www-data on the
-# container can read it.
-chmod 0755 "$source_platform_path_temp"
-
-# If the platform doesn't already exist - create it. 
-# NOTE: don't just move it into place, otherwise steps below that depend
-# on the temp path existing will fail.
-if [ ! -d "$source_platform_path" ]; then
-  mkdir "$source_platform_path"
-fi
-
-# It would be nice to do an atomic move, however, if the platform is being
-# used by a running container, we can't just move it out of the way. So, we
-# have to rsync and deal with the possibility that there may be a weird error
-# while the sync'ing is happened. I learned about the proper rsync arguments
-# by reading the output of `aubrsync -h`.
-rsync -aHSx --devices --specials --delete-before \
-  "${source_platform_path_temp}/" \
-  "${source_platform_path}/" 
-
-if [ "$LONG_RUN_DB_UPDATES" = "1" ]; then
-  # Now ensure all sites have db updates run.
-  for site in $(/srv/longshore/bin/longshore site-list $(hostname) ); do
-    if long_container_running "$site"; then
-      long_set_site_platform "$site"
-      if [ "$LONG_SITE_PLATFORM" = "$makefile" ]; then
-        /srv/longshore/bin/longshore site-updatedb "$site"
+      long_log "Rsyncing to %s in parallel\n" "info" "$siblings"
+      long_log " -----------" "info"
+      echo $siblings | tr " " "\n" | \
+        parallel -v rsync -a "$source_platform_path_temp/" \
+        "$LONG_HOST_USER@{}.mayfirst.org:$source_platform_path_temp"
+      long_log " -----------" "info"
+      if [ "$?" != "0" ]; then
+        rm -rf "$source_platform_path_temp"
+        long_die "Failed to create directories on %s" 1 "$frontend" 
+        return
       fi
-    else
-      long_log "Not updating non-running container (%s)" info "$site"
+
+      long_log "Running platform-create on siblings (%s)." info "$siblings"
+      long_log " -----------" "info"
+      echo $siblings | tr " " "\n" | \
+        parallel -v ssh "$LONG_HOST_USER"@{}.mayfirst.org \
+        LONG_RUN_DB_UPDATES=$LONG_RUN_DB_UPDATES \
+        /srv/longshore/bin/longshore \
+        platform-create "$makefile_path" "$source_platform_path_temp"
+      long_log " -----------" "info"
+      if [ "$?" != "0" ]; then
+        rm -rf "$source_platform_path_temp"
+        long_die "Failed to run platform-create on siblings: %s" 1 "$siblings" 
+        return
+      fi
     fi
-  done
-fi
-
-# See if we have other servers to copy the code to 
-siblings="$LONG_SIBLINGS"
-if [[ $(echo "$siblings" | wc -w) -lt "1" ]]; then
-  # Don't prompt to sync if we have nobody to sync to.
-  sync=n
-fi
-
-if [ "$sync" = "y" ]; then
-  long_prompt "rsync'ing platform to other siblings."
-  if [ "$reply" == "y" ]; then
-    # Copy to all siblings in parallel
-    long_log "Creating temp directory on '%s' in parallel" "info" "$siblings"
-    long_log " -----------" "info"
-    echo $siblings | tr " " "\n" | \
-      parallel -v ssh $LONG_HOST_USER@{}.mayfirst.org \
-      "mkdir -p $source_platform_path_temp"
-    long_log " -----------" "info"
-    if [ "$?" != "0" ]; then
-      rm -rf "$source_platform_path_temp"
-      long_die "Failed to create directories on %s" 1 "$frontend" 
-      return
-    fi 
-
-    long_log "Rsyncing to %s in parallel\n" "info" "$siblings"
-    long_log " -----------" "info"
-    echo $siblings | tr " " "\n" | \
-      parallel -v rsync -a "$source_platform_path_temp/" \
-      "$LONG_HOST_USER@{}.mayfirst.org:$source_platform_path_temp"
-    long_log " -----------" "info"
-    if [ "$?" != "0" ]; then
-      rm -rf "$source_platform_path_temp"
-      long_die "Failed to create directories on %s" 1 "$frontend" 
-      return
-    fi
-
-    long_log "Running platform-create on siblings (%s)." info "$siblings"
-    long_log " -----------" "info"
-    echo $siblings | tr " " "\n" | \
-      parallel -v ssh "$LONG_HOST_USER"@{}.mayfirst.org \
-      LONG_RUN_DB_UPDATES=$LONG_RUN_DB_UPDATES \
-      /srv/longshore/bin/longshore \
-      platform-create "$makefile_path" "$source_platform_path_temp"
-    long_log " -----------" "info"
-    if [ "$?" != "0" ]; then
-      rm -rf "$source_platform_path_temp"
-      long_die "Failed to run platform-create on siblings: %s" 1 "$siblings" 
-      return
-    fi
+  else
+    long_log "No siblings to rsync with." "info"
   fi
+
+  # Clean up.
+  rm -rf "$source_platform_path_temp"
 else
-  long_log "No siblings to rsync with." "info"
+  # Build system is composer.
+  # $source_platform_path
+
+  # If our platform does not exist, create it.
+  if [ ! -d "$source_platform_path" ]; then
+    mkdir -p "$source_platform_path"
+  fi
+
+  cd "$source_platform_path"
+  
+  # Ensure we have the most recent versions of our composer files.
+  cp "$makefile_path" composer.json
+  composer_dir=$(dirname "$makefile_path")
+  $composer_lock_path="${compser_dir}/$(basename $makefile_path .json).lock"
+  if [ -f "$composer_lock_path" ]; then
+    cp "$composer_lock_path" composer.lock
+  fi
+  cp "${composer_dir}/extensions-installer" .
+  cp "${composer_dir}/extensions.txt" .
+  if [ -f "${composer_dir}/extensions.lock" ]; then
+    cp "${composer_dir}/extensions.lock" .
+  fi
+
+  # This command throws an error if we have not yet install civicrm, so we 
+  # hide the error and expect civicrm_pre_full_version to be empty.
+  civicrm_pre_full_version=$(composer show "civicrm/civicrm-core" 2>/dev/null | grep ^version | cut -d: -f2 | tr -d ' *')
+  composer install 
+
+  # Get internationalization files.
+  # Figure out which exact version we have installed.
+  civicrm_post_full_version=$(composer show "civicrm/civicrm-core" | grep ^version | cut -d: -f2 | tr -d ' *')
+  if [ "$civicrm_pre_full_version" != "$civicrm_post_full_version" ]; then
+    wget https://download.civicrm.org/civicrm-${civicrm_post_full_version}-l10n.tar.gz
+    tar -zxvf civicrm-${civicrm_post_full_version}-l10n.tar.gz
+    cd civicrm/
+    cp -R l10n/ ../vendor/civicrm/civicrm-core/
+    cp -R sql/ ../vendor/civicrm/civicrm-core/
+    cd ..
+    rm -rf civicrm/
+    rm civicrm-${civicrm_post_full_version}-l10n.tar.gz
+  fi
+
 fi
-
-# Clean up.
-rm -rf "$source_platform_path_temp"
-

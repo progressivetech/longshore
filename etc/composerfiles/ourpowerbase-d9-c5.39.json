@@ -11,41 +11,18 @@
         {
           "type": "composer",
           "url": "https://packages.drupal.org/8"
-        },
-        {
-          "type": "package",
-          "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup.git",
-          "package": {
-            "name": "progressivetech/setup",
-            "version": "1",
-            "type": "civicrm-extension",
-            "source": {
-              "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup.git",
-              "type": "git",
-              "reference": "master"
-            }
-          }
-        },
-        {
-          "type": "git",
-          "url": "https://github.com/iATSPayments/com.iatspayments.civicrm.git",
-          "package": {
-            "type": "civicrm-extension"
-          }
         }
     ],
     "require": {
         "civicrm/civicrm-asset-plugin": "~1.1",
-        "civicrm/civicrm-core": "~5.39",
-        "civicrm/civicrm-drupal-8": "~5.39",
-        "civicrm/civicrm-packages": "~5.39",
+        "civicrm/civicrm-core": "~5.39.0",
+        "civicrm/civicrm-drupal-8": "~5.39.0",
+        "civicrm/civicrm-packages": "~5.39.0",
         "composer/installers": "^1.9",
         "drupal/core-composer-scaffold": "^9.2",
         "drupal/core-project-message": "^9.2",
         "drupal/core-recommended": "^9.2",
-        "drush/drush": "^10.5",
-        "progressivetech/setup": "~1",
-        "iats-payments/civicrm": "master"
+        "drush/drush": "^10.5"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -107,6 +84,7 @@
         "compile-whitelist": ["civicrm/civicrm-core", "civicrm/composer-compile-lib"]
     },
     "scripts": {
+      "post-install-cmd": "./extensions-installer",
       "post-update-cmd": "./extensions-installer"
     }
 }

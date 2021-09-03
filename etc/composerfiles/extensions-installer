@@ -56,7 +56,7 @@ for line in $(grep -E -v '(^[[:space:]]|^#|^$)' "$active_extensions_file"); do
   dir=$(echo "$line" | cut -d, -f1)
   url=$(echo "$line" | cut -d, -f2)
   version=$(echo "$line" | cut -d, -f3)
-  printf "Examining %s. " "$dir"
+  #printf "Examining %s.\n" "$dir"
 
   # Calculate basename from url
   basename=$(basename "$url")
@@ -70,12 +70,16 @@ for line in $(grep -E -v '(^[[:space:]]|^#|^$)' "$active_extensions_file"); do
     fi
     cd "$dir" >/dev/null
     git remote update >/dev/null
-    printf "Checking out %s. " "$version"
-    git checkout --quiet "$version"
+    #printf "Checking out %s. " "$version"
+    last_commit=$(git log -n1 --format=format:"%H")
+    if [ "$last_commit" != "$version" ]; then
+      printf "Checking out version %s of %s." "$version" "$dir"
+      git checkout --quiet "$version"
+    fi
     
     if [ -n "$extensions_tmp_lock_file" ]; then
       commit=$(git log --format="%H" -n 1)
-      printf "Updating lockfile. "
+      printf "Updating lockfile for %s - setting to %s." "$dir" "$commit"
       printf '%s,%s,%s\n' "$dir" "$url" "$commit" >> "$extensions_tmp_lock_file"
     fi
   else
@@ -107,7 +111,7 @@ for line in $(grep -E -v '(^[[:space:]]|^#|^$)' "$active_extensions_file"); do
     fi
 
     if [ "$zip_download" = "y" ]; then
-      printf "Downloading, unzipping and rsyncing. "
+      printf "Downloading, unzipping and rsyncing %s." "$dir"
       wget --quiet -O "$zip_temp" "$url"
       unzipped_temp=$(mktemp -d)
       unzip -qq -d "$unzipped_temp" "$zip_temp"
@@ -119,7 +123,7 @@ for line in $(grep -E -v '(^[[:space:]]|^#|^$)' "$active_extensions_file"); do
     fi 
     rm "$zip_temp"
   fi
-  printf "Done with %s.\n" "$dir"
+  printf "."
 done
 
 if [ -n "$extensions_tmp_lock_file" ]; then
@@ -127,3 +131,5 @@ if [ -n "$extensions_tmp_lock_file" ]; then
   printf "Moving lock file into place.\n"
   mv "$extensions_tmp_lock_file" "${cwd}/extensions.lock"
 fi
+
+printf "\n"

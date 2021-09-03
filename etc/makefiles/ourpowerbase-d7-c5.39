@@ -337,7 +337,7 @@ projects[civivolunteer][download][revision] = "f80259fffec617c5ca91c902eca3ab8e0
 projects[angularprofiles][type] = "library"
 projects[angularprofiles][destination] = "extensions"
 projects[angularprofiles][download][type] = "git"
-projects[angularprofiles][download][url] = "https://lab.civicrm.org/extensions/angularprofiles"
+projects[angularprofiles][download][url] = "https://lab.civicrm.org/extensions/angularprofiles.git"
 projects[angularprofiles][download][revision] = "43286551a5df5c2c979516965293396272839360"
 
 projects[simpledonate][type] = "library"
@@ -497,7 +497,7 @@ projects[csvimport][download][revision] = "034bb284ccacd3de9cf2e5717b7f38e5002bf
 projects[bugp][type] = "library"
 projects[bugp][destination] = "extensions"
 projects[bugp][download][type] = "git"
-projects[bugp][download][url] = "https://lab.jmaconsulting.biz/extensions/bugp"
+projects[bugp][download][url] = "https://lab.jmaconsulting.biz/extensions/bugp.git"
 projects[bugp][download][revision] = "c6eae2f354cb312daba977f93d2248be315dc0fc"
 
 projects[printgrantpdfs][type] = "library"
@@ -533,7 +533,7 @@ projects[remoteform][download][revision] = "88d91eb32fb89ecc180709877ce42bb17562
 projects[civimobileapi][type] = "library"
 projects[civimobileapi][destination] = "extensions"
 projects[civimobileapi][download][type] = "git"
-projects[civimobileapi][download][url] = "https://lab.civicrm.org/extensions/civimobileapi"
+projects[civimobileapi][download][url] = "https://lab.civicrm.org/extensions/civimobileapi.git"
 ; See https://github.com/agiliway/com.agiliway.civimobileapi/issues/19
 projects[civimobileapi][directory_name] = "com.agiliway.civimobileapi"
 projects[civimobileapi][download][revision] = "68c417872ed007a50b03cf279bf9f4de10101de1"
@@ -655,7 +655,7 @@ projects[doctorwhen][download][revision] = "b809a47ba7b29dee1958b66ef20a5664b658
 projects[sweetalert][type] = "library"
 projects[sweetalert][destination] = "extensions"
 projects[sweetalert][download][type] = "git"
-projects[sweetalert][download][url] = "https://lab.civicrm.org/extensions/sweetalert"
+projects[sweetalert][download][url] = "https://lab.civicrm.org/extensions/sweetalert.git"
 projects[sweetalert][download][revision] = "051a5c5b34e3badc8c6a2ddefbde9c2928da2d34"
 
 projects[deleteoldbulkmailings][type] = "library"
@@ -667,13 +667,13 @@ projects[deleteoldbulkmailings][download][revision] = "759a2665d44d53bea3630d073
 projects[contributiontransactlegacy][type] = "library"
 projects[contributiontransactlegacy][destination] = "extensions"
 projects[contributiontransactlegacy][download][type] = "git"
-projects[contributiontransactlegacy][download][url] = "https://lab.civicrm.org/extensions/contributiontransactlegacy"
+projects[contributiontransactlegacy][download][url] = "https://lab.civicrm.org/extensions/contributiontransactlegacy.git"
 projects[contributiontransactlegacy][download][revision] = "e4e01616486f64209c660c777b13728f873683f0"
 
 projects[callnext][type] = "library"
 projects[callnext][destination] = "extensions"
 projects[callnext][download][type] = "git"
-projects[callnext][download][url] = "https://lab.civicrm.org/extensions/callnext"
+projects[callnext][download][url] = "https://lab.civicrm.org/extensions/callnext.git"
 projects[callnext][download][revision] = "cee42a123f5d187e58d2ca471574384ffdbcba8c"
 
 projects[civicase][type] = "library"
@@ -709,7 +709,7 @@ projects[allcontactinfo][download][revision] = "4e3fb2ccf37265cf32d93b76e0125256
 projects[contributeprogress][type] = "library"
 projects[contributeprogress][destination] = "extensions"
 projects[contributeprogress][download][type] = "git"
-projects[contributeprogress][download][url] = "https://lab.civicrm.org/extensions/contributeprogress"
+projects[contributeprogress][download][url] = "https://lab.civicrm.org/extensions/contributeprogress.git"
 projects[contributeprogress][download][revision] = "f11ef9a7b498f20bd62b2eba0baac55934bb6300"
 
 projects[smsinbox][type] = "library"
@@ -764,7 +764,7 @@ projects[templateredact][download][revision] = "c15d16031e1113c8b74bec78fa35f079
 projects[mosaicomsgtpl][type] = "library"
 projects[mosaicomsgtpl][destination] = "extensions"
 projects[mosaicomsgtpl][download][type] = "git"
-projects[mosaicomsgtpl][download][url] = "https://lab.civicrm.org/extensions/mosaicomsgtpl"
+projects[mosaicomsgtpl][download][url] = "https://lab.civicrm.org/extensions/mosaicomsgtpl.git"
 projects[mosaicomsgtpl][download][revision] = "d4f75a5ddaa2ab0e8bf1b8296937c7b06be6da68"
 
 ;########
