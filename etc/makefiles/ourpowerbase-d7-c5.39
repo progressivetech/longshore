@@ -685,8 +685,8 @@ projects[civicase][download][revision] = "9c9b762588810b80a81b009df533eddbecbd00
 projects[civicalendar][type] = "library"
 projects[civicalendar][destination] = "extensions"
 projects[civicalendar][download][type] = "git"
-projects[civicalendar][download][url] = "https://github.com/agiliway/com.agiliway.civicalendar"
-projects[civicalendar][download][revision] = "a7f6d9c2aab38fe0efdb2435fc3a006e363bbf29"
+projects[civicalendar][download][url] = "https://github.com/progressivetech/com.agiliway.civicalendar"
+projects[civicalendar][download][revision] = "b50ec54648ea490eec8b4e2363cfaf2e911868f8"
 
 projects[birthdays][type] = "library"
 projects[birthdays][destination] = "extensions"
