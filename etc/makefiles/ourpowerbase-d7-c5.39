@@ -419,8 +419,8 @@ projects[exportpermission][download][revision] = "c13a893f16fec9ebaf9be9bca68e9a
 projects[mailchimp][type] = "library"
 projects[mailchimp][destination] = "extensions"
 projects[mailchimp][download][type] = "git"
-projects[mailchimp][download][url] = "https://github.com/veda-consulting/uk.co.vedaconsulting.mailchimp.git"
-projects[mailchimp][download][revision] = "fb3e41f4ea23efc314a8773e07ec8e628886de92"
+projects[mailchimp][download][url] = "https://github.com/progressivetech/uk.co.vedaconsulting.mailchimp.git"
+projects[mailchimp][download][revision] = "7d7b4942eadd77abed9a6e7ae25f6ba6b5342aac"
 
 projects[notificationlog][type] = "library"
 projects[notificationlog][destination] = "extensions"
@@ -533,10 +533,10 @@ projects[remoteform][download][revision] = "88d91eb32fb89ecc180709877ce42bb17562
 projects[civimobileapi][type] = "library"
 projects[civimobileapi][destination] = "extensions"
 projects[civimobileapi][download][type] = "git"
-projects[civimobileapi][download][url] = "https://lab.civicrm.org/extensions/civimobileapi.git"
+projects[civimobileapi][download][url] = "https://lab.civicrm.org/jamie/civimobileapi.git"
 ; See https://github.com/agiliway/com.agiliway.civimobileapi/issues/19
 projects[civimobileapi][directory_name] = "com.agiliway.civimobileapi"
-projects[civimobileapi][download][revision] = "68c417872ed007a50b03cf279bf9f4de10101de1"
+projects[civimobileapi][download][revision] = "c86e10ca70524266414c49ebaa07cf8bc1bcf8e2"
 
 projects[sqlexport][type] = "library"
 projects[sqlexport][destination] = "extensions"
@@ -673,8 +673,8 @@ projects[contributiontransactlegacy][download][revision] = "e4e01616486f64209c66
 projects[callnext][type] = "library"
 projects[callnext][destination] = "extensions"
 projects[callnext][download][type] = "git"
-projects[callnext][download][url] = "https://lab.civicrm.org/extensions/callnext.git"
-projects[callnext][download][revision] = "cee42a123f5d187e58d2ca471574384ffdbcba8c"
+projects[callnext][download][url] = "https://lab.civicrm.org/jamie/callnext.git"
+projects[callnext][download][revision] = "6dbf55d743065083bd4040edb4c641f79cfd8f67"
 
 projects[civicase][type] = "library"
 projects[civicase][destination] = "extensions"
