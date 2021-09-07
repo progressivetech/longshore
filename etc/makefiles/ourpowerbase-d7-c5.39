@@ -691,8 +691,8 @@ projects[civicalendar][download][revision] = "b50ec54648ea490eec8b4e2363cfaf2e91
 projects[birthdays][type] = "library"
 projects[birthdays][destination] = "extensions"
 projects[birthdays][download][type] = "git"
-projects[birthdays][download][url] = "https://github.com/systopia/de.systopia.birthdays"
-projects[birthdays][download][revision] = "9790e5c0692c15ded25450b90852dacd53e56376"
+projects[birthdays][download][url] = "https://github.com/progressivetech/de.systopia.birthdays"
+projects[birthdays][download][revision] = "2ad88c5c14803b6ed4b492f9e6cde28573490296"
 
 projects[countylookup][type] = "library"
 projects[countylookup][destination] = "extensions"
