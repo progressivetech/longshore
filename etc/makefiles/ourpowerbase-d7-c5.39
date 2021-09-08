@@ -698,7 +698,7 @@ projects[countylookup][type] = "library"
 projects[countylookup][destination] = "extensions"
 projects[countylookup][download][type] = "git"
 projects[countylookup][download][url] = "https://github.com/MegaphoneJon/coop.palantetech.countylookup"
-projects[countylookup][download][revision] = "367fdb760f9753510bfb5328392bd98dc92a851e"
+projects[countylookup][download][revision] = "bdaa4ae4d176985be5e9a8cd1f4aafff1b3cad2b"
 
 projects[allcontactinfo][type] = "library"
 projects[allcontactinfo][destination] = "extensions"
