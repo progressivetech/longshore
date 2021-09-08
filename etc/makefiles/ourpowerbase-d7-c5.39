@@ -697,7 +697,7 @@ projects[birthdays][download][revision] = "2ad88c5c14803b6ed4b492f9e6cde28573490
 projects[countylookup][type] = "library"
 projects[countylookup][destination] = "extensions"
 projects[countylookup][download][type] = "git"
-projects[countylookup][download][url] = "https://github.com/progressivetech/coop.palantetech.countylookup"
+projects[countylookup][download][url] = "https://github.com/progressivetech/countylookup.git"
 projects[countylookup][download][revision] = "891afc443eaac4672a492c6d3f39f2103039ba1c"
 
 projects[allcontactinfo][type] = "library"
