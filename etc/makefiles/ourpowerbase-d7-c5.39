@@ -753,7 +753,7 @@ projects[electoral][type] = "library"
 projects[electoral][destination] = "extensions"
 projects[electoral][download][type] = "git"
 projects[electoral][download][url] = "https://github.com/MegaphoneJon/com.jlacey.electoral"
-projects[electoral][download][revision] = "1e8631e47467f8374e69c5f3314861dfb257ad02"
+projects[electoral][download][revision] = "0f9dd8fa5d8b6cee26383743fa2baa0c86acf6d8"
 
 projects[templateredact][type] = "library"
 projects[templateredact][destination] = "extensions"
