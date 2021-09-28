@@ -294,7 +294,7 @@ projects[twilio][download][revision] = "494728cf13bb65c228429665c158d899cd7e6dc1
 projects[cividiscount][type] = "library"
 projects[cividiscount][destination] = "extensions"
 projects[cividiscount][download][type] = "git"
-projects[cividiscount][download][url] = "https://github.com/dlobo/org.civicrm.module.cividiscount"
+projects[cividiscount][download][url] = "https://lab.civicrm.org/extensions/cividiscount"
 projects[cividiscount][download][revision] = "3515fc559b102384bed7b9fb4382314882370aad"
 
 projects[uscounties][type] = "library"
@@ -528,7 +528,7 @@ projects[remoteform][type] = "library"
 projects[remoteform][destination] = "extensions"
 projects[remoteform][download][type] = "git"
 projects[remoteform][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.remoteform"
-projects[remoteform][download][revision] = "88d91eb32fb89ecc180709877ce42bb175627b31"
+projects[remoteform][download][revision] = "edd003fdd8b01050fc52c79a3596afd808c74078"
 
 projects[civimobileapi][type] = "library"
 projects[civimobileapi][destination] = "extensions"
