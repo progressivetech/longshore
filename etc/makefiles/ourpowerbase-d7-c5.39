@@ -680,7 +680,7 @@ projects[civicase][type] = "library"
 projects[civicase][destination] = "extensions"
 projects[civicase][download][type] = "git"
 projects[civicase][download][url] = "https://github.com/civicrm/org.civicrm.civicase"
-projects[civicase][download][revision] = "9c9b762588810b80a81b009df533eddbecbd00ae"
+projects[civicase][download][revision] = "b49c4fa89c6769c3f57f4229c39032915bd60af3"
 
 projects[civicalendar][type] = "library"
 projects[civicalendar][destination] = "extensions"
