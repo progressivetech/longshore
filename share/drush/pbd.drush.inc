@@ -792,13 +792,13 @@ function drush_pbd_test_smart_groups() {
     $group = new CRM_Contact_DAO_Group();
     $group->id = $id;
     $group->find(TRUE);
-    $force = TRUE;
     // Check to see if lock exists
     $lock = Civi\Core\Container::singleton()->get('lockManager')->acquire("data.core.group.{$id}");
     if (!$lock->isAcquired()) {
       drush_log(dt("Lock exists, not rebuilding."), 'error');
       continue;
     }
+    CRM_Contact_BAO_GroupContactCache::invalidateGroupContactCache($id);
     CRM_Contact_BAO_GroupContactCache::load($group, $force);
     $end = time();
     $duration = $end - $start;
