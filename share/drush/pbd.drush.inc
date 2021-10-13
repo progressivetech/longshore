@@ -368,7 +368,6 @@ function drush_pbd_configure() {
 
   /* Drupal Settings */
   pbd_enable_modules();
-  pbd_configure_themekey();
   pbd_configure_jquery_update();
   pbd_create_drupal_roles();
   pbd_grant_anonymous_and_authenticated_role_access();
@@ -515,7 +514,7 @@ function drush_pbd_configure_once() {
   pbd_enable_remote_profile_submissions();
   pbd_set_state_province_limit();
   pbd_dedupe_rules();
-
+  pbd_configure_themekey();
   pbd_configure_wkhtmltopdf();
   variable_set('one-time-configuration-set', 1);
 }
@@ -3135,7 +3134,8 @@ function pbd_configure_themekey() {
       '(civicrm/profile/edit|civicrm/profile/view|civicrm/profile/create)',
       '(civicrm/mailing/subscribe|civicrm/mailing/unsubscribe|civicrm/mailing/optout|civicrm/mailing/resubscribe|civicrm/mailing/confirm)',
       '(civicrm/contribute/transact|civicrm/pcp|civicrm/contribute/campaign|civicrm/contribute/unsubscribe|civicrm/contribute/updatebilling|civicrm/contribute/updaterecur)',
-      '(civicrm/event/info|civicrm/event/register|civicrm/event/confirm|civicrm/mailing/forward|civicrm/event/ical|civicrm/event/view_cart|event/cart_checkout)',
+      '(civicrm/petition/sign|civicrm/petition/thankyou)',
+      '(civicrm/event/info|civicrm/event/list|civicrm/event/register|civicrm/event/confirm|civicrm/mailing/forward|civicrm/event/ical|civicrm/event/view_cart|event/cart_checkout)',
     );
     $weight_query = db_query("SELECT MAX(weight) AS weight FROM {themekey_properties}")->fetchObject();
     $weight = empty($weight_query->weight) ? 1 : $weight_query->weight;
