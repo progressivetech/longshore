@@ -770,7 +770,7 @@ projects[mosaicomsgtpl][download][revision] = "d4f75a5ddaa2ab0e8bf1b8296937c7b06
 projects[chasse][type] = "library"
 projects[chasse][destination] = "extensions"
 projects[chasse][download][type] = "git"
-projects[chasse][download][url] = "https://lab.civicrm.org/artfulrobot/chasse.git"
+projects[chasse][download][url] = "https://github.com/artfulrobot/chasse"
 projects[chasse][download][revision] = "bf9f3e89e3010e7480055ec09532e8da8cc0eb70"
 
 projects[minifier][type] = "library"
