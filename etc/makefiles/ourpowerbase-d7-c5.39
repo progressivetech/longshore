@@ -773,6 +773,12 @@ projects[chasse][download][type] = "git"
 projects[chasse][download][url] = "https://lab.civicrm.org/artfulrobot/chasse.git"
 projects[chasse][download][revision] = "bf9f3e89e3010e7480055ec09532e8da8cc0eb70"
 
+projects[minifier][type] = "library"
+projects[minifier][destination] = "extensions"
+projects[minifier][download][type] = "git"
+projects[minifier][download][url] = "https://lab.civicrm.org/extensions/minifier.git"
+projects[minifier][download][revision] = "67abf4bbd6e7f79e37aa9cb04b5520ea56418efc"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
