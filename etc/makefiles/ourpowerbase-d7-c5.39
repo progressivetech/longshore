@@ -779,6 +779,12 @@ projects[minifier][download][type] = "git"
 projects[minifier][download][url] = "https://lab.civicrm.org/extensions/minifier.git"
 projects[minifier][download][revision] = "67abf4bbd6e7f79e37aa9cb04b5520ea56418efc"
 
+projects[ogp][type] = "library"
+projects[ogp][destination] = "extensions"
+projects[ogp][download][type] = "git"
+projects[ogp][download][url] = "https://lab.civicrm.org/extensions/ogp.git"
+projects[ogp][download][revision] = "6a9e968351e77ac763d0c0072f70e5378457e251"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
