@@ -813,12 +813,12 @@ projects[pb_custom_theme_elements][download][revision] = "8c3079594a444a78748e3e
 projects[civiresponsive][type] = "theme"
 projects[civiresponsive][download][type] = "git"
 projects[civiresponsive][download][url] = "git://git.progressivetech.org/powerbase/civiresponsive.git"
-projects[civiresponsive][download][revision] = "9c577bed6daf2af7e8138aaf4b63e6ffa7a19522"
+projects[civiresponsive][download][revision] = "c8f8357f3727f9eed2f5a3f26a1b8aae9b362bb5"
 
 projects[iframe][type] = "theme"
 projects[iframe][download][type] = "git"
 projects[iframe][download][url] = "git://git.progressivetech.org/powerbase/iframe.git"
-projects[iframe][download][revision] = "e7fc6068964c08f7e685ed3702986cbcd8256878"
+projects[iframe][download][revision] = "6d79e7c145cf0cb8008804a7da79f7c514939e55"
 
 projects[shoreditch_companion_d7_theme][type] = "theme"
 projects[shoreditch_companion_d7_theme][download][type] = "git"
