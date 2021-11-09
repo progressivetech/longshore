@@ -824,7 +824,7 @@ projects[civiresponsive][download][revision] = "c8f8357f3727f9eed2f5a3f26a1b8aae
 projects[iframe][type] = "theme"
 projects[iframe][download][type] = "git"
 projects[iframe][download][url] = "git://git.progressivetech.org/powerbase/iframe.git"
-projects[iframe][download][revision] = "6d79e7c145cf0cb8008804a7da79f7c514939e55"
+projects[iframe][download][revision] = "ef144529e553ae4fb0a0362adf48ae7993822fb1"
 
 projects[shoreditch_companion_d7_theme][type] = "theme"
 projects[shoreditch_companion_d7_theme][download][type] = "git"
