@@ -1646,6 +1646,7 @@ function pbd_create_drupal_roles() {
     'administer reserved reports',
     'delete in CiviContribute',
     'administer payment processors',
+    'all CiviCRM permissions and ACLs',
     // VSEA has a custom extension to provide a permission to access
     // the download data permission.
     'access export menu',
