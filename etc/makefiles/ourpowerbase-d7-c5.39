@@ -295,7 +295,7 @@ projects[cividiscount][type] = "library"
 projects[cividiscount][destination] = "extensions"
 projects[cividiscount][download][type] = "git"
 projects[cividiscount][download][url] = "https://lab.civicrm.org/extensions/cividiscount"
-projects[cividiscount][download][revision] = "3515fc559b102384bed7b9fb4382314882370aad"
+projects[cividiscount][download][revision] = "769726f2a366a15a311fe7e8dceed26adf8d6571"
 
 projects[uscounties][type] = "library"
 projects[uscounties][destination] = "extensions"
