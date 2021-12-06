@@ -785,6 +785,12 @@ projects[ogp][download][type] = "git"
 projects[ogp][download][url] = "https://lab.civicrm.org/extensions/ogp.git"
 projects[ogp][download][revision] = "c81f6b417cd533afd89343e203e1705a56ebf68e"
 
+projects[emailarchiver][type] = "library"
+projects[emailarchiver][destination] = "extensions"
+projects[emailarchiver][download][type] = "git"
+projects[emailarchiver][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.emailarchiver"
+projects[emailarchiver][download][revision] = "0e7cd4589b704a18d17b7670ba7f7ed13a6b0b4a"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
