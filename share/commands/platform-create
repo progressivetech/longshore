@@ -344,7 +344,7 @@ else
   # Ensure we have the most recent versions of our composer files.
   cp "$makefile_path" composer.json
   composer_dir=$(dirname "$makefile_path")
-  $composer_lock_path="${compser_dir}/$(basename $makefile_path .json).lock"
+  composer_lock_path="${compser_dir}/$(basename $makefile_path .json).lock"
   if [ -f "$composer_lock_path" ]; then
     cp "$composer_lock_path" composer.lock
   fi
@@ -357,7 +357,7 @@ else
   # This command throws an error if we have not yet install civicrm, so we 
   # hide the error and expect civicrm_pre_full_version to be empty.
   civicrm_pre_full_version=$(composer show "civicrm/civicrm-core" 2>/dev/null | grep ^version | cut -d: -f2 | tr -d ' *')
-  composer install 
+  composer --verbose install 
 
   # Get internationalization files.
   # Figure out which exact version we have installed.
