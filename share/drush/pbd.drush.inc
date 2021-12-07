@@ -3125,38 +3125,35 @@ function pbd_return_entity($entity, $params, $key = 'name') {
  * Setup default themekey rules.
  */
 function pbd_configure_themekey() {
-  $existing = db_query("SELECT COUNT(*) AS count FROM information_schema.tables  WHERE table_schema = DATABASE() AND table_name = 'themekey_properties'")->fetchObject();
-  // Only configure if themekey is enabled and table exists.
-  if($existing->count == 1) {
-    // We have default settings for the major changes we often use. By default, we set
-    // the theme to the default theme, making it easy to change once we have a new
-    // custom theme.
-    $settings = array(
-      '(civicrm/profile/edit|civicrm/profile/view|civicrm/profile/create)',
-      '(civicrm/mailing/subscribe|civicrm/mailing/unsubscribe|civicrm/mailing/optout|civicrm/mailing/resubscribe|civicrm/mailing/confirm)',
-      '(civicrm/contribute/transact|civicrm/pcp|civicrm/contribute/campaign|civicrm/contribute/unsubscribe|civicrm/contribute/updatebilling|civicrm/contribute/updaterecur)',
-      '(civicrm/petition/sign|civicrm/petition/thankyou)',
-      '(civicrm/event/info|civicrm/event/list|civicrm/event/register|civicrm/event/confirm|civicrm/mailing/forward|civicrm/event/ical|civicrm/event/view_cart|event/cart_checkout)',
-    );
-    $weight_query = db_query("SELECT MAX(weight) AS weight FROM {themekey_properties}")->fetchObject();
-    $weight = empty($weight_query->weight) ? 1 : $weight_query->weight;
-    foreach($settings as $value) {
-      $status = db_query("SELECT id FROM {themekey_properties} WHERE value = :value",
-        array(':value' => $value))->fetchObject();
-      if(empty($status->id)) {
-        // Insert it
-        db_insert("themekey_properties")
-          ->fields(array(
-            'property' => 'drupal:get_q',
-            'operator' => '~',
-            'value' => $value,
-            'weight' => $weight,
-            'theme' => 'default',
-            'enabled' => 1,
-            'wildcards' => serialize(array()),
-            'module' => 'themekey'
-          ))->execute();
-      }
+  module_enable(['themekey']);
+  // We have default settings for the major changes we often use. By default, we set
+  // the theme to the default theme, making it easy to change once we have a new
+  // custom theme.
+  $settings = array(
+    '(civicrm/profile/edit|civicrm/profile/view|civicrm/profile/create)',
+    '(civicrm/mailing/subscribe|civicrm/mailing/unsubscribe|civicrm/mailing/optout|civicrm/mailing/resubscribe|civicrm/mailing/confirm)',
+    '(civicrm/contribute/transact|civicrm/pcp|civicrm/contribute/campaign|civicrm/contribute/unsubscribe|civicrm/contribute/updatebilling|civicrm/contribute/updaterecur)',
+    '(civicrm/petition/sign|civicrm/petition/thankyou)',
+    '(civicrm/event/info|civicrm/event/list|civicrm/event/register|civicrm/event/confirm|civicrm/mailing/forward|civicrm/event/ical|civicrm/event/view_cart|event/cart_checkout)',
+  );
+  $weight_query = db_query("SELECT MAX(weight) AS weight FROM {themekey_properties}")->fetchObject();
+  $weight = empty($weight_query->weight) ? 1 : $weight_query->weight;
+  foreach($settings as $value) {
+    $status = db_query("SELECT id FROM {themekey_properties} WHERE value = :value",
+      array(':value' => $value))->fetchObject();
+    if(empty($status->id)) {
+      // Insert it
+      db_insert("themekey_properties")
+        ->fields(array(
+          'property' => 'drupal:get_q',
+          'operator' => '~',
+          'value' => $value,
+          'weight' => $weight,
+          'theme' => 'default',
+          'enabled' => 1,
+          'wildcards' => serialize(array()),
+          'module' => 'themekey'
+        ))->execute();
     }
   }
 }
@@ -3166,7 +3163,7 @@ function pbd_configure_themekey() {
  */
 function pbd_enable_modules() {
   $modules_wanted = array(
-    'themekey', 'opb',
+    'opb',
     'civicrm_cicero', 'ctools', 'views', 'views_ui',
     'webform_civicrm', 'file',
     'webform','options_element',
