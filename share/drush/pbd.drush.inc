@@ -3125,9 +3125,9 @@ function pbd_return_entity($entity, $params, $key = 'name') {
  * Setup default themekey rules.
  */
 function pbd_configure_themekey() {
-  $existing = db_query("SELECT status FROM {system} WHERE type = 'module' AND name = 'themekey'")->fetchObject();
-  // Only configure if themekey is enabled.
-  if($existing->status == 1) {
+  $existing = db_query("SELECT COUNT(*) AS count FROM information_schema.tables  WHERE table_schema = DATABASE() AND table_name = 'themekey_properties'")->fetchObject();
+  // Only configure if themekey is enabled and table exists.
+  if($existing->count == 1) {
     // We have default settings for the major changes we often use. By default, we set
     // the theme to the default theme, making it easy to change once we have a new
     // custom theme.
