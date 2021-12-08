@@ -354,15 +354,16 @@ else
     cp "${composer_dir}/extensions.lock" .
   fi
 
-  # This command throws an error if we have not yet install civicrm, so we 
-  # hide the error and expect civicrm_pre_full_version to be empty.
-  civicrm_pre_full_version=$(composer show "civicrm/civicrm-core" 2>/dev/null | grep ^version | cut -d: -f2 | tr -d ' *')
+  # NOTE: we can't use `composer show` and grep for versions because we are using in-line aliases.
+  # The source line, though, shows the commit. Sadly, this will rebuild on minor patches.
+  civicrm_pre_source="composer show civicrm/civicrm-core | grep ^source"
   composer --verbose install 
+  civicrm_post_source="composer show civicrm/civicrm-core | grep ^source"
 
   # Get internationalization files.
   # Figure out which exact version we have installed.
-  civicrm_post_full_version=$(composer show "civicrm/civicrm-core" | grep ^version | cut -d: -f2 | tr -d ' *')
-  if [ "$civicrm_pre_full_version" != "$civicrm_post_full_version" ]; then
+  if [ "$civicrm_pre_source" != "$civicrm_post_source" ]; then
+    civicrm_post_full_version=$(grep -o -P 'dev-ptp[0-9-.]+ as [0-9.]+' composer.json | grep -o -P '[0-9.]+$')
     wget https://download.civicrm.org/civicrm-${civicrm_post_full_version}-l10n.tar.gz
     tar -zxvf civicrm-${civicrm_post_full_version}-l10n.tar.gz
     cd civicrm/

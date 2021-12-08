@@ -11,11 +11,15 @@
         {
           "type": "composer",
           "url": "https://packages.drupal.org/8"
+        },
+        {
+            "type": "vcs",
+            "url": "https://git.progressivetech.org/civicrm/civicrm-core"
         }
     ],
     "require": {
         "civicrm/civicrm-asset-plugin": "~1.1",
-        "civicrm/civicrm-core": "~5.39.0",
+        "civicrm/civicrm-core": "dev-ptp5.44-2021-12-08 as 5.45.0",
         "civicrm/civicrm-drupal-8": "~5.39.0",
         "civicrm/civicrm-packages": "~5.39.0",
         "composer/installers": "^1.9",
