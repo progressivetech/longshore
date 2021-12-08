@@ -268,6 +268,7 @@ long_create_nginx_site_conf() {
   local template="${LONG_SHARE}/templates/nginx-site.conf"
   local target="${LONG_NGINX_SITES_ENABLED}/${site}.conf"
   local long_site_url="${site}.${LONG_DEFAULT_DOMAIN}"
+  local drupal_version=$(echo "$platform" | grep -P -o '\-d[0-9]+-' | tr -d 'd-')
 
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
     local tls_or_not="include $LONG_NGINX_TLS_PATH;"
@@ -277,8 +278,16 @@ long_create_nginx_site_conf() {
     local tls_or_not="listen ${LONG_IP_ADDR}:80;"
   fi
   local LONG_ACCESS_LOG="${site}.access.log"
-  local LONG_WEB_ROOT="/var/www/powerbase/${platform}"
-  local LONG_PHP_ROOT="/var/www/powerbase"
+
+  long_set_site_drupal_version "$platform"
+  # D8 and above are built with composer, so are in the web subdirectory.
+  # of the platform directory.
+  web=""
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    web=/web
+  fi
+  local LONG_WEB_ROOT="/var/www/powerbase/${platform}${web}"
+  local LONG_PHP_ROOT="/var/www/powerbase${web}"
   local LONG_CGI_PORT="$port"
 
   cat "$template" | \
@@ -692,7 +701,8 @@ long_create_drupal_settings() {
   local dbuser=$(grep ^user "${dir}/my.cnf" | cut -d= -f2)
   local dbname=$(grep ^database "${dir}/my.cnf" | cut -d= -f2)
   long_set_site_platform "$site"
-  local source="${LONG_SRV}/platforms/${LONG_SITE_PLATFORM}/sites/default/default.settings.php"
+  
+  local source="${LONG_SITE_PLATFORM_PATH}/sites/default/default.settings.php"
   local target="${dir}/drupal/settings.php"
 
   # Copy the template into place.
@@ -1145,9 +1155,10 @@ long_create_site_container() {
   fi
 
   # Docker
+  long_set_site_platform_path "$platform"
   docker $LONG_DOCKER_LOG_ARG create --log-driver "$LONG_DEFAULT_LOG_DRIVER" --name "$site" \
     $addhost \
-    -v "${LONG_SRV}/platforms/${platform}:/var/www/powerbase" \
+    -v "${LONG_SITE_PLATFORM_PATH}:/var/www/powerbase" \
     -v "${dir}/drupal:/var/www/powerbase/sites/default" \
     -v "${LONG_SHARE}/drush:/var/www/.drush" \
     -e "LONG_LIVE=$LONG_LIVE" \
@@ -1277,6 +1288,29 @@ long_set_site_platform() {
   LONG_SITE_PLATFORM=$(basename "$platform_path")
 }
 
+long_set_site_platform_path() {
+  local platform="$1"
+
+  if [ -z "$platform" ]; then
+    platform="$LONG_SITE_PLATFORM"
+  fi
+
+  long_set_site_drupal_version "$platform"
+  web=""
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    web=/web
+  fi
+  LONG_SITE_PLATFORM_PATH="${LONG_SRV}/platforms/${LONG_SITE_PLATFORM}${web}"
+}
+
+long_set_site_drupal_version() {
+  local platform="$1"
+  if [ -z "$platform" ]; then
+    platform="$LONG_SITE_PLATFORM"
+  fi
+  LONG_SITE_DRUPAL_VERSION=$(echo "$platform" | grep -P -o '\-d[0-9]+-' | tr -d 'd-')
+}
+
 long_set_site_db_host() {
   local site="$1"
   LONG_SITE_DB_HOST=$(docker $LONG_DOCKER_LOG_ARG inspect -f '{{.HostConfig.Links}}' "$site"|  egrep -o "/db[0-9a-z-]+:" | tr -d '/:')
@@ -1294,9 +1328,10 @@ long_install_drupal() {
   local dir="${LONG_SRV}/services/sites/${site}"
 
   long_set_site_platform "$site"
+  long_set_site_platform_path
 
   # Copy default settings file into place.
-  local default_settings_source="${LONG_SRV}/platforms/${LONG_SITE_PLATFORM}/sites/default/default.settings.php"
+  local default_settings_source="${LONG_SITE_PLATFORM_PATH}/sites/default/default.settings.php"
   cp "$default_settings_source" "${dir}/drupal/"
 
   # Grant the longshore-php group write access to the container to it can

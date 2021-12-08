@@ -27,14 +27,14 @@ fi
 long_log "Site: %s, DB: %s, Platform: %s\n" info "$site" "$db" "$platform"
 long_create_container site "$site" "$db" "$platform"
 docker start "$site"
-long_create_dns "$site"
+#long_create_dns "$site"
 long_setup_site "$site"
-long_configure_site_once "$site"
-long_setup_org_info "$site"
-long_configure_site "$site"
-long_exec_drush_cmd "$site" "-y lsd-extensions-update"
-long_add_demo_theme "$site"
-long_nginx_reload
+#long_configure_site_once "$site"
+#long_setup_org_info "$site"
+#long_configure_site "$site"
+#long_exec_drush_cmd "$site" "-y lsd-extensions-update"
+#long_add_demo_theme "$site"
+#long_nginx_reload
 
 # Clear the cache to avoid the mosaico engine error.
 long_clear_cache "$site"
