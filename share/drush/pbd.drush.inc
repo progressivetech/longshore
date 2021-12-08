@@ -516,9 +516,33 @@ function drush_pbd_configure_once() {
   pbd_dedupe_rules();
   pbd_configure_themekey();
   pbd_configure_wkhtmltopdf();
+  pbd_set_default_activity_status();
   variable_set('one-time-configuration-set', 1);
 }
  
+/**
+ * Set default activity status to completed.
+ *
+ * By default it's scheduled.
+ */
+function pbd_set_default_activity_status() {
+  // On a new install, "Scheduled" is the default status.
+  // To be safe, we simply search for any value that might be
+  // set to is_default...
+  \Civi\Api4\OptionValue::update()
+    ->addWhere('option_group_id:name', '=', 'activity_status')
+    ->addWhere('is_default', '=', TRUE)
+    ->addValue('is_default', FALSE)
+    ->execute();
+
+  // .. then we set Completed to be the default.
+  \Civi\Api4\OptionValue::update()
+    ->addWhere('option_group_id:name', '=', 'activity_status')
+    ->addWhere('name', '=', 'Completed')
+    ->addValue('is_default', TRUE)
+    ->execute();
+}
+
 /**
  * Enable modules and extensions that should not reappear
  *
