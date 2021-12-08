@@ -791,6 +791,12 @@ projects[emailarchiver][download][type] = "git"
 projects[emailarchiver][download][url] = "git://git.progressivetech.org/extensions/emailarchiver"
 projects[emailarchiver][download][revision] = "0e7cd4589b704a18d17b7670ba7f7ed13a6b0b4a"
 
+projects[elections][type] = "library"
+projects[elections][destination] = "extensions"
+projects[elections][download][type] = "git"
+projects[elections][download][url] = "https://github.com/agileware/elections"
+projects[elections][download][revision] = "94a617284ccafcbf8a4c6af06d3d8712e9263c8e"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
