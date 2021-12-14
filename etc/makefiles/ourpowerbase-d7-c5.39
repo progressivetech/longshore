@@ -144,7 +144,7 @@ projects[hybridauth][version] = "2.16"
 projects[opb][type] = "module"
 projects[opb][download][type] = "git"
 projects[opb][download][url] = "git://git.progressivetech.org/powerbase/opb.git"
-projects[opb][download][revision] = "95eb5712ee35ce07cc8ef953ba4835b4396ab63b"
+projects[opb][download][revision] = "8866a25d1aafe38d31675dcc3a710152cdfc11d0"
 
 projects[civimigrate][type] = "module"
 projects[civimigrate][download][type] = "git"
