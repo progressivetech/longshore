@@ -755,10 +755,58 @@ long_create_civicrm_settings() {
   chmod 775 "${dir}/drupal"
 
   long_set_site_base_url "$site"
-  long_exec_drush_cmd "$site" "lsd-civicrm-settings --base_url='$LONG_SITE_BASE_URL'"
+  long_set_site_platform "$site"
+  long_set_site_platform_path
+
+  # Gather variables.
+  local dir="${LONG_SRV}/services/sites/${site}"
+  local dbpass=$(grep ^password "${dir}/my.cnf" | cut -d= -f2)
+  local dbuser=$(grep ^user "${dir}/my.cnf" | cut -d= -f2)
+  local dbname=$(grep ^database "${dir}/my.cnf" | cut -d= -f2)
+  
+  local source="${LONG_SITE_PLATFORM_PATH}/sites/all/modules/civicrm/templates/CRM/common/civicrm.settings.php.template"
+  local target="${dir}/drupal/civicrm.settings.php"
+
+  # Use our password generation utility which uses /dev/urandom.
+  # long_pwgen will assign a new password to the variable $LONG_PASSWORD.
+  long_pwgen 50
+  local site_key="$LONG_PASSWORD"
+  long_pwgen 50
+  local cred_key="$LONG_PASSWORD"
+  long_pwgen 50
+  local sign_key="$LONG_PASSWORD"
+
+  local cms=Drupal
+  local web=""
+  if [ "${LONG_SITE_DRUPAL_VERSION}" -gt 7 ]; then
+    cms="${cms}${LONG_SITE_DRUPAL_VERSION}"
+    web="/web"
+  fi
+
+  # And then replace all the variables.
+  cat "$source" | \
+    sed \
+    -e "s#%%crmRoot%%#/var/www/powerbase${web}/sites/all/modules/civicrm#" \
+    -e "s#%%templateCompileDir%%#/var/www/powerbase${web}/sites/default/files/civicrm/templates_c#" \
+    -e "s#%%frontEnd#0#" \
+    -e "s#%%cms%%#${cms}#" \
+    -e "s#%%baseURL%%#${LONG_SITE_BASE_URL}#" \
+    -e "s#%%dbUser%%#${dbuser}#" \
+    -e "s#%%dbPass%%#${dbpass}#" \
+    -e "s#%%dbHost%%#mysqlhost#" \
+    -e "s#%%dbName%%#${dbname}#" \
+    -e "s#%%CMSdbUser%%#${dbuser}#" \
+    -e "s#%%CMSdbPass%%#${dbpass}#" \
+    -e "s#%%CMSdbHost%%#mysqlhost#" \
+    -e "s#%%CMSdbName%%#${dbname}#" \
+    -e "s#%%siteKey%%#${site_key}#" \
+    -e "s#%%credKeys%%#aes-cbc:hkdf-sha256:${cred_key}#" \
+    -e "s#%%signKeys%%#jwt-hs256:hkdf-sha256:${sign_key}#" \
+    -e "s#%%CMSdbSSL%%##" \
+    -e "s#%%dbSSL%%##" \
+    >> "$target"
 
   # Ensure proper permissions
-  local target="${LONG_SRV}/services/sites/${site}/drupal/civicrm.settings.php"
   sudo chown "$LONG_HOST_USER" "$target"
   sudo chgrp longshore-php "$target"
   chmod 0640 "$target"
@@ -769,15 +817,17 @@ long_create_civicrm_settings() {
 # Execute the given cv command in the given container as the www-data user.
 long_exec_cv_cmd() {
   local site="$1"
-  local cmd="$2"
+  shift
   local -i return=0
 
   long_init_site_tmp_var "$site"
   local file=$(mktemp "${LONG_SITE_TMP}/drupal.XXXXXXX");
   chmod 755 "$file"
   printf "#!/bin/bash\n" > "$file"
-  printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
-  printf "cv $cmd\n" >> "$file"
+  printf 'cd /var/www/powerbase/sites/default && cv ' >> "$file"
+  for cmd in "$@"; do
+    printf "'$cmd' " >> "$file"
+  done
   long_exec_in_container "$site" "$file"
   return="$?"
   rm "$file"
@@ -1300,7 +1350,7 @@ long_set_site_platform_path() {
   if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
     web=/web
   fi
-  LONG_SITE_PLATFORM_PATH="${LONG_SRV}/platforms/${LONG_SITE_PLATFORM}${web}"
+  LONG_SITE_PLATFORM_PATH="${LONG_SRV}/platforms/${platform}${web}"
 }
 
 long_set_site_drupal_version() {
@@ -1396,12 +1446,27 @@ long_install_civicrm() {
   # have group ownership over the directroy from site-create).
   chmod 775 "${dir}/drupal"
 
+  long_set_site_platform "$site"
+  long_set_drupal_version
+
+  local web=""
+
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    web="/web"
+  fi
+  local path="/var/www/powerbase${web}"
+
   # Create the file to be executed. We can't simply run drush -y civicrm-install
   # because civicrm module is not yet enabled which means civicrm.drush.inc commands
   # are not available to us, so we use a helper command in lsd.
   long_set_site_base_url "$site"
-  long_exec_drush_cmd "$site" "-q -y lsd-civicrm-install --base_url='$LONG_SITE_BASE_URL'"
-
+  long_exec_cv_cmd "$site" " \
+    core:install \
+    "--settings-path=${path}/sites/default/civicrm.settings.php" \
+    "--setup-path=${path}/sites/all/modules/civicrm/setup" \
+    "--src-path=${path}/sites/all/modules/civicrm" \
+    "--cms-base-url=${LONG_SITE_BASE_URL}" \
+  "
   # Reset permissions. 
   # Regain ownership of the settings.php file.
   sudo chown "$LONG_HOST_USER" "${dir}/drupal/civicrm.settings.php"
@@ -1494,8 +1559,24 @@ long_setup_site() {
   long_install_site "$site"
 
   # Ensure all basic drupal and civicrm paths and urls are set. 
+  # This covers drupal
   long_exec_drush_cmd "$site" "lsd-set-paths"
 
+  # We change a few CiviCRM defaults.
+  local civi_path_settings=' \
+    "extensionsDir":"[cms.root]/sites/all/extensions", \
+    "extensionsURL":"sites/all/extensions", \
+    "customTemplateDir":"[cms.root]/sites/default/custom-civicrm/templates", \
+    "customPHPPathDir":"[cms.root]/sites/default/custom-civicrm/php" 
+  '
+
+  local civi_path_settings_scrunched=''
+  local path_setting=''
+  for path_setting in $civi_path_settings; do
+    civi_path_settings_scrunched="${civi_path_settings_scrunched}${path_setting}"
+  done
+  long_exec_cv_cmd "$site" "api4" "Setting.set" "{\"values\": { $civi_path_settings_scrunched }}"
+  
   # Ensure the esmtprc is properly configured to forward email to the right
   # host (bulk.progressivetech.org:25 on live sites which is configured by
   # default) and the smtp:25 on dev sites, which expects the dev host
