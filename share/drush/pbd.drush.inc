@@ -366,45 +366,10 @@ function drush_pbd_configure() {
     module_enable(array('civicrmtheme'));
   }
 
-  /* Drupal Settings */
-  pbd_enable_modules();
-  pbd_configure_jquery_update();
-  pbd_create_drupal_roles();
-  pbd_grant_anonymous_and_authenticated_role_access();
-  variable_set('preprocess_css',1);
-  variable_set('preprocess_js',1);
-  // Turning off page caching too...
-  // https://app.liquidplanner.com/space/48716/projects/show/5899954P
-  variable_set('cache',0);
-  variable_set('block_cache',1);
-  variable_set('page_compression',1);
-
-  // Don't notify users when they are unblocked or activated
-  // (you can choose to notify them when you create their account,
-  // which is the only way to create an account anyway...).
-  variable_set('user_mail_status_activated_notify', 0);
-
-  // Handle themes for all versions.
-  theme_enable(array('newsflash', 'iframe', 'seven', 'shoreditch_companion_d7_theme'));
-  pbd_set_iframe_settings();
-  pbd_set_newsflash_settings();
-  pbd_set_blocks_for_theme('newsflash');
-  pbd_set_blocks_for_theme('iframe');
-
-  theme_enable(array('powerbase'));
-  pbd_set_powerbase_theme_settings();
-  pbd_set_blocks_for_theme('powerbase');
 
   pbd_add_include_exclude_search_menu();
+
   menu_rebuild();
-
-  // workaround for https://drupal.org/node/1454686
-  // and https://drupal.org/node/1153072
-  pbd_grant_admin_all_perms();
-  variable_set('site_default_country','US');
-  pbd_set_admin_theme();
-  pbd_disable_webform_promote_to_front();
-
   /* CiviCRM Settings */
   pbd_add_message_templates();
   pbd_activate_cron_jobs();
@@ -466,58 +431,7 @@ function drush_pbd_configure_once() {
     }
   }
 
-  $one_time = TRUE;
-
-  pbd_set_optin_defaults();
-
-  # All new sites get the newsflash theme until we finalize the
-  # new powerbase one..
-  variable_set('theme_default','newsflash');
-
-  // Ensure all the civicrm components we need are enabled
-  pbd_enable_pb_components();
-
-  pbd_grant_anonymous_and_authenticated_role_access($one_time);
-
-  // _civicrm_init no longer creates config singleton.
-  // This is necessary in order to have a fully functional
-  // database.
-  $config = CRM_Core_Config::singleton();
-
-  // Only allow user creation by admin
-  pbd_lock_down_user_registration();
-
-  pbd_enable_one_time_extensions();
   
-
-  variable_set('site_frontpage','civicrm');
-
-  pbd_disable_create_new_household_menu();
-  pbd_disable_modules();
-  pbd_set_default_civicrm_option_lists();
-  pbd_adjust_display_preferences();
-  // This causes problems on migrated CiviCRM installs.
-  // pbd_delete_all_tags();
-  pbd_add_image_upload_menu();
-  pbd_set_default_dateformat_full();
-  pbd_configure_default_cicero_mappings();
-  pbd_unset_default_header();
-  pbd_make_drupal_user_profile_reserved();
-  pbd_differentiate_sides_to_equal_relationships();
-  pbd_disable_communication_style();
-  pbd_disable_event_details();
-  pbd_remove_country_from_address_formats();
-  pbd_enable_waitlist_participant_status_types();
-  pbd_add_first_tag();
-  pbd_configure_ckeditor();
-  pbd_configure_autologout();
-  pbd_enable_remote_profile_submissions();
-  pbd_set_state_province_limit();
-  pbd_dedupe_rules();
-  pbd_configure_themekey();
-  pbd_configure_wkhtmltopdf();
-  pbd_set_default_activity_status();
-  variable_set('one-time-configuration-set', 1);
 }
  
 /**
@@ -1225,10 +1139,6 @@ function pbd_update_greetings() {
   }
 }
 
-function pbd_lock_down_user_registration() {
-  variable_set('user_register',0);
-}
-
 function pbd_add_message_templates($add_templates = NULL, $disable_templates = NULL) {
   _civicrm_init();
   // Get templates to add.
@@ -1324,501 +1234,13 @@ function pbd_get_templates() {
 
 }
 
-function pbd_set_blocks_for_theme($theme) {
-  // Set default names for regions. Note: in the database, setting the
-  // region to -1 disables it.
-  $regions = array(
-    'left_sidebar' => 'left_sidebar',
-    'disabled' => -1,
-    'footer' => 'footer',
-    'content' => 'content'
-  );
 
-  // Now, override for specific theme names
-  // for the same regions
 
-  // Newsflash region names are a little different
-  // then the generic ones.
-  if($theme == 'newsflash') {
-    $regions['left_sidebar'] = 'sidebar_first';
-  }
 
-  // The iframe theme should have all blocks disabled
-  // except the content block. Otherwise, it's the same
-  // as newsflash (because it's a sub theme)
-  if($theme == 'iframe') {
-    $regions['left_sidebar'] = -1;
-    $regions['footer'] = -1;
-  }
 
-  // responsive_bartik / powerbase
-  if($theme == 'powerbase') {
-    $regions['left_sidebar'] = 'sidebar_first';
-  }
 
-  // Iterate over every standard block and define
-  // how it should be displayed.
-  $blocks = array(
-    0 => array(
-      ':region' => $regions['left_sidebar'],
-      ':status' => 1,
-      ':module' => 'system',
-      ':delta' => 'management',
-      ':weight' => '-10',
-      ':title' => '',
-    ),
-    1 => array(
-      ':region' => $regions['left_sidebar'],
-      ':status' => 1,
-      ':module' => 'civicrm',
-      ':delta' => 1,
-      ':weight' => '-14',
-      ':title' => '',
-    ),
-    2 => array(
-      ':region' => $regions['left_sidebar'],
-      ':status' => 1,
-      ':module' => 'civicrm',
-      ':delta' => 2,
-      ':weight' => '-13',
-      ':title' => '',
-    ),
-    3 => array(
-      ':region' => $regions['disabled'],
-      ':status' => 0,
-      ':module' => 'civicrm',
-      ':delta' => 3,
-      ':weight' => '-12',
-      ':title' => '',
-    ),
-    4 => array(
-      ':region' => $regions['disabled'],
-      ':status' => 0,
-      ':module' => 'civicrm',
-      ':delta' => 4,
-      ':weight' => '-12',
-      ':title' => '',
 
-    ),
-    5 => array(
-      ':region' => $regions['disabled'],
-      ':status' => 0,
-      ':module' => 'civicrm',
-      ':delta' => 5,
-      ':weight' => '-10',
-      ':title' => '',
 
-    ),
-    6 => array(
-      ':region' => $regions['disabled'],
-      ':status' => 0,
-      ':module' => 'civicrm',
-      ':delta' => 1,
-      ':weight' => '-9',
-      ':title' => '',
-
-    ),
-    7 => array(
-      ':region' => $regions['disabled'],
-      ':status' => 0,
-      ':module' => 'civicrm',
-      ':delta' => 1,
-      ':weight' => '-11',
-      ':title' => '',
-
-    ),
-    8 => array(
-      ':region' => $regions['footer'],
-      ':status' => 1,
-      ':module' => 'opb',
-      ':delta' => 'bestviewed',
-      ':weight' => '-13',
-      ':title' => '',
-
-    ),
-    9 => array(
-      ':region' => $regions['left_sidebar'],
-      ':status' => 1,
-      ':module' => 'system',
-      ':delta' => 'help',
-      ':weight' => '-9',
-      ':title' => '',
-
-    ),
-    10 => array(
-      ':region' => $regions['content'],
-      ':status' => 1,
-      ':module' => 'system',
-      ':delta' => 'main',
-      ':weight' => '-9',
-      ':title' => '',
-
-    ),
-    11 => array(
-      ':region' => $regions['disabled'],
-      ':status' => 0,
-      ':module' => 'system',
-      ':delta' => 'main-menu',
-      ':weight' => '-6',
-      ':title' => '',
-
-    ),
-    12 => array(
-      ':region' => $regions['left_sidebar'],
-      ':status' => 1,
-      ':module' => 'system',
-      ':delta' => 'management',
-      ':weight' => '-11',
-      ':title' => '',
-
-    ),
-    13 => array(
-      ':region' => $regions['disabled'],
-      ':status' => 0,
-      ':module' => 'system',
-      ':delta' => 'navigation',
-      ':weight' => '-5',
-      ':title' => '',
-
-    ),
-    14 => array(
-      ':region' => $regions['disabled'],
-      ':status' => 0,
-      ':module' => 'system',
-      ':delta' => 'powered-by',
-      ':weight' => '-4',
-      ':title' => '',
-
-    ),
-    15 => array(
-      ':region' => $regions['disabled'],
-      ':status' => 0,
-      ':module' => 'system',
-      ':delta' => 'user-menu',
-      ':weight' => '1',
-      ':title' => '',
-
-    ),
-    16 => array(
-      ':region' => $regions['left_sidebar'],
-      ':status' => 1,
-      ':module' => 'user',
-      ':delta' => 'login',
-      ':weight' => '-8',
-      ':title' => '',
-
-    ),
-    17 => array(
-      ':region' => $regions['disabled'],
-      ':status' => 0,
-      ':module' => 'user',
-      ':delta' => 'new',
-      ':weight' => '2',
-      ':title' => '',
-
-    ),
-    18 => array(
-      ':region' => $regions['disabled'],
-      ':status' => 0,
-      ':module' => 'user',
-      ':delta' => 'online',
-      ':weight' => '3',
-      ':title' => '',
-
-    ),
-    19 => array(
-      ':region' => $regions['left_sidebar'],
-      ':status' => 1,
-      ':module' => 'opb',
-      ':delta' => 'phone_email_search',
-      ':weight' => '3',
-      ':title' => '',
-    ),
-    20 => array(
-      ':region' => $regions['left_sidebar'],
-      ':status' => 1,
-      ':module' => 'locale',
-      ':delta' => 'language',
-      ':weight' => '-11',
-      ':title' => '',
-    ),
-  );
-
-  while(list(,$block) = each ($blocks)) {
-
-    $sql = "SELECT bid FROM {block} WHERE theme = :theme AND ".
-      "module = :module AND delta = :delta";
-    // add theme
-    $block[':theme'] = $theme;
-
-    $params = $block;
-    // unset unused params for select query
-    unset($params[':region']);
-    unset($params[':status']);
-    unset($params[':weight']);
-    unset($params[':title']);
-
-    $result = db_query($sql, $params);
-
-    reset($block);
-    $fields = array();
-    while(list($k,$v) = each($block)) {
-      $field = trim($k,':');
-      $fields[$field] = $v;
-    }
-    $record = $result->fetch();
-    if(empty($record)) {
-      $fields['pages'] = '';
-      db_insert('block')
-        ->fields($fields)
-        ->execute();
-    } else {
-      db_update('block')
-        ->fields($fields)
-        ->condition('bid', $record->bid, '=')
-        ->execute();
-    }
-    db_query($sql, $params);
-    // Seems to be bug in some versions of drush
-    if(function_exists('drush_cache_clear_block')) {
-      drush_cache_clear_block();
-    }
-    else {
-      cache_clear_all(NULL, 'cache_block');
-    }
-  }
-}
-
-function pbd_grant_admin_all_perms() {
-  // heavy handed approach to compensate for a drupal core bug:
-  // https://drupal.org/node/1454686
-  // https://drupal.org/node/1153072
-
-  // ensure the admin role is created and assigned
-  if (!$rid = variable_get('user_admin_role')) {
-    // this should be set
-    $roles = user_roles();
-
-    $role_name = 'administrator';
-    $rid = array_search($role_name, $roles);
-    if(empty($rid)) {
-      // create an administrator role (could be new site)
-      $role_obj = new stdClass();
-      $role_obj->name = $role_name;
-      user_role_save($role_obj);
-      $role_obj = user_role_load_by_name($role_name);
-      $rid = $role_obj->rid;
-    }
-  }
-
-  // Create list of permissions that not even admins should have
-  // access to on a production site.
-  $exceptions = array('view report sql');
-  // ensure the admin role has all avaialble permissions
-  // $all_permissions = drupal_map_assoc(array_keys(module_invoke_all('permission')));
-  $all_permissions = array_keys(module_invoke_all('permission'));
-  $admin_permissions = array();
-  while(list(,$perm) = each($all_permissions)) {
-    if (in_array($perm, $exceptions)) {
-      continue;
-    }
-    $admin_permissions[$perm] = true;
-  }
-  user_role_change_permissions($rid, $admin_permissions);
-}
-
-function pbd_create_drupal_roles() {
-  $roles = array(
-    'Powerbase Administrator',
-    'Powerbase User'
-  );
-  // get an array of all civi defined permissions
-
-  $civi_perms = civicrm_permission();
-
-  // Don't grant access to "access all custom data"
-  // This perm will be granted to anon and authenticated
-  // users below, which will grant everyone access. However,
-  // some sites may want to remove this priv so ACLs can
-  // do a more fine tuned approach.
-  unset($civi_perms['access all custom data']);
-
-  // There are some permissions that nobody should get on a production site.
-  $never_access_perms = array('view report sql');
-  foreach($never_access_perms as $never_access_perm) {
-    unset($civi_perms[$never_access_perm]);
-  }
-  // Let's get admin too.
-  $never_access_roles = array_merge($roles, array('administrator'));
-  foreach($never_access_roles as $never_access_role) {
-    if(FALSE !== ($role_obj = user_role_load_by_name($never_access_role))) {
-      user_role_revoke_permissions($role_obj->rid, $never_access_perms);
-    }
-  }
-
-  $civi_perms = array_keys($civi_perms);
-
-  // Powerbase Admins  get all civi perms
-  $perms['Powerbase Administrator'] = $civi_perms;
-
-  // Powerbase Users get all with some exceptions
-  $perms['Powerbase User'] = $civi_perms;
-  $user_exceptions = array(
-    'administer reserved groups',
-    'adminster reserved tags',
-    'administer dedupe rules',
-    'administer reserved reports',
-    'delete in CiviContribute',
-    'administer payment processors',
-    'all CiviCRM permissions and ACLs',
-    // VSEA has a custom extension to provide a permission to access
-    // the download data permission.
-    'access export menu',
-  );
-
-  // Ensure they are deleted if they have been granted in the past
-  if(FALSE !== ($role_obj = user_role_load_by_name('Powerbase User'))) {
-    user_role_revoke_permissions($role_obj->rid, $user_exceptions);
-  }
-  // Remove them from the list to grant access to
-  while(list(,$exception) = each($user_exceptions)) {
-    if(false !== ($key = array_search($exception, $perms['Powerbase User']))) {
-      unset($perms['Powerbase User'][$key]);
-    }
-  }
-
-  // not sure if this is necessary but shouldn't hurt
-  $perms['Powerbase Administrator'][] = 'access content';
-  $perms['Powerbase User'][] = 'access content';
-
-  // Admins should have access to the admin area
-  $perms['Powerbase Administrator'][] = 'access administration pages';
-  $perms['Powerbase Administrator'][] = 'access content overview';
-
-  // Set paths
-  $perms['Powerbase Administrator'][] = 'create url aliases';
-
-  // Ability to enable modles
-  $perms['Powerbase Administrator'][] = 'administer modules';
-
-  // Admins should be able to have full control over all drupal content
-  $perms['Powerbase Administrator'][] = 'administer nodes';
-
-  // Admin should be able to modify drupal users
-  $perms['Powerbase Administrator'][] = 'administer permissions';
-  $perms['Powerbase Administrator'][] = 'administer users';
-  $perms['Powerbase Administrator'][] = 'access administration pages';
-
-  // Make sure Powerbase admins get civicrm_cicero privs
-  if(module_exists('civicrm_cicero')) {
-    $perms['Powerbase Administrator'][] = 'administer civicrm cicero';
-  }
-
-  // Full access to views
-  $perms['Powerbase Administrator'][] = 'administer views';
-  $perms['Powerbase Administrator'][] = 'access all views';
-
-  // Full access to webform
-  $perms['Powerbase Administrator'][] = 'create webform content';
-  $perms['Powerbase Administrator'][] = 'edit own webform content';
-  $perms['Powerbase Administrator'][] = 'edit any webform content';
-  $perms['Powerbase Administrator'][] = 'delete any webform content';
-  $perms['Powerbase Administrator'][] = 'delete own webform content';
-  $perms['Powerbase Administrator'][] = 'access all webform results';
-  $perms['Powerbase Administrator'][] = 'access own webform results';
-  $perms['Powerbase Administrator'][] = 'edit all webform submissions';
-  $perms['Powerbase Administrator'][] = 'delete all webform submissions';
-  $perms['Powerbase Administrator'][] = 'access own webform submissions';
-  $perms['Powerbase Administrator'][] = 'edit own webform submissions';
-  $perms['Powerbase Administrator'][] = 'delete own webform submissions';
-
-  // Ability to get backups
-  if(module_exists('backup_migrate')) {
-    $perms['Powerbase Administrator'][] = 'access backup and migrate';
-    $perms['Powerbase Administrator'][] = 'perform backup';
-    $perms['Powerbase Administrator'][] = 'access backup files';
-    $perms['Powerbase Administrator'][] = 'delete backup files';
-  }
-
-  // Admins should have themekey admin privs
-  $perms['Powerbase Administrator'][] = 'administer theme assignments';
-  $perms['Powerbase Administrator'][] = 'administer themekey settings';
-
-  // And ability to access theme area
-  $perms['Powerbase Administrator'][] = 'administer themes';
-  
-  while(list(,$role) = each($roles)) {
-    $role_obj = user_role_load_by_name($role);
-    if(!$role_obj) {
-      // add the role
-      $role_obj = new stdClass();
-      $role_obj->name = $role;
-      user_role_save($role_obj);
-    }
-    user_role_grant_permissions($role_obj->rid,$perms[$role]);
-  }
-}
-
-function pbd_grant_anonymous_and_authenticated_role_access($one_time = FALSE) {
-  $default_anon_perms = array(
-    'access CiviMail subscribe/unsubscribe pages',
-    'make online contributions',
-    'register for events',
-    'view event info',
-    'view public CiviMail content',
-    'sign CiviCRM Petition',
-    'profile create',
-    'access all custom data',
-    'access content',
-    'access uploaded files'
-  );
-
-  // If stripe is enabled, we have to provide anonymous access to
-  // access AJAX API.
-  $sql = "SELECT COUNT(*) AS count FROM civicrm_payment_processor p JOIN 
-    civicrm_payment_processor_type pt ON p.payment_processor_type_id = pt.id
-    WHERE pt.name = 'Stripe' AND p.is_active = 1";
-  $dao = CRM_Core_DAO::executeQuery($sql);
-  $dao->fetch();
-  if ($dao->count > 0) {
-    $default_anon_perms[] = 'access AJAX API';
-  }
-  // Unset some permissions that should only be set on the first time
-  // we run (so they can be un-checked on a site-by-site basis
-  if(!$one_time) {
-    // Some sites use ACLs to more minutely provide access to
-    // custom data
-    $key = array_search('access all custom data', $default_anon_perms);
-    if($key) {
-      unset($default_anon_perms[$key]);
-    }
-  }
-  // auth perms are same with one addition.
-  $default_auth_perms = $default_anon_perms;
-  $default_auth_perms[] = 'access Contact Dashboard';
-  // ensure we are not setting permissions that don't exist
-
-  $module_perms = user_permission_get_modules();
-  $available_perms = array_keys($module_perms);
-  $problem_anon_perms = array_diff($default_anon_perms,$available_perms);
-  $key = null;
-  while(list(,$perm) = each($problem_anon_perms)) {
-    drush_log("Unsetting anon: $perm");
-    $key = array_search($perm, $default_anon_perms);
-    if($key || $key == 0) unset($default_anon_perms[$key]);
-  }
-  $key = null;
-  $problem_auth_perms = array_diff($default_auth_perms,$available_perms);
-  while(list(,$perm) = each($problem_auth_perms)) {
-    drush_log("Unsetting auth perm: $perm");
-    $key = array_search($perm, $default_auth_perms);
-    if($key || $key == 0) unset($default_auth_perms[$key]);
-  }
-  $role_obj = user_role_load_by_name('anonymous user');
-  user_role_grant_permissions($role_obj->rid,$default_anon_perms);
-  $role_obj = user_role_load_by_name('authenticated user');
-  user_role_grant_permissions($role_obj->rid,$default_auth_perms);
-}
 
 // designed to be used in array_walk function below,
 // it strips nbsp; from the value passed in
@@ -1945,24 +1367,7 @@ function pbd_default_geo_settings() {
  * set values for the iframe theme - designed to be displayed
  * with no headers, footers, menus etc.
  **/
-function pbd_set_iframe_settings() {
-  $theme_iframe_settings = variable_get('theme_iframe_settings', array());
-  $theme_iframe_settings['newsflash_banner'] = 0;
-  $theme_iframe_settings['toggle_logo'] = 0;
-  $theme_iframe_settings['toggle_name'] = 0;
-  $theme_iframe_settings['toggle_favicon'] = 0;
-  $theme_iframe_settings['toggle_main_menu'] = 0;
-  $theme_iframe_settings['toggle_secondary_menu'] = 0;
-  $theme_iframe_settings['default_logo'] = 0;
-  $theme_iframe_settings['newsflash_breadcrumb'] = 0;
-  $theme_iframe_settings['newsflash_width'] = '90%';
-  $theme_iframe_settings['newsflash_leftsidebarwidth'] = 0;
-  $theme_iframe_settings['newsflash_rightsidebarwidth'] = 0;
-  $theme_iframe_settings['newsflash_logowidth'] = 0;
-  $theme_iframe_settings['newsflash_logoheight'] = 0;
-  $theme_iframe_settings['favicon_path'] = '';
-  variable_set('theme_iframe_settings', $theme_iframe_settings);
-}
+
 
 function pbd_set_powerbase_theme_settings() {
   $settings = variable_get('theme_powerbase_settings', array());
@@ -1988,29 +1393,7 @@ function pbd_set_powerbase_theme_settings() {
   variable_set('theme_powerbase_settings', $settings);
 }
 
-function pbd_set_newsflash_settings() {
-  $theme_newsflash_settings = variable_get('theme_newsflash_settings', array());
-  // the newsflash banner is the "made by roople" thing in the footer
-  $theme_newsflash_settings['newsflash_banner'] = 0;
 
-  // these lines add our custom css stuff
-  $theme_newsflash_settings['newsflash_uselocalcontent'] = 1;
-  $theme_newsflash_settings['newsflash_localcontentfile'] = 'sites/all/themes/pb_custom_theme_elements/pb-newsflash.css';
-
-  // override the default favicon
-  $theme_newsflash_settings['toggle_favicon'] = 1;
-  $theme_newsflash_settings['default_favicon'] = 0;
-  $theme_newsflash_settings['favicon_path'] = 'sites/all/themes/pb_custom_theme_elements/poweron.ico';
-  $theme_newsflash_settings['favicon_mimetype'] = 'image/vnd.microsoft.icon';
-
-  // and override the default logo
-  $theme_newsflash_settings['default_logo'] = 0;
-  $theme_newsflash_settings['logo_path'] = 'sites/all/themes/pb_custom_theme_elements/poweron.png';
-
-  // who doesn't want a breadcrumb?
-  $theme_newsflash_settings['newsflash_breadcrumb'] = 1;
-  variable_set('theme_newsflash_settings', $theme_newsflash_settings);
-}
 
 function pbd_set_default_civicrm_option_lists() {
   pbd_set_default_preferred_languages();
@@ -2378,20 +1761,7 @@ function pbd_module_list() {
 
 }
 
-function pbd_disable_modules() {
-  $disable = array('update', 'contextual','dashboard','file','image','overlay','rdf','search','shortcut','toolbar','bartik','seven');
-  $modules_enabled = pbd_module_list();
-  $modules_to_disable = array();
-  while(list(,$module) = each($disable)) {
-    if(in_array($module, $modules_enabled)) {
-      $modules_to_disable[] = $module;
-    }
-  }
-  if(count($modules_to_disable) > 0) {
-    drush_log(dt("Disabling unneeded modules."));
-    module_disable($modules_to_disable);
-  }
-}
+
 
 function pbd_get_voter_info_custom_group_params() {
   $source = array(
@@ -3148,71 +2518,12 @@ function pbd_return_entity($entity, $params, $key = 'name') {
 /**
  * Setup default themekey rules.
  */
-function pbd_configure_themekey() {
-  module_enable(['themekey']);
-  // We have default settings for the major changes we often use. By default, we set
-  // the theme to the default theme, making it easy to change once we have a new
-  // custom theme.
-  $settings = array(
-    '(civicrm/profile/edit|civicrm/profile/view|civicrm/profile/create)',
-    '(civicrm/mailing/subscribe|civicrm/mailing/unsubscribe|civicrm/mailing/optout|civicrm/mailing/resubscribe|civicrm/mailing/confirm)',
-    '(civicrm/contribute/transact|civicrm/pcp|civicrm/contribute/campaign|civicrm/contribute/unsubscribe|civicrm/contribute/updatebilling|civicrm/contribute/updaterecur)',
-    '(civicrm/petition/sign|civicrm/petition/thankyou)',
-    '(civicrm/event/info|civicrm/event/list|civicrm/event/register|civicrm/event/confirm|civicrm/mailing/forward|civicrm/event/ical|civicrm/event/view_cart|event/cart_checkout)',
-  );
-  $weight_query = db_query("SELECT MAX(weight) AS weight FROM {themekey_properties}")->fetchObject();
-  $weight = empty($weight_query->weight) ? 1 : $weight_query->weight;
-  foreach($settings as $value) {
-    $status = db_query("SELECT id FROM {themekey_properties} WHERE value = :value",
-      array(':value' => $value))->fetchObject();
-    if(empty($status->id)) {
-      // Insert it
-      db_insert("themekey_properties")
-        ->fields(array(
-          'property' => 'drupal:get_q',
-          'operator' => '~',
-          'value' => $value,
-          'weight' => $weight,
-          'theme' => 'default',
-          'enabled' => 1,
-          'wildcards' => serialize(array()),
-          'module' => 'themekey'
-        ))->execute();
-    }
-  }
-}
+
 
 /**
  * Enable all third party modules that we use.
  */
-function pbd_enable_modules() {
-  $modules_wanted = array(
-    'opb',
-    'civicrm_cicero', 'ctools', 'views', 'views_ui',
-    'webform_civicrm', 'file',
-    'webform','options_element',
-    'libraries', 'autologout', 'themekey_civicrm',
-    'themekey_ui', 'jquery_update', 'path'
-  );
 
-  drush_log(dt("Checking which modules are already enabled."));
-
-  $modules_already_enabled = pbd_module_list();
-  $modules_to_enable = array();
-  while(list(,$module) = each($modules_wanted)) {
-    if(!in_array($module, $modules_already_enabled)) {
-      $modules_to_enable[] = $module;
-    }
-  }
-  if(count($modules_to_enable) > 0) {
-    drush_log(dt("Enabling Drupal modules."));
-    module_enable($modules_to_enable);
-  }
-  else {
-    drush_log(dt("No modules to enable."));
-  }
-
-}
 
 /**
  * See: https://app.liquidplanner.com/space/48716/projects/show/7843451P
@@ -3340,16 +2651,7 @@ function pbd_set_admin_theme() {
  * We don't want webforms showing up on front page
  **/
 
-function pbd_disable_webform_promote_to_front() {
-  $var = variable_get('node_options_webform');
-  if($var) {
-    $id = array_search('promote', $var);
-    if($id !== FALSE) {
-      unset($var[$id]);
-      variable_set('node_options_webform', $var);
-    }
-  }
-}
+
 
 /**
  * Ensure proper jquery version is selected.
@@ -3369,11 +2671,6 @@ function pbd_configure_jquery_update() {
  * This is run once on install and can be changed via the UI. 
  **/
 function pbd_configure_autologout() {
-  $autologout_timeout = 7200;
-  $autologout_redirect_url = 'civicrm';
-
-  variable_set('autologout_timeout', $autologout_timeout);
-  variable_set('autologout_redirect_url', $autologout_redirect_url);
 }
 
 /**
