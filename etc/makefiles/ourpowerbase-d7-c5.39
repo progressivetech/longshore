@@ -752,8 +752,8 @@ projects[pricesetbuttons][download][revision] = "3a34f526fb83a7dc18034ec7e3169e8
 projects[electoral][type] = "library"
 projects[electoral][destination] = "extensions"
 projects[electoral][download][type] = "git"
-projects[electoral][download][url] = "https://github.com/MegaphoneJon/com.jlacey.electoral"
-projects[electoral][download][revision] = "4fc45cd32de665e07d1a38d4f9902d33990ae8c2"
+projects[electoral][download][url] = "https://github.com/progressivetech/com.jlacey.electoral"
+projects[electoral][download][revision] = "d3b4742a085aa9b3979665a02c98e2c8e4f963b4"
 
 projects[templateredact][type] = "library"
 projects[templateredact][destination] = "extensions"
