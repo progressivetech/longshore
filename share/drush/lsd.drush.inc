@@ -694,10 +694,17 @@ function lsd_enable_modules() {
   $modules_wanted = array(
     'opb',
     'ctools',
-    'webform_civicrm', 'file',
-    'webform','options_element',
-    'libraries', 'autologout', 'themekey_civicrm',
-    'themekey_ui', 'jquery_update', 'path'
+    'webform_civicrm', 
+    'file',
+    'webform',
+    'options_element',
+    'libraries', 
+    'autologout', 
+    'themekey_civicrm',
+    'themekey_ui', 
+    'jquery_update', 
+    'path',
+    'civicrmtheme',
   );
 
   drush_log(dt("Checking which modules are already enabled."));
