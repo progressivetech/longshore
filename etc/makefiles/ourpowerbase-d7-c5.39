@@ -270,7 +270,7 @@ projects[supersearchvsea][download][revision] = "1ec3c8b38aa37ac16a57fa45c3043ff
 projects[extendedreport][type] = "library"
 projects[extendedreport][destination] = "extensions"
 projects[extendedreport][download][type] = "git"
-projects[extendedreport][download][url] = "git://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport.git"
+projects[extendedreport][download][url] = "https://github.com/eileenmcnaughton/nz.co.fuzion.extendedreport.git"
 projects[extendedreport][download][revision] = "fb6790f60761f4a2bf49e2ea71c242fd0a457064"
 
 projects[iats][type] = "library"
