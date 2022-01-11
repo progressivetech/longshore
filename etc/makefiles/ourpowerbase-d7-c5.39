@@ -510,7 +510,7 @@ projects[grantapplications][type] = "library"
 projects[grantapplications][destination] = "extensions"
 projects[grantapplications][download][type] = "git"
 projects[grantapplications][download][url] = "https://github.com/JMAConsulting/biz.jmaconsulting.grantapplications"
-projects[grantapplications][download][revision] = "aeeeb7596d70e68d8db3b4c533aa3b8e58499e89"
+projects[grantapplications][download][revision] = "283f91253734998684587a986142e538350341e7"
 
 projects[jsumfields][type] = "library"
 projects[jsumfields][destination] = "extensions"
