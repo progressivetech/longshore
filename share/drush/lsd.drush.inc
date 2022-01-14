@@ -22,91 +22,54 @@
 function lsd_drush_command() {
   $items = array();
 
-  $items['lsd-setup'] = array(
+  $items['lsd-setup'] = [
     'description' => 'Ensure Drupal settings critical to basic functionality are properly set.',
-  );
-  $items['lsd-initialize'] = array(
+  ];
+  $items['lsd-initialize'] = [
     'description' => 'Set drupal initial settings on new sites that maybe overriden later.',
-  );
-  $items['lsd-configure'] = array(
-    'description' => 'Set drupal settings common to all sites that should not be changed.',
-  );
-  $items['lsd-extensions-update'] = array(
-    'description' => "Do database updates for all extensions.",
-    'options' => array(
-      'extensions' => 'Only check for updates if any of the given comma-separate list of extensions are enabled'
-    ),
-  );
-  $items['lsd-unused-addons'] = array(
-    'description' => "Check provided list of modules and extensions, return list that are not used on any site.",
-    'options' => array(
-      'addons' => 'Comma separated list of addons, with d: prefix for drupal modules and c: prefix for civi extensions.',
-      'include' => 'Indicate whether you want a report of modules and extensions that are uninstalled or disabled.'
-    ),
-  );
+  ];
+  $items['lsd-dev'] = [
+    'description' => 'Configure drupal to operate in dev mode.',
+  ];
+  $items['lsd-prepare-theme'] = [
+    'description' => 'Configure a new theme.',
+    'options' => [
+      'name' => "The name of the theme.",
+      'default' => "Set this theme as the default theme.",
+    ],
+  ];
   return $items;
 }
 
 /**
- * Implementation of lsd-unused-addons
+ * Implementation of command lsd-dev.
  *
- **/
-function drush_lsd_unused_addons() {
-  _civicrm_init();
-  $addons = drush_get_option('addons', '');
-  $include_status = drush_get_option('include', 'uninstalled');
-  if (empty($addons)) {
-    drush_log("Please pass addons to checked via --addons.", 'error');
-    return;
-  }
-  $addons = explode(',', $addons);
-  $ret = []; 
-  $extensions = [];
-  $modules = [];
-  foreach ($addons as $addon) {
-    $addon_parts = explode(':', $addon);
-    if ($addon_parts[0] == 'c') {
-      $extensions[] = $addon_parts[1];
-    }
-    else {
-      $modules[] = $addon_parts[1];
-    }
-  }
-  foreach($extensions as $extension) {
-    $params = [ 0 => [ $extension, 'String' ] ];
-    $sql = "SELECT is_active FROM civicrm_extension WHERE full_name = %0";
-    $dao = CRM_Core_DAO::executeQuery($sql, $params);
-    $dao->fetch();
-    if ($dao->N == 0 && $include_status == 'uninstalled') {
-      // Not installed.
-      $ret[] = 'c:' . $extension; 
-    }
-    elseif (isset($dao->is_active) && $dao->is_active == 0 && $include_status == 'disabled') {
-      // disabled but needs to be uninstalled.
-      $ret[] = 'c:' . $extension;
-    }
-  }
-  foreach($modules as $module) {
-    $params = [ 0 => [ $module, 'String' ] ];
-    $sql = "SELECT status, schema_version FROM system WHERE type = 'module' AND name = %0";
-    $dao = CRM_Core_DAO::executeQuery($sql, $params);
-    $dao->fetch();
-    if ($include_status == 'uninstalled' && ($dao->N == 0 || ($dao->status == 0 && $dao->schema_version == -1))) {
-      // Uninstalled.
-      $ret[] = 'd:' . $module;
-    }
-    elseif ($dao->status == 0 && $include_status == 'disabled') {
-      // disabled but needs to be uninstalled.
-      $ret[] = 'd:' . $module;
-    }
-  }
-  return implode(',', $ret);
-} 
+ * Settings useful for debugging in drupal. See corresponding
+ * CiviCRM Api: PowerbaseSetup.Dev.
+ *
+ */
+function drush_lsd_dev() {
+  $modules = array('devel');
+  module_enable($modules);
 
+  // Allow anon users to see dsm calls.
+  user_role_grant_permissions(1, array('access devel information'));
+
+  // Allow admin role access to sql tab in reports.
+  user_role_grant_permissions(3, array('view report sql'));
+
+  // Make it easier to debug css and js issues.
+  variable_set('preprocess_css', 0);
+  variable_set('preprocess_js', 0);
+
+  // The db password will have changed when moving a database, so update the
+  // admin one to match.
+  lsd_set_admin_password(); 
+}
 /**
  * Implementation of command lsd-setup.
  *
- * Ensure all basic drupal settings are set
+ * Ensure all essential drupal settings are set
  */
 function drush_lsd_setup() {
   $settings = array(
@@ -126,21 +89,6 @@ function drush_lsd_setup() {
  *
  */
 function drush_lsd_initialize() {
-  $force = drush_get_option('force', null);
-  // should only be run once because it contains settings
-  // that a group may want to change and that we don't
-  // want to override.
-  drush_log(dt("performing one-time configuration."), 'notice');
-  if(1 == variable_get('one-time-configuration-set')) {
-    if(!is_null($force)) {
-      drush_log(dt("forcing one-time configuration even though it has already been set."), 'notice');
-    }
-    else {
-      drush_log(dt("one-time configuration has already been done, skipping."), 'notice');
-      return TRUE;
-    }
-  }
-
   lsd_disable_modules();
   lsd_enable_modules();
   lsd_configure_themekey();
@@ -157,18 +105,13 @@ function drush_lsd_initialize() {
   variable_set('autologout_timeout', $autologout_timeout);
   variable_set('autologout_redirect_url', $autologout_redirect_url);
 
-  variable_set('one-time-configuration-set', 1);
-}
-
-/**
- * Implementation of command lsd-configure.
- *
- */
-function drush_lsd_configure() {
   // These permissions should not be changed by users and
   // if they are changed, they should be changed back.
   lsd_grant_anonymous_and_authenticated_role_access();
   lsd_create_drupal_roles();
+  // workaround for https://drupal.org/node/1454686
+  // and https://drupal.org/node/1153072
+  lsd_grant_admin_all_perms();
 
   // jquery settings.
   variable_set('jquery_update_compression_type', 'min');
@@ -196,16 +139,13 @@ function drush_lsd_configure() {
   lsd_set_blocks_for_theme('newsflash');
   lsd_set_blocks_for_theme('iframe');
 
-  // workaround for https://drupal.org/node/1454686
-  // and https://drupal.org/node/1153072
-  lsd_grant_admin_all_perms();
-
+  
   variable_set('site_default_country','US');
   variable_set('admin_theme', '0');
   variable_set('node_admin_theme', 0);
 
   lsd_disable_webform_promote_to_front();
-
+  lsd_set_admin_password();
 }
 
 function lsd_disable_webform_promote_to_front() {
@@ -359,15 +299,6 @@ function lsd_set_blocks_for_theme($theme) {
 
     ),
     8 => array(
-      ':region' => $regions['footer'],
-      ':status' => 1,
-      ':module' => 'opb',
-      ':delta' => 'bestviewed',
-      ':weight' => '-13',
-      ':title' => '',
-
-    ),
-    9 => array(
       ':region' => $regions['left_sidebar'],
       ':status' => 1,
       ':module' => 'system',
@@ -376,7 +307,7 @@ function lsd_set_blocks_for_theme($theme) {
       ':title' => '',
 
     ),
-    10 => array(
+    9 => array(
       ':region' => $regions['content'],
       ':status' => 1,
       ':module' => 'system',
@@ -385,7 +316,7 @@ function lsd_set_blocks_for_theme($theme) {
       ':title' => '',
 
     ),
-    11 => array(
+    10 => array(
       ':region' => $regions['disabled'],
       ':status' => 0,
       ':module' => 'system',
@@ -394,7 +325,7 @@ function lsd_set_blocks_for_theme($theme) {
       ':title' => '',
 
     ),
-    12 => array(
+    11 => array(
       ':region' => $regions['left_sidebar'],
       ':status' => 1,
       ':module' => 'system',
@@ -403,7 +334,7 @@ function lsd_set_blocks_for_theme($theme) {
       ':title' => '',
 
     ),
-    13 => array(
+    12 => array(
       ':region' => $regions['disabled'],
       ':status' => 0,
       ':module' => 'system',
@@ -412,7 +343,7 @@ function lsd_set_blocks_for_theme($theme) {
       ':title' => '',
 
     ),
-    14 => array(
+    13 => array(
       ':region' => $regions['disabled'],
       ':status' => 0,
       ':module' => 'system',
@@ -421,7 +352,7 @@ function lsd_set_blocks_for_theme($theme) {
       ':title' => '',
 
     ),
-    15 => array(
+    14 => array(
       ':region' => $regions['disabled'],
       ':status' => 0,
       ':module' => 'system',
@@ -430,7 +361,7 @@ function lsd_set_blocks_for_theme($theme) {
       ':title' => '',
 
     ),
-    16 => array(
+    15 => array(
       ':region' => $regions['left_sidebar'],
       ':status' => 1,
       ':module' => 'user',
@@ -439,7 +370,7 @@ function lsd_set_blocks_for_theme($theme) {
       ':title' => '',
 
     ),
-    17 => array(
+    16 => array(
       ':region' => $regions['disabled'],
       ':status' => 0,
       ':module' => 'user',
@@ -448,7 +379,7 @@ function lsd_set_blocks_for_theme($theme) {
       ':title' => '',
 
     ),
-    18 => array(
+    17 => array(
       ':region' => $regions['disabled'],
       ':status' => 0,
       ':module' => 'user',
@@ -457,15 +388,7 @@ function lsd_set_blocks_for_theme($theme) {
       ':title' => '',
 
     ),
-    19 => array(
-      ':region' => $regions['left_sidebar'],
-      ':status' => 1,
-      ':module' => 'opb',
-      ':delta' => 'phone_email_search',
-      ':weight' => '3',
-      ':title' => '',
-    ),
-    20 => array(
+    18 => array(
       ':region' => $regions['left_sidebar'],
       ':status' => 1,
       ':module' => 'locale',
@@ -566,9 +489,9 @@ function lsd_create_drupal_roles() {
     'Powerbase Administrator',
     'Powerbase User'
   );
-  // get an array of all civi defined permissions
-
-  // FIXME - need native drupal way to get this.
+  // Get an array of all civi defined permissions
+  // Note: civicrm_permission() is a civi function
+  // defined in civicrm.module.
   $civi_perms = civicrm_permission();
 
   // Don't grant access to "access all custom data"
@@ -832,50 +755,89 @@ function lsd_grant_anonymous_and_authenticated_role_access() {
 }
 
 /**
- * Run all extension database upgrades.
+ * Prepare a new theme.
+ *
+ * When creating a new theme, a number of steps have to be taken to enable
+ * it to work properly as a custom theme.
  */
-function drush_lsd_extensions_update() {
-  $extensions = drush_get_option('extensions', NULL);
-  _civicrm_init();
-  if ($extensions) {
-    // Only check and run updates if the extensions in the restrct array
-    // are enabled on this site.
-    // We use addslashes to avoid funny business.
-    $restrict = explode(',', addslashes($extensions));
-    $clause = '("' . implode('","', $restrict) . '")';
-    $sql = "SELECT COUNT(*) AS count FROM civicrm_extension WHERE is_active = 1 AND full_name IN $clause";
-    drush_log("SQL: $sql", 'info');
-    $dao = CRM_Core_DAO::executeQuery($sql);
-    $dao->fetch();
-    if ($dao->count == 0) {
-      // None of the given extensions are enabled, short circuit.
-      drush_log("Not running extensions update, no extensions specified are installed.", 'info');
-      return;
-    }
-  }
-
-  if (! CRM_Extension_Upgrades::hasPending()) {
-    // Return early if no pending updates.
-    drush_log("No pending updates.", 'info');
+function drush_lsd_prepare_theme() {
+  // Clear the cache so the theme is visible.
+  drupal_theme_rebuild();
+  $themes = system_rebuild_theme_data();
+  $name = drush_get_option('name');
+  // Pass --default if you want this theme to replace the default theme.'
+  // This is only useful on new sites.
+  $default = drush_get_option('default');
+  // Ensure the theme is here (e.g. typo)
+  if(!array_key_exists($name, $themes)) {
+    drush_log("That theme does not exist in the filesystem.", 'error');
     return;
   }
-  drush_log("Running updates.", 'info');
-  $queue = CRM_Extension_Upgrades::createQueue();
-  $runner = new CRM_Queue_Runner(array(
-    'title' => ts('Database Upgrades'),
-    'queue' => $queue,
-    'errorMode'=> CRM_Queue_Runner::ERROR_ABORT,
-    'onEnd' => NULL,
-    'onEndUrl' => NULL
-  ));
+  // Enable it.
+  theme_enable(array($name));
+  // Save theme settings.
+  $settings = [
+    'toggle_logo' => 1,
+    'toggle_name' => 0,
+    'toggle_slogan' => 0,
+    'toggle_node_user_picture' => 0,
+    'toggle_comment_user_verification' => 0,
+    'toggle_favicon' => 0,
+    'toggle_main_menu' => 0,
+    'toggle_secondary_menu' => 0,
+    'default_logo' => 0,
+    'logo_path' => "sites/default/themes/${name}/${name}-logo.png"
+  ];
+  variable_set('theme_' . $name . '_settings', $settings);
 
-  CRM_Core_Error::debug_log_message('CRM_Admin_Page_ExtensionsUpgrade: Start upgrades');
-  $out = $runner->runAll();
-  if($out !== TRUE) {
-    $out = print_r($out, TRUE);
-    drush_log("Failed to run database updates on extensions.", 'error');
-    drush_log($out, 'error');
+  // Now let's kill the blocks.
+  db_update("block")
+    ->fields(array('status' => 0, 'region' => -1))
+    ->condition('theme', $name, '=')
+    ->condition('region', 'content', '!=')
+    ->execute();
+
+  if ($default) {
+    // Replace the "default" theme with this one.
+    db_update("themekey_properties")
+      ->fields(array('theme' => $name))
+      ->condition('theme', 'default', '=')
+      ->execute();
   }
-  // Lastly, refresh the list of extensions
-  CRM_Extension_System::singleton()->getManager()->refresh();
+}
+
+/**
+ * Ensure the admin Drupal user's password is the same as db password.
+ */
+function lsd_set_admin_password() {
+  require_once('includes/password.inc');
+  // Get the currently set database password.
+  $pass = $GLOBALS['databases']['default']['default']['password'];
+
+  // Get the hashed password in the database.
+  $sql = "SELECT pass FROM {users} WHERE uid = 1";
+  $db_hashed_pass = db_query($sql)->fetch()->pass;
+
+  if(empty($db_hashed_pass)) {
+    // If we are initializing this password, we need a salt
+    $db_hashed_pass = _password_generate_salt(7);
+  }
+
+  // Hash what the password should be.
+  $hashed_pass = _password_crypt('sha512', $pass, $db_hashed_pass);
+
+  // Compare...
+  if($hashed_pass != $db_hashed_pass) {
+    drush_log(dt("Updating Drupal admin password."));
+    // Update
+    db_update('users')
+      ->fields(array(
+        'pass' => $hashed_pass
+      ))
+      ->condition('uid', 1, '=')
+      ->execute();
+  }
+  else {
+    drush_log(dt("Drupal admin password already up-to-date."));
+  }
 }

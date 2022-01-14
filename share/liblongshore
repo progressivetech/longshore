@@ -824,7 +824,7 @@ long_exec_cv_cmd() {
   local file=$(mktemp "${LONG_SITE_TMP}/drupal.XXXXXXX");
   chmod 755 "$file"
   printf "#!/bin/bash\n" > "$file"
-  printf 'cd /var/www/powerbase/sites/default && cv ' >> "$file"
+  printf 'cd /var/www/powerbase/sites/default && cv --user=admin ' >> "$file"
   for cmd in "$@"; do
     printf "'$cmd' " >> "$file"
   done
@@ -1447,7 +1447,7 @@ long_install_civicrm() {
   chmod 775 "${dir}/drupal"
 
   long_set_site_platform "$site"
-  long_set_drupal_version
+  long_set_site_drupal_version
 
   local web=""
 
@@ -1460,13 +1460,13 @@ long_install_civicrm() {
   # because civicrm module is not yet enabled which means civicrm.drush.inc commands
   # are not available to us, so we use a helper command in lsd.
   long_set_site_base_url "$site"
-  long_exec_cv_cmd "$site" " \
+  long_exec_cv_cmd "$site" \
     core:install \
-    "--settings-path=${path}/sites/default/civicrm.settings.php" \
+   "--settings-path=${path}/sites/default/civicrm.settings.php" \
     "--setup-path=${path}/sites/all/modules/civicrm/setup" \
     "--src-path=${path}/sites/all/modules/civicrm" \
     "--cms-base-url=${LONG_SITE_BASE_URL}" \
-  "
+  
   # Reset permissions. 
   # Regain ownership of the settings.php file.
   sudo chown "$LONG_HOST_USER" "${dir}/drupal/civicrm.settings.php"
@@ -1593,26 +1593,20 @@ long_setup_site() {
 # and then not changed, in case the site was to make their own customizations.
 long_initialize_site() {
   local site="$1"
-  local force="$2"
 
   # Populate the $LONG_SITE_TMP_VAR variable which is used to execute
   # commands in the container.
   long_init_site_tmp_var "$site"
 
   # Set drupal initial settings. 
-  if [ "$force" = "force" ]; then
-    long_log "Running drush lsd-initialize --force" info
-    long_exec_drush_cmd "$site" "lsd-initialize --force"
-  else
-    long_log "Running drush lsd-initialize" info
-    long_exec_drush_cmd "$site" "lsd-initialize"
-  fi
+  long_log "Running drush lsd-initialize" info
+  long_exec_drush_cmd "$site" "lsd-initialize"
 
   # For CiviCRM, ensure the setup extension is enabled.
-  long_exec_cv_cmd "$site" "extension:en net.ourpowerbase.setup"
+  long_exec_cv_cmd "$site" ext:enable net.ourpowerbase.setup
 
   # And initialize.
-  long_exec_cv_cmd "$site" "api4 PowerbaseSetup.initialize"
+  long_exec_cv_cmd "$site" api4 PowerbaseSetup.Initialize
 }
 
 # Once the site is setup, ensure that it is configured in the PTP/PowerBase
@@ -3080,7 +3074,7 @@ long_add_demo_theme() {
   if [ ! -d "${themes}/demo" ]; then
     mkdir -p "$themes"
     cp -r "${LONG_SHARE}/themes/demo" "${themes}/"
-    long_exec_drush_cmd "$site" "pbd-prepare-theme --name=demo --default"
+    long_exec_drush_cmd "$site" "lsd-prepare-theme --name=demo --default"
   fi
 }
 
