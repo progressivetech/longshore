@@ -828,7 +828,11 @@ long_exec_cv_cmd() {
   for cmd in "$@"; do
     printf "'$cmd' " >> "$file"
   done
-  long_exec_in_container "$site" "$file"
+  if [ "$LONG_LOG_LEVEL" == 'error' ]; then
+    long_exec_in_container "$site" "$file" >/dev/null
+  else 
+    long_exec_in_container "$site" "$file"
+  fi
   return="$?"
   rm "$file"
   return "$return"
@@ -1602,25 +1606,23 @@ long_initialize_site() {
   long_log "Running drush lsd-initialize" info
   long_exec_drush_cmd "$site" "lsd-initialize"
 
+  long__modify_settings "$site" 
+
   # For CiviCRM, ensure the setup extension is enabled.
   long_exec_cv_cmd "$site" ext:enable net.ourpowerbase.setup
 
   # And initialize.
   long_exec_cv_cmd "$site" api4 PowerbaseSetup.Initialize
+  
+  # Configure IMAP
+  long_configure_imap "$site"
 }
 
-# Once the site is setup, ensure that it is configured in the PTP/PowerBase
-# way.
-long_configure_site() {
+# We make a number of tweaks to the settings.php files 
+long_modify_settings() {
   local site="$1"
 
-  # Populate the $LONG_SITE_TMP_VAR variable which is used to execute
-  # commands in the container.
   long_init_site_tmp_var "$site"
-
-  # Set PTP configurations. 
-  long_log "Running drush ptp-configure" info
-  long_exec_drush_cmd "$site" "ptp-configure" "LONG_LIVE LONG_OUTBOUND_MAIL_HOST"
 
   # Ensure CIVICRM_MAIL_SMARTY is configured so we can use smarty in our
   # mail templates.
@@ -1644,12 +1646,7 @@ long_configure_site() {
   cat "${LONG_SHARE}/templates/local.settings.php" | sed \
     -e "s/LONG_ERROR_REPORTING/$LONG_ERROR_REPORTING/" \
     > "${drupal}/local.settings.php"
-
-  long_configure_imap "$site"
-  long_log "Running drush pbd-configure" info
-
-  local envvars="LONG_GOOGLE_RECAPTCHA_SECRET_KEY LONG_GOOGLE_RECAPTCHA_SITE_KEY LONG_GOOGLE_MAP_GEO_API_KEY LONG_LIVE"
-  long_exec_drush_cmd "$site" "-y pbd-configure" "$envvars"
+ 
 }
 
 # Ensure there are the required IMAP users installed on the IMAP server
@@ -1713,23 +1710,7 @@ long_configure_civicrm_imap_user() {
 
   long_init_site_tmp_var "$site"
 
-  # Creating a php file to be executed in the container. This approach
-  # avoids sending passwords via the command line.
-  local imap_file=$(mktemp "${LONG_SITE_TMP}/imap.XXXXXXX.php");
-cat << EOF > "$imap_file"
-  <?php
-  ptp_configure_imap_user('$user', '$pass', '$LONG_IMAP_HOST', '$LONG_IMAP_DOMAIN');
-EOF
-
-  # Ensure that the www-data user can read it.
-  chmod 644 "$imap_file"
-
-  # Translate file path to work in container.
-  c_imap_file="/var/www/powerbase/sites/default/private/temp/$(basename $imap_file)"
-  long_exec_drush_cmd "$site" "-q -y php-script '$c_imap_file'"
-
-  # Cleanup
-  rm "$imap_file"
+  long_exec_cv_cmd "$site" api4 PowerbaseSetup.ConfigureImapUser "user=$user" "pass=$pass" "imapHost=$LONG_IMAP_HOST" "imapDomain=$LONG_IMAP_DOMAIN"
 
 }
 
@@ -3046,25 +3027,6 @@ long_create_dkim_dns() {
     printf "Command: curl --silent --data-urlencode %s %s\n" "$post" "$url"
     long_die "Failed to create DNS record."
   fi
-}
-
-# Pull information from the PTP database to setup default
-# info in the site database.
-long_setup_org_info() {
-  local site="$1"
-  local url="https://${site}.${LONG_DEFAULT_DOMAIN}/"
-  # Call externally to query the PTP database, not this sites database.
-  # We have to call via the full longshore command because the site
-  # may not be on the same server as the PTP site.
-  local name=$(LONG_LOG_LEVEL=error "${LONG_SRV}/bin/longshore" site-drush ptp ptp-get-site-info "--url=$url --info=name")
-  local email=$(LONG_LOG_LEVEL=error "${LONG_SRV}/bin/longshore" site-drush ptp ptp-get-site-info "--url=$url --info=email")
-  local phone=$(LONG_LOG_LEVEL=error "${LONG_SRV}/bin/longshore" site-drush ptp ptp-get-site-info "--url=$url --info=phone")
-  local state=$(LONG_LOG_LEVEL=error "${LONG_SRV}/bin/longshore" site-drush ptp ptp-get-site-info "--url=$url --info=state")
-  local zip=$(LONG_LOG_LEVEL=error "${LONG_SRV}/bin/longshore" site-drush ptp ptp-get-site-info "--url=$url --info=zip")
-  local address=$(LONG_LOG_LEVEL=error "${LONG_SRV}/bin/longshore" site-drush ptp ptp-get-site-info "--url=$url --info=address")
-  local city=$(LONG_LOG_LEVEL=error "${LONG_SRV}/bin/longshore" site-drush ptp ptp-get-site-info "--url=$url --info=city")
-
-  long_exec_drush_cmd "$site" "pbd-setup-org-info --email=$email '--name=$name' --state=$state '--phone=$phone' '--city=$city' '--zip=$zip' '--address=$address'"
 }
 
 # Add demo theme

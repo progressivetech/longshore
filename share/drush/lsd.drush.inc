@@ -127,6 +127,31 @@ function drush_lsd_initialize() {
   variable_set('block_cache',1);
   variable_set('page_compression',1);
 
+  // Having different timezones can cause serious confusion so it should only
+  // be enabled on sites with staff in different time zones.
+  variable_set('configurable_timezones', 0);
+
+  // Set the default civicrm admin theme.
+  variable_set('civicrmtheme_theme_admin', 'shoreditch_companion_d7_theme');
+
+  // Set a few global theme defaults.
+  $theme_settings = variable_get('theme_settings');
+  $theme_settings['favicon_path'] = 'sites/all/extensions/setup/images/poweron.ico';
+  $theme_settings['default_favicon'] = 0;
+  variable_set('theme_settings', $theme_settings);
+
+  // Even if we don't make shoreditch the default, we will prepare it to be made
+  // the default by removing all blocks except main.
+  $fields = array(
+    'status' => 0,
+    'region' => -1
+  );
+  db_update('block')
+    ->fields($fields)
+    ->condition('theme', 'shoreditch_companion_d7_theme', '=')
+    ->condition('delta', 'main', '<>')
+    ->execute();
+
   // Don't notify users when they are unblocked or activated
   // (you can choose to notify them when you create their account,
   // which is the only way to create an account anyway...).
@@ -139,7 +164,6 @@ function drush_lsd_initialize() {
   lsd_set_blocks_for_theme('newsflash');
   lsd_set_blocks_for_theme('iframe');
 
-  
   variable_set('site_default_country','US');
   variable_set('admin_theme', '0');
   variable_set('node_admin_theme', 0);
