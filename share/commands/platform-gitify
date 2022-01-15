@@ -1,0 +1,61 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) <source> <target>
+Copy an existing platform to create a new platform, replacing the civicrm
+module directory with a version checked out via git. Re-run on an existing
+sourceified directory to freshen it without touching the civicrm module
+directory.
+
+Arguments:
+  <source> the full path to the source platform that already exists
+  <target> the full path to the target directory that may or may not
+  exist."
+
+long_check_args "$2" "$#" 2
+
+src="$2"
+trg="$3"
+
+if [ ! -d "$src" ]; then
+  long_die "The source platform doesn't exist."
+fi
+
+if ! echo "$trg" | grep "^/srv/longshore/platforms" > /dev/null; then
+  long_die "The target platform must be in /srv/longshore/platforms directory"
+fi
+mkdir -p "$trg"
+rsync -a --exclude 'sites/all/modules/civicrm' "${src}/" "${trg}/"
+
+if [ ! -d "${trg}/sites/all/modules/civicrm" ]; then
+  mkdir "${trg}/sites/all/modules/civicrm"
+  cd "${trg}/sites/all/modules/civicrm"
+  gitify Drupal
+
+  # We aren't messing with the database, but setup.sh fails if the dbname, user and password
+  # are not set.
+  cd "${trg}/sites/all/modules/civicrm/bin"
+  setup_path=setup.conf
+  sed -i 's/^DBNAME=$/DBNAME=foo/' "$setup_path"
+  sed -i 's/^DBPASS=$/DBPASS=foo/' "$setup_path"
+  sed -i 's/^DBUSER=$/DBUSER=foo/' "$setup_path"
+
+  # -D = Download, -g = GenCode
+  ./setup.sh -Dg
+
+  # Now add our git remotes.
+  cd "${trg}/sites/all/modules/civicrm"
+  git remote add github git@github.com:jmcclelland/civicrm-core.git
+  git remote add ptp gitolite3@git.progressivetech.org:civicrm/civicrm-core.git
+
+  cd "${trg}/sites/all/modules/civicrm/drupal"
+  git remote add github git@github.com:jmcclelland/civicrm-drupal.git
+  git remote add ptp gitolite3@git.progressivetech.org:civicrm/civicrm-drupal.git
+
+  cd "${trg}/sites/all/modules/civicrm/packages"
+  git remote add github git@github.com:jmcclelland/civicrm-packages.git
+  git remote add ptp gitolite3@git.progressivetech.org:civicrm/civicrm-packages.git
+
+fi
+
+
+

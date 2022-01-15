@@ -107,7 +107,6 @@ if [ "$build_system" = "drushmake" ]; then
     # enables the print module
     ln -s /usr/bin/wkhtmltopdf "${source_platform_path_temp}/sites/all/libraries/"
 
-    
     # There is a complicated process for taking a CiviCRM git repo and turning it
     # into a safe and functional folder that can be used on a production CiviCRM
     # site. Our strategy is to use as much code as possible from the distmaker
@@ -211,26 +210,6 @@ if [ "$build_system" = "drushmake" ]; then
     # Clean up the left over tar ball.
     rm "$l10n_file"
 
-    # Just for 5.33 ... we have to replace ckeditor with a secure version
-    if [ "$DM_VERSION" = "5.33.5" ]; then
-      # Download secure ckeditor release.
-      cktemp=$(mktemp --directory)
-      wget -O "${cktemp}/ckeditor.zip" https://github.com/ckeditor/ckeditor-releases/archive/4.16.2.zip
-
-      # Delete the insecure version shipped with 5.33
-      bower_path="bower_components/"
-      rm -rf "${bower_path}/ckeditor"
-
-      # Unpack the secure version in the right spot.
-      unzip -d "$bower_path" "${cktemp}/ckeditor.zip" 
-
-      # Rename
-      mv "${bower_path}/ckeditor4-releases-4.16.2" "${bower_path}/ckeditor"
-
-      # Clean up.
-      rm "${cktemp}/ckeditor.zip"
-      rmdir "$cktemp"
-    fi
     # Kill our src civicrm directory and replace with our newly created one.
     # Avoid getcwd errors by switching to our original directory before deleting
     # this one.
@@ -243,8 +222,6 @@ if [ "$build_system" = "drushmake" ]; then
     # Now, put our custom fonts in place. This allows for korean fonts in mailing
     # labels
     rsync -a "${LONG_SHARE}/fonts" "${source_platform_path_temp}/sites/all/libraries/"
-
-
   fi
 
   long_log "Moving platform into place." info
