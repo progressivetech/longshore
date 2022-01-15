@@ -99,7 +99,6 @@ if [ "$reply" = "y" ]; then
   long_create_container site "$site" "$db" "$platform"
   docker start "$site"
   long_setup_site "$site"
-  long_configure_site "$site"
   long_nginx_reload
 
   long_prompt "Updating DNS"

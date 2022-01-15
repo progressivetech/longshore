@@ -35,6 +35,5 @@ long_create_container site "${site}clone" "$LONG_SITE_DB_HOST" "$LONG_SITE_PLATF
 docker start "${site}clone"
 long_create_dns "${site}clone"
 long_setup_site "${site}clone"
-long_configure_site "${site}clone"
 long_nginx_reload
-
+long_clear_cache "${site}clone"

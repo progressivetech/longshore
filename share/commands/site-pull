@@ -4,7 +4,7 @@ long_usage_message="usage: $(basename $0) site-pull <site> [<platform>] [<db>]
 
 Pull in a live site and then provision it locally. This is a single command,
 designed to be used on a dev server only, to create a new site and start it. It
-handles site-create, site-setup and site-configure.  
+handles site-create, site-setup, etc.  
 
 Arguments
   <site> - The site you want to create, e.g. ptp 
@@ -28,5 +28,9 @@ long_fetch_site "$site"
 long_create_container site "$site" "$db" "$platform"
 docker start "$site"
 long_setup_site "$site"
+if [ "$LONG_LIVE" = "n" ]; then
+  long_configure_dev "$site"
+fi
+
 long_nginx_reload
 
