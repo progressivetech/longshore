@@ -28,6 +28,9 @@ function lsd_drush_command() {
   $items['lsd-initialize'] = [
     'description' => 'Set drupal initial settings on new sites that maybe overriden later.',
   ];
+  $items['lsd-set-perms'] = [
+    'description' => 'Initialize default permissions.',
+  ];
   $items['lsd-dev'] = [
     'description' => 'Configure drupal to operate in dev mode.',
   ];
@@ -39,6 +42,21 @@ function lsd_drush_command() {
     ],
   ];
   return $items;
+}
+
+/**
+ * Implementation of command lsd-set-perms
+ *
+ * Initialize default Drupal permissions. If a group
+ * screws up their permissions, run this command to re-initialize
+ * them.
+ */
+function drush_lsd_set_perms() {
+  lsd_grant_anonymous_and_authenticated_role_access();
+  lsd_create_drupal_roles();
+  // workaround for https://drupal.org/node/1454686
+  // and https://drupal.org/node/1153072
+  lsd_grant_admin_all_perms();
 }
 
 /**
@@ -107,11 +125,7 @@ function drush_lsd_initialize() {
 
   // These permissions should not be changed by users and
   // if they are changed, they should be changed back.
-  lsd_grant_anonymous_and_authenticated_role_access();
-  lsd_create_drupal_roles();
-  // workaround for https://drupal.org/node/1454686
-  // and https://drupal.org/node/1153072
-  lsd_grant_admin_all_perms();
+  drush_lsd_set_perms(); 
 
   // jquery settings.
   variable_set('jquery_update_compression_type', 'min');
