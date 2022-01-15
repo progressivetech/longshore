@@ -1592,6 +1592,8 @@ long_setup_site() {
       /etc/esmtprc
   fi
 
+  long_modify_settings_dot_php "$site" 
+
 }
 # There are some site configurations that should be set once to the default
 # and then not changed, in case the site was to make their own customizations.
@@ -1606,20 +1608,24 @@ long_initialize_site() {
   long_log "Running drush lsd-initialize" info
   long_exec_drush_cmd "$site" "lsd-initialize"
 
-  long__modify_settings "$site" 
-
   # For CiviCRM, ensure the setup extension is enabled.
   long_exec_cv_cmd "$site" ext:enable net.ourpowerbase.setup
 
   # And initialize.
-  long_exec_cv_cmd "$site" api4 PowerbaseSetup.Initialize
+  long_exec_cv_cmd "$site" api4 PowerbaseSetup.Initialize \
+    googleRecaptchaSecretKey=$LONG_GOOGLE_RECAPTCHA_SECRET_KEY \
+    googleRecaptchaSiteKey=$LONG_GOOGLE_RECAPTCHA_SITE_KEY \
+    googleMapGeoApiKey=$LONG_GOOGLE_MAP_GEO_API_KEY \
+    outboundMailHost=$LONG_OUTBOUND_MAIL_HOST \
+    ptpSiteApiKey=$LONG_PTP_SITE_API_KEY \
+    ptpUserApiKey=$LONG_PTP_USER_API_KEY
   
   # Configure IMAP
   long_configure_imap "$site"
 }
 
 # We make a number of tweaks to the settings.php files 
-long_modify_settings() {
+long_modify_settings_dot_php() {
   local site="$1"
 
   long_init_site_tmp_var "$site"
