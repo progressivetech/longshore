@@ -27,10 +27,9 @@ fi
 long_log "Site: %s, DB: %s, Platform: %s\n" info "$site" "$db" "$platform"
 long_create_container site "$site" "$db" "$platform"
 docker start "$site"
-#long_create_dns "$site"
+long_create_dns "$site"
 long_setup_site "$site"
 long_initialize_site "$site"
-#long_setup_org_info "$site"
 long_exec_cv_cmd "$site" ext:upgrade-db 
 long_add_demo_theme "$site"
 long_nginx_reload

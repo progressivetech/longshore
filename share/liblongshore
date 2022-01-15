@@ -1613,12 +1613,12 @@ long_initialize_site() {
 
   # And initialize.
   long_exec_cv_cmd "$site" api4 PowerbaseSetup.Initialize \
-    googleRecaptchaSecretKey=$LONG_GOOGLE_RECAPTCHA_SECRET_KEY \
-    googleRecaptchaSiteKey=$LONG_GOOGLE_RECAPTCHA_SITE_KEY \
-    googleMapGeoApiKey=$LONG_GOOGLE_MAP_GEO_API_KEY \
-    outboundMailHost=$LONG_OUTBOUND_MAIL_HOST \
-    ptpSiteApiKey=$LONG_PTP_SITE_API_KEY \
-    ptpUserApiKey=$LONG_PTP_USER_API_KEY
+    "googleRecaptchaSecretKey=$LONG_GOOGLE_RECAPTCHA_SECRET_KEY" \
+    "googleRecaptchaSiteKey=$LONG_GOOGLE_RECAPTCHA_SITE_KEY" \
+    "googleMapGeoApiKey=$LONG_GOOGLE_MAP_GEO_API_KEY" \
+    "outboundMailHost=$LONG_OUTBOUND_MAIL_HOST" \
+    "ptpSiteApiKey=$LONG_PTP_SITE_API_KEY" \
+    "ptpUserApiKey=$LONG_PTP_USER_API_KEY"
   
   # Configure IMAP
   long_configure_imap "$site"
