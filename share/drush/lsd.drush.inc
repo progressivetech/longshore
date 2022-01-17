@@ -41,6 +41,14 @@ function lsd_drush_command() {
       'default' => "Set this theme as the default theme.",
     ],
   ];
+  $items['lsd-fix-missing'] =[
+    'description' => "Delete modules and themes that were installed but no longer are present."
+  ];
+
+  $items['lsd-update-report'] =
+    array('description' => "Print out report of modules and themes that need to be updated."
+  );
+
   return $items;
 }
 
@@ -878,4 +886,71 @@ function lsd_set_admin_password() {
   else {
     drush_log(dt("Drupal admin password already up-to-date."));
   }
+}
+
+/**
+ * Command hook: fix missing modules and themes.
+ */
+function drush_lsd_fix_missing() {
+  $sql = "SELECT name FROM system WHERE type = 'module'";
+  $result = db_query($sql);
+  while($name = $result->fetch()->name) {
+    $filename = NULL;
+    $show_error = FALSE;
+    if(!drupal_get_filename('module', $name, $filename, $show_error)) {
+      $sql = "DELETE FROM system WHERE name = :name";
+      db_query($sql, array(':name' => $name));
+    }
+  }
+}
+
+/**
+ * Command hook: report on modules/themes needing updates.
+ */
+function drush_lsd_update_report() {
+  module_enable(array('update'));
+  update_refresh();
+  $updates_needed = array();
+  if (!$available = update_get_available(TRUE)) {
+    drush_log("No update data.", 'error');
+  }
+  else {
+    module_load_include('inc', 'update', 'update.compare');
+    $data = update_calculate_project_data($available);
+    foreach($data as $project) {
+      $recommended = NULL;
+      if(array_key_exists('recommended', $project) ) {
+        $recommended = $project['recommended'];
+      }
+      $versions = "(" .  $project['existing_version'] . " => " .
+        $recommended . ")";
+      $name = $project['name'];
+      switch ($project['status']) {
+        case UPDATE_UNKNOWN:
+        case UPDATE_FETCH_PENDING:
+        case UPDATE_NOT_FETCHED:
+        case UPDATE_NOT_CHECKED:
+          if($name != 'civicrm') {
+            $updates_needed[$name] = "Didn't get update";
+          }
+          break;
+        case UPDATE_NOT_SECURE:
+          $updates_needed[$name] = "Security Update Needed ($versions)";
+          break;
+        case UPDATE_REVOKED:
+        case UPDATE_NOT_SUPPORTED:
+          break;
+          $updates_needed[$name] = "No longer supported";
+        case UPDATE_MAX_FETCH_ATTEMPTS:
+          $updates_needed[$name] = "Too many update requests";
+          break;
+        case UPDATE_NOT_CURRENT:
+          $updates_needed[$name] = "Update needed ($versions)";
+        default:
+          break;
+      }
+    }
+  }
+  module_disable(array('update'));
+  print_r($updates_needed);
 }
