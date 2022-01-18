@@ -23,4 +23,10 @@ fi
 msg=$(cat)
 subject=$(printf "longshore %s alert" "$priority")
 
-/usr/local/bin/alert --team ptp --priority "$priority" --subject "$subject" --body "$msg"
+debug=
+
+if [ "$LONG_LIVE" = "n" ]; then
+  debug=echo
+fi
+
+$debug /usr/local/bin/alert --team ptp --priority "$priority" --subject "$subject" --body "$msg"

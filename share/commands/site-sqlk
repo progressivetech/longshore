@@ -1,22 +1,18 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-sqlk <site> [<sec>]
-Kill all MySQL queries running for longer than 7200 seconds or <sec> if passed.
+long_usage_message="usage: $(basename $0) site-sqlk <site>
+Warn of long running sql queries.
 
 Arguments
   <site> - The site database to run against or --all.
-  <sec> - Optionally, pass the seconds to trigger on (or 7200 if left out)."
-
+"
 long_check_args "$2" "$#" 1
 
 sites="$2"
 
-declare -i seconds 
-seconds="$3"
-
-if [ "$seconds" -eq "0" ]; then
-  seconds=7200
-fi
+warning_secs=$(( 30 * 60 ))
+critical_secs=$(( 120 * 60 ))
+kill_secs=$(( 180 * 60 ))
 
 if [ "$sites" = "--all" ]; then
   long_set_sites
@@ -29,12 +25,21 @@ for site in $sites; do
   declare -i time
   /srv/longshore/bin/longshore site-sqlt "$site" | egrep '[0-9]' | while read pid user host db command time therest; do
     [ "$command" = "Sleep" ] && continue
-    if [ -n "$time" ] && [ "$time" -gt "$seconds" ] && [ -n "$pid" ]; then
+    if [ -n "$time" ] && [ "$time" -gt "$warning_secs" ] && [ -n "$pid" ]; then
       if [[ "$pid" =~ ^[0-9]+$ ]]; then
-        # Silently email the passed contact
         msg=$(printf "The database %s has a process running for %s seconds. Kill with: longshore site-sqlt %s %s.\n" $db $time $db $pid)
-        long_log "$msg" info
-        echo "$msg" | /srv/longshore/bin/longshore notify warning
+        if [ "$time" -lt "$critical_secs" ]; then
+          long_log "Warning: ${msg}" info
+          echo "$msg" | /srv/longshore/bin/longshore notify warning
+        elif [ "$time" -lt "$kill_secs" ]; then
+          long_log "Critial: ${msg}" info
+          echo "$msg" | /srv/longshore/bin/longshore notify critical 
+        else
+          msg=$(printf "Query killed after %s with: longshore site-sqlt %s %s.\n" $time $db $pid)
+          long_log "Kill: ${msg}" info
+          echo "$msg" | /srv/longshore/bin/longshore notify critical
+          /srv/longshore/bin/longshore site-sqlt "$db" "$pid"
+        fi
       fi
     fi
   done
