@@ -20,6 +20,7 @@ if [ "$sites" = "--all" ]; then
 fi
 
 for site in $sites; do
+  long_log "$site" info
   long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
 
   declare -i time
