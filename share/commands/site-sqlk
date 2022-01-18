@@ -4,9 +4,10 @@ long_usage_message="usage: $(basename $0) site-sqlk <site>
 Warn of long running sql queries.
 
 Arguments
-  <site> - The site database to run against or --all.
+  <site> - The site database to run against. If empty run against
+  all sites on this host.
 "
-long_check_args "$2" "$#" 1
+long_check_args "$2" "$#" 0
 
 sites="$2"
 
@@ -14,8 +15,8 @@ warning_secs=$(( 30 * 60 ))
 critical_secs=$(( 120 * 60 ))
 kill_secs=$(( 180 * 60 ))
 
-if [ "$sites" = "--all" ]; then
-  long_set_sites
+if [ -z "$sites" ]; then
+  long_set_sites $(hostname)
   sites="$LONG_SITES"
 fi
 
