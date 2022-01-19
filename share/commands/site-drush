@@ -45,6 +45,6 @@ for site in $sites; do
     # Run over the network.
     cmd=$(echo "$cmd" | sed "s#'#\\\'#g")
     cmd=$(echo "$cmd" | sed 's#"#\\\"#g')
-    ssh -q -t "${LONG_SITE_SIBLING}.mayfirst.org" "LONG_LOG_LEVEL=$LONG_LOG_LEVEL /srv/longshore/bin/longshore site-drush '$site' '$cmd' 'LONG_LIVE'" 
+    ssh -q -t "${LONG_SITE_SIBLING}.mayfirst.org" "LONG_LOG_LEVEL=$LONG_LOG_LEVEL" "/srv/longshore/bin/longshore site-drush" "$site" "$cmd" "LONG_LIVE" 
   fi
 done
