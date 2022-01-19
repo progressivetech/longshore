@@ -21,13 +21,6 @@ function pbd_drush_command() {
     array( 'description' => "Get CiviCRM code version");
   $items['pbd-obscure'] =
     array( 'description' => "Scrub all private data from the database. CAREFUL!!");
-  $items['pbd-test-smart-groups'] =
-    array(
-      'description' => "Rebuild all smart groups to find ones that are broken.",
-      'options' => array(
-        'group_id' => 'Limit to the given group id',
-        'after_group_id' => 'Only groups after thet given id'
-      ));
   $items['pbd-update-assessments'] =
     array( 'description' => "Update all assessments (depends on net.ourpowerbase.assess extension).");
   $items['pbd-prepare-theme'] =
@@ -248,71 +241,6 @@ function drush_pbd_obscure() {
   }
 }
 
-
-function drush_pbd_test_smart_groups() {
-  _civicrm_init();
-  $group_ids = array();
-
-  // See if group_id is being passed in.
-  $given_group_id = drush_get_option('group_id', NULL);
-  $after_group_id = drush_get_option('after_group_id', 0);
-  if(!empty($given_group_id)) {
-    $group_ids[$given_group_id] = NULL;
-  }
-  else {
-    // Fetch all active groups that are smart groups
-    $sql = 'SELECT id, title FROM civicrm_group WHERE saved_search_id IS NOT NULL AND is_active = 1 AND id > %0 ORDER BY id';
-    $params = [ 0 => [ $after_group_id, 'Integer' ] ];
-    $dao = CRM_Core_DAO::executeQuery($sql, $params);
-    $total_duration = 0;
-    while($dao->fetch()) {
-      $group_ids[$dao->id] = $dao->title;
-    }
-  }
-  while(list($id, $title) = each($group_ids)) {
-    $start = time();
-    if(empty($title)) {
-      $msg = dt("Attempting to load Group @id.", array('@id' => $id));
-    }
-    else {
-      $msg = dt("Attempting to load Group @id (@title).",
-        array('@id' => $id, '@title' => $title), 'ok');
-    }
-    drush_log($msg, 'ok');
-    // Load group
-    $group = new CRM_Contact_DAO_Group();
-    $group->id = $id;
-    $group->find(TRUE);
-    // Check to see if lock exists
-    $lock = Civi\Core\Container::singleton()->get('lockManager')->acquire("data.core.group.{$id}");
-    if (!$lock->isAcquired()) {
-      drush_log(dt("Lock exists, not rebuilding."), 'error');
-      continue;
-    }
-    CRM_Contact_BAO_GroupContactCache::invalidateGroupContactCache($id);
-    CRM_Contact_BAO_GroupContactCache::load($group, $force);
-    $end = time();
-    $duration = $end - $start;
-    $total_duration += $duration;
-    $duration_formatted = number_format($duration/60, 2);
-    $params = array('@id' => $id, '@duration' => $duration_formatted);
-    // Now get count of records returned
-    $sql = "SELECT COUNT(*) AS count FROM civicrm_group_contact_cache WHERE group_id = %0";
-    $sql_params = array(0 => array($id, 'Integer'));
-    try {
-      $dao = CRM_Core_DAO::executeQuery($sql, $sql_params);
-      $dao->fetch();
-      $params['@count'] = $dao->count;
-      drush_log(dt("Completed loading Group @id in @duration minutes with @count contacts.", $params), 'ok');
-    }
-    catch (Exception $e) {
-      drush_log(dt("Query failed or was canceled"), 'ok');
-    }
-    
-  }
-  $total_duration_formatted = number_format($total_duration/60, 2);
-  drush_log(dt("Total duration: @total_duration minutes.", array('@total_duration' => $total_duration_formatted)), 'ok');
-}
 
 function drush_pbd_update_assessments() {
   _civicrm_init();
