@@ -2607,7 +2607,7 @@ long_generate_sibling_cache() {
       # error, but we allow the user to set the:
       # LONG_FORCE_GENERATE_SIBLING_CACHE=1 environment variable to force the
       # regeneration of the cache.
-      if [ "$LONG_FORCE_GENERATE_SIBLING_CACHE" -eq "1" ]; then
+      if [ -n "$LONG_FORCE_GENERATE_SIBLING_CACHE" -a "$LONG_FORCE_GENERATE_SIBLING_CACHE" -eq "1" ]; then
         long_log "The sibling I was trying to retrieve the cache for \
           (%s) is not reachable. Continuing without this sibling's sites
           because LONG_FORCE_GENERATE_SIBLING_CACHE is set to 1." \
