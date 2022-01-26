@@ -1716,7 +1716,7 @@ long_configure_civicrm_imap_user() {
 
   long_init_site_tmp_var "$site"
 
-  long_exec_cv_cmd "$site" api4 PowerbaseSetup.ConfigureImapUser "user=$user" "pass=$pass" "imapHost=$LONG_IMAP_HOST" "imapDomain=$LONG_IMAP_DOMAIN"
+  long_exec_cv_cmd "$site" api4 PowerbaseSetup.ConfigureImapUser "user=$user" "password=$pass" "imapHost=$LONG_IMAP_HOST" "imapDomain=$LONG_IMAP_DOMAIN"
 
 }
 
