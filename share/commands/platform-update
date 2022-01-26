@@ -68,7 +68,7 @@ if [ "$check" = "new" ]; then
 
   if [ -n "$site" ]; then
     # Now check drupal modules.
-    long_exec_drush_cmd "$site" "ptp-update-report"
+    long_exec_drush_cmd "$site" "lsd-update-report"
   fi
 else
   # Check for unused modules and extensions.
