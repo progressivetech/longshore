@@ -1620,6 +1620,11 @@ long_initialize_site() {
     "ptpSiteApiKey=$LONG_PTP_SITE_API_KEY" \
     "ptpUserApiKey=$LONG_PTP_USER_API_KEY"
   
+  # We have to set drupal permissions at the end, to ensure that
+  # all modules and extensions that were enabled during the earlier
+  # phase get their permissions properly set.
+  long_exec_drush_cmd "$site" "lsd-set-perms"
+
   # Configure IMAP
   long_configure_imap "$site"
 }

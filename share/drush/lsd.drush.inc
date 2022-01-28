@@ -131,10 +131,6 @@ function drush_lsd_initialize() {
   variable_set('autologout_timeout', $autologout_timeout);
   variable_set('autologout_redirect_url', $autologout_redirect_url);
 
-  // These permissions should not be changed by users and
-  // if they are changed, they should be changed back.
-  drush_lsd_set_perms(); 
-
   // jquery settings.
   variable_set('jquery_update_compression_type', 'min');
   variable_set('jquery_update_jquery_admin_version', '');
