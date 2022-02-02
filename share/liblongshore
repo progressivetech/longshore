@@ -3059,12 +3059,12 @@ long_add_initial_site_theme() {
     mkdir -p "$themes"
     cp -r "${LONG_SHARE}/themes/demo" "${themes}/${site}"
     # Rename key files.
-    mv "${LONG_SHARE/themes/${site}/demo.css" "${LONG_SHARE/themes/${site}/${site}.css"
-    mv "${LONG_SHARE/themes/${site}/demo.info" "${LONG_SHARE/themes/${site}/${site}.info"
-    mv "${LONG_SHARE/themes/${site}/demo-logo.png" "${LONG_SHARE/themes/${site}/${site}-logo.png"
-    sed -i "s/demo/${site}/g" "${LONG_SHARE/themes/${site}/${site}.info"
-    sed -i "s/demo_preprocess/${site}_preprocess/g" "${LONG_SHARE/themes/${site}/template.php"
-    sed -i "s/progressivetech/${site}/g" "${LONG_SHARE/themes/${site}/template.php"
+    mv "${themes}/${site}/demo.css" "${themes}/${site}/${site}.css"
+    mv "${themes}/${site}/demo.info" "${themes}/${site}/${site}.info"
+    mv "${themes}/${site}/demo-logo.png" "${themes}/${site}/${site}-logo.png"
+    sed -i "s/demo/${site}/g" "${themes}/${site}/${site}.info"
+    sed -i "s/demo_preprocess/${site}_preprocess/g" "${themes}/${site}/template.php"
+    sed -i "s/progressivetech/${site}/g" "${themes}/${site}/template.php"
 
     long_exec_drush_cmd "$site" "lsd-prepare-theme --name=${site} --default"
   fi
