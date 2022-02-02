@@ -584,7 +584,7 @@ projects[spouse][type] = "library"
 projects[spouse][destination] = "extensions"
 projects[spouse][download][type] = "git"
 projects[spouse][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.spouse"
-projects[spouse][download][revision] = "3c980a210212d1e04f374c83a8f93a0cbc95f835"
+projects[spouse][download][revision] = "9b3f1dcbda805706788a6670bced062fd021ccfd"
 
 projects[setup][type] = "library"
 projects[setup][destination] = "extensions"
