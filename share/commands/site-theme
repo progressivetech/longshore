@@ -23,13 +23,6 @@ if ! long_container_running "$site"; then
   long_die "Not running for %s because it is not running." 1 "$site"
 fi
 
-# If theme name is provided and it's demo, then copy over our pre-prepared
-# demo theme and we're done.
-if [ -n "$name" -a "$name" = "demo" ]; then
-  long_add_demo_theme "$site"
-  exit
-fi
-
 # If the theme name is ommitted, use the name of the site.
 [ -z "$name" ] && name="$site"
 
