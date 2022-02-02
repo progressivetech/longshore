@@ -3055,7 +3055,7 @@ long_create_dkim_dns() {
 long_add_initial_site_theme() {
   local site="$1"
   local themes="${LONG_SRV}/services/sites/${site}/drupal/themes"
-  if [ ! -d "${themes}/$[site}]" ]; then
+  if [ ! -d "${themes}/${site}" ]; then
     mkdir -p "$themes"
     cp -r "${LONG_SHARE}/themes/demo" "${themes}/${site}"
     long_exec_drush_cmd "$site" "lsd-prepare-theme --name=${site} --default"
