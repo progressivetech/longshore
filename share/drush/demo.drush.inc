@@ -40,7 +40,6 @@ function drush_demo_data() {
     demo_membership_type();
     demo_memberships();
     demo_site_name();
-    demo_email_templates();
     demo_interest_participation_status();
     demo_insert_logins();
     demo_create_reports();	
@@ -749,27 +748,6 @@ function demo_interest_participation_status() {
     'class' => 'Positive',
     'weight' => 0,
   ));
-}
-
-function demo_email_templates() {
-  // use msg_title as array key to help with dupe checking when adding
-  $base_dir = __dir__ . '/templates';
-  $templates = array(
-    'Powerbase Simple Responsive' => array(
-      'msg_title' => 'Powerbase Simple Responsive',
-      'msg_subject' => '',
-      'msg_text' => '',
-      'msg_html' => file_get_contents($base_dir . '/powerbase-simple-responsive.html'),
-      'is_active' => 1,
-    ),
-  );
-  $disable_templates = array(
-    'Powerbase Responsive Email One Column',
-    'Powerbase Responsive Email One Column No Graphics',
-    'Powerbase Responsive Email Two Column',
-    'Powerbase Thank You Letter Template v1'
-  );
-  pbd_add_message_templates($templates, $disable_templates);
 }
 
 function demo_site_name() {
