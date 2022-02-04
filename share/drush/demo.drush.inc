@@ -1319,13 +1319,34 @@ function demo_enable_extensions() {
     'net.ourpowerbase.search.eventcount',
     'net.ourpowerbase.turnout',
     'net.ourpowerbase.voterfields',
-    'cc.tadpole.petitionemail',
+    'com.aghstrategies.petitionemail',
+    'com.aghstrategies.statelegemail',
   );
   foreach($keys as $key) {
     $key = escapeshellarg($key);
     // We call a separate process to avoid all the crazy cache problems we have
     // enabling these in the same session.
     drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable $key");
+  }
+
+  // Try to set the api key for open states.
+  $lines = file('/srv/longshore/etc/longshore.conf');
+  foreach($lines as $line) {
+    $line = trim($line);
+    if (preg_match('/^LONG_OPEN_STATES_API_KEY/', $line)) {
+      $parts = explode('=', $line);
+      if (count($parts) == 2) {
+        $apiKey = $parts[1];
+        if ($apiKey) {
+          \Civi\Api4\Setting::set()
+            ->addValue('statelegemail_key', $apiKey)
+            ->execute();
+          \Civi\Api4\Setting::set()
+            ->addValue('statelegemail_states', [ '1032' ])
+            ->execute();
+        }
+      }
+    }
   }
 }
 
