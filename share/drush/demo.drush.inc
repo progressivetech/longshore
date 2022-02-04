@@ -694,7 +694,7 @@ function demo_insert_logins() {
   );
 
   $uids = array();
-  while($i < 41) {
+  while($i < 51) {
     $user['name'] = 'fun' . $i;
     $user['mail'] = $user['name'] . '@example.net';
     $account = $userversion->create($user);
