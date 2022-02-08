@@ -1733,7 +1733,7 @@ long_configure_dev() {
     long_die "Not running dev code on live site."
   fi
   long_exec_drush_cmd "$site" lsd-dev
-  long_exec_cv_cmd "$site" api4 PowerbaseSetup.Dev
+  long_exec_cv_cmd "$site" api4 PowerbaseSetup.SetDevOptions
 }
 
 # Ensure we have a Drupal and CiviCRM database installed and the settings.php
