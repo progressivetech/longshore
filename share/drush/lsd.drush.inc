@@ -645,8 +645,8 @@ function lsd_set_powerbase_roles_and_perms() {
   $perms['Powerbase Administrator'][] = 'administer themes';
   
   // View user profiles and change username
-  $perms['Powerbase Administrator'][] = 'View user profiles';
-  $perms['Powerbase Administrator'][] = 'Change own username ';
+  $perms['Powerbase Administrator'][] = 'access user profiles';
+  $perms['Powerbase Administrator'][] = 'change own username';
 
   while(list(,$role) = each($roles)) {
     $role_obj = user_role_load_by_name($role);
@@ -656,7 +656,7 @@ function lsd_set_powerbase_roles_and_perms() {
       $role_obj->name = $role;
       user_role_save($role_obj);
     }
-    user_role_grant_permissions($role_obj->rid,$perms[$role]);
+    user_role_grant_permissions($role_obj->rid, $perms[$role]);
   }
 }
 
