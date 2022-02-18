@@ -60,8 +60,8 @@ function lsd_drush_command() {
  * them.
  */
 function drush_lsd_set_perms() {
-  lsd_grant_anonymous_and_authenticated_role_access();
-  lsd_create_drupal_roles();
+  lsd_set_anonymous_and_authenticated_perms();
+  lsd_set_powerbase_roles_and_perms();
   // workaround for https://drupal.org/node/1454686
   // and https://drupal.org/node/1153072
   lsd_grant_admin_all_perms();
@@ -526,7 +526,7 @@ function lsd_set_iframe_settings() {
   variable_set('theme_iframe_settings', $theme_iframe_settings);
 }
 
-function lsd_create_drupal_roles() {
+function lsd_set_powerbase_roles_and_perms() {
   $roles = array(
     'Powerbase Administrator',
     'Powerbase User'
@@ -575,6 +575,7 @@ function lsd_create_drupal_roles() {
     // the download data permission.
     'access export menu',
   );
+
 
   // Ensure they are deleted if they have been granted in the past
   if(FALSE !== ($role_obj = user_role_load_by_name('Powerbase User'))) {
@@ -643,6 +644,10 @@ function lsd_create_drupal_roles() {
   // And ability to access theme area
   $perms['Powerbase Administrator'][] = 'administer themes';
   
+  // View user profiles and change username
+  $perms['Powerbase Administrator'][] = 'View user profiles';
+  $perms['Powerbase Administrator'][] = 'Change own username ';
+
   while(list(,$role) = each($roles)) {
     $role_obj = user_role_load_by_name($role);
     if(!$role_obj) {
@@ -755,7 +760,7 @@ function lsd_disable_modules() {
   }
 }
 
-function lsd_grant_anonymous_and_authenticated_role_access() {
+function lsd_set_anonymous_and_authenticated_perms() {
   $default_anon_perms = array(
     'access CiviMail subscribe/unsubscribe pages',
     'make online contributions',
