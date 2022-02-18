@@ -572,7 +572,7 @@ projects[voterfields][type] = "library"
 projects[voterfields][destination] = "extensions"
 projects[voterfields][download][type] = "git"
 projects[voterfields][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.voterfields"
-projects[voterfields][download][revision] = "3f5c0ee6e491a3059cee3007103f02982c2b1c3b"
+projects[voterfields][download][revision] = "ea54b7d1ef9bdfeb1555030870b7d420fb7fd5aa"
 
 projects[turnout][type] = "library"
 projects[turnout][destination] = "extensions"
