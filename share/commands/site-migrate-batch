@@ -247,8 +247,6 @@ for site in $sites; do
     fi
   fi
   long_log "upgrade:%s Confirmed post upgrade database version" info "$site"
-
-  long_log "upgrade:%s: Checked mjwshared ." info "$site"
   printf "."
 
   if ! long_exec_drush_cmd "$site" "-y pbd-rebuild-multilingual-schema"; then
@@ -277,21 +275,6 @@ for site in $sites; do
     continue
   fi
   long_log "upgrade:%s Removed maintenance mode" info "$site"
-  printf "."
-
-  if ! long_exec_drush_cmd "$site" "php-eval 'pbd_add_message_templates();'"; then
-    long_log "upgrade:%s Failed to add message templates" error "$site"
-    continue
-  fi
-  long_log "upgrade:%s added message templates" info "$site"
-  printf "."
-
-  if ! long_clear_cache "$site" all; then
-    long_log "upgrade:%s Failed to clear cache" error "$site"
-    continue
-  fi
-  long_log "upgrade:%s Ran clear cache." info "$site"
-
   printf ". Done!\n"
 
 
