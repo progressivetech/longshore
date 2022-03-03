@@ -419,8 +419,8 @@ projects[exportpermission][download][revision] = "c13a893f16fec9ebaf9be9bca68e9a
 projects[mailchimp][type] = "library"
 projects[mailchimp][destination] = "extensions"
 projects[mailchimp][download][type] = "git"
-projects[mailchimp][download][url] = "https://github.com/veda-consulting/uk.co.vedaconsulting.mailchimp.git"
-projects[mailchimp][download][revision] = "184ab71652dfb36286e1a5d8a6b5fcaaabea22db"
+projects[mailchimp][download][url] = "https://github.com/progressivetech/uk.co.vedaconsulting.mailchimp.git"
+projects[mailchimp][download][revision] = "2afc0635defe9628d2f9661e378000d83be939fa"
 
 projects[notificationlog][type] = "library"
 projects[notificationlog][destination] = "extensions"
