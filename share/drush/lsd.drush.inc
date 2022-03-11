@@ -833,7 +833,9 @@ function drush_lsd_prepare_theme() {
     'toggle_main_menu' => 0,
     'toggle_secondary_menu' => 0,
     'default_logo' => 0,
-    'logo_path' => "sites/default/themes/${name}/${name}-logo.png"
+    'logo_path' => "sites/default/themes/${name}/${name}-logo.png",
+    'bootstrap_popover_enabled' => 0,
+    'bootstrap_tooltip_enabled' => 0,
   ];
   variable_set('theme_' . $name . '_settings', $settings);
 
