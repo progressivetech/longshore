@@ -62,7 +62,10 @@ function pbd_drush_command() {
     array(
       'description' => 'Check for cicero usage',
     );
-
+  $items['pbd-petition-report'] =
+    array(
+      'description' => "Report on petition email user",
+    );
   return $items;
 }
 
@@ -74,6 +77,40 @@ function pbd_drush_command() {
  * ****************************************************
  */
 
+function drush_pbd_petition_report() {
+  $petitions = \Civi\Api4\Survey::get()
+    ->setCheckPermissions(FALSE)
+    ->addWhere('is_active', '=', TRUE)
+    ->addWhere('activity_type_id:name', '=', 'Petition')
+    ->execute();
+  $petitionsCount = $petitions->count();
+  
+  $petitionActivityTypeId = \Civi\Api4\OptionValue::get()
+    ->setCheckPermissions(FALSE)
+    ->addSelect('value')
+    ->addWhere('name', '=', 'Petition')
+    ->addWhere('option_group_id:name', '=', 'activity_type')
+    ->execute()->first()['value'];
+  $sql = "SELECT COUNT(*) AS count FROM civicrm_survey s
+    JOIN civicrm_petition_email e ON s.id = e.petition_id 
+    WHERE is_active = 1";
+  $dao = \CRM_Core_DAO::executeQuery($sql);
+  $dao->fetch();
+  $oldPetitionsCount = $dao->count;
+  
+  $newPetitions = \Civi\Api4\Survey::get()
+    ->setCheckPermissions(FALSE)
+    ->addWhere('activity_type_id:name', '=', 'Petition')
+    ->addWhere('is_active', '=', 1)
+    ->addWhere('Letter_To.Recipient_System', 'IS NOT EMPTY')
+    ->execute();
+
+  $newPetitionsCount = $newPetitions->count();
+  echo "${petitionsCount}:${oldPetitionsCount}:${newPetitionsCount}\n";
+
+
+
+}
 
 /**
  * Rebuild the multi-lingual schema 
