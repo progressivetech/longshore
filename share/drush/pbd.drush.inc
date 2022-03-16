@@ -80,7 +80,7 @@ function pbd_drush_command() {
 function drush_pbd_petition_report() {
   $report = NULL;
   if (!class_exists('CRM_Campaign_BAO_Survey')) {
-    $report = "0:0:0\n";
+    $report = "0:0:0";
   }
   else {
     $petitions = \Civi\Api4\Survey::get()
@@ -125,7 +125,7 @@ function drush_pbd_petition_report() {
 
       $newPetitionsCount = $newPetitions->count();
     }
-    $report = "${petitionsCount}:${oldPetitionsCount}:${newPetitionsCount}\n";
+    $report = "${petitionsCount}:${oldPetitionsCount}:${newPetitionsCount}";
   }
   drush_log($report, 'error');
 }
