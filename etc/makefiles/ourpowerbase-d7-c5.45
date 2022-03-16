@@ -803,6 +803,12 @@ projects[elections][download][type] = "git"
 projects[elections][download][url] = "https://github.com/agileware/au.com.agileware.elections"
 projects[elections][download][revision] = "94a617284ccafcbf8a4c6af06d3d8712e9263c8e"
 
+projects[formsdisabler][type] = "library"
+projects[formsdisabler][destination] = "extensions"
+projects[formsdisabler][download][type] = "git"
+projects[formsdisabler][download][url] = "git://git.progressivetech.org/extensions/formsdisabler"
+projects[formsdisabler][download][revision] = "ef4bbe9f4afe6c6a787af10cfe72ff3ff831a220"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
