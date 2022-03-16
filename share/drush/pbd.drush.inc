@@ -127,8 +127,7 @@ function drush_pbd_petition_report() {
     }
     $report = "${petitionsCount}:${oldPetitionsCount}:${newPetitionsCount}\n";
   }
-  $site = str_replace('https://', '', array_shift(explode('.', CIVICRM_UF_BASEURL)));
-  drush_log($site . ":" . $report, 'error');
+  drush_log($report, 'error');
 }
 
 /**
