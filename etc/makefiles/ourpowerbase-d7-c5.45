@@ -81,7 +81,7 @@ projects[themekey][version] = "3.4"
 projects[themekey][path][] = "/srv/longshore/etc/makefiles/themekey.patch"
 
 projects[webform_civicrm][type] = "module"
-projects[webform_civicrm][version] = "5.7"
+projects[webform_civicrm][version] = "5.8"
 
 projects[options_element][type] = "module"
 projects[options_element][version] = "1.12"
