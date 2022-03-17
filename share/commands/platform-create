@@ -185,8 +185,8 @@ if [ "$build_system" = "drushmake" ]; then
     dm_install_drupal "$SRC/drupal" "$TRG/drupal" > /dev/null || long_die "Failed to dm_install_drupal"
 
     # Now download the internationalization file and unpack it.
-    if [ "$DM_VERSION" = "5.39.2" ]; then
-      l10n_file=civicrm-5.39.0-l10n.tar.gz
+    if [ "$DM_VERSION" = "5.45.4" ]; then
+      l10n_file="civicrm-5.45.3-l10n.tar.gz"
     else
       l10n_file="civicrm-${DM_VERSION}-l10n.tar.gz"
     fi
