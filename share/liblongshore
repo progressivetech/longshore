@@ -863,7 +863,7 @@ long_exec_drush_cmd() {
     done
   fi
   printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
-  printf "drush $quiet $cmd\n" >> "$file"
+  printf "drush $quiet --user=admin $cmd\n" >> "$file"
   long_exec_in_container "$site" "$file"
   return="$?"
   rm "$file"
