@@ -716,7 +716,7 @@ projects[smsinbox][type] = "library"
 projects[smsinbox][destination] = "extensions"
 projects[smsinbox][download][type] = "git"
 projects[smsinbox][download][url] = "https://github.com/progressivetech/SMS-Inbox"
-projects[smsinbox][download][revision] = "2b9a5b3b85aecba3fa59e53d115ab5162ae4eeb5"
+projects[smsinbox][download][revision] = "306314666d21b57258700e2d91b9036b6ddba78d"
 
 
 projects[relationreport][type] = "library"
