@@ -78,9 +78,11 @@ function pbd_drush_command() {
  */
 
 function drush_pbd_petition_report() {
+  $urlPieces = explode('.', str_replace('https://', '', CIVICRM_UF_BASEURL));
+  $site = array_shift($urlPieces);
   $report = NULL;
   if (!class_exists('CRM_Campaign_BAO_Survey')) {
-    $report = "0:0:0";
+    $report = 'Campaign Not Installed';
   }
   else {
     $petitions = \Civi\Api4\Survey::get()
@@ -90,44 +92,36 @@ function drush_pbd_petition_report() {
       ->execute();
     $petitionsCount = $petitions->count();
     
-    $sql = "SELECT id FROM civicrm_extension WHERE full_name = 'net.ourpowerbase.petitionemail'";
+    $sql = "SELECT is_active FROM civicrm_extension WHERE full_name = 'cc.tadpole.petitionemail'";
     $dao = CRM_Core_DAO::executeQuery($sql);
     if ($dao->N == 0) {
-      $oldPetitionsCount = 0;
+      $report = 'Extension Not Insaled';
     }
     else {
-      $petitionActivityTypeId = \Civi\Api4\OptionValue::get()
-        ->setCheckPermissions(FALSE)
-        ->addSelect('value')
-        ->addWhere('name', '=', 'Petition')
-        ->addWhere('option_group_id:name', '=', 'activity_type')
-        ->execute()->first()['value'];
-      $sql = "SELECT COUNT(*) AS count FROM civicrm_survey s
-        JOIN civicrm_petition_email e ON s.id = e.petition_id 
-        WHERE is_active = 1";
-      $dao = \CRM_Core_DAO::executeQuery($sql);
       $dao->fetch();
-      $oldPetitionsCount = $dao->count;
+      if ($dao->is_active == 1) {
+        $petitionActivityTypeId = \Civi\Api4\OptionValue::get()
+          ->setCheckPermissions(FALSE)
+          ->addSelect('value')
+          ->addWhere('name', '=', 'Petition')
+          ->addWhere('option_group_id:name', '=', 'activity_type')
+          ->execute()->first()['value'];
+        $sql = "SELECT COUNT(*) AS count FROM civicrm_survey s
+          JOIN civicrm_petition_email e ON s.id = e.petition_id 
+          WHERE is_active = 1";
+        $dao = \CRM_Core_DAO::executeQuery($sql);
+        $dao->fetch();
+        $activePetitions = $dao->count;
+        if ($activePetitions == 0) {
+          $report = 'Disable and Delete, no active petitions';
+        } 
+        else {
+          $report = "Sorry... ${activePetitions} active petitions, time to dive in";
+        }
+      }
     }
-
-    $sql = "SELECT id FROM civicrm_extension WHERE full_name = 'com.aghstrategies.petitionemail'";
-    $dao = CRM_Core_DAO::executeQuery($sql);
-    if ($dao->N == 0) {
-      $newPetitionsCount = 0;
-    }
-    else {
-      $newPetitions = \Civi\Api4\Survey::get()
-        ->setCheckPermissions(FALSE)
-        ->addWhere('activity_type_id:name', '=', 'Petition')
-        ->addWhere('is_active', '=', 1)
-        ->addWhere('Letter_To.Recipient_System', 'IS NOT EMPTY')
-        ->execute();
-
-      $newPetitionsCount = $newPetitions->count();
-    }
-    $report = "${petitionsCount}:${oldPetitionsCount}:${newPetitionsCount}";
   }
-  drush_log($report, 'error');
+  drush_log($site  . ': ' . $report, 'error');
 }
 
 /**
