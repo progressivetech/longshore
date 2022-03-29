@@ -120,6 +120,9 @@ function drush_pbd_petition_report() {
           $report = "Sorry... ${activePetitions} active petitions, time to dive in";
         }
       }
+      else {
+        $report = 'Uninstall - already disabled';
+      }
     }
   }
   drush_log($site  . ': ' . $report, 'error');
