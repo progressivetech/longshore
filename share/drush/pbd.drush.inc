@@ -78,6 +78,7 @@ function pbd_drush_command() {
  */
 
 function drush_pbd_petition_report() {
+  _civicrm_init();
   $urlPieces = explode('.', str_replace('https://', '', CIVICRM_UF_BASEURL));
   $site = array_shift($urlPieces);
   $report = NULL;
