@@ -28,7 +28,7 @@ projects[civicrm_packages][type] = "library"
 projects[civicrm_packages][destination] = "modules/civicrm" 
 projects[civicrm_packages][directory_name] = "packages" 
 projects[civicrm_packages][download][type] = "git" 
-projects[civicrm_packages][download][revision] = "b0495c664fc5827bae8b36a6699d06b7ee2ff258"
+projects[civicrm_packages][download][revision] = "ad27c80aca9c1027837d451ed46cbd58eb43b9ab"
 projects[civicrm_packages][download][url] = "git://git.progressivetech.org/civicrm/civicrm-packages"
 
 ; Drupal
