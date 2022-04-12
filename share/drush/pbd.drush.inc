@@ -96,7 +96,7 @@ function drush_pbd_petition_report() {
     $sql = "SELECT is_active FROM civicrm_extension WHERE full_name = 'cc.tadpole.petitionemail'";
     $dao = CRM_Core_DAO::executeQuery($sql);
     if ($dao->N == 0) {
-      $report = 'Extension Not Insaled';
+      $report = 'Extension Not Installed';
     }
     else {
       $dao->fetch();
