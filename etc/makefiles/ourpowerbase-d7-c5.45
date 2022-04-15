@@ -809,6 +809,14 @@ projects[formsdisabler][download][type] = "git"
 projects[formsdisabler][download][url] = "git://git.progressivetech.org/extensions/formsdisabler"
 projects[formsdisabler][download][revision] = "ef4bbe9f4afe6c6a787af10cfe72ff3ff831a220"
 
+projects[eventics][type] = "library"
+projects[eventics][destination] = "extensions"
+projects[eventics][download][type] = "git"
+projects[eventics][download][url] = "https://lab.civicrm.org/extensions/eventics"
+projects[eventics][download][revision] = "4620bb9736a7945226090daa8ead9a30ec007b34"
+
+
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
