@@ -59,7 +59,7 @@ for url in $LONG_PHPMYADMIN_URLS; do
   fi
   if ! long_does_page_have_text "$url" "<title>phpMyAdmin</title>"; then
     offline_count=$(( $offline_count + 1 ))
-    long_log "Site %s is OFFLINE!!!" error "$url"
+    long_log "Site %s is unreachable from %s" error "$url" "$(hostname)"
   else
     online_count=$(( $online_count + 1 ))
     long_log "Site %s is online" info "$url"
@@ -87,7 +87,7 @@ if [ -n "$retry_sites" ]; then
     if ! long_is_site_reachable "$site"; then
       # Ensure 
       offline_count=$(( $offline_count + 1 ))
-      long_log "Site %s is OFFLINE!!!" error "$site"
+      long_log "Site https://%s.ourpowerbase.net/ is unreachable from %s" error "$site" "$(hostname)"
     fi
   done
 fi
