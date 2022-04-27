@@ -20,7 +20,7 @@ projects[drupal][version] = "7.88"
 projects[civicrm][type] = "module" 
 projects[civicrm][directory_name] = "civicrm" 
 projects[civicrm][download][type] = "git" 
-projects[civicrm][download][revision] = "68bf70c224bbccec5e461567b1499bf828f604f5"
+projects[civicrm][download][revision] = "4aa2b614b071360eb5f35c1548e962bc93d60767"
 projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
 
 ; Packages
@@ -187,7 +187,7 @@ projects[simplepetitionemail][type] = "library"
 projects[simplepetitionemail][destination] = "extensions"
 projects[simplepetitionemail][download][type] = "git"
 projects[simplepetitionemail][download][url] = "https://github.com/progressivetech/com.aghstrategies.petitionemail"
-projects[simplepetitionemail][download][revision] = "2967ae7a659aebd43d87825b4ff8a90578861629"
+projects[simplepetitionemail][download][revision] = "35f794cab1fa1ecc6befa747d6edd52bb41be62e"
 
 projects[statelegemail][type] = "library"
 projects[statelegemail][destination] = "extensions"
