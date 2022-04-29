@@ -199,7 +199,7 @@ projects[advancedfundraising][type] = "library"
 projects[advancedfundraising][destination] = "extensions"
 projects[advancedfundraising][download][type] = "git"
 projects[advancedfundraising][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.report.advancedfundraising"
-projects[advancedfundraising][download][revision] = "ba6e136f5b58ec3fc42647b8fb40e9a16d768449"
+projects[advancedfundraising][download][revision] = "155f01013cab3d47b5068f68fcdf6e592420a0da"
 
 projects[badgeup][type] = "library"
 projects[badgeup][destination] = "extensions"
