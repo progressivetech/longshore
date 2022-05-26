@@ -845,7 +845,7 @@ projects[pb_custom_theme_elements][download][revision] = "8c3079594a444a78748e3e
 projects[civiresponsive][type] = "theme"
 projects[civiresponsive][download][type] = "git"
 projects[civiresponsive][download][url] = "git://git.progressivetech.org/powerbase/civiresponsive.git"
-projects[civiresponsive][download][revision] = "39035d1fbca40edd944558cb3dd5584fb72f2c56"
+projects[civiresponsive][download][revision] = "2d77be9b12c30c5b5b3475d9597b76fb896f4154"
 
 projects[iframe][type] = "theme"
 projects[iframe][download][type] = "git"
