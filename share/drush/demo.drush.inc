@@ -1320,7 +1320,7 @@ function demo_enable_extensions() {
     'net.ourpowerbase.turnout',
     'net.ourpowerbase.voterfields',
     'com.aghstrategies.petitionemail',
-    'com.aghstrategies.statelegemail',
+    'com.jlacey.electoral',
   );
   foreach($keys as $key) {
     $key = escapeshellarg($key);
