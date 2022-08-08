@@ -129,11 +129,11 @@ if [ "$build_system" = "drushmake" ]; then
     
     # CiviCRM ship core extensions, which also have to be available in our special
     # extensions directory.
-    if [ -d  ${source_platform_path_temp}/sites/all/modules/civicrm/ext ]; then
-      for ext in $(ls ${source_platform_path_temp}/sites/all/modules/civicrm/ext/); do
-        mv "${source_platform_path_temp}/sites/all/modules/civicrm/ext/$ext" ${source_platform_path_temp}/sites/all/extensions/
-      done
-    fi
+    #if [ -d  ${source_platform_path_temp}/sites/all/modules/civicrm/ext ]; then
+    #  for ext in $(ls ${source_platform_path_temp}/sites/all/modules/civicrm/ext/); do
+    #    mv "${source_platform_path_temp}/sites/all/modules/civicrm/ext/$ext" ${source_platform_path_temp}/sites/all/extensions/
+    #  done
+    #fi
     
     # The CiviCRM extensions directory is in sites/all/extensions, which is
     # sensible. However, CiviCRM will want to create a tmp and cache directory
@@ -183,6 +183,9 @@ if [ "$build_system" = "drushmake" ]; then
 
     long_log "Running dm_install_drupal" info
     dm_install_drupal "$SRC/drupal" "$TRG/drupal" > /dev/null || long_die "Failed to dm_install_drupal"
+
+    long_log "Moving extensions directory" info
+    mv "${SRC}/ext" "${TRG}/" || long_die "Failed to copy from $SRC to $TRG"
 
     # Now download the internationalization file and unpack it.
     if [ "$DM_VERSION" = "5.45.7" ]; then
