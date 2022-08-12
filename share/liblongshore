@@ -3054,19 +3054,22 @@ long_create_dkim_dns() {
 # Add initial site theme
 long_add_initial_site_theme() {
   local site="$1"
-  local themes="${LONG_SRV}/services/sites/${site}/drupal/themes"
-  if [ ! -d "${themes}/${site}" ]; then
-    mkdir -p "$themes"
-    cp -r "${LONG_SHARE}/themes/demo" "${themes}/${site}"
-    # Rename key files.
-    mv "${themes}/${site}/demo.css" "${themes}/${site}/${site}.css"
-    mv "${themes}/${site}/demo.info" "${themes}/${site}/${site}.info"
-    mv "${themes}/${site}/demo-logo.png" "${themes}/${site}/${site}-logo.png"
-    sed -i "s/demo/${site}/g" "${themes}/${site}/${site}.info"
-    sed -i "s/demo_preprocess/${site}_preprocess/g" "${themes}/${site}/template.php"
-    sed -i "s/progressivetech/${site}/g" "${themes}/${site}/template.php"
+  # If this is the demo site, then we already have the theme we need.
+  if [ "$site" != "demo" ]; then
+    local themes="${LONG_SRV}/services/sites/${site}/drupal/themes"
+    if [ ! -d "${themes}/${site}" ]; then
+      mkdir -p "$themes"
+      cp -r "${LONG_SHARE}/themes/demo" "${themes}/${site}"
+      # Rename key files.
+      mv "${themes}/${site}/demo.css" "${themes}/${site}/${site}.css"
+      mv "${themes}/${site}/demo.info" "${themes}/${site}/${site}.info"
+      mv "${themes}/${site}/demo-logo.png" "${themes}/${site}/${site}-logo.png"
+      sed -i "s/demo/${site}/g" "${themes}/${site}/${site}.info"
+      sed -i "s/demo_preprocess/${site}_preprocess/g" "${themes}/${site}/template.php"
+      sed -i "s/progressivetech/${site}/g" "${themes}/${site}/template.php"
 
-    long_exec_drush_cmd "$site" "lsd-prepare-theme --name=${site} --default"
+      long_exec_drush_cmd "$site" "lsd-prepare-theme --name=${site} --default"
+    fi
   fi
 }
 
