@@ -1,0 +1,23 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-demo <site>
+Add the demo data to the given site..
+
+Arguments
+  <site> - The site to add the demo data to.'"
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+me=$(hostname)
+
+long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+
+long_rerun_over_network site-updatedb "$site" && exit
+
+if ! long_container_running "$site"; then
+  long_log "Not executing command for %s because it is not running." info "$site"
+else
+  long_exec_drush_cmd "$site" "demo-data --seed=ptp" 'LONG_LIVE LONG_GOOGLE_CIVIC_API_KEY LONG_CICERO_API_KEY LONG_OPENSTATES_API_KEY'
+fi
