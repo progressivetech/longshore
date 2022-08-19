@@ -1309,6 +1309,7 @@ function demo_contribution_page() {
 function demo_enable_extensions() {
   $keys = array(
     'com.webaccessglobal.module.civimobile', 
+    'com.jlacey.electoral',
     'org.civicrm.sms.twilio', 
     'net.ourpowerbase.donortracking',
     'net.ourpowerbase.foundationfields',
@@ -1320,7 +1321,6 @@ function demo_enable_extensions() {
     'net.ourpowerbase.turnout',
     'net.ourpowerbase.voterfields',
     'com.aghstrategies.petitionemail',
-    'com.jlacey.electoral',
   );
   foreach($keys as $key) {
     $key = escapeshellarg($key);
