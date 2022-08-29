@@ -815,6 +815,12 @@ projects[configurabledefaults][download][type] = "git"
 projects[configurabledefaults][download][url] = "git://git.progressivetech.org/extensions/configurabledefaults"
 projects[configurabledefaults][download][revision] = "01f17f01717d373d53c26afd14080e49678352a0"
 
+projects[authnet][type] = "library"
+projects[authnet][destination] = "extensions"
+projects[authnet][download][type] = "git"
+projects[authnet][download][url] = "https://lab.civicrm.org/extensions/authnet"
+projects[authnet][download][revision] = "4958e2d8b23222130a9ecb9dabd9d9008cef4981"
+
 
 ;########
 ; CiviCRM Mosaico Templates
