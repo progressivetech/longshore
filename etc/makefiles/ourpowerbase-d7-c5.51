@@ -821,6 +821,11 @@ projects[authnet][download][type] = "git"
 projects[authnet][download][url] = "https://lab.civicrm.org/extensions/authnet"
 projects[authnet][download][revision] = "4958e2d8b23222130a9ecb9dabd9d9008cef4981"
 
+projects[civicrm-recalculate-recipients][type] = "library"
+projects[civicrm-recalculate-recipients][destination] = "extensions"
+projects[civicrm-recalculate-recipients][download][type] = "git"
+projects[civicrm-recalculate-recipients][download][url] = "https://github.com/progressivetech/civicrm-recalculate-recipients.git"
+projects[civicrm-recalculate-recipients][download][revision] = "5df71063adcdc824de278759f884b39111ab6d28"
 
 ;########
 ; CiviCRM Mosaico Templates
