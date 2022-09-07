@@ -226,6 +226,13 @@ if [ "$build_system" = "drushmake" ]; then
     # Now, put our custom fonts in place. This allows for korean fonts in mailing
     # labels
     rsync -a "${LONG_SHARE}/fonts" "${source_platform_path_temp}/sites/all/libraries/"
+
+    # Add the stripe apple pay merchant id file. To "activate" apple pay this
+    # file must be present *and* you have to connect the domain to your stripe
+    # account by following these instructions:
+    # https://stripe.com/docs/stripe-js/elements/payment-request-button#verifying-your-domain-with-apple-pay
+    mkdir -p "${source_platform_path_temp}/.well-known/"
+    cp "${LONG_SRV}/share/templates/apple-developer-merchantid-domain-association" "${source_platform_path_temp}/.well-known/"
   fi
 
   long_log "Moving platform into place." info
@@ -355,6 +362,7 @@ else
     rm civicrm-${civicrm_post_full_version}-l10n.tar.gz
   fi
 
+  
   if [ "$sync" = "y" ]; then
     long_prompt "Building/Updating platform on other siblings."
     if [ "$reply" == "y" ]; then

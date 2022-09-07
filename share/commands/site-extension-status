@@ -13,7 +13,7 @@ long_check_args "$2" "$#" 2
 if [ "$2" != "--all" ]; then
   sites="$2"
 else
-  long_set_sites "$(hostname)"
+  long_set_sites
   sites="$LONG_SITES" 
 fi
 
@@ -24,11 +24,35 @@ disabled=0
 notinstalled=0
 extension_status=unknown
 
+me=$(hostname)
+
 for site in $sites; do
   long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+
+  long_set_site_sibling "$site"
+
   temp=$(mktemp)
   echo "SELECT is_active FROM civicrm_extension WHERE full_name = '$extension'" > "$temp"
-  out=$(long_execute_site_query "$site" "$temp" | tail -n1)
+  if [ "$LONG_SITE_SIBLING" = "$me" ]; then
+    out=$(long_execute_site_query "$site" "$temp" | tail -n1)
+  else
+    # run over the network
+    # Ensure the host is reachable.
+    if ! long_is_host_reachable "${LONG_SITE_SIBLING}.mayfirst.org"; then
+      long_die "The sibling I was trying to run this command on (%s) is not reachable." \
+        1 "${LONG_SITE_SIBLING}.mayfirst.org"
+    fi
+    # Copy the file to the sibling - use a temp file to avoid clobbering 
+    # a file on the other side.
+    dest=$(ssh "${LONG_SITE_SIBLING}.mayfirst.org" "mktemp")
+    rsync "$query" "${LONG_SITE_SIBLING}.mayfirst.org:$dest"
+    out=$(ssh "${LONG_SITE_SIBLING}.mayfirst.org" LONG_LOG_LEVEL="$LONG_LOG_LEVEL" /srv/longshore/bin/longshore site-sqlq "$site" "$dest" | tail -n1)
+    if [ "$?" != "0" ]; then
+      long_log "Rerunning %s for site %s over network failed." error "site-sqlq" "$site"
+    fi
+    # Always cleanup on remote serves, since we always create a tmp file.
+    ssh "${LONG_SITE_SIBLING}.mayfirst.org" "rm $dest"
+  fi
   rm "$temp"
   if [ -z "$out"  ]; then
     extension_status="not installed"
