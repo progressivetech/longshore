@@ -31,10 +31,10 @@ for site in $sites; do
 
   long_set_site_sibling "$site"
 
-  temp=$(mktemp)
+  query=$(mktemp)
   echo "SELECT is_active FROM civicrm_extension WHERE full_name = '$extension'" > "$temp"
   if [ "$LONG_SITE_SIBLING" = "$me" ]; then
-    out=$(long_execute_site_query "$site" "$temp" | tail -n1)
+    out=$(long_execute_site_query "$site" "$query" | tail -n1)
   else
     # run over the network
     # Ensure the host is reachable.
@@ -53,7 +53,7 @@ for site in $sites; do
     # Always cleanup on remote serves, since we always create a tmp file.
     ssh "${LONG_SITE_SIBLING}.mayfirst.org" "rm $dest"
   fi
-  rm "$temp"
+  rm "$query"
   if [ -z "$out"  ]; then
     extension_status="not installed"
     notinstalled=$(( "$notinstalled" + 1 ))
