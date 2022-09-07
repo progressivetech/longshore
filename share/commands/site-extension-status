@@ -13,8 +13,8 @@ long_check_args "$2" "$#" 2
 if [ "$2" != "--all" ]; then
   sites="$2"
 else
-  long_set_sites
-  sites="$LONG_SITES" $(hostname)
+  long_set_sites "$(hostname)"
+  sites="$LONG_SITES" 
 fi
 
 extension="$3"
