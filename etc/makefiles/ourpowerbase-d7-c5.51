@@ -344,7 +344,7 @@ projects[zip2state][type] = "library"
 projects[zip2state][destination] = "extensions"
 projects[zip2state][download][type] = "git"
 projects[zip2state][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.zip2state.git"
-projects[zip2state][download][revision] = "e91c9c41dfb28c96185c1d94cf29f16f950f68b4"
+projects[zip2state][download][revision] = "35f3d00d646bf760e40fea6d6ca71b010a490dd6"
 
 projects[merge][type] = "library"
 projects[merge][destination] = "extensions"
