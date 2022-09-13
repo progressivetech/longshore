@@ -783,7 +783,7 @@ projects[emailarchiver][type] = "library"
 projects[emailarchiver][destination] = "extensions"
 projects[emailarchiver][download][type] = "git"
 projects[emailarchiver][download][url] = "git://git.progressivetech.org/extensions/emailarchiver"
-projects[emailarchiver][download][revision] = "0e7cd4589b704a18d17b7670ba7f7ed13a6b0b4a"
+projects[emailarchiver][download][revision] = "c57a3558c63f6fcc541c877965f3aab6ffe01e74"
 
 projects[validate][type] = "library"
 projects[validate][destination] = "extensions"
