@@ -827,6 +827,12 @@ projects[civicrm-recalculate-recipients][download][type] = "git"
 projects[civicrm-recalculate-recipients][download][url] = "https://github.com/progressivetech/civicrm-recalculate-recipients.git"
 projects[civicrm-recalculate-recipients][download][revision] = "600823563a0edbd26b5e348d4039c647ef7accdc"
 
+projects[archivemailing][type] = "library"
+projects[archivemailing][destination] = "extensions"
+projects[archivemailing][download][type] = "git"
+projects[archivemailing][download][url] = "https://lab.civicrm.org/extensions/archivemailing"
+projects[archivemailing][download][revision] = "bf619a2869839196a7624d6e61a3a62d6568445c"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
