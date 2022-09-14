@@ -1116,7 +1116,7 @@ function demo_contacts() {
     fclose($handle);
     $params = array(
       'geoProvider' => "Google",
-      'mapProvider' => "Google",
+      'mapProvider' => "OpenStreetMaps",
     );
     civicrm_api3('Setting', 'create', $params); 
   }
