@@ -789,7 +789,7 @@ projects[validate][type] = "library"
 projects[validate][destination] = "extensions"
 projects[validate][download][type] = "git"
 projects[validate][download][url] = "git://git.progressivetech.org/extensions/validate"
-projects[validate][download][revision] = "bcab081134b1b7a7db1dc73548de05ecc6a2f1f0"
+projects[validate][download][revision] = "52b2e56779a7cdea3bc465f250ce89a4765ca957"
 
 projects[elections][type] = "library"
 projects[elections][destination] = "extensions"
