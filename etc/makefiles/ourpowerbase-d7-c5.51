@@ -137,6 +137,12 @@ projects[select_or_other][version] = "2.24"
 projects[hybridauth][type] = "module"
 projects[hybridauth][version] = "2.16"
 
+projects[tfa][type] = "module"
+projects[tfa][version] = "2.1"
+
+projects[tfa_basic][type] = "module"
+projects[tfa_basic][version] = "1.1"
+
 ; **************
 ; custom modules
 ; *************
