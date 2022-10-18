@@ -462,7 +462,7 @@ projects[profiles][type] = "library"
 projects[profiles][destination] = "extensions"
 projects[profiles][download][type] = "git"
 projects[profiles][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.profiles"
-projects[profiles][download][revision] = "b28338af6f76c25b68d0559d0b4c6cccebf8cdb1"
+projects[profiles][download][revision] = "6198aff05f85160a6876f89ab582114d07ae627e"
 
 projects[fastactionlinks][type] = "library"
 projects[fastactionlinks][destination] = "extensions"
