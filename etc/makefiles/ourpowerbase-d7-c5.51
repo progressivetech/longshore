@@ -422,6 +422,12 @@ projects[exportpermission][download][revision] = "c13a893f16fec9ebaf9be9bca68e9a
 ;projects[mailchimp][download][url] = "https://github.com/progressivetech/uk.co.vedaconsulting.mailchimp.git"
 ;projects[mailchimp][download][revision] = "0c192ab7d9d5b899561e980ca701c0f4d18cb634
 
+projects[mailchimpsync][type] = "library"
+projects[mailchimpsync][destination] = "extensions"
+projects[mailchimpsync][download][type] = "git"
+projects[mailchimpsync][download][url] = "https://lab.civicrm.org/extensions/mailchimpsync"
+projects[mailchimpsync][download][revision] = "0b018bfb61b8209e428da4b8c5adeef9b6a7d920"
+
 projects[notificationlog][type] = "library"
 projects[notificationlog][destination] = "extensions"
 projects[notificationlog][download][type] = "git"
