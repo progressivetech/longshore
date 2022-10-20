@@ -425,8 +425,8 @@ projects[exportpermission][download][revision] = "c13a893f16fec9ebaf9be9bca68e9a
 projects[mailchimpsync][type] = "library"
 projects[mailchimpsync][destination] = "extensions"
 projects[mailchimpsync][download][type] = "git"
-projects[mailchimpsync][download][url] = "https://lab.civicrm.org/extensions/mailchimpsync"
-projects[mailchimpsync][download][revision] = "0b018bfb61b8209e428da4b8c5adeef9b6a7d920"
+projects[mailchimpsync][download][url] = "https://lab.civicrm.org/jamie/mailchimpsync"
+projects[mailchimpsync][download][revision] = "aa8abcede74e6c8a1e80c5c0648495e1ed6fc9ce"
 
 projects[notificationlog][type] = "library"
 projects[notificationlog][destination] = "extensions"
