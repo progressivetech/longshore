@@ -306,8 +306,8 @@ projects[uscounties][download][revision] = "c02eedf0731cac7df3e334e03255d7a85b5f
 projects[stripe][type] = "library"
 projects[stripe][destination] = "extensions"
 projects[stripe][download][type] = "git"
-projects[stripe][download][url] = "https://lab.civicrm.org/extensions/stripe.git"
-projects[stripe][download][revision] = "ec8662712c6125cf7da0ddab8d8df7dc4ca2d7e0"
+projects[stripe][download][url] = "https://lab.civicrm.org/jamie/stripe.git"
+projects[stripe][download][revision] = "c5864a28d7bbcd937bc6186bbaa70273653e127b"
 
 projects[firewall][type] = "library"
 projects[firewall][destination] = "extensions"
