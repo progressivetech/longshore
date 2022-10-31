@@ -294,7 +294,7 @@ projects[twilio][download][revision] = "494728cf13bb65c228429665c158d899cd7e6dc1
 projects[cividiscount][type] = "library"
 projects[cividiscount][destination] = "extensions"
 projects[cividiscount][download][type] = "git"
-projects[cividiscount][download][url] = "https://lab.civicrm.org/extensions/cividiscount"
+projects[cividiscount][download][url] = "https://lab.civicrm.org/extensions/cividiscount.git"
 projects[cividiscount][download][revision] = "85b3bb0d346b928a92ae22a00a2f16588f39da33"
 
 projects[uscounties][type] = "library"
@@ -776,7 +776,7 @@ projects[mosaicomsgtpl][download][revision] = "efea65ae4cc18d6ce7513f98c4b521a7f
 projects[chasse][type] = "library"
 projects[chasse][destination] = "extensions"
 projects[chasse][download][type] = "git"
-projects[chasse][download][url] = "https://lab.civicrm.org/extensions/chasse"
+projects[chasse][download][url] = "https://lab.civicrm.org/extensions/chasse.git/"
 projects[chasse][download][revision] = "671f1a3455053ff54859b8fc38469d11bfe0d2a1"
 
 projects[minifier][type] = "library"
@@ -809,16 +809,16 @@ projects[elections][download][type] = "git"
 projects[elections][download][url] = "https://github.com/agileware/au.com.agileware.elections"
 projects[elections][download][revision] = "94a617284ccafcbf8a4c6af06d3d8712e9263c8e"
 
-projects[formsdisabler][type] = "library"
-projects[formsdisabler][destination] = "extensions"
-projects[formsdisabler][download][type] = "git"
-projects[formsdisabler][download][url] = "git://git.progressivetech.org/extensions/formsdisabler"
-projects[formsdisabler][download][revision] = "ef4bbe9f4afe6c6a787af10cfe72ff3ff831a220"
+projects[formdisabler][type] = "library"
+projects[formdisabler][destination] = "extensions"
+projects[formdisabler][download][type] = "git"
+projects[formdisabler][download][url] = "git://git.progressivetech.org/extensions/formdisabler"
+projects[formdisabler][download][revision] = "ef4bbe9f4afe6c6a787af10cfe72ff3ff831a220"
 
 projects[eventics][type] = "library"
 projects[eventics][destination] = "extensions"
 projects[eventics][download][type] = "git"
-projects[eventics][download][url] = "https://lab.civicrm.org/extensions/eventics"
+projects[eventics][download][url] = "https://lab.civicrm.org/extensions/eventics.git"
 projects[eventics][download][revision] = "4620bb9736a7945226090daa8ead9a30ec007b34"
 
 projects[configurabledefaults][type] = "library"
@@ -830,7 +830,7 @@ projects[configurabledefaults][download][revision] = "01f17f01717d373d53c26afd14
 projects[authnet][type] = "library"
 projects[authnet][destination] = "extensions"
 projects[authnet][download][type] = "git"
-projects[authnet][download][url] = "https://lab.civicrm.org/extensions/authnet"
+projects[authnet][download][url] = "https://lab.civicrm.org/extensions/authnet.git"
 projects[authnet][download][revision] = "4958e2d8b23222130a9ecb9dabd9d9008cef4981"
 
 projects[civicrm-recalculate-recipients][type] = "library"
@@ -842,7 +842,7 @@ projects[civicrm-recalculate-recipients][download][revision] = "600823563a0edbd2
 projects[archivemailing][type] = "library"
 projects[archivemailing][destination] = "extensions"
 projects[archivemailing][download][type] = "git"
-projects[archivemailing][download][url] = "https://lab.civicrm.org/extensions/archivemailing"
+projects[archivemailing][download][url] = "https://lab.civicrm.org/extensions/archivemailing.git"
 projects[archivemailing][download][revision] = "bf619a2869839196a7624d6e61a3a62d6568445c"
 
 ;########
