@@ -92,7 +92,7 @@ for site in $sites; do
   declare -i end_ts=$(date +%s)
 
   if [ "$err" -ne "0" ]; then
-    msg=$(printf "Site: %s. Error running cron job.\n" "$site")
+    msg=$(printf "Site: %s. Error running cron job action %s, error code: %s.\n" "$site" "$action" "$err")
 
     # Log it.
     logger -t powerbase "$msg"
