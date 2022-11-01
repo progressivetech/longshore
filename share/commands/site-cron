@@ -80,19 +80,15 @@ for site in $sites; do
   declare -i start_ts=$(date +%s)
 
   if [ "$action" = "drupal" ]; then
-    long_exec_drush_cmd "$site" "core-cron"
+    long_exec_drush_cmd "$site" "core-cron" || err="$?"
   elif [ "$action" = "civimail" ]; then
-    long_exec_in_container "$site" "/usr/local/bin/cv api job.process_mailing --user=admin --cwd=/var/www/powerbase" >/dev/null
-    if [ "$?" -eq "0" ]; then
-      long_exec_in_container "$site" "/usr/local/bin/cv api job.process_sms --user=admin --cwd=/var/www/powerbase" >/dev/null
-    fi
+    long_exec_in_container "$site" "/usr/local/bin/cv api job.process_mailing --user=admin --cwd=/var/www/powerbase" >/dev/null || err="$?"
+    long_exec_in_container "$site" "/usr/local/bin/cv api job.process_sms --user=admin --cwd=/var/www/powerbase" >/dev/null || err="$?"
+    long_exec_in_container "$site" "/usr/local/bin/cv api job.send_reminder --user=admin --cwd=/var/www/powerbase" >/dev/null || err="$?"
   elif [ "$action" = "civicrm" ]; then
-    long_exec_in_container "$site" "/usr/local/bin/cv api job.execute --user=admin --cwd=/var/www/powerbase" >/dev/null
+    long_exec_in_container "$site" "/usr/local/bin/cv api job.execute --user=admin --cwd=/var/www/powerbase" >/dev/null || err="$?"
   fi
 
-  if [ "$?" -ne "0" ]; then
-    err="$?"
-  fi
   declare -i end_ts=$(date +%s)
 
   if [ "$err" -ne "0" ]; then
