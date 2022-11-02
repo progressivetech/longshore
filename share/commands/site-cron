@@ -76,22 +76,23 @@ for site in $sites; do
   fi
 
   # Keep track of whether there is an error running this cron job or not.
-  err=0
+  err=
+  out=
   declare -i start_ts=$(date +%s)
 
   if [ "$action" = "drupal" ]; then
     long_exec_drush_cmd "$site" "core-cron" || err="$?"
   elif [ "$action" = "civimail" ]; then
-    long_exec_in_container "$site" "/usr/local/bin/cv api job.process_mailing --user=admin --cwd=/var/www/powerbase" >/dev/null || err="$?"
-    long_exec_in_container "$site" "/usr/local/bin/cv api job.process_sms --user=admin --cwd=/var/www/powerbase" >/dev/null || err="$?"
-    long_exec_in_container "$site" "/usr/local/bin/cv api job.send_reminder --user=admin --cwd=/var/www/powerbase" >/dev/null || err="$?"
+    out=$(long_exec_in_container "$site" "/usr/local/bin/cv api job.process_mailing --user=admin --cwd=/var/www/powerbase") || err="$out"
+    out=$(long_exec_in_container "$site" "/usr/local/bin/cv api job.process_sms --user=admin --cwd=/var/www/powerbase") || err="$out"
+    out=$(long_exec_in_container "$site" "/usr/local/bin/cv api job.send_reminder --user=admin --cwd=/var/www/powerbase") || err="$out"
   elif [ "$action" = "civicrm" ]; then
-    long_exec_in_container "$site" "/usr/local/bin/cv api job.execute --user=admin --cwd=/var/www/powerbase" >/dev/null || err="$?"
+    out=$(long_exec_in_container "$site" "/usr/local/bin/cv api job.execute --user=admin --cwd=/var/www/powerbase") || err="$out"
   fi
 
   declare -i end_ts=$(date +%s)
 
-  if [ "$err" -ne "0" ]; then
+  if [ -n "$err" ]; then
     msg=$(printf "Site: %s. Error running cron job action %s, error code: %s.\n" "$site" "$action" "$err")
 
     # Log it.
