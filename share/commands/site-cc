@@ -9,7 +9,7 @@ Arguments
   <cache> - Optionally only clear the specificed cache, values 
     can be drush (for all drush controlled caches), menu (
     for the CiviCRM menu), files (for all css/js/template 
-    files, and flood, for the drupal flood table (user login
+    files, extensions, and flood, for the drupal flood table (user login
     blocks for incorrect password)."
 
 long_check_args "$2" "$#" 1
@@ -25,6 +25,7 @@ if [ "$cache" != "drush" -a \
   "$cache" != "menu" -a \
   "$cache" != "files" -a \
   "$cache" != "flood" -a \
+  "$cache" != "extensions" -a \
   "$cache" != "all" ]; then
   long_die "I don't know how to clear that cache."
 fi
