@@ -27,6 +27,9 @@ if [ ! -d "web" ]; then
   exit 1
 fi
 
+# Bail on errors so we know we have a problem.
+set -e
+
 cwd=$(pwd)
 path="${cwd}/web/extensions"
 mkdir -p "$path"
@@ -56,7 +59,7 @@ for line in $(grep -E -v '(^[[:space:]]|^#|^$)' "$active_extensions_file"); do
   dir=$(echo "$line" | cut -d, -f1)
   url=$(echo "$line" | cut -d, -f2)
   version=$(echo "$line" | cut -d, -f3)
-  #printf "Examining %s.\n" "$dir"
+  #printf "Examining %s.\n" "$url"
 
   # Calculate basename from url
   basename=$(basename "$url")
@@ -69,17 +72,22 @@ for line in $(grep -E -v '(^[[:space:]]|^#|^$)' "$active_extensions_file"); do
       git clone --quiet "$url" "$dir"
     fi
     cd "$dir" >/dev/null
+    #printf "git remote update\n"
     git remote update >/dev/null
     #printf "Checking out %s. " "$version"
+    #printf "git log\n"
     last_commit=$(git log -n1 --format=format:"%H")
     if [ "$last_commit" != "$version" ]; then
-      printf "Checking out version %s of %s." "$version" "$dir"
+      #printf "Checking out version %s of %s.\n" "$version" "$dir"
+      printf "+"
       git checkout --quiet "$version"
+    else
+      printf "."
     fi
     
     if [ -n "$extensions_tmp_lock_file" ]; then
       commit=$(git log --format="%H" -n 1)
-      printf "Updating lockfile for %s - setting to %s." "$dir" "$commit"
+      #printf "Updating lockfile for %s - setting to %s." "$dir" "$commit"
       printf '%s,%s,%s\n' "$dir" "$url" "$commit" >> "$extensions_tmp_lock_file"
     fi
   else
@@ -111,7 +119,8 @@ for line in $(grep -E -v '(^[[:space:]]|^#|^$)' "$active_extensions_file"); do
     fi
 
     if [ "$zip_download" = "y" ]; then
-      printf "Downloading, unzipping and rsyncing %s." "$dir"
+      #printf "Downloading, unzipping and rsyncing %s." "$dir"
+      printf '>'
       wget --quiet -O "$zip_temp" "$url"
       unzipped_temp=$(mktemp -d)
       unzip -qq -d "$unzipped_temp" "$zip_temp"
@@ -123,7 +132,6 @@ for line in $(grep -E -v '(^[[:space:]]|^#|^$)' "$active_extensions_file"); do
     fi 
     rm "$zip_temp"
   fi
-  printf "."
 done
 
 if [ -n "$extensions_tmp_lock_file" ]; then

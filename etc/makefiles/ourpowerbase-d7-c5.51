@@ -425,7 +425,7 @@ projects[exportpermission][download][revision] = "c13a893f16fec9ebaf9be9bca68e9a
 projects[mailchimpsync][type] = "library"
 projects[mailchimpsync][destination] = "extensions"
 projects[mailchimpsync][download][type] = "git"
-projects[mailchimpsync][download][url] = "https://lab.civicrm.org/jamie/mailchimpsync"
+projects[mailchimpsync][download][url] = "https://lab.civicrm.org/jamie/mailchimpsync.git"
 projects[mailchimpsync][download][revision] = "aa8abcede74e6c8a1e80c5c0648495e1ed6fc9ce"
 
 projects[notificationlog][type] = "library"
@@ -776,7 +776,7 @@ projects[mosaicomsgtpl][download][revision] = "efea65ae4cc18d6ce7513f98c4b521a7f
 projects[chasse][type] = "library"
 projects[chasse][destination] = "extensions"
 projects[chasse][download][type] = "git"
-projects[chasse][download][url] = "https://lab.civicrm.org/extensions/chasse.git/"
+projects[chasse][download][url] = "https://lab.civicrm.org/extensions/chasse.git"
 projects[chasse][download][revision] = "671f1a3455053ff54859b8fc38469d11bfe0d2a1"
 
 projects[minifier][type] = "library"

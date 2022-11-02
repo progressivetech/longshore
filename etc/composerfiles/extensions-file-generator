@@ -18,11 +18,21 @@ $regexp = '#^projects\[([a-zA-Z_]+)\]\[(destination|download)\](\[(url|revision)
 $lines = file($path);
 
 // Enter the names of extensions that we do not want to pull in the master tip for.
+// For these, we will take the git commit set in the makefile.
 $custom_versions = [
   'simpledonate',
-  'simplepetitionemail',
 ];
 
+// Enter the names of extensions that use the main branch instead of the master branch.
+$alt_branch = [
+  'pricesetbuttons' => 'main',
+  'emailarchiver' => 'main',
+  'configurabledefaults' => 'main',
+  'uscounties' => 'main',
+  'simplepetitionemail' => 'main',
+  'electoral' => 'main',
+  'reportplus' => '2.x'
+];
 foreach ($lines as $line) {
   if (preg_match($regexp, $line, $matches)) {
     $name = $matches[1];
@@ -55,7 +65,12 @@ foreach ($lines as $line) {
       }
       elseif ($var_type == 'revision') {
         if (!in_array($name, $custom_versions)) {
-          $value = 'master';
+          if (array_key_exists($name, $alt_branch)) {
+            $value = $alt_branch[$name];
+          }
+          else {
+            $value = 'master';
+          }
         }
       }
       $extensions[$name][$var_type] = $value;
