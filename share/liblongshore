@@ -3094,6 +3094,6 @@ long_clear_cache() {
     rm "$temp"
   fi
   if [ "cache" == "all" -o "$cache" == 'extensions' ]; then
-    long_exec_cv_cmd "$site" php:eval '$config = CRM_Core_Config::singleton(); $config->clearModuleList();'
+    long_exec_cv_cmd "$site" "php:eval" '$config = CRM_Core_Config::singleton(); $config->cleanupCaches(FALSE);'
   fi
 }
