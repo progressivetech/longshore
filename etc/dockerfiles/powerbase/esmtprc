@@ -1,8 +1,2 @@
-# Config file for ESMTP sendmail
-
-# The SMTP host and service (port)
-# (Note, previously was bulk.ourpowerbase.net)
-hostname=bulk.progressivetech.org:25
-
-# Whether to use Starttls
+hostname=newyork.bulk.progressivetech.org:25
 starttls=enabled
