@@ -93,7 +93,9 @@ for site in $sites; do
   declare -i end_ts=$(date +%s)
 
   if [ -n "$err" ]; then
-    msg=$(printf "Site: %s. Error running cron job action %s, error output: %s.\n" "$site" "$action" "$err")
+    # Shorten the error - it will be passed as a argument so it can't be too long
+    safe_err="${err:0:32}"
+    msg=$(printf "Site: %s. Error running cron job action %s, error output: %s.\n" "$site" "$action" "$safe_err")
 
     # Log it.
     logger -t powerbase "$msg"
