@@ -1,0 +1,27 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-protect <site>
+One off script to enable form protection and firewall.
+
+Arguments
+  <site> - The site database to login to or --all to run on all.
+'"
+long_check_args "$2" "$#" 1
+
+sites="$2"
+if [ "$sites" = "--all" ]; then
+  long_set_sites
+  sites="$LONG_SITES"
+fi
+
+for site in $sites; do
+  long_rerun_over_network site-protect "$site" && continue
+
+  if ! long_container_running "$site"; then
+    long_log "Not executing command for %s because it is not running." info "$site"
+  else
+    long_exec_cv_cmd "$site" api4 PowerbaseSetup.ConfigureFormProtection \
+      "googleRecaptchaV3SecretKey=$LONG_GOOGLE_RECAPTCHAV3_SECRET_KEY" \
+      "googleRecaptchaV3SiteKey=$LONG_GOOGLE_RECAPTCHAV3_SITE_KEY"
+  fi
+done
