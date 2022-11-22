@@ -26,6 +26,7 @@ if [ "$cache" != "drush" -a \
   "$cache" != "files" -a \
   "$cache" != "flood" -a \
   "$cache" != "extensions" -a \
+  "$cache" != "reconcile" -a \
   "$cache" != "all" ]; then
   long_die "I don't know how to clear that cache."
 fi

@@ -3081,6 +3081,10 @@ long_clear_cache() {
   if [ "$cache" == "all" -o "$cache" == "menu" ]; then
     long_exec_drush_cmd "$site" "php-eval '_civicrm_init(); CRM_Core_Invoke::rebuildMenuAndCaches();'"
   fi
+  if [ "$cache" == "reconcile" ]; then
+    # Note: the extensions get reconciled on rebuildManueAndCaches so we don't need all
+    long_exec_cv_cmd "$site" "php:eval" 'CRM_Core_ManagedEntities::singleton(TRUE)->reconcile();'
+  fi
   if [ "$cache" == "all" -o "$cache" == "files" ]; then
     long_exec_in_container "$site" "rm -rf \
       /var/www/powerbase/sites/default/files/css/* \
