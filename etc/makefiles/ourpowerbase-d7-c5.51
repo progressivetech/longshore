@@ -324,7 +324,7 @@ projects[mjwshared][download][revision] = "d8fd42ea17be738251d303c02a0d4e7287d03
 projects[formprotection][type] = "library"
 projects[formprotection][destination] = "extensions"
 projects[formprotection][download][type] = "git"
-projects[formprotection][download][url] = "https://lab.civicrm.org/jamie/formprotection.git"
+projects[formprotection][download][url] = "https://lab.civicrm.org/extensions/formprotection.git"
 projects[formprotection][download][revision] = "4d7d8c99ba69b361c818603f2e0d0e97f051416e"
 
 projects[civisualize][type] = "library"
