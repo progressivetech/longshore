@@ -824,7 +824,14 @@ long_exec_cv_cmd() {
   local file=$(mktemp "${LONG_SITE_TMP}/drupal.XXXXXXX");
   chmod 755 "$file"
   printf "#!/bin/bash\n" > "$file"
-  printf 'cd /var/www/powerbase/sites/default && cv --user=admin ' >> "$file"
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    # We don't seem to need --user=admin and it causes failures when civicrm is not fully
+    # initialized.
+    printf 'cd /var/www/powerbase/sites/default && cv  ' >> "$file"
+  else
+    printf 'cd /var/www/powerbase/sites/default && cv --user=admin ' >> "$file"
+  fi
+
   for cmd in "$@"; do
     printf "'$cmd' " >> "$file"
   done
@@ -863,7 +870,12 @@ long_exec_drush_cmd() {
     done
   fi
   printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
-  printf "drush $quiet --user=admin $cmd\n" >> "$file"
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    printf "drush $quiet $cmd\n" >> "$file"
+  else
+    printf "drush $quiet --user=admin $cmd\n" >> "$file"
+  fi
+
   long_exec_in_container "$site" "$file"
   return="$?"
   rm "$file"
@@ -887,9 +899,16 @@ long_exec_in_container() {
   # the path to where it will exist in the site container.
   local dir=$(dirname "$cmd")
   if [ "$dir" = "$LONG_SITE_TMP" ]; then
-    cmd="/var/www/powerbase/sites/default/private/temp/$(basename $cmd)"
+    if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+      cmd="/var/www/powerbase/web/sites/default/private/temp/$(basename $cmd)"
+      workdir=/var/www/powerbase/web
+    else
+      cmd="/var/www/powerbase/sites/default/private/temp/$(basename $cmd)"
+      workdir=/var/www/powerbase
+    fi
   fi
-  docker $LONG_DOCKER_LOG_ARG exec "$site" su -l -c "$cmd" www-data
+
+  docker $LONG_DOCKER_LOG_ARG exec --workdir "$workdir" "$site" su -l -c "$cmd" www-data
 }
 
 # Low lever mysql container creation. Call long_create_container instead
@@ -1208,12 +1227,20 @@ long_create_site_container() {
     link="$link --link smtp:smtp"
   fi
 
-  # Docker
   long_set_site_platform_path "$platform"
+  local platform_path="$LONG_SITE_PLATFORM_PATH"
+  local default_sites_path=/var/www/powerbase/sites/default
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    # Strip off the trailing /web from the platform path.
+    platform_path="${platform_path%/web}"
+    default_sites_path=/var/www/powerbase/web/sites/default
+  fi
+
+  # Docker
   docker $LONG_DOCKER_LOG_ARG create --log-driver "$LONG_DEFAULT_LOG_DRIVER" --name "$site" \
     $addhost \
-    -v "${LONG_SITE_PLATFORM_PATH}:/var/www/powerbase" \
-    -v "${dir}/drupal:/var/www/powerbase/sites/default" \
+    -v "${platform_path}:/var/www/powerbase" \
+    -v "${dir}/drupal:${default_sites_path}" \
     -v "${LONG_SHARE}/drush:/var/www/.drush" \
     -e "LONG_LIVE=$LONG_LIVE" \
     -e "PB_URL=${site}.${LONG_DEFAULT_DOMAIN}" \
@@ -1403,31 +1430,40 @@ long_install_drupal() {
     long_die "This site (%s) has no database configured. You should probably re-create it." 1 "$site"
   fi
 
-  # Creating a php file to be executed in the container. This approach
-  # avoids sending passwords via the command line.
-  local install_file=$(mktemp "${LONG_SITE_TMP}/install.XXXXXXX.php");
-cat << EOF > "$install_file"
-  <?php
-  drush_set_option('account-pass', '$dbpassword');
-  drush_set_option('account-name', 'admin');
-  drush_set_option('site-name', '$site');
-  drush_set_option('site-mail', 'info@progressivetech.org');
-  drush_set_option('account-mail', 'info@progressivetech.org');
-  drush_set_option('db-url', 'mysql://${dbuser}:${dbpassword}@${LONG_SITE_DB_HOST}/${dbname}');
-  drush_core_pre_site_install();
-  drush_core_site_install(NULL);
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    long_exec_drush_cmd "$site" "-q -y site-install standard \
+      '--db-url=mysql://${dbuser}:${dbpassword}@${LONG_SITE_DB_HOST}/${dbname}' \
+      --account-name=admin '--account-pass=$dbpassword' \
+      '--site-name=$site' \
+      --site-mail=info@progressivetech.org \
+      --account-mail=info@progressivetech.org" || long_die "Failed to install Drupal" 
+  else
+    # Creating a php file to be executed in the container. This approach
+    # avoids sending passwords via the command line.
+    local install_file=$(mktemp "${LONG_SITE_TMP}/install.XXXXXXX.php");
+  cat << EOF > "$install_file"
+    <?php
+    drush_set_option('account-pass', '$dbpassword');
+    drush_set_option('account-name', 'admin');
+    drush_set_option('site-name', '$site');
+    drush_set_option('site-mail', 'info@progressivetech.org');
+    drush_set_option('account-mail', 'info@progressivetech.org');
+    drush_set_option('db-url', 'mysql://${dbuser}:${dbpassword}@${LONG_SITE_DB_HOST}/${dbname}');
+    drush_core_pre_site_install();
+    drush_core_site_install(NULL);
 EOF
 
-  # Ensure that the www-data user can read it.
-  chmod 644 "$install_file"
+    # Ensure that the www-data user can read it.
+    chmod 644 "$install_file"
 
-  # Translate file path to work in container.
-  c_install_file="/var/www/powerbase/sites/default/private/temp/$(basename $install_file)"
+    # Translate file path to work in container.
+    c_install_file="/var/www/powerbase/sites/default/private/temp/$(basename $install_file)"
 
-  long_exec_drush_cmd "$site" "-q -y php-script '$c_install_file'"
+    long_exec_drush_cmd "$site" "-q -y php-script '$c_install_file'" || long_die "Failed to install Drupal 7" 
 
-  # Cleanup
-  rm "$install_file"
+    # Cleanup
+    rm "$install_file"
+  fi
 
   # Reset permissions. 
   # Regain ownership of the settings.php file.
@@ -1460,16 +1496,13 @@ long_install_civicrm() {
   fi
   local path="/var/www/powerbase${web}"
 
-  # Create the file to be executed. We can't simply run drush -y civicrm-install
-  # because civicrm module is not yet enabled which means civicrm.drush.inc commands
-  # are not available to us, so we use a helper command in lsd.
   long_set_site_base_url "$site"
   long_exec_cv_cmd "$site" \
     core:install \
    "--settings-path=${path}/sites/default/civicrm.settings.php" \
     "--setup-path=${path}/sites/all/modules/civicrm/setup" \
     "--src-path=${path}/sites/all/modules/civicrm" \
-    "--cms-base-url=${LONG_SITE_BASE_URL}" \
+    "--cms-base-url=${LONG_SITE_BASE_URL}"  || long_die "Failed to install CiviCRM"
   
   # Reset permissions. 
   # Regain ownership of the settings.php file.
@@ -1566,7 +1599,9 @@ long_setup_site() {
   long_install_site "$site"
 
   # Ensure all basic drupal settings are set. 
-  long_exec_drush_cmd "$site" "lsd-setup"
+  if [ "$LONG_SITE_DRUPAL_VERSION" -lt 8 ]; then
+    long_exec_drush_cmd "$site" "lsd-setup"
+  fi
 
   # We change a few CiviCRM defaults.
   local civi_path_settings=' \
