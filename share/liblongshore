@@ -824,6 +824,8 @@ long_exec_cv_cmd() {
   local file=$(mktemp "${LONG_SITE_TMP}/drupal.XXXXXXX");
   chmod 755 "$file"
   printf "#!/bin/bash\n" > "$file"
+  long_set_site_platform "$site"
+  long_set_site_drupal_version
   if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
     # We don't seem to need --user=admin and it causes failures when civicrm is not fully
     # initialized.
