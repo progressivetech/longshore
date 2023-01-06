@@ -86,6 +86,7 @@ for site in $sites; do
     out=$(long_exec_in_container "$site" "/usr/local/bin/cv api job.process_mailing --user=admin --cwd=/var/www/powerbase") || err="$out"
     out=$(long_exec_in_container "$site" "/usr/local/bin/cv api job.process_sms --user=admin --cwd=/var/www/powerbase") || err="$out"
     out=$(long_exec_in_container "$site" "/usr/local/bin/cv api job.send_reminder --user=admin --cwd=/var/www/powerbase") || err="$out"
+    out=$(long_exec_in_container "$site" "/usr/local/bin/cv api job.autoenablerecaptcha --user=admin --cwd=/var/www/powerbase") || err="$out"
   elif [ "$action" = "civicrm" ]; then
     out=$(long_exec_in_container "$site" "/usr/local/bin/cv api job.execute --user=admin --cwd=/var/www/powerbase") || err="$out"
   fi
