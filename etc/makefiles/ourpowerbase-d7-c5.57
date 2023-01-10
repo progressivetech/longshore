@@ -306,7 +306,7 @@ projects[uscounties][download][revision] = "05993aa248f851a403286b2e7bf3b27c6c95
 projects[stripe][type] = "library"
 projects[stripe][destination] = "extensions"
 projects[stripe][download][type] = "git"
-projects[stripe][download][url] = "https://lab.civicrm.org/jamie/stripe.git"
+projects[stripe][download][url] = "https://lab.civicrm.org/extensions/stripe.git"
 projects[stripe][download][revision] = "fbe2ea0a950f74ac1e65066b83a3cd13b8f51493"
 
 projects[firewall][type] = "library"
@@ -602,7 +602,7 @@ projects[setup][type] = "library"
 projects[setup][destination] = "extensions"
 projects[setup][download][type] = "git"
 projects[setup][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.setup"
-projects[setup][download][revision] = "cb77cbe265fa7e85aa3cd01491a47bbd5a437ce9"
+projects[setup][download][revision] = "47b537e4ed90d9233c7ce312feb7304b8dfcebdf"
 
 projects[contactlayout][type] = "library"
 projects[contactlayout][destination] = "extensions"
@@ -649,7 +649,7 @@ projects[recentmenu][download][revision] = "d2f1557de4ef95fb9a4fe55b5ab776cc3133
 projects[extrafee][type] = "library"
 projects[extrafee][destination] = "extensions"
 projects[extrafee][download][type] = "git"
-projects[extrafee][download][url] = "https://github.com/fuzionnz/nz.co.fuzion.extrafee"
+projects[extrafee][download][url] = "https://github.com/progressivetech/nz.co.fuzion.extrafee"
 projects[extrafee][download][revision] = "7713f37a7888bbd75883583584134f89ee631d0e"
 
 projects[qdep][type] = "library"
