@@ -1442,19 +1442,26 @@ long_install_drupal() {
       --site-mail=info@progressivetech.org \
       --account-mail=info@progressivetech.org" || long_die "Failed to install Drupal" 
   else
+    # Copy the default.settings.php file to settings.php to avoid errors.
+    cp "${dir}/drupal/default.settings.php" "${dir}/drupal/settings.php"
+    # Allow the installer to write to it. This is changed below to secure it.
+    chmod 0666 "${dir}/drupal/settings.php"
+
     # Creating a php file to be executed in the container. This approach
     # avoids sending passwords via the command line.
     local install_file=$(mktemp "${LONG_SITE_TMP}/install.XXXXXXX.php");
   cat << EOF > "$install_file"
     <?php
-    drush_set_option('account-pass', '$dbpassword');
-    drush_set_option('account-name', 'admin');
-    drush_set_option('site-name', '$site');
-    drush_set_option('site-mail', 'info@progressivetech.org');
-    drush_set_option('account-mail', 'info@progressivetech.org');
-    drush_set_option('db-url', 'mysql://${dbuser}:${dbpassword}@${LONG_SITE_DB_HOST}/${dbname}');
-    drush_core_pre_site_install();
+    drush_set_option('account-pass', '$dbpassword') || exit(1);
+    drush_set_option('account-name', 'admin') || exit(1);
+    drush_set_option('site-name', '$site') || exit(1);
+    drush_set_option('site-mail', 'info@progressivetech.org') || exit(1);
+    drush_set_option('account-mail', 'info@progressivetech.org') || exit(1);
+    drush_set_option('db-url', 'mysql://${dbuser}:${dbpassword}@${LONG_SITE_DB_HOST}/${dbname}') || exit(1);
+    drush_core_pre_site_install() || exit(1);
+    // Does not return TRUE, so can't test.
     drush_core_site_install(NULL);
+    return TRUE;
 EOF
 
     # Ensure that the www-data user can read it.
@@ -1463,7 +1470,7 @@ EOF
     # Translate file path to work in container.
     c_install_file="/var/www/powerbase/sites/default/private/temp/$(basename $install_file)"
 
-    long_exec_drush_cmd "$site" "-q -y php-script '$c_install_file'" || long_die "Failed to install Drupal 7" 
+    long_exec_drush_cmd "$site" "-y php-script '$c_install_file'" || long_die "Failed to install Drupal 7" 
 
     # Cleanup
     rm "$install_file"
