@@ -1442,10 +1442,8 @@ long_install_drupal() {
       --site-mail=info@progressivetech.org \
       --account-mail=info@progressivetech.org" || long_die "Failed to install Drupal" 
   else
-    # Copy the default.settings.php file to settings.php to avoid errors.
-    cp "${dir}/drupal/default.settings.php" "${dir}/drupal/settings.php"
-    # Allow the installer to write to it. This is changed below to secure it.
-    chmod 0666 "${dir}/drupal/settings.php"
+    # Copy the default.settings.php file to settings.php to avoid drush errors.
+    long_exec_in_container "$site" "cp /var/www/powerbase/sites/default/default.settings.php /var/www/powerbase/sites/default/settings.php"
 
     # Creating a php file to be executed in the container. This approach
     # avoids sending passwords via the command line.
@@ -1510,7 +1508,7 @@ long_install_civicrm() {
   long_set_site_base_url "$site"
   long_exec_cv_cmd "$site" \
     core:install \
-   "--settings-path=${path}/sites/default/civicrm.settings.php" \
+    "--settings-path=${path}/sites/default/civicrm.settings.php" \
     "--setup-path=${path}/sites/all/modules/civicrm/setup" \
     "--src-path=${path}/sites/all/modules/civicrm" \
     "--cms-base-url=${LONG_SITE_BASE_URL}"  || long_die "Failed to install CiviCRM"
