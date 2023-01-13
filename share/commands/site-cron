@@ -81,7 +81,7 @@ for site in $sites; do
   declare -i start_ts=$(date +%s)
 
   if [ "$action" = "drupal" ]; then
-    long_exec_drush_cmd "$site" "core-cron" || err="$?"
+    out=$(long_exec_drush_cmd "$site" "core-cron") || err="$out"
   elif [ "$action" = "civimail" ]; then
     out=$(long_exec_in_container "$site" "/usr/local/bin/cv api job.process_mailing --user=admin --cwd=/var/www/powerbase") || err="$out"
     out=$(long_exec_in_container "$site" "/usr/local/bin/cv api job.process_sms --user=admin --cwd=/var/www/powerbase") || err="$out"
