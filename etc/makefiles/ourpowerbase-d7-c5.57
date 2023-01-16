@@ -330,7 +330,7 @@ projects[formprotection][download][revision] = "e1ecf9624b7472028a36e5de8251e614
 projects[civisualize][type] = "library"
 projects[civisualize][destination] = "extensions"
 projects[civisualize][download][type] = "git"
-projects[civisualize][download][url] = "https://lab.civicrm.org/extensions/civisualize"
+projects[civisualize][download][url] = "https://lab.civicrm.org/extensions/civisualize.git"
 projects[civisualize][download][revision] = "2ebb279ab854cc6779aaf1661dd25a6785bc16db"
 
 projects[civivolunteer][type] = "library"
@@ -765,7 +765,7 @@ projects[electoral][type] = "library"
 projects[electoral][destination] = "extensions"
 projects[electoral][download][type] = "git"
 projects[electoral][download][url] = "https://github.com/progressivetech/com.jlacey.electoral"
-projects[electoral][download][revision] = "3bca8fe58a10b6c6125b26140be5bd5c24236ae8"
+projects[electoral][download][revision] = "d971d22519a4c3eee53f12d1ef29d033f8a14ef6"
 
 projects[templateredact][type] = "library"
 projects[templateredact][destination] = "extensions"
