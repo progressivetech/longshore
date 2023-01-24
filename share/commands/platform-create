@@ -319,14 +319,9 @@ else
   # Ensure we have the most recent versions of our composer files.
   cp "$makefile_path" composer.json
   composer_dir=$(dirname "$makefile_path")
-  composer_lock_path="${compser_dir}/$(basename $makefile_path .json).lock"
+  composer_lock_path="${composer_dir}/$(basename $makefile_path .json).lock"
   if [ -f "$composer_lock_path" ]; then
     cp "$composer_lock_path" composer.lock
-  fi
-  cp "${composer_dir}/extensions-installer" .
-  cp "${composer_dir}/extensions.txt" .
-  if [ -f "${composer_dir}/extensions.lock" ]; then
-    cp "${composer_dir}/extensions.lock" .
   fi
 
   # NOTE: we can't use `composer show` and grep for versions because we are using in-line aliases.

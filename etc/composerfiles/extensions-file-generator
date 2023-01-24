@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
-# This script takes our drush make file and generates an extensions.txt file
-# based on those settings.
+# This script takes our drush make file and generates an snippet to add to our
+# composer file.
 
 $path = NULL;
 
@@ -17,22 +17,6 @@ $extensions = [];
 $regexp = '#^projects\[([a-zA-Z_]+)\]\[(destination|download)\](\[(url|revision)\])? = "(.*)"#';
 $lines = file($path);
 
-// Enter the names of extensions that we do not want to pull in the master tip for.
-// For these, we will take the git commit set in the makefile.
-$custom_versions = [
-  'simpledonate',
-];
-
-// Enter the names of extensions that use the main branch instead of the master branch.
-$alt_branch = [
-  'pricesetbuttons' => 'main',
-  'emailarchiver' => 'main',
-  'configurabledefaults' => 'main',
-  'uscounties' => 'main',
-  'simplepetitionemail' => 'main',
-  'electoral' => 'main',
-  'reportplus' => '2.x'
-];
 foreach ($lines as $line) {
   if (preg_match($regexp, $line, $matches)) {
     $name = $matches[1];
@@ -56,35 +40,35 @@ foreach ($lines as $line) {
         // The mosaico URL is a zip file. Needs special attention.
         if (preg_match('/uk\.co\.vedaconsulting\.mosaico/', $value)) {
           $basename = 'uk.co.vedaconsulting.mosaico';
+          $type = 'archive';
+          $extensions[$name]['revision'] = NULL;
         }
         else {
+          $type = 'git';
           $url_parts = parse_url($value);
           $basename = basename($url_parts['path'], '.git');
         }
         $extensions[$name]['dir'] = $basename;
-      }
-      elseif ($var_type == 'revision') {
-        if (!in_array($name, $custom_versions)) {
-          if (array_key_exists($name, $alt_branch)) {
-            $value = $alt_branch[$name];
-          }
-          else {
-            $value = 'master';
-          }
-        }
+        $extensions[$name]['type'] = $type;
       }
       $extensions[$name][$var_type] = $value;
     }
   }
 }
 
-foreach($extensions as $extension) {
+echo "        \"downloads\": {\n";
+foreach($extensions as $name => $extension) {
+  $type = $extension['type'];
   $dir = $extension['dir'];
   $url = $extension['url'];
-  $revision = NULL;
-  if (isset($extension['revision'])) {
-    $revision = $extension['revision'];
+  $revision = $extension['revision'];
+  if ($revision) {
+    $url = "${url}@${revision}";
   }
-  echo "${dir},${url},${revision}\n";
+  echo "          \"$name\": {\n";
+  echo "            \"url\": \"$url\",\n";
+  echo "            \"path\": \"web/extensioins/$name\",\n";
+  echo "            \"type\": \"$type\"\n";
+  echo "          },\n";
 }
-//print_r($extensions);
+echo "        }\n";
