@@ -110,9 +110,6 @@ projects[devel][version] = "1.7"
 projects[autologout][type] = "module"
 projects[autologout][version] = "4.6"
 
-projects[civicrm_cicero][type] = "module"
-projects[civicrm_cicero][version] = "1.17"
-
 projects[css_injector][type] = "module"
 projects[css_injector][version] = "1.8" 
 
