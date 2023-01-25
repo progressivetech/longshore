@@ -189,12 +189,6 @@ projects[simplepetitionemail][download][type] = "git"
 projects[simplepetitionemail][download][url] = "https://github.com/progressivetech/com.aghstrategies.petitionemail"
 projects[simplepetitionemail][download][revision] = "3abc3bba2fd4c0bed9abf6d005ac8655a17ac05d"
 
-projects[statelegemail][type] = "library"
-projects[statelegemail][destination] = "extensions"
-projects[statelegemail][download][type] = "git"
-projects[statelegemail][download][url] = "https://github.com/progressivetech/com.aghstrategies.statelegemail"
-projects[statelegemail][download][revision] = "5ec75ac0fcd11c9b996806790b46e47eb82b1b5f"
-
 projects[advancedfundraising][type] = "library"
 projects[advancedfundraising][destination] = "extensions"
 projects[advancedfundraising][download][type] = "git"
