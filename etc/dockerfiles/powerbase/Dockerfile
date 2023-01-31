@@ -22,6 +22,7 @@ RUN apt-get update && \
     php-mbstring \
     php-imagick \
     php-zip \
+    php-memcached \
     fonts-linuxlibertine \
     wkhtmltopdf \
     xauth \
