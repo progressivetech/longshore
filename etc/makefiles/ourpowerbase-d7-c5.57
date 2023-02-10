@@ -842,6 +842,12 @@ projects[archivemailing][download][type] = "git"
 projects[archivemailing][download][url] = "https://lab.civicrm.org/extensions/archivemailing.git"
 projects[archivemailing][download][revision] = "bf619a2869839196a7624d6e61a3a62d6568445c"
 
+projects[contacteditor][type] = "library"
+projects[contacteditor][destination] = "extensions"
+projects[contacteditor][download][type] = "git"
+projects[contacteditor][download][url] = "https://github.com/eileenmcnaughton/org.wikimedia.contacteditor"
+projects[contacteditor][download][revision] = "5d632a5b0be4549c7a104f9f44574d7728d0e540"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
