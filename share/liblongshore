@@ -1225,12 +1225,6 @@ long_create_site_container() {
     addhost="--add-host dockerhost:$ip --add-host mysqlhost:$LONG_MYSQL_HOST_IP"
   fi
 
-  # If this is a dev site, we also need to link to the smtp container
-  # so we can send/receive email without actually sending any email.
-  if [ "$LONG_LIVE" != "y" ]; then
-    link="$link --link smtp:smtp"
-  fi
-
   long_set_site_platform_path "$platform"
   local platform_path="$LONG_SITE_PLATFORM_PATH"
   local default_sites_path=/var/www/powerbase/sites/default
