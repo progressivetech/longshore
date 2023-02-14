@@ -848,6 +848,12 @@ projects[contacteditor][download][type] = "git"
 projects[contacteditor][download][url] = "https://github.com/eileenmcnaughton/org.wikimedia.contacteditor"
 projects[contacteditor][download][revision] = "5d632a5b0be4549c7a104f9f44574d7728d0e540"
 
+projects[assignee][type] = "library"
+projects[assignee][destination] = "extensions"
+projects[assignee][download][type] = "git"
+projects[assignee][download][url] = "https://lab.civicrm.org/extensions/assignee"
+projects[assignee][download][revision] = "17b0eceb3f814090be9180f2a36d64ddf105c0ac"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
