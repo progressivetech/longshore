@@ -20,7 +20,7 @@ projects[drupal][version] = "7.94"
 projects[civicrm][type] = "module" 
 projects[civicrm][directory_name] = "civicrm" 
 projects[civicrm][download][type] = "git" 
-projects[civicrm][download][revision] = "72ce798967cdecff3053d8d39053b8b453a9263c"
+projects[civicrm][download][revision] = "1164622fc19849148280d7e73b43a14d252f6e58"
 projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
 
 ; Packages
@@ -315,8 +315,8 @@ projects[mjwshared][download][revision] = "a8241761bb474f98e2507b082250efc6ee139
 projects[formprotection][type] = "library"
 projects[formprotection][destination] = "extensions"
 projects[formprotection][download][type] = "git"
-projects[formprotection][download][url] = "https://lab.civicrm.org/extensions/formprotection.git"
-projects[formprotection][download][revision] = "e1ecf9624b7472028a36e5de8251e6149741a218"
+projects[formprotection][download][url] = "git://git.progressivetech.org/extensions/formprotection"
+projects[formprotection][download][revision] = "36d5c49530063d5094a7e3b3e468c6b1870e6c4d"
 
 projects[civisualize][type] = "library"
 projects[civisualize][destination] = "extensions"
