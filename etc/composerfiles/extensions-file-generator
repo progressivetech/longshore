@@ -65,10 +65,12 @@ foreach($extensions as $name => $extension) {
   if ($revision) {
     $url = "${url}@${revision}";
   }
-  echo "          \"$name\": {\n";
-  echo "            \"url\": \"$url\",\n";
-  echo "            \"path\": \"web/extensioins/$name\",\n";
-  echo "            \"type\": \"$type\"\n";
-  echo "          },\n";
+  echo "            \"$name\": {\n";
+  echo "                \"url\": \"$url\",\n";
+  echo "                \"path\": \"web/extensioins/$name\",\n";
+  echo "                \"type\": \"$type\"\n";
+  echo "            },\n";
 }
 echo "        }\n";
+echo "    }\n";
+echo "}\n";

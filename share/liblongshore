@@ -829,7 +829,7 @@ long_exec_cv_cmd() {
   if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
     # We don't seem to need --user=admin and it causes failures when civicrm is not fully
     # initialized.
-    printf 'cd /var/www/powerbase/sites/default && cv  ' >> "$file"
+    printf 'cd /var/www/powerbase/web/sites/default && cv  ' >> "$file"
   else
     printf 'cd /var/www/powerbase/sites/default && cv --user=admin ' >> "$file"
   fi
@@ -871,7 +871,11 @@ long_exec_drush_cmd() {
       fi
     done
   fi
-  printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    printf 'cd /var/www/powerbase/web/sites/default && ' >> "$file"
+  else
+    printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
+  fi
   long_set_site_platform "$site"
   long_set_site_drupal_version
   if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
@@ -879,7 +883,6 @@ long_exec_drush_cmd() {
   else
     printf "drush $quiet --user=admin $cmd\n" >> "$file"
   fi
-
   long_exec_in_container "$site" "$file"
   return="$?"
   rm "$file"
@@ -1641,6 +1644,13 @@ long_initialize_site() {
   # Populate the $LONG_SITE_TMP_VAR variable which is used to execute
   # commands in the container.
   long_init_site_tmp_var "$site"
+
+  # install lsd module for drupal 8+
+  long_set_site_drupal_version
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    long_log "Enabling lsd module" info
+    long_exec_drush_cmd "$site" "pm:enable" lsd
+  fi
 
   # Set drupal initial settings. 
   long_log "Running drush lsd-initialize" info
