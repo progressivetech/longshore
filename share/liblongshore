@@ -871,6 +871,8 @@ long_exec_drush_cmd() {
       fi
     done
   fi
+  long_set_site_platform "$site"
+  long_set_site_drupal_version
   if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
     printf 'cd /var/www/powerbase/web/sites/default && ' >> "$file"
   else
