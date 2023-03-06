@@ -365,7 +365,7 @@ projects[civirules][type] = "library"
 projects[civirules][destination] = "extensions"
 projects[civirules][download][type] = "git"
 projects[civirules][download][url] = "https://lab.civicrm.org/extensions/civirules.git"
-projects[civirules][download][revision] = "9ee9aae288bd8208a23c243fc21803f517c83e87"
+projects[civirules][download][revision] = "7b1dd679054e25d89fb0ff4aaf02c4d1a063c85d"
 
 projects[emailapi][type] = "library"
 projects[emailapi][destination] = "extensions"
