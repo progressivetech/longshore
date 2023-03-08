@@ -827,9 +827,15 @@ long_exec_cv_cmd() {
   long_set_site_platform "$site"
   long_set_site_drupal_version
   if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
-    # We don't seem to need --user=admin and it causes failures when civicrm is not fully
-    # initialized.
-    printf 'cd /var/www/powerbase/web/sites/default && cv  ' >> "$file"
+    # When initializing, passing --user=admin can cause a backtrace since there is
+    # no corresponding record in the uf_match table. So, we need a way to call
+    # cv without --user=admin.
+    if [ -n "$LONG_EXEC_CV_WITHOUT_USER" -a "$LONG_EXEC_CV_WITHOUT_USER" = "1" ]; then
+      printf 'cd /var/www/powerbase/web/sites/default && cv  ' >> "$file"
+    else
+      printf 'cd /var/www/powerbase/web/sites/default && cv --user=admin  ' >> "$file"
+    fi
+
   else
     printf 'cd /var/www/powerbase/sites/default && cv --user=admin ' >> "$file"
   fi
@@ -1093,7 +1099,8 @@ long_create_site_directories() {
   # See https://civicrm.org/advisory/civi-sa-2014-001-risk-information-disclosure
   # The private/extensions/{tmp,cache} are there *only* to handle the 
   # extensions tmp and cache directories. Extensions are in
-  # sites/all/extensions and tmp and cache is symlinked here.
+  # sites/all/extensions and tmp and cache is symlinked here (drupal 7)
+  # and extensions (drupal 8+).
   local not_web_accessible="
     drupal/files/civicrm/ConfigAndLog
     drupal/files/civicrm/templates_c
@@ -1523,7 +1530,15 @@ long_install_civicrm() {
   chmod 755 "${dir}/drupal"
 
   # And ensure the civicrm module is enabled.
-  long_exec_drush_cmd "$site" pm-enable civicrm
+  if [ "$LONG_SITE_DRUPAL_VERSION" -lt 8 ]; then
+    long_exec_drush_cmd "$site" pm-enable civicrm
+  fi 
+
+  # Sync users so passing --user=admin will not result in a backtrace. We might be
+  # able to remove this if resolved: https://github.com/civicrm/cv/issues/148
+  LONG_EXEC_CV_WITHOUT_USER="1"
+  long_exec_cv_cmd "$site" php:eval "CRM_Core_Config::singleton()->userSystem->synchronizeUsers();"
+  LONG_EXEC_CV_WITHOUT_USER="0"
 }
 
 long_import_backup() {
@@ -1612,12 +1627,23 @@ long_setup_site() {
   fi
 
   # We change a few CiviCRM defaults.
-  local civi_path_settings=' \
-    "extensionsDir":"[cms.root]/sites/all/extensions", \
-    "extensionsURL":"sites/all/extensions", \
-    "customTemplateDir":"[cms.root]/sites/default/custom-civicrm/templates", \
-    "customPHPPathDir":"[cms.root]/sites/default/custom-civicrm/php" 
-  '
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    local civi_path_settings=' \
+      "extensionsDir":"[cms.root]/extensions", \
+      "extensionsURL":"extensions", \
+      "customTemplateDir":"[cms.root]/sites/default/custom-civicrm/templates", \
+      "customPHPPathDir":"[cms.root]/sites/default/custom-civicrm/php" 
+    '
+  else
+    local civi_path_settings=' \
+      "extensionsDir":"[cms.root]/sites/all/extensions", \
+      "extensionsURL":"sites/all/extensions", \
+      "customTemplateDir":"[cms.root]/sites/default/custom-civicrm/templates", \
+      "customPHPPathDir":"[cms.root]/sites/default/custom-civicrm/php" 
+    '
+  fi
+
+  
 
   local civi_path_settings_scrunched=''
   local path_setting=''
@@ -1651,7 +1677,7 @@ long_initialize_site() {
   long_set_site_drupal_version
   if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
     long_log "Enabling lsd module" info
-    long_exec_drush_cmd "$site" "pm:enable" lsd
+    long_exec_drush_cmd "$site" "pm:enable lsd"
   fi
 
   # Set drupal initial settings. 
@@ -1699,7 +1725,11 @@ long_modify_settings_dot_php() {
   # Now ensure we are including our local.settings.php file in settings.php
   local drupal_settings="${drupal}/settings.php"
   if ! grep local.settings.php "$drupal_settings" > /dev/null; then
-    cat "${LONG_SHARE}/templates/include.local.settings.php" >> "$drupal_settings"
+    if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+      cat "${LONG_SHARE}/templates/include.local.settings.d8.php" >> "$drupal_settings"
+    else
+      cat "${LONG_SHARE}/templates/include.local.settings.d7.php" >> "$drupal_settings"
+    fi
   fi
 
   # Populate the local.settings.php
@@ -1707,7 +1737,22 @@ long_modify_settings_dot_php() {
   cat "${LONG_SHARE}/templates/local.settings.php" | sed \
     -e "s/LONG_ERROR_REPORTING/$LONG_ERROR_REPORTING/" \
     > "${drupal}/local.settings.php"
- 
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    # Add trusted host settings.
+    local dir="${LONG_SRV}/services/sites/$site"
+    local aliases=
+    [ -f "${dir}/env/ALIASES" ] && aliases=$(cat "${dir}/env/ALIASES | cut -d. -f1")
+    if [ "$LONG_LIVE" != "y" ]; then
+      domain="loc\.cx"
+    else
+      domain="ourpowerbase\.net"
+    fi 
+    printf '$settings["trusted_host_patterns"] = [\n' >> "${drupal}/local.settings.php"
+    for subdomain in $site $aliases; do
+      printf "'^${subdomain}\.${domain}\$',\n" >> "${drupal}/local.settings.php"
+    done
+    printf '];\n' >> "${drupal}/local.settings.php"
+  fi
 }
 
 # Ensure there are the required IMAP users installed on the IMAP server
@@ -3104,6 +3149,11 @@ long_create_dkim_dns() {
 # Add initial site theme
 long_add_initial_site_theme() {
   local site="$1"
+
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    return
+  fi
+
   local themes="${LONG_SRV}/services/sites/${site}/drupal/themes"
   if [ ! -d "${themes}/${site}" ]; then
     mkdir -p "$themes"

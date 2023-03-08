@@ -1,0 +1,30 @@
+#!/bin/bash
+
+composer_base=/srv/longshore/etc/composerfiles
+make_base=/srv/longshore/etc/makefiles
+
+# Find json files to rebuild.
+for composerfile in $(ls "${composer_base}"/*.json); do
+  # Find corresponding make file.
+  filename=$(basename "$composerfile" .json | sed "s/d8/d7/")
+  makefile="${make_base}/${filename}"
+  if [ ! -f "$makefile" ]; then
+    printf "Can't find make file: %s\n" "$makefile" 
+    exit 1
+  fi
+
+  temp=$(mktemp)
+  "$composer_base"/extensions-file-generator "$makefile" > "$temp"
+  if [ "$?" -ne "0" ]; then
+    printf "Something went wrong with extensions-file-generator.\n"
+    exit 1
+  fi
+
+  # Clobber the old extensions.
+  sed -i '/"downloads": {/,$d' "$composerfile" 
+
+  # Add the new
+  cat "$temp" >> "$composerfile"
+
+  rm "$temp"
+done

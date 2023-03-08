@@ -1,0 +1,83 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) gitify
+Exchange the contents of the current directory (extension or module) with a git-checked out version.
+
+Arguments
+  None."
+
+
+original_cwd=$(pwd)
+
+long_prompt "Replace %s with a git version?" "$original_cwd"
+
+if [ "$reply" != "y" ]; then
+  long_die "Not proceeding."
+fi
+
+# assume CiviCRM for now
+temp=$(mktemp -d)
+cd "$temp"
+
+SRC="${temp}/civicrm"
+
+git clone -b ptp5.57-2023-01-10 --depth 1 gitolite3@git.progressivetech.org:civicrm/civicrm-core civicrm || long_die "Failed to clone civicrm-core"
+cd "$SRC"
+git remote rename origin ptp
+git remote add origin https://github.com/civicrm/civicrm-core.git
+git remote add github git@github.com:jmcclelland/civicrm-core.git
+
+git clone -b ptp5.57-2023-01-10 --depth 1 gitolite3@git.progressivetech.org:civicrm/civicrm-drupal drupal || long_die "Failed to clone civicrm-drupal"
+cd "${SRC}/drupal"
+git remote rename origin ptp
+git remote add github git@github.com:jmcclelland/civicrm-drupal.git
+git remote add origin https://github.com/civicrm/civicrm/civicrm-drupal.git
+
+cd "${SRC}"
+git clone -b ptp5.57-2023-01-10 --depth 1 gitolite3@git.progressivetech.org:civicrm/civicrm-packages packages || long_die "Failed to clone civicrm-packages"
+cd "${SRC}/packages"
+git remote add github git@github.com:jmcclelland/civicrm-packages.git
+git remote add origin https://github.com/civicrm/civicrm/civicrm-packages.git
+
+cd "$SRC" 
+long_log "Running distmaker..." info
+# Figure out the current version from civicrm-version.xml
+DM_VERSION=$(grep version_no $SRC/xml/version.xml | sed 's#version_no##g' | tr -d '<>/ ')
+
+distmaker_functions="${SRC}/distmaker/dists/common.sh"
+[ ! -f "$distmaker_functions" ] && long_die "The distmaker common functions file doesn't exist."
+source "$distmaker_functions"
+
+long_log "Running dm_generate_vendor" info
+dm_generate_vendor "$SRC" || long_die "Failed to dm_generate_vendor"
+
+long_log "Running GenCode" info
+cd "$SRC/xml"
+php GenCode.php schema/Schema.xml > /dev/null || long_die "Failed to GenCode.php"
+
+# Now download the internationalization file and unpack it.
+if [ "$DM_VERSION" = "5.57.4" ]; then
+  l10n_file="civicrm-5.57.3-l10n.tar.gz"
+else
+  l10n_file="civicrm-${DM_VERSION}-l10n.tar.gz"
+fi
+
+l10n_url="https://download.civicrm.org/${l10n_file}"
+cd "$SRC"
+long_log "Downloading %s to %s." info "$l10n_url" "$TRG"
+wget -q "$l10n_url" || long_die "Failed to download l10n file (%s)." 1 "$l10n_url"
+tar -xzf "$l10n_file" || long_die "Failed to unpack l10n file (%s)." 1 "$l10n_file"
+# Unpacking creates a civicrm folder with an l10n and sql folder inside. However,
+# we are already in the base civicrm folder - so we have to move these files and
+# directories up one level.
+mv civicrm/l10n .
+mv civicrm/sql/* sql/
+rmdir civicrm/sql
+rmdir civicrm
+# Clean up the left over tar ball.
+rm "$l10n_file"
+
+long_log "Rsyncing into place."
+rsync -a --delete "${SRC}/" "$original_cwd/"
+long_log "Deleting temp directory"
+rm -rf "$temp"

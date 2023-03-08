@@ -10,6 +10,3 @@ error_reporting(LONG_ERROR_REPORTING);
 
 // All sites have access to extra language fonts.
 define("K_PATH_FONTS", "/var/www/powerbase/sites/all/libraries/fonts/");
-
-// Ensure pages can be embedded via iframes by disabling drupal protection
-$conf['x_frame_options'] = '';
