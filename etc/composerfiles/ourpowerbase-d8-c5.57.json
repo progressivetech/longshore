@@ -442,7 +442,7 @@
                 "type": "git"
             },
             "setup": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@a3b659ebd7d3eb0b186df75c3ad512c90117c998",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@9937a26685ff3d77b7ef765046fe341333ec6f83",
                 "path": "web/extensions/setup",
                 "type": "git"
             },

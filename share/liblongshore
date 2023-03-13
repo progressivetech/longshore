@@ -1552,7 +1552,7 @@ long_import_backup() {
   long_execute_site_query "$site" "$path"
 
   # Ensure Triggers are created.
-  long_exec_drush_cmd "$site" "php-eval '_civicrm_init(); CRM_Core_DAO::triggerRebuild()'"
+  long_exec_cv_cmd "$site" "php:eval 'CRM_Core_DAO::triggerRebuild()'"
 }
 
 # Drop all tables in a database. Useful when importing a backup over an existing
@@ -3175,15 +3175,22 @@ long_add_initial_site_theme() {
 long_clear_cache() {
   local site="$1"
   local cache="$2"
+
+  long_set_site_platform "$site"
+  long_set_site_drupal_version
   if [ "$cache" == "all" -o "$cache" == "drush" ]; then
-    long_exec_drush_cmd "$site" "cc all"
+    if [ "$LONG_SITE_DRUPAL_VERSION" -lt "8" ]; then
+      long_exec_drush_cmd "$site" "cc all"
+    else
+      long_exec_drush_cmd "$site" "cache:rebuild"
+    fi
   fi
   if [ "$cache" == "all" -o "$cache" == "menu" ]; then
-    long_exec_drush_cmd "$site" "php-eval '_civicrm_init(); CRM_Core_Invoke::rebuildMenuAndCaches();'"
+    long_exec_cv_cmd "$site" "php:eval" "CRM_Core_Invoke::rebuildMenuAndCaches();"
   fi
   if [ "$cache" == "reconcile" ]; then
     # Note: the extensions get reconciled on rebuildManueAndCaches so we don't need all
-    long_exec_cv_cmd "$site" "php:eval" 'CRM_Core_ManagedEntities::singleton(TRUE)->reconcile();'
+    long_exec_cv_cmd "$site" "php:eval" "CRM_Core_ManagedEntities::singleton(TRUE)->reconcile();"
   fi
   if [ "$cache" == "all" -o "$cache" == "files" ]; then
     long_exec_in_container "$site" "rm -rf \
@@ -3192,10 +3199,12 @@ long_clear_cache() {
       /var/www/powerbase/sites/default/files/civicrm/templates_c/en_US/*"
   fi
   if [ "$cache" == "all" -o "$cache" == "flood" ]; then
-    temp=$(mktemp)
-    printf 'TRUNCATE TABLE flood;' > "$temp"
-    long_execute_site_query "$site" "$temp"
-    rm "$temp"
+    if [ "$LONG_SITE_DRUPAL_VERSION" -lt "8" ]; then
+      temp=$(mktemp)
+      printf 'TRUNCATE TABLE flood;' > "$temp"
+      long_execute_site_query "$site" "$temp"
+      rm "$temp"
+    fi
   fi
   if [ "cache" == "all" -o "$cache" == 'extensions' ]; then
     long_exec_cv_cmd "$site" "php:eval" '$config = CRM_Core_Config::singleton(); $config->cleanupCaches(FALSE);'
