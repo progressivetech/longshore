@@ -1552,7 +1552,7 @@ long_import_backup() {
   long_execute_site_query "$site" "$path"
 
   # Ensure Triggers are created.
-  long_exec_cv_cmd "$site" "php:eval 'CRM_Core_DAO::triggerRebuild()'"
+  long_exec_cv_cmd "$site" "php:eval" "CRM_Core_DAO::triggerRebuild()"
 }
 
 # Drop all tables in a database. Useful when importing a backup over an existing
