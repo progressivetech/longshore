@@ -52,6 +52,9 @@ RUN cd /usr/local/bin && wget -q -O drush https://github.com/drush-ops/drush/rel
 # And cv
 RUN cd /usr/local/bin && wget -q -O cv https://download.civicrm.org/cv/cv.phar && chmod 755 cv 
 
+# And phpunit7
+RUN cd /usr/local/bin && wget -q -O phpunit7 https://phar.phpunit.de/phpunit-7.phar  && chmod 755 phpunit7 
+
 # Listen on 127.0.0.1 
 RUN sed -i "s#listen = /run/php/php${php_version}-fpm.sock#listen = 9000#" "/etc/php/${php_version}/fpm/pool.d/www.conf"
 
@@ -68,6 +71,10 @@ RUN mkdir -p /var/www/.drush
 # to a writable location
 RUN mkdir -p /var/www/.cv
 RUN chown www-data:www-data /var/www/.cv
+
+# Add a bashrc file to export CV_CONFIG so we can run phpunit tests
+RUN echo "export CV_CONFIG=/var/www/powerbase/web/sites/default/files/civicrm/cv.json" > /var/www/.bashrc
+RUN chown www-data:www-data /var/www/.bashrc
 
 # Create a .ssh directory in case we need this container to scp/ssh out
 RUN mkdir -p /var/www/.ssh
