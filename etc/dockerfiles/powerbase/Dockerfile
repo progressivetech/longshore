@@ -72,9 +72,9 @@ RUN mkdir -p /var/www/.drush
 RUN mkdir -p /var/www/.cv
 RUN chown www-data:www-data /var/www/.cv
 
-# Add a bashrc file to export CV_CONFIG so we can run phpunit tests
-RUN echo "export CV_CONFIG=/var/www/powerbase/web/sites/default/files/civicrm/cv.json" > /var/www/.bashrc
-RUN chown www-data:www-data /var/www/.bashrc
+# Add a profile file to export CV_CONFIG so we can run phpunit tests
+RUN echo "export CV_CONFIG=/var/www/powerbase/web/sites/default/files/civicrm/cv.json" > /var/www/.profile
+RUN chown www-data:www-data /var/www/.profile
 
 # Create a .ssh directory in case we need this container to scp/ssh out
 RUN mkdir -p /var/www/.ssh
