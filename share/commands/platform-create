@@ -2,8 +2,7 @@
 
 long_usage_message="usage: $(basename $0) platform-create [<make-file-path>] [<built-platform-path>]
 Build a new platform based on the given makefile and copy it into place.
-Optionally, copy the built platform to other servers. Set LONG_RUN_DB_UPDATE=0
-or LONG_RUN_DB_UPDATES=1 to avoid the prompt.
+Optionally, copy the built platform to other servers.
 
 Arguments:
  <make-file-path> path to a drush make file. If left out, will use default
@@ -26,17 +25,6 @@ if [ -z "$makefile_path" ]; then
 fi
 
 source_platform_path_temp="$3"
-
-if [ -z "$LONG_RUN_DB_UPDATES" ]; then
-  long_prompt "Skip DB updates after installing platform?"
-  if [ "$reply" = "y" ]; then
-    LONG_RUN_DB_UPDATES=0
-    long_log "Not running database updates." info
-  else
-    LONG_RUN_DB_UPDATES=1
-    long_log "Running database updates." info
-  fi
-fi
 
 # By default, we should prompt the user to sync the platform to other servers.
 sync=y
@@ -82,12 +70,11 @@ fi
 
 source_platform_path="${base}/${platform_name}"
 
-if [ "$build_system" = "drushmake" ]; then
-  # If we don't already have a built platform path, then build one.
-  if [ -z "$source_platform_path_temp" ]; then
-    source_platform_path_temp=$(mktemp -d --tmpdir="$base")
-
-    long_log "Creating platform." info
+# If we don't already have a built platform path, then build one.
+if [ -z "$source_platform_path_temp" ]; then
+  source_platform_path_temp=$(mktemp -d --tmpdir="$base")
+  long_log "Creating platform." info
+  if [ "$build_system" = "drushmake" ]; then
     cd "$source_platform_path_temp"
     $LONG_DRUSH -q -y make "$makefile_path"
 
@@ -220,122 +207,29 @@ if [ "$build_system" = "drushmake" ]; then
     # https://stripe.com/docs/stripe-js/elements/payment-request-button#verifying-your-domain-with-apple-pay
     mkdir -p "${source_platform_path_temp}/.well-known/"
     cp "${LONG_SRV}/share/templates/apple-developer-merchantid-domain-association" "${source_platform_path_temp}/.well-known/"
-  fi
-
-  long_log "Moving platform into place." info
-  # mktemp will restrict read access - we need to ensure www-data on the
-  # container can read it.
-  chmod 0755 "$source_platform_path_temp"
-
-  # If the platform doesn't already exist - create it. 
-  # NOTE: don't just move it into place, otherwise steps below that depend
-  # on the temp path existing will fail.
-  if [ ! -d "$source_platform_path" ]; then
-    mkdir "$source_platform_path"
-  fi
-
-  # It would be nice to do an atomic move, however, if the platform is being
-  # used by a running container, we can't just move it out of the way. So, we
-  # have to rsync and deal with the possibility that there may be a weird error
-  # while the sync'ing is happened. I learned about the proper rsync arguments
-  # by reading the output of `aubrsync -h`.
-  rsync -aHSx --devices --specials --delete-before \
-    "${source_platform_path_temp}/" \
-    "${source_platform_path}/" 
-
-  if [ "$LONG_RUN_DB_UPDATES" = "1" ]; then
-    # Now ensure all sites have db updates run.
-    for site in $(/srv/longshore/bin/longshore site-list $(hostname) ); do
-      if long_container_running "$site"; then
-        long_set_site_platform "$site"
-        if [ "$LONG_SITE_PLATFORM" = "$platform_name" ]; then
-          /srv/longshore/bin/longshore site-updatedb "$site"
-        fi
-      else
-        long_log "Not updating non-running container (%s)" info "$site"
-      fi
-    done
-  fi
-
-  if [ "$sync" = "y" ]; then
-    long_prompt "rsync'ing platform to other siblings."
-    if [ "$reply" == "y" ]; then
-      # Copy to all siblings in parallel
-      long_log "Creating temp directory on '%s' in parallel" "info" "$siblings"
-      long_log " -----------" "info"
-      echo $siblings | tr " " "\n" | \
-        parallel -v ssh $LONG_HOST_USER@{}.mayfirst.org \
-        "mkdir -p $source_platform_path_temp"
-      long_log " -----------" "info"
-      if [ "$?" != "0" ]; then
-        rm -rf "$source_platform_path_temp"
-        long_die "Failed to create directories on %s" 1 "$frontend" 
-        return
-      fi 
-
-      long_log "Rsyncing to %s in parallel\n" "info" "$siblings"
-      long_log " -----------" "info"
-      echo $siblings | tr " " "\n" | \
-        parallel -v rsync -a "$source_platform_path_temp/" \
-        "$LONG_HOST_USER@{}.mayfirst.org:$source_platform_path_temp"
-      long_log " -----------" "info"
-      if [ "$?" != "0" ]; then
-        rm -rf "$source_platform_path_temp"
-        long_die "Failed to create directories on %s" 1 "$frontend" 
-        return
-      fi
-
-      long_log "Running platform-create on siblings (%s)." info "$siblings"
-      long_log " -----------" "info"
-      echo $siblings | tr " " "\n" | \
-        parallel -v ssh "$LONG_HOST_USER"@{}.mayfirst.org \
-        LONG_RUN_DB_UPDATES=$LONG_RUN_DB_UPDATES \
-        /srv/longshore/bin/longshore \
-        platform-create "$makefile_path" "$source_platform_path_temp"
-      long_log " -----------" "info"
-      if [ "$?" != "0" ]; then
-        rm -rf "$source_platform_path_temp"
-        long_die "Failed to run platform-create on siblings: %s" 1 "$siblings" 
-        return
-      fi
-    fi
   else
-    long_log "No siblings to rsync with." "info"
-  fi
+    # Build system is composer.
+    if [ -z "$source_platform_path_temp" ]; then
+      source_platform_path_temp=$(mktemp -d --tmpdir="$base")
+    fi
+    cd "$source_platform_path_temp"
+    
+    # Ensure we have the most recent versions of our composer files.
+    cp "$makefile_path" composer.json
+    composer_dir=$(dirname "$makefile_path")
+    composer_lock_path="${composer_dir}/$(basename $makefile_path .json).lock"
+    if [ -f "$composer_lock_path" ]; then
+      cp "$composer_lock_path" composer.lock
+    fi
 
-  # Clean up.
-  rm -rf "$source_platform_path_temp"
-else
-  # Build system is composer.
-  # $source_platform_path
-
-  # If our platform does not exist, create it.
-  if [ ! -d "$source_platform_path" ]; then
-    mkdir -p "$source_platform_path"
-  fi
-
-  cd "$source_platform_path"
-  
-  # Ensure we have the most recent versions of our composer files.
-  cp "$makefile_path" composer.json
-  composer_dir=$(dirname "$makefile_path")
-  composer_lock_path="${composer_dir}/$(basename $makefile_path .json).lock"
-  if [ -f "$composer_lock_path" ]; then
-    cp "$composer_lock_path" composer.lock
-  fi
-
-  # NOTE: we can't use `composer show` and grep for versions because we are using in-line aliases.
-  # The source line, though, shows the commit. Sadly, this will rebuild on minor patches.
-  civicrm_pre_source="composer show civicrm/civicrm-core | grep ^source"
-  composer --verbose install 
-  civicrm_post_source="composer show civicrm/civicrm-core | grep ^source"
-
-  # Get internationalization files.
-  # Figure out which exact version we have installed.
-  if [ "$civicrm_pre_source" != "$civicrm_post_source" ]; then
+    php7.4 /usr/local/bin/composer --verbose install 
+    # Get internationalization files.
     civicrm_post_full_version=$(grep -o -P 'dev-ptp[0-9-.]+ as [0-9.]+' composer.json | grep -o -P '[0-9.]+$')
+    if echo "$civicrm_post_full_version" | grep -E "^5\.57\." > /dev/null; then
+      civicrm_post_full_version=5.57.3
+    fi
     wget https://download.civicrm.org/civicrm-${civicrm_post_full_version}-l10n.tar.gz
-    tar -zxvf civicrm-${civicrm_post_full_version}-l10n.tar.gz
+    tar -zxf civicrm-${civicrm_post_full_version}-l10n.tar.gz
     cd civicrm/
     cp -R l10n/ ../vendor/civicrm/civicrm-core/
     cp -R sql/ ../vendor/civicrm/civicrm-core/
@@ -343,22 +237,73 @@ else
     rm -rf civicrm/
     rm civicrm-${civicrm_post_full_version}-l10n.tar.gz
   fi
-
-  
-  if [ "$sync" = "y" ]; then
-    long_prompt "Building/Updating platform on other siblings."
-    if [ "$reply" == "y" ]; then
-      long_log "Running platform-create on siblings (%s)." info "$siblings"
-      long_log " -----------" "info"
-      echo $siblings | tr " " "\n" | \
-        parallel -v ssh "$LONG_HOST_USER"@{}.mayfirst.org \
-        LONG_RUN_DB_UPDATES=$LONG_RUN_DB_UPDATES \
-        /srv/longshore/bin/longshore \
-        platform-create "$makefile_path"
-      long_log " -----------" "info"
-
-    fi
-  else
-    long_log "No siblings to rsync with." "info"
-  fi
 fi
+
+long_log "Moving platform into place." info
+# mktemp will restrict read access - we need to ensure www-data on the
+# container can read it.
+chmod 0755 "$source_platform_path_temp"
+
+# If the platform doesn't already exist - create it. 
+# NOTE: don't just move it into place, otherwise steps below that depend
+# on the temp path existing will fail.
+if [ ! -d "$source_platform_path" ]; then
+  mkdir "$source_platform_path"
+fi
+
+# It would be nice to do an atomic move, however, if the platform is being
+# used by a running container, we can't just move it out of the way. So, we
+# have to rsync and deal with the possibility that there may be a weird error
+# while the sync'ing is happened. I learned about the proper rsync arguments
+# by reading the output of `aubrsync -h`.
+rsync -aHSx --devices --specials --delete-before \
+  "${source_platform_path_temp}/" \
+  "${source_platform_path}/" 
+
+if [ "$sync" = "y" ]; then
+  long_prompt "rsync'ing platform to other siblings."
+  if [ "$reply" == "y" ]; then
+    # Copy to all siblings in parallel
+    long_log "Creating temp directory on '%s' in parallel" "info" "$siblings"
+    long_log " -----------" "info"
+    echo $siblings | tr " " "\n" | \
+      parallel -v ssh $LONG_HOST_USER@{}.mayfirst.org \
+      "mkdir -p $source_platform_path_temp"
+    long_log " -----------" "info"
+    if [ "$?" != "0" ]; then
+      rm -rf "$source_platform_path_temp"
+      long_die "Failed to create directories on %s" 1 "$frontend" 
+      return
+    fi 
+
+    long_log "Rsyncing to %s in parallel\n" "info" "$siblings"
+    long_log " -----------" "info"
+    echo $siblings | tr " " "\n" | \
+      parallel -v rsync -a "$source_platform_path_temp/" \
+      "$LONG_HOST_USER@{}.mayfirst.org:$source_platform_path_temp"
+    long_log " -----------" "info"
+    if [ "$?" != "0" ]; then
+      rm -rf "$source_platform_path_temp"
+      long_die "Failed to create directories on %s" 1 "$frontend" 
+      return
+    fi
+
+    long_log "Running platform-create on siblings (%s)." info "$siblings"
+    long_log " -----------" "info"
+    echo $siblings | tr " " "\n" | \
+      parallel -v ssh "$LONG_HOST_USER"@{}.mayfirst.org \
+      /srv/longshore/bin/longshore \
+      platform-create "$makefile_path" "$source_platform_path_temp"
+    long_log " -----------" "info"
+    if [ "$?" != "0" ]; then
+      rm -rf "$source_platform_path_temp"
+      long_die "Failed to run platform-create on siblings: %s" 1 "$siblings" 
+      return
+    fi
+  fi
+else
+  long_log "No siblings to rsync with." "info"
+fi
+
+# Clean up.
+rm -rf "$source_platform_path_temp"

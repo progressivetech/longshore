@@ -383,7 +383,7 @@ projects[ptp][type] = "library"
 projects[ptp][destination] = "extensions"
 projects[ptp][download][type] = "git"
 projects[ptp][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.ptp.git"
-projects[ptp][download][revision] = "2feeb24a2c453d7286057f94a4b50f9eb060e631"
+projects[ptp][download][revision] = "a0fb801369c0452b198ec54633297edea2110c0"
 
 projects[osm][type] = "library"
 projects[osm][destination] = "extensions"

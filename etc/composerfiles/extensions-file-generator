@@ -41,6 +41,10 @@ foreach ($lines as $line) {
             $type = 'archive';
             $extensions[$name]['revision'] = NULL;
           }
+          elseif (preg_match('/org\.civicrm\.shoreditch/', $value)) {
+            $value = 'https://github.com/coopsymbiotic/shoreditch';
+            $extensions[$name]['revision'] = 'f9f50a1c4fbd8da98cefa37c011179eec98c8daa'; 
+          }
           else {
             $type = 'git';
           }
@@ -50,7 +54,9 @@ foreach ($lines as $line) {
       elseif ($line_type == 'destination') {
         $extensions[$name]['dir'] = "web/${value}/${name}";
       }
-      $extensions[$name][$var_type] = $value;
+      if (!array_key_exists($var_type, $extensions[$name])) {
+        $extensions[$name][$var_type] = $value;
+      }
     }
   }
 }

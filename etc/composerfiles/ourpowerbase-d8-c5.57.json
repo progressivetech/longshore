@@ -28,20 +28,22 @@
     ],
     "require": {
         "civicrm/civicrm-asset-plugin": "~1.1",
-        "civicrm/civicrm-core": "dev-ptp5.57-2023-01-10 as 5.57.0",
-        "civicrm/civicrm-drupal-8": "~5.57.0",
-        "civicrm/civicrm-packages": "~5.57.0",
+        "civicrm/civicrm-core": "dev-ptp5.57-2023-01-10 as 5.57.4",
+        "civicrm/civicrm-drupal-8": "~5.57.4",
+        "civicrm/civicrm-packages": "~5.57.4",
         "civicrm/composer-downloads-plugin": "dev-git-support as 3.1",
         "composer/installers": "^1.9",
-        "drupal/core-composer-scaffold": "^9.2",
-        "drupal/core-project-message": "^9.2",
-        "drupal/core-recommended": "^9.2",
-        "drush/drush": "^10.5",
+        "drupal/core-composer-scaffold": "9.5.5",
+        "drupal/core-project-message": "9.5.5",
+        "drupal/core-recommended": "9.5.5",
+        "drush/drush": "10.6.2",
         "powerbase/lsd": "dev-main",
-        "drupal/webform_civicrm": "^6.2",
-        "drupal/autologout": "^1.4",
-        "drupal/antibot": "^2.0",
-        "drupal/x_frame_options_configuration": "^1.3"
+        "drupal/webform": "6.1.4",
+        "drupal/webform_civicrm": "6.2.3",
+        "drupal/autologout": "1.4",
+        "drupal/antibot": "2.0.2",
+        "drupal/x_frame_options_configuration": "1.3",
+        "drupal/bootstrap": "3.26"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -277,7 +279,7 @@
                 "type": "git"
             },
             "ptp": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.ptp.git@2feeb24a2c453d7286057f94a4b50f9eb060e631",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.ptp.git@a0fb801369c0452b198ec54633297edea2110c0",
                 "path": "web/extensions/ptp",
                 "type": "git"
             },
@@ -292,9 +294,9 @@
                 "type": "archive"
             },
             "shoreditch": {
-                "url": "https://github.com/civicrm/org.civicrm.shoreditch.git@608a853c9c0ec36170f148e1e5cd653a9657ccd3",
+                "url": "https://github.com/coopsymbiotic/shoreditch@f9f50a1c4fbd8da98cefa37c011179eec98c8daa",
                 "path": "web/extensions/shoreditch",
-                "type": "git"
+                "type": "archive"
             },
             "exportpermission": {
                 "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.exportpermission.git@c13a893f16fec9ebaf9be9bca68e9af970fc3aac",
@@ -577,7 +579,7 @@
                 "type": "git"
             },
             "electoral": {
-                "url": "https://github.com/progressivetech/com.jlacey.electoral@35988c46b0ca04b8b0454f28e9c5560a81ac81fd",
+                "url": "https://github.com/progressivetech/com.jlacey.electoral@a8578048d2f79d626af02a2975bc656be55fdc2a",
                 "path": "web/extensions/electoral",
                 "type": "git"
             },
