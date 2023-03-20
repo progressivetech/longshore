@@ -41,12 +41,12 @@ foreach ($lines as $line) {
             $type = 'archive';
             $extensions[$name]['revision'] = NULL;
           }
-          elseif (preg_match('/org\.civicrm\.shoreditch/', $value)) {
-            $value = 'https://github.com/coopsymbiotic/shoreditch';
-            $extensions[$name]['revision'] = 'f9f50a1c4fbd8da98cefa37c011179eec98c8daa'; 
-          }
           else {
             $type = 'git';
+          }
+          if (preg_match('/org\.civicrm\.shoreditch/', $value)) {
+            $value = 'https://github.com/coopsymbiotic/shoreditch';
+            $extensions[$name]['revision'] = 'f9f50a1c4fbd8da98cefa37c011179eec98c8daa'; 
           }
           $extensions[$name]['type'] = $type;
         }

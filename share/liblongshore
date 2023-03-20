@@ -3150,13 +3150,20 @@ long_create_dkim_dns() {
 long_add_initial_site_theme() {
   local site="$1"
 
-  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
-    return
-  fi
-
   local themes="${LONG_SRV}/services/sites/${site}/drupal/themes"
   if [ ! -d "${themes}/${site}" ]; then
     mkdir -p "$themes"
+  fi
+
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    cp -r "${LONG_SHARE}/themes/d8theme" "${themes}/${site}"
+    # Rename key files.
+    mv "${themes}/${site}/d8theme.info.yml" "${themes}/${site}/${site}.info.yml" 
+    mv "${themes}/${site}/d8theme.libraries.yml" "${themes}/${site}/${site}.libraries.yml" 
+    mv "${themes}/${site}/d8theme-logo.png" "${themes}/${site}/${site}-logo.png" 
+    sed -i "s/d8theme/${site}/g" "${themes}/${site}/${site}.info.yml"
+    long_exec_drush_cmd "$site" "lsd:prepare-theme --name=${site}"
+  else
     cp -r "${LONG_SHARE}/themes/demo" "${themes}/${site}"
     # If this is the demo site, then no need to rename anything.
     if [ "$site" != "demo" ]; then
@@ -3167,8 +3174,8 @@ long_add_initial_site_theme() {
       sed -i "s/demo/${site}/g" "${themes}/${site}/${site}.info"
       sed -i "s/demo_preprocess/${site}_preprocess/g" "${themes}/${site}/template.php"
       sed -i "s/progressivetech/${site}/g" "${themes}/${site}/template.php"
+      long_exec_drush_cmd "$site" "lsd-prepare-theme --name=${site} --default"
     fi
-    long_exec_drush_cmd "$site" "lsd-prepare-theme --name=${site} --default"
   fi
 }
 

@@ -200,13 +200,7 @@ if [ -z "$source_platform_path_temp" ]; then
     # Now, put our custom fonts in place. This allows for korean fonts in mailing
     # labels
     rsync -a "${LONG_SHARE}/fonts" "${source_platform_path_temp}/sites/all/libraries/"
-
-    # Add the stripe apple pay merchant id file. To "activate" apple pay this
-    # file must be present *and* you have to connect the domain to your stripe
-    # account by following these instructions:
-    # https://stripe.com/docs/stripe-js/elements/payment-request-button#verifying-your-domain-with-apple-pay
-    mkdir -p "${source_platform_path_temp}/.well-known/"
-    cp "${LONG_SRV}/share/templates/apple-developer-merchantid-domain-association" "${source_platform_path_temp}/.well-known/"
+    well_known="${source_platform_path_temp}/.well-known/"
   else
     # Build system is composer.
     if [ -z "$source_platform_path_temp" ]; then
@@ -236,7 +230,19 @@ if [ -z "$source_platform_path_temp" ]; then
     cd ..
     rm -rf civicrm/
     rm civicrm-${civicrm_post_full_version}-l10n.tar.gz
+    # Symlink our custom modules and themes.
+    ln -s web/sites/default/themes web/themes/custom
+    ln -s web/sites/default/modules web/modules/custom
+    well_known="${source_platform_path_temp}/web/.well-known/"
   fi
+
+  # Add the stripe apple pay merchant id file. To "activate" apple pay this
+  # file must be present *and* you have to connect the domain to your stripe
+  # account by following these instructions:
+  # https://stripe.com/docs/stripe-js/elements/payment-request-button#verifying-your-domain-with-apple-pay
+  mkdir -p "$well_known"
+  cp "${LONG_SRV}/share/templates/apple-developer-merchantid-domain-association" "${well_known}/"
+
 fi
 
 long_log "Moving platform into place." info

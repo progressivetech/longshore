@@ -33,9 +33,9 @@
         "civicrm/civicrm-packages": "~5.57.4",
         "civicrm/composer-downloads-plugin": "dev-git-support as 3.1",
         "composer/installers": "^1.9",
-        "drupal/core-composer-scaffold": "9.5.5",
-        "drupal/core-project-message": "9.5.5",
-        "drupal/core-recommended": "9.5.5",
+        "drupal/core-composer-scaffold": "^9.5",
+        "drupal/core-project-message": "^9.5",
+        "drupal/core-recommended": "^9.5",
         "drush/drush": "10.6.2",
         "powerbase/lsd": "dev-main",
         "drupal/webform": "6.1.4",
@@ -296,7 +296,7 @@
             "shoreditch": {
                 "url": "https://github.com/coopsymbiotic/shoreditch@f9f50a1c4fbd8da98cefa37c011179eec98c8daa",
                 "path": "web/extensions/shoreditch",
-                "type": "archive"
+                "type": "git"
             },
             "exportpermission": {
                 "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.exportpermission.git@c13a893f16fec9ebaf9be9bca68e9af970fc3aac",
@@ -339,7 +339,7 @@
                 "type": "git"
             },
             "profiles": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.profiles@6198aff05f85160a6876f89ab582114d07ae627e",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.profiles@e879d8987cae8ecbf096b6100ad46f274ad383ef",
                 "path": "web/extensions/profiles",
                 "type": "git"
             },
@@ -439,12 +439,12 @@
                 "type": "git"
             },
             "spouse": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.spouse@3ef15e46237bc6f52eb7367d6b4901b4feba92b3",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.spouse@8150dc00fdaaf5da4ea658af34c54807bd63b4ac",
                 "path": "web/extensions/spouse",
                 "type": "git"
             },
             "setup": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@9937a26685ff3d77b7ef765046fe341333ec6f83",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@1714033d70894ee83dc15fe6bb6cd4d819e5ca29",
                 "path": "web/extensions/setup",
                 "type": "git"
             },
