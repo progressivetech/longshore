@@ -1643,8 +1643,6 @@ long_setup_site() {
     '
   fi
 
-  
-
   local civi_path_settings_scrunched=''
   local path_setting=''
   for path_setting in $civi_path_settings; do
@@ -1662,8 +1660,8 @@ long_setup_site() {
   fi
 
   long_modify_settings_dot_php "$site" 
-
 }
+
 # There are some site configurations that should be set once to the default
 # and then not changed, in case the site was to make their own customizations.
 long_initialize_site() {
