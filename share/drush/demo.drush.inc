@@ -1362,9 +1362,7 @@ function demo_enable_extensions() {
   }
 
   if (count($apiProviders) > 0) {
-    \Civi\Api4\Setting::set()
-      ->addValue('electoralApiProviders:name', $apiProviders)
-      ->execute();
+    \Civi::settings()->set('electoralApiProviders:name', $apiProviders);
   }
 }
 
