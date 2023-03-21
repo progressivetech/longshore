@@ -231,8 +231,8 @@ if [ -z "$source_platform_path_temp" ]; then
     rm -rf civicrm/
     rm civicrm-${civicrm_post_full_version}-l10n.tar.gz
     # Symlink our custom modules and themes.
-    ln -s web/sites/default/themes web/themes/custom
-    ln -s web/sites/default/modules web/modules/custom
+    ln -s /var/www/powerbase/web/sites/default/themes web/themes/custom
+    ln -s /var/www/powerbase/web/sites/default/modules web/modules/custom
     well_known="${source_platform_path_temp}/web/.well-known/"
   fi
 
