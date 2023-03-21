@@ -72,10 +72,6 @@ RUN mkdir -p /var/www/.drush
 RUN mkdir -p /var/www/.cv
 RUN chown www-data:www-data /var/www/.cv
 
-# Add a profile file to export CV_CONFIG so we can run phpunit tests
-RUN echo "export CV_CONFIG=/var/www/powerbase/web/sites/default/files/civicrm/cv.json" > /var/www/.profile
-RUN chown www-data:www-data /var/www/.profile
-
 # Create a .ssh directory in case we need this container to scp/ssh out
 RUN mkdir -p /var/www/.ssh
 RUN chown www-data:www-data /var/www/.ssh
@@ -98,8 +94,8 @@ COPY ./docker-entrypoint.sh /entrypoint.sh
 COPY ./jamie.crt /root/
 
 # Copy cv.json - also only used on dev sites
-COPY ./cv.json /var/www/cv.json
-RUN chown www-data:www-data /var/www/cv.json
+COPY ./cv.json /var/www/.cv.json
+RUN chown www-data:www-data /var/www/.cv.json
 
 # Enable all certificates from the ca-certificates bundle to ensure that
 # PowerBase can make secure external calls to places like Google Maps,
