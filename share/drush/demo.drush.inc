@@ -1353,9 +1353,7 @@ function demo_enable_extensions() {
     $key = trim(getenv($envVarName));
     if ($key) {
       // Set the key as the setting.
-      \Civi\Api4\Setting::set()
-        ->addValue($settingName, $key)
-        ->execute();
+      \Civi::setting::set(($settingName, $key);
       
       // Add them to the list of configured api
       // providers.
