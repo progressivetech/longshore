@@ -579,7 +579,7 @@
                 "type": "git"
             },
             "electoral": {
-                "url": "https://github.com/progressivetech/com.jlacey.electoral@281a3ac91da11956a20abd4a5103e38ba69141c5",
+                "url": "https://github.com/progressivetech/com.jlacey.electoral@b5bedf6ba0f7a0ae9b0942bc2b868465670b80be",
                 "path": "web/extensions/electoral",
                 "type": "git"
             },
