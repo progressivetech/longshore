@@ -1,19 +1,15 @@
 name: d8theme 
 type: theme
-description: This is a sub theme of Bootstrap 
+description: This is a sub theme of Powerbase Public 
 core_version_requirement: ^8 || ^9 || ^10
 # Defines the base theme
-base theme: bootstrap 
+base theme: pbpublic
 # Defines libraries group in which we can add CSS/JS.
 libraries:
   - d8theme/global-styling
-  - d8theme/shoreditch-remote
-  - d8theme/powerbase-remote
 # Regions, quote the names
 regions:
   header: 'Header'
   featured: 'Featured'
   content: 'Content'
-  sidebar_first: 'First sidebar'
-  sidebar_second: 'Second sidebar'
   footer: 'Footer'
