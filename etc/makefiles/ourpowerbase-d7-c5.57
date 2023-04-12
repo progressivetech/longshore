@@ -854,6 +854,12 @@ projects[assignee][download][type] = "git"
 projects[assignee][download][url] = "https://lab.civicrm.org/extensions/assignee"
 projects[assignee][download][revision] = "17b0eceb3f814090be9180f2a36d64ddf105c0ac"
 
+projects[dynamic_theme_selector][type] = "library"
+projects[dynamic_theme_selector][destination] = "extensions"
+projects[dynamic_theme_selector][download][type] = "git"
+projects[dynamic_theme_selector][download][url] = "git://git.progressivetech.org/extensions/dynamic_theme_selector"
+projects[dynamic_theme_selector][download][revision] = "de4319ceb4841bd6d14b70cee4a273c9758d327f"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########

@@ -31,6 +31,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/progressivetech/composer-downloads-plugin"
+        },
+        {
+            "type": "vcs",
+            "url": "https://git.progressivetech.org/powerbase/civicrm_theme_negotiator"
         }
 
     ],
@@ -48,6 +52,7 @@
         "powerbase/lsd": "dev-main",
         "powerbase/pbadmin": "dev-master",
         "powerbase/pbpublic": "dev-master",
+        "powerbase/civicrm_theme_negotiator": "dev-master",
         "drupal/webform": "6.1.4",
         "drupal/webform_civicrm": "6.2.3",
         "drupal/autologout": "1.4",
