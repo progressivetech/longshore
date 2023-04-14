@@ -858,7 +858,7 @@ projects[dynamic_theme_selector][type] = "library"
 projects[dynamic_theme_selector][destination] = "extensions"
 projects[dynamic_theme_selector][download][type] = "git"
 projects[dynamic_theme_selector][download][url] = "git://git.progressivetech.org/extensions/dynamic_theme_selector"
-projects[dynamic_theme_selector][download][revision] = "de4319ceb4841bd6d14b70cee4a273c9758d327f"
+projects[dynamic_theme_selector][download][revision] = "8c8f2fc95c7f79b32909b8870a70b96f2dc6b7dc"
 
 ;########
 ; CiviCRM Mosaico Templates
