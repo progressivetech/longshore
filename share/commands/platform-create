@@ -216,7 +216,7 @@ if [ -z "$source_platform_path_temp" ]; then
       cp "$composer_lock_path" composer.lock
     fi
 
-    php7.4 /usr/local/bin/composer --verbose install 
+    php7.4 /usr/local/bin/composer --verbose install || long_die "Failed to install with composer"
     # Get internationalization files.
     civicrm_post_full_version=$(grep -o -P 'dev-ptp[0-9-.]+ as [0-9.]+' composer.json | grep -o -P '[0-9.]+$')
     if echo "$civicrm_post_full_version" | grep -E "^5\.57\." > /dev/null; then
