@@ -132,7 +132,7 @@
         "compile-whitelist": ["civicrm/civicrm-core", "civicrm/composer-compile-lib"],
         "downloads": {
             "sumfields": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.sumfields.git@b8610566381b404b44482e084a299b1448e097ff",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.sumfields.git@e1002717f5c9d5ad0270d4f475cb783ea82e6dbc",
                 "path": "web/extensions/sumfields",
                 "type": "git"
             },
@@ -462,7 +462,7 @@
                 "type": "git"
             },
             "setup": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@52300a07ab046936ff926c7ea7d4ff36d64606c8",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@acb421490be3c392c20ef1181d38b8f69802c4f1",
                 "path": "web/extensions/setup",
                 "type": "git"
             },
@@ -674,6 +674,11 @@
             "assignee": {
                 "url": "https://lab.civicrm.org/extensions/assignee@17b0eceb3f814090be9180f2a36d64ddf105c0ac",
                 "path": "web/extensions/assignee",
+                "type": "git"
+            },
+            "dynamic_theme_selector": {
+                "url": "https://git.progressivetech.org/extensions/dynamic_theme_selector@8c8f2fc95c7f79b32909b8870a70b96f2dc6b7dc",
+                "path": "web/extensions/dynamic_theme_selector",
                 "type": "git"
             },
             "CiviVersafix": {
