@@ -691,7 +691,7 @@
                 "type": "git"
             },
             "dynamic_theme_selector": {
-                "url": "https://git.progressivetech.org/extensions/dynamic_theme_selector@8c8f2fc95c7f79b32909b8870a70b96f2dc6b7dc",
+                "url": "https://git.progressivetech.org/extensions/dynamic_theme_selector@376f511eef3818d96310ce959cd2eaeef69a3d58",
                 "path": "web/extensions/dynamic_theme_selector",
                 "type": "git"
             },
