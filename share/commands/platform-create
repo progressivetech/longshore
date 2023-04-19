@@ -37,9 +37,9 @@ if [[ $(echo "$siblings" | wc -w) -lt "1" ]]; then
 fi
 
 if [ -n "$source_platform_path_temp" ]; then
-  # If we are passing a build platform path, do some sanity checking.
+  # If we are passing a build platform path, do a smoke test.
   [ -d "$source_platform_path_temp" ] || long_die "Can't find build-platform-path."
-  [ -f "${source_platform_path_temp}/index.php" ] || long_die "The source-platform-path doesn't seem valid."
+  [ -f "${source_platform_path_temp}/index.php" ] || [ -f "${source_platform_path_temp}/web/index.php" ] || long_die "The source-platform-path doesn't seem valid."
 
   # The typical use case when we are passing a build platform path is that
   # we are in the process of being sync'ed from another server. So, don't
