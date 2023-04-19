@@ -3019,7 +3019,7 @@ long_does_page_have_text() {
     timeout=10
   fi
 
-  if ! curl -s --max-time "$timeout" "$url" | grep "$text" >/dev/null; then
+  if ! curl --location -s --max-time "$timeout" "$url" | grep "$text" >/dev/null; then
     return 1
   else
     return 0
