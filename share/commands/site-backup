@@ -91,7 +91,7 @@ for site in $sites; do
   fi
 
   # Clear caches to reduce database backup size.
-  long_exec_drush_cmd "$site" "cc all"
+  long_clear_cache "$site" "all"
 
   long_log "Dumping the database."
 
