@@ -1,0 +1,63 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-d8 <site> platform 
+Provision a d8 version of a site. Pass in the site name of the existing
+(d7) site. The new site will have d8 appended
+to the domain name (e.g. ptpd8.ourpowerbase.net).
+
+Arguments
+  <site> - The site you want to provision a d8 site for, e.g. ptp 
+  <platform> - The platform you want this site to use.
+"
+long_check_args "$2" "$#" 2
+
+d7site="$2"
+d8site="${d7site}d8"
+# Platform can either be the name or the path. But, we want the name.
+platform=$(basename "$3" .json)
+
+long_set_default_db "$site"
+db="$LONG_DEFAULT_DB"
+
+long_log "D7 Site: %s, D8 Site: %s DB: %s, Platform: %s\n" info "$d7site" "$d8site" "$db" "$platform"
+long_create_container site "$d8site" "$db" "$platform"
+docker start "$d8site"
+
+# Dump the CiviCRM tables from the d7 site to a backup file in the d8 site directory.
+civicrm_backup="/srv/longshore/services/sites/${d8site}/backup/${d8site}.civicrm.sql"
+defaults_file="--defaults-file=/srv/longshore/etc/my.cnf"
+long_log "Dumping CiviCRM tables from %s to %s" info "$d7site" "$civicrm_backup"
+mysqldump "$defaults_file" ptp $(mysql "$defaults_file" --database "$d7site" --batch --silent --execute "SHOW TABLES LIKE 'civicrm\_%'") > "$civicrm_backup"
+
+long_prompt "Installing Drupal from scratch in $d8site. Any existing DB will be destroyed"
+if [ "$reply" != "y" ]; then
+  long_log "Not continuing, as directed."
+  return
+fi
+long_install_drupal "$d8site"
+long_log "Importing CiviCRM tables" info
+long_execute_site_query "$d8site" "$civicrm_backup"
+long_log "Creating CiviCRM settings file." info
+long_create_civicrm_settings "$d8site"
+
+# Finish up the minimal settings.
+long_setup_site "$d8site"
+
+# Tell Drupal that civicrm is installed so doesn't need to be re-enabled.
+echo "INSERT INTO key_value VALUES('system.schema', 'civicrm', 'i:8000')" | long_launch_site_sql_cli "$d8site"
+
+long_create_dns "$d8site"
+
+# These are the drupal only pieces of long_initialize_site:
+# Populate the $LONG_SITE_TMP_VAR variable which is used to execute
+# commands in the container.
+long_init_site_tmp_var "$d8site"
+
+# install lsd module for drupal 8+
+long_exec_drush_cmd "$d8site" "pm:enable lsd"
+
+# Set drupal initial settings. 
+long_exec_drush_cmd "$d8site" "lsd-initialize"
+
+long_nginx_reload
+
