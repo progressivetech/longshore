@@ -35,6 +35,14 @@
         {
             "type": "vcs",
             "url": "https://git.progressivetech.org/powerbase/civicrm_theme_negotiator"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/fuzionnz/webform_civicrm_migrate"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/fuzionnz/webform_migrate_plus"
         }
 
     ],
@@ -68,8 +76,12 @@
         "drupal/social_auth_google": "3.0.0",
         "drupal/masquerade": "2.0-rc1",
         "drupal/r4032login": "2.2.1",
-        "drupal/asset_injector": "2.16"
-
+        "drupal/asset_injector": "2.16",
+        "drupal/webform_migrate": "^1.2",
+        "drupal/migrate_upgrade": "^4.0",
+        "drupal/migrate_plus": "^6.0",
+        "fuzionnz/webform_migrate_plus": "dev-1.x",
+        "fuzionnz/webform_civcrm_migrate": "dev-0.x"
     },
     "conflict": {
         "drupal/drupal": "*"

@@ -764,7 +764,11 @@ long_create_civicrm_settings() {
   local dbuser=$(grep ^user "${dir}/my.cnf" | cut -d= -f2)
   local dbname=$(grep ^database "${dir}/my.cnf" | cut -d= -f2)
   
-  local source="${LONG_SITE_PLATFORM_PATH}/sites/all/modules/civicrm/templates/CRM/common/civicrm.settings.php.template"
+  if [ "${LONG_SITE_DRUPAL_VERSION}" -gt 7 ]; then
+    local source="${LONG_SRV}/platforms/${LONG_SITE_PLATFORM}/vendor/civicrm/civicrm-core/templates/CRM/common/civicrm.settings.php.template"
+  else
+    local source="${LONG_SITE_PLATFORM_PATH}/sites/all/modules/civicrm/templates/CRM/common/civicrm.settings.php.template"
+  fi
   local target="${dir}/drupal/civicrm.settings.php"
 
   # Use our password generation utility which uses /dev/urandom.
@@ -1855,14 +1859,19 @@ long_install_site() {
       # There is no database to restore. We need to do a standard Drupal
       # installation.
       long_log "No backup database. Installing Drupal." info
-      long_prompt "Installing Drupal/CiviCRM from scratch. Any existing DB will be destroyed"
+      long_prompt "Installing Drupal from scratch. Any existing DB will be destroyed"
       if [ "$reply" != "y" ]; then
         long_log "Not continuing, as directed."
         return
       fi
       long_install_drupal "$site"
-      long_log "Installing CiviCRM." info
-      long_install_civicrm "$site"
+
+      # The only reason there would not be a civicrm settings file is if we are transitioning
+      # from drupal 7 to drupal 8.
+      if [ ! -f "$civicrm_settings" ]; then
+        long_log "Installing CiviCRM." info
+        long_install_civicrm "$site"
+      fi
     else
       # We have a backup file. That means we only need to create a drupal
       # settings.php file and import the database. 
