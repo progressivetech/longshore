@@ -29,22 +29,12 @@ defaults_file="--defaults-file=/srv/longshore/etc/my.cnf"
 long_log "Dumping CiviCRM tables from %s to %s" info "$d7site" "$civicrm_backup"
 mysqldump "$defaults_file" ptp $(mysql "$defaults_file" --database "$d7site" --batch --silent --execute "SHOW TABLES LIKE 'civicrm\_%'") > "$civicrm_backup"
 
-long_prompt "Installing Drupal from scratch in $d8site. Any existing DB will be destroyed"
-if [ "$reply" != "y" ]; then
-  long_log "Not continuing, as directed."
-  return
-fi
-long_install_drupal "$d8site"
-long_log "Importing CiviCRM tables" info
-long_execute_site_query "$d8site" "$civicrm_backup"
-long_log "Creating CiviCRM settings file." info
-long_create_civicrm_settings "$d8site"
-
-# Finish up the minimal settings.
+# Install fresh civicrm and drupal.
 long_setup_site "$d8site"
 
-# Tell Drupal that civicrm is installed so doesn't need to be re-enabled.
-echo "INSERT INTO key_value VALUES('system.schema', 'civicrm', 'i:8000')" | long_launch_site_sql_cli "$d8site"
+# Overwrite civi tables with d7 ones.
+long_log "Importing CiviCRM tables" info
+long_execute_site_query "$d8site" "$civicrm_backup"
 
 long_create_dns "$d8site"
 
