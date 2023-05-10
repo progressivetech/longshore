@@ -14,6 +14,14 @@
         },
         {
             "type": "vcs",
+            "url": "https://github.com/fuzionnz/webform_civicrm_migrate"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/fuzionnz/webform_migrate_plus"
+        },
+        {
+            "type": "vcs",
             "url": "https://git.progressivetech.org/civicrm/civicrm-core"
         },
         {
@@ -35,25 +43,16 @@
         {
             "type": "vcs",
             "url": "https://git.progressivetech.org/powerbase/civicrm_theme_negotiator"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/fuzionnz/webform_civicrm_migrate"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/fuzionnz/webform_migrate_plus"
         }
-
     ],
     "require": {
         "civicrm/civicrm-asset-plugin": "~1.1",
         "wikimedia/composer-merge-plugin": "dev-master",
         "civicrm/composer-downloads-plugin": "dev-git-support as 3.1",
         "composer/installers": "^1.9",
-        "drupal/core-composer-scaffold": "^9.5",
-        "drupal/core-project-message": "^9.5",
-        "drupal/core-recommended": "^9.5",
+        "drupal/core-composer-scaffold": "9.5.8",
+        "drupal/core-project-message": "9.5.8",
+        "drupal/core-recommended": "9.5.8",
         "drush/drush": "10.6.2",
         "civicrm/civicrm-core": "dev-ptp5.57-2023-01-10 as 5.57.4",
         "civicrm/civicrm-drupal-8": "~5.57.4",
@@ -80,8 +79,8 @@
         "drupal/webform_migrate": "^1.2",
         "drupal/migrate_upgrade": "^4.0",
         "drupal/migrate_plus": "^6.0",
-        "fuzionnz/webform_migrate_plus": "dev-1.x",
-        "fuzionnz/webform_civcrm_migrate": "dev-0.x"
+        "drupal/webform_migrate_plus": "1.x-dev",
+        "drupal/webform_civicrm_migrate": "0.x-dev"
     },
     "conflict": {
         "drupal/drupal": "*"
@@ -685,6 +684,11 @@
             "authnet": {
                 "url": "https://lab.civicrm.org/extensions/authnet.git@c484706caacb7389ad5f41d7f73df8c56930ffc8",
                 "path": "web/extensions/authnet",
+                "type": "git"
+            },
+            "civicrm-recalculate-recipients": {
+                "url": "https://github.com/progressivetech/civicrm-recalculate-recipients.git@8234190a5a53b43326870aea02a79b8c2e995fab",
+                "path": "web/extensions/civicrm-recalculate-recipients",
                 "type": "git"
             },
             "archivemailing": {

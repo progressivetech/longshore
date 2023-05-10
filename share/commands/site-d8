@@ -23,11 +23,14 @@ long_log "D7 Site: %s, D8 Site: %s DB: %s, Platform: %s\n" info "$d7site" "$d8si
 long_create_container site "$d8site" "$db" "$platform"
 docker start "$d8site"
 
+# Clear the cache before backing up.
+long_clear_cache "$d7site" all
+
 # Dump the CiviCRM tables from the d7 site to a backup file in the d8 site directory.
 civicrm_backup="/srv/longshore/services/sites/${d8site}/backup/${d8site}.civicrm.sql"
 defaults_file="--defaults-file=/srv/longshore/etc/my.cnf"
 long_log "Dumping CiviCRM tables from %s to %s" info "$d7site" "$civicrm_backup"
-mysqldump "$defaults_file" ptp $(mysql "$defaults_file" --database "$d7site" --batch --silent --execute "SHOW TABLES LIKE 'civicrm\_%'") > "$civicrm_backup"
+mysqldump "$defaults_file" ptp $(mysql "$defaults_file" --database "$d7site" --batch --silent --execute "SHOW TABLES LIKE 'civi%'") > "$civicrm_backup"
 
 # Install fresh civicrm and drupal.
 long_setup_site "$d8site"
@@ -35,6 +38,12 @@ long_setup_site "$d8site"
 # Overwrite civi tables with d7 ones.
 long_log "Importing CiviCRM tables" info
 long_execute_site_query "$d8site" "$civicrm_backup"
+
+# Set the proper value for the extensions directory so we can call the setup extension.
+long_exec_cv_cmd "$d8site" "api4" "Setting.set" '{"values":{"extensionsDir":"[cms.root]/extensions"}}'
+
+# Now update a few Civi settings that need to be different from D8 sites.
+long_exec_cv_cmd "$d8site" "api4" "PowerbaseSetup.InitializeUpgradedSite"
 
 long_create_dns "$d8site"
 
