@@ -3193,28 +3193,17 @@ long_clear_cache() {
 
   long_set_site_platform "$site"
   long_set_site_drupal_version
-  if [ "$cache" == "all" -o "$cache" == "drush" ]; then
-    if [ "$LONG_SITE_DRUPAL_VERSION" -lt "8" ]; then
-      long_exec_drush_cmd "$site" "cc all"
-    else
-      long_exec_drush_cmd "$site" "cache:rebuild"
-    fi
-  fi
-  if [ "$cache" == "all" -o "$cache" == "flood" ]; then
-    if [ "$LONG_SITE_DRUPAL_VERSION" -lt "8" ]; then
-      temp=$(mktemp)
-      printf 'TRUNCATE TABLE flood;' > "$temp"
-      long_execute_site_query "$site" "$temp"
-      rm "$temp"
-    fi
-  fi
 
   if [ "$cache" == "all"  ]; then
     # These are the steps taken when you click the "Cleanup Caches" button in CiviCRM. They are defined
     # in CRM_Admin_Form_Setting_UpdateConfigBackend.
-    long_exec_cv_cmd "$site" "php:eval" '$config = CRM_Core_Config::singleton(); $config->cleanup(1, FALSE); CRM_Core_Config::clearDBCache(); Civi::cache("session")->clear(); CRM_Utils_System::flushCache()'
-
-
+    if [ "$LONG_SITE_DRUPAL_VERSION" -lt "8" ]; then
+      long_exec_cv_cmd "$site" "php:eval" '$config = CRM_Core_Config::singleton(); $config->cleanup(1, FALSE); CRM_Core_Config::clearDBCache(); Civi::cache("session")->clear(); CRM_Utils_System::flushCache()'
+    else
+      # With drupal8, including the flushCache() and clearDBCache results in a Drupal error:
+      # \Drupal::$container is not initialized yet.
+      long_exec_cv_cmd "$site" "php:eval" '$config = CRM_Core_Config::singleton(); $config->cleanup(1, FALSE); Civi::cache("session")->clear();'
+    fi
   fi
   if [ "$cache" == "all" -o "$cache" == "menu" ]; then
     # This repeats some of what is done above.
@@ -3234,4 +3223,21 @@ long_clear_cache() {
   if [ "cache" == "all" -o "$cache" == 'extensions' ]; then
     long_exec_cv_cmd "$site" "php:eval" '$config = CRM_Core_Config::singleton(); $config->cleanupCaches(FALSE);'
   fi
+
+  if [ "$cache" == "all" -o "$cache" == "drush" ]; then
+    if [ "$LONG_SITE_DRUPAL_VERSION" -lt "8" ]; then
+      long_exec_drush_cmd "$site" "cc all"
+    else
+      long_exec_drush_cmd "$site" "cache:rebuild"
+    fi
+  fi
+  if [ "$cache" == "all" -o "$cache" == "flood" ]; then
+    if [ "$LONG_SITE_DRUPAL_VERSION" -lt "8" ]; then
+      temp=$(mktemp)
+      printf 'TRUNCATE TABLE flood;' > "$temp"
+      long_execute_site_query "$site" "$temp"
+      rm "$temp"
+    fi
+  fi
+
 }
