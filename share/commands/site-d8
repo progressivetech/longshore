@@ -35,18 +35,6 @@ mysqldump "$defaults_file" ptp $(mysql "$defaults_file" --database "$d7site" --b
 # Install fresh civicrm and drupal.
 long_setup_site "$d8site"
 
-# Overwrite civi tables with d7 ones.
-long_log "Importing CiviCRM tables" info
-long_execute_site_query "$d8site" "$civicrm_backup"
-
-# Set the proper value for the extensions directory so we can call the setup extension.
-long_exec_cv_cmd "$d8site" "api4" "Setting.set" '{"values":{"extensionsDir":"[cms.root]/extensions"}}'
-
-# Now update a few Civi settings that need to be different from D8 sites.
-long_exec_cv_cmd "$d8site" "api4" "PowerbaseSetup.InitializeUpgradedSite"
-
-long_create_dns "$d8site"
-
 # These are the drupal only pieces of long_initialize_site:
 # Populate the $LONG_SITE_TMP_VAR variable which is used to execute
 # commands in the container.
@@ -57,6 +45,25 @@ long_exec_drush_cmd "$d8site" "pm:enable lsd"
 
 # Set drupal initial settings. 
 long_exec_drush_cmd "$d8site" "lsd-initialize"
+
+# Overwrite civi tables with d7 ones.
+long_log "Importing CiviCRM tables" info
+long_execute_site_query "$d8site" "$civicrm_backup"
+
+# Set the proper value for the extensions directory so we can call the setup extension.
+temp=$(mktemp)
+printf "UPDATE civicrm_setting SET value = '%s' WHERE name = 'extensionsDir';" 's:21:"[cms.root]/extensions";' > "$temp"
+long_execute_site_query "$d8site" "$temp"
+rm "$temp"
+
+# Now we have to clear some caches - minimally the drupal cache.
+long_clear_cache "$d7site" all
+
+# Now update a few Civi settings that need to be different from D8 sites.
+long_exec_cv_cmd "$d8site" "api4" "PowerbaseSetup.InitializeUpgradedSite"
+
+long_create_dns "$d8site"
+
 
 long_nginx_reload
 

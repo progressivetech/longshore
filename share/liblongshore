@@ -3200,7 +3200,24 @@ long_clear_cache() {
       long_exec_drush_cmd "$site" "cache:rebuild"
     fi
   fi
+  if [ "$cache" == "all" -o "$cache" == "flood" ]; then
+    if [ "$LONG_SITE_DRUPAL_VERSION" -lt "8" ]; then
+      temp=$(mktemp)
+      printf 'TRUNCATE TABLE flood;' > "$temp"
+      long_execute_site_query "$site" "$temp"
+      rm "$temp"
+    fi
+  fi
+
+  if [ "$cache" == "all"  ]; then
+    # These are the steps taken when you click the "Cleanup Caches" button in CiviCRM. They are defined
+    # in CRM_Admin_Form_Setting_UpdateConfigBackend.
+    long_exec_cv_cmd "$site" "php:eval" '$config = CRM_Core_Config::singleton(); $config->cleanup(1, FALSE); CRM_Core_Config::clearDBCache(); Civi::cache("session")->clear(); CRM_Utils_System::flushCache()'
+
+
+  fi
   if [ "$cache" == "all" -o "$cache" == "menu" ]; then
+    # This repeats some of what is done above.
     long_exec_cv_cmd "$site" "php:eval" "CRM_Core_Invoke::rebuildMenuAndCaches();"
   fi
   if [ "$cache" == "reconcile" ]; then
@@ -3213,14 +3230,7 @@ long_clear_cache() {
       /var/www/powerbase/sites/default/files/js/* \
       /var/www/powerbase/sites/default/files/civicrm/templates_c/en_US/*"
   fi
-  if [ "$cache" == "all" -o "$cache" == "flood" ]; then
-    if [ "$LONG_SITE_DRUPAL_VERSION" -lt "8" ]; then
-      temp=$(mktemp)
-      printf 'TRUNCATE TABLE flood;' > "$temp"
-      long_execute_site_query "$site" "$temp"
-      rm "$temp"
-    fi
-  fi
+
   if [ "cache" == "all" -o "$cache" == 'extensions' ]; then
     long_exec_cv_cmd "$site" "php:eval" '$config = CRM_Core_Config::singleton(); $config->cleanupCaches(FALSE);'
   fi
