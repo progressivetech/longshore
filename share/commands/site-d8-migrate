@@ -1,0 +1,74 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-d8-migrate <d8site>
+Migrate the Drupal data from a D7 to D8 site. Pass in the d8 site name.
+
+Arguments
+  <d8site> - The site you want to provision a d8 site for, e.g. ptpd8
+"
+long_check_args "$2" "$#" 1
+
+d8site="$2"
+d7site=$(echo "$d8site" | sed 's/d8$//')
+
+# Make sure the webform migration files have been copied
+long_set_site_platform "$d8site"
+long_set_site_platform_path
+webform_migrations_dir="${LONG_SITE_PLATFORM_PATH}/modules/contrib/webform/migrations"
+if [ ! -d "$webform_migrations_dir" ]; then
+  mkdir "$webform_migrations_dir"
+fi
+migrate_files="d7_webform_submission.yml d7_webform.yml"
+for migrate_file in $migrate_files; do
+  dest="${webform_migrations_dir}/${migrate_file}"
+  if [ ! -f "$dest" ]; then
+    cp "${LONG_SITE_PLATFORM_PATH}/modules/contrib/webform_migrate/migration_templates/d7/${migrate_file}" "$dest"
+  fi
+done
+
+# Ensure our migration database settings are present.
+d8_local_settings="${LONG_SRV}/services/sites/${d8site}/drupal/local.settings.php"
+d7_settings="${LONG_SRV}/services/sites/$d7site/drupal/settings.php"
+if ! grep --quiet 'migrate' "$d8_local_settings"; then
+  password=$(grep "^ *'password'" "$d7_settings" | egrep -o "'[^']+',\$" | tr -d "'" | head -c -2)
+  printf "
+\$databases['migrate']['default'] = [
+  'database' => '%s',
+  'username' => '%s',
+  'password' => '%s',
+  'prefix' => '',
+  'host' => 'mysqlhost',
+  'port' => '',
+  'namespace' => 'Drupal\\Core\\Database\\Driver\\mysql',
+  'driver' => 'mysql',
+];\n" "$d7site" "$d7site" "$password" >> "$d8_local_settings"
+fi
+
+# Ensure webform_components doesn't have any entries that will cause problems.
+long_exec_drush_cmd "$d7site" "lsd-prepare-webform-migration"
+
+# This should pull in all dependencies
+
+long_exec_drush_cmd "$d8site" "pm:enable -y webform_migrate_plus migrate_upgrade"
+
+if [ "$LONG_LIVE" = "n" ]; then
+  domain="https://$d7site.loc.cx"
+else
+  domain="https://$d7site.ourpowerbase.net"
+fi
+long_exec_drush_cmd "$d8site" "migrate:upgrade --legacy-db-key=migrate --legacy-root=https://$domain --configure-only"
+migrations="
+  d7_user_role 
+  d7_user
+  upgrade_d7_user_role 
+  upgrade_d7_user
+  d7_system_date
+  upgrade_d7_node_type
+  upgrade_d7_node_complete_webform
+  upgrade_d7_webform
+  upgrade_d7_webform_submission
+"
+for migration in $migrations; do
+   long_exec_drush_cmd "$d8site" "migrate:import $migration"
+done
+

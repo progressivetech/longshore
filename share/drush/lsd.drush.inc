@@ -49,6 +49,10 @@ function lsd_drush_command() {
     array('description' => "Print out report of modules and themes that need to be updated."
   );
 
+  $items['lsd-prepare-webform-migration'] = [
+    'description' => "Update webform component table to avoid errors when migrating to Drupal 8+",
+  ];
+
   return $items;
 }
 
@@ -957,3 +961,25 @@ function drush_lsd_update_report() {
   module_disable(array('update'));
   print_r($updates_needed);
 }
+
+function drush_lsd_prepare_webform_migration() {
+  $sql = "SELECT nid, cid, form_key 
+    FROM webform_component 
+    WHERE 
+      type = 'fieldset' AND 
+      form_key NOT LIKE 'fieldset%' AND 
+      form_key NOT LIKE 'civicrm%'
+  ";
+  $result = db_query($sql);
+  while ($record = $result->fetch()) {
+    $sql = "UPDATE webform_component SET form_key = :form_key
+      WHERE nid = :nid AND cid = :cid";
+    $params = [ 
+      ':form_key' => 'fieldset_' . $record->form_key,
+      ':nid' => $record->nid,
+      ':cid' => $record->cid,
+    ];
+    db_query($sql, $params);
+  }    
+}
+
