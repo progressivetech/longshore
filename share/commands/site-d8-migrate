@@ -72,3 +72,25 @@ for migration in $migrations; do
    long_exec_drush_cmd "$d8site" "migrate:import $migration"
 done
 
+# Now let's copy themes.
+d7_themes="${LONG_SRV}/services/sites/${d7site}/drupal/themes"
+d8_themes="${LONG_SRV}/services/sites/${d8site}/drupal/themes"
+
+mkdir -p "$d8_themes"
+for theme_name in $(ls "$d7_themes" | grep -iv readme); do
+  theme_path="${d8_themes}/${theme_name}"
+  if [ -d "$theme_path" ]; then
+    # Already converted.
+    long_log "%s theme already converted" "info" "$theme_name"
+    continue
+  fi
+  long_log "Converting: %s theme" "info" "$theme_name"
+  mkdir "$theme_path"
+  cp "${LONG_SRV}/share/templates/theme.info.yml" "${theme_path}/${theme_name}.info.yml"
+  sed -i "s/LONG_THEME_NAME/${theme_name}/g" "${theme_path}/${theme_name}.info.yml"
+  cp "${LONG_SRV}/share/templates/theme.libraries.yml" "${theme_path}/${theme_name}.libraries.yml"
+  mkdir "${theme_path}/css"
+  cp "${d7_themes}/${theme_name}/${theme_name}.css" "${theme_path}/css/style.css"
+  cp "${d7_themes}/${theme_name}/${theme_name}-logo.png" "${theme_path}/"
+  long_exec_drush_cmd "$d8site" "theme:enable $theme_name"
+done
