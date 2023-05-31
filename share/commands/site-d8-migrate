@@ -89,8 +89,14 @@ for theme_name in $(ls "$d7_themes" | grep -iv readme); do
   cp "${LONG_SRV}/share/templates/theme.info.yml" "${theme_path}/${theme_name}.info.yml"
   sed -i "s/LONG_THEME_NAME/${theme_name}/g" "${theme_path}/${theme_name}.info.yml"
   cp "${LONG_SRV}/share/templates/theme.libraries.yml" "${theme_path}/${theme_name}.libraries.yml"
+
+  mkdir -p "${theme_path}/config/install"
+  cp "${LONG_SRV}/share/templates/theme_site_branding.yml" "${theme_path}/config/install/block.block.${theme_name}_site_branding.yml"
+  sed -i "s/LONG_THEME_NAME/${theme_name}/g" "${theme_path}/config/install/${theme_name}_site_branding.yml"
+
   mkdir "${theme_path}/css"
   cp "${d7_themes}/${theme_name}/${theme_name}.css" "${theme_path}/css/style.css"
   cp "${d7_themes}/${theme_name}/${theme_name}-logo.png" "${theme_path}/"
-  long_exec_drush_cmd "$d8site" "theme:enable $theme_name"
+  long_exec_drush_cmd "$d8site" "lsd:prepare-theme --name=$theme_name"
+  long_exec_drush_cmd "$d8site" "lsd:migrate-theme-logo --name=$theme_name"
 done
