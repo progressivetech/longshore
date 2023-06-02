@@ -9,7 +9,14 @@ Arguments
 long_check_args "$2" "$#" 1
 
 d8site="$2"
+
 d7site=$(echo "$d8site" | sed 's/d8$//')
+
+# Make sure we didn't pass the d7 site in as the first argument on accident.
+
+if [ "$d8site" = "$d7site" ]; then
+  long_die "Please pass in the d8 site as the first argument, not the d7 site."
+fi
 
 # Make sure the webform migration files have been copied
 long_set_site_platform "$d8site"
@@ -92,7 +99,7 @@ for theme_name in $(ls "$d7_themes" | grep -iv readme); do
 
   mkdir -p "${theme_path}/config/install"
   cp "${LONG_SRV}/share/templates/theme_site_branding.yml" "${theme_path}/config/install/block.block.${theme_name}_site_branding.yml"
-  sed -i "s/LONG_THEME_NAME/${theme_name}/g" "${theme_path}/config/install/${theme_name}_site_branding.yml"
+  sed -i "s/LONG_THEME_NAME/${theme_name}/g" "${theme_path}/config/install/block.block.${theme_name}_site_branding.yml"
 
   mkdir "${theme_path}/css"
   cp "${d7_themes}/${theme_name}/${theme_name}.css" "${theme_path}/css/style.css"
