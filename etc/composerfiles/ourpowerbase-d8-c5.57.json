@@ -487,7 +487,7 @@
                 "type": "git"
             },
             "setup": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@0848c8b5d7a9a53b66ead7f95048440a8a68c173",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@73255666cc8debb31a4f1434fb92f9b2050db5bb",
                 "path": "web/extensions/setup",
                 "type": "git"
             },
@@ -677,7 +677,7 @@
                 "type": "git"
             },
             "configurabledefaults": {
-                "url": "https://git.progressivetech.org/extensions/configurabledefaults@d3bc5fd42500f00fdefdd491a206f38c4eeb14c0",
+                "url": "https://git.progressivetech.org/extensions/configurabledefaults@a71928ddbaca5a1661e3ad0da398209afa213202",
                 "path": "web/extensions/configurabledefaults",
                 "type": "git"
             },
