@@ -24,8 +24,14 @@ for site in $sites; do
   long_log "Updating drupal on %s" info "$site"
   long_exec_drush_cmd "$site" "-y updatedb"
   long_log "Updating CiviCRM Core on %s" info "$site"
-  long_exec_drush_cmd "$site" "-y civicrm-upgrade-db"
-  long_exec_drush_cmd "$site" "pbd-rebuild-multilingual-schema"
+  long_set_site_platform "$site"
+  long_set_site_drupal_version
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    long_exec_cv_cmd "$site" "upgrade:db"
+  else
+    long_exec_drush_cmd "$site" "-y civicrm-upgrade-db"
+    long_exec_drush_cmd "$site" "pbd-rebuild-multilingual-schema"
+  fi
   long_log "Updating CiviCRM Extensions on %s" info "$site"
   long_exec_cv_cmd "$site" "ext:upgrade-db"
 done
