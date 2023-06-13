@@ -711,6 +711,16 @@
                 "path": "web/extensions/dynamic_theme_selector",
                 "type": "git"
             },
+            "osdi-client": {
+                "url": "https://github.com/lemniscus/osdi-client.git@cdc9690d011f2fa58102e154a3771c06f78d2b88",
+                "path": "web/extensions/osdi-client",
+                "type": "git"
+            },
+            "tce-osdi": {
+                "url": "https://codeberg.org/artfulrobot/tce-osdi.git@4852b082ebebac5b8c998d0cf698f45b9358b4f0",
+                "path": "web/extensions/tce-osdi",
+                "type": "git"
+            },
             "CiviVersafix": {
                 "url": "https://lab.civicrm.org/MikeyMJCO/CiviVersafix@c47bca9cb4106d82af0845131e15e1bdc9b19e18",
                 "path": "web/templates/mosaico_tpl/CiviVersafix",

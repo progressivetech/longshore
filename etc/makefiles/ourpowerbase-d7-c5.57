@@ -860,6 +860,18 @@ projects[dynamic_theme_selector][download][type] = "git"
 projects[dynamic_theme_selector][download][url] = "git://git.progressivetech.org/extensions/dynamic_theme_selector"
 projects[dynamic_theme_selector][download][revision] = "376f511eef3818d96310ce959cd2eaeef69a3d58"
 
+projects[osdi-client][type] = "library"
+projects[osdi-client][destination] = "extensions"
+projects[osdi-client][download][type] = "git"
+projects[osdi-client][download][url] = "https://github.com/lemniscus/osdi-client.git"
+projects[osdi-client][download][revision] = "cdc9690d011f2fa58102e154a3771c06f78d2b88"
+
+projects[tce-osdi][type] = "library"
+projects[tce-osdi][destination] = "extensions"
+projects[tce-osdi][download][type] = "git"
+projects[tce-osdi][download][url] = "https://codeberg.org/artfulrobot/tce-osdi.git"
+projects[tce-osdi][download][revision] = "4852b082ebebac5b8c998d0cf698f45b9358b4f0"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
