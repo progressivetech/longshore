@@ -1,0 +1,24 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-template <site>
+Check PTP database for full name and contact info and update site
+with those details.
+
+Arguments
+ <site> - subdomain of the site you'd like to update.
+"
+
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+
+long_rerun_over_network "$@" && exit
+
+# If the site is not running we can't setup the theme.
+if ! long_container_running "$site"; then
+  long_die "Not running for %s because it is not running." 1 "$site"
+fi
+
+long_exec_cv_cmd "$site" api4 PowerbaseSetup.SetContactInfo "siteKey=${LONG_PTP_SITE_API_KEY}" "userKey=${LONG_PTP_USER_API_KEY}"
