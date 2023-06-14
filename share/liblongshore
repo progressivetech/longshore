@@ -1694,6 +1694,8 @@ long_initialize_site() {
     "googleRecaptchaSecretKey=$LONG_GOOGLE_RECAPTCHA_SECRET_KEY" \
     "googleRecaptchaSiteKey=$LONG_GOOGLE_RECAPTCHA_SITE_KEY" \
     "googleMapGeoApiKey=$LONG_GOOGLE_MAP_GEO_API_KEY" \
+    "googleRecaptchaV3SecretKey=$LONG_GOOGLE_RECAPTCHAV3_SECRET_KEY" \
+    "googleRecaptchaV3SiteKey=$LONG_GOOGLE_RECAPTCHAV3_SITE_KEY" \
     "outboundMailHost=$LONG_OUTBOUND_MAIL_HOST" \
     "ptpSiteApiKey=$LONG_PTP_SITE_API_KEY" \
     "ptpUserApiKey=$LONG_PTP_USER_API_KEY"
