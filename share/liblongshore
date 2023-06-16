@@ -3139,7 +3139,7 @@ long_create_dkim_dns() {
     long_log "The DNS dkim record has already been created." info
     return
   else
-    post=("action=insert" "output=text" "object=item" "set:service_id=${service_id}" "set:hosting_order_id=${hosting_order_id}" "set:dns_fqdn=${fqdn}" "set:dns_type=text" "set:dns_ttl=${dns_ttl}" "set:dns_sshfp_algorithm=0" "set:dns_sshfp_type=0" "set:dns_text=${txt}" "user_name=$api_login" "user_pass=$api_password" "output_format=text")
+    post=("action=insert" "output=text" "object=item" "set:service_id=${service_id}" "set:hosting_order_id=${hosting_order_id}" "set:dns_fqdn=${fqdn}" "set:dns_type=txt" "set:dns_ttl=${dns_ttl}" "set:dns_sshfp_algorithm=0" "set:dns_sshfp_type=0" "set:dns_text=${txt}" "user_name=$api_login" "user_pass=$api_password" "output_format=text")
   fi
 
   out=$(curl --silent $(for i in "${post[@]}"; do echo --data "$i"; done) "$url")
