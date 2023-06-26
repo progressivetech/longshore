@@ -487,7 +487,7 @@
                 "type": "git"
             },
             "setup": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@23f0879be44b47ad992c81941d89a5107407f28b",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@ac9f25f5dfb4d007b367380163e6c9e1ae187720",
                 "path": "web/extensions/setup",
                 "type": "git"
             },
@@ -717,7 +717,7 @@
                 "type": "git"
             },
             "tce-osdi": {
-                "url": "https://codeberg.org/artfulrobot/tce-osdi.git@4852b082ebebac5b8c998d0cf698f45b9358b4f0",
+                "url": "https://codeberg.org/artfulrobot/tce-osdi.git@e5cf0dd8fd265b6a98e757f3f7b73c7726786c74",
                 "path": "web/extensions/tce-osdi",
                 "type": "git"
             },
