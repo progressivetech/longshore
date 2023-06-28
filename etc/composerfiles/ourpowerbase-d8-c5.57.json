@@ -162,7 +162,7 @@
                 "type": "git"
             },
             "simplepetitionemail": {
-                "url": "https://github.com/progressivetech/com.aghstrategies.petitionemail@288a3684c8227878f3d351757c27eb99bf61a09c",
+                "url": "https://github.com/progressivetech/com.aghstrategies.petitionemail@da13e8c515a6e784129a3f1a27e5d8266e8b0cb7",
                 "path": "web/extensions/simplepetitionemail",
                 "type": "git"
             },
@@ -622,7 +622,7 @@
                 "type": "git"
             },
             "electoral": {
-                "url": "https://github.com/progressivetech/com.jlacey.electoral@f55d42371da81bd406dae9601afb4892943522f4",
+                "url": "https://github.com/progressivetech/com.jlacey.electoral@f4ec1c7386f29d3a099bdbe57dc3551cb722758f",
                 "path": "web/extensions/electoral",
                 "type": "git"
             },
