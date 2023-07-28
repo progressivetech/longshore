@@ -13,7 +13,7 @@ Arguments
   default platform.
   <db> - Provide the database you'd like it restored to."
 
-long_check_args "$2" "$#" 3
+long_check_args "$2" "$#" 2
 
 site="$2"
 path="$3"
