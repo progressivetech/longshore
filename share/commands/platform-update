@@ -100,7 +100,7 @@ else
   # Now, addons is a variable containing our initial list.
   disabled_addons="$addons"
   uninstalled_addons="$addons"
-  sites=$(ssh longshore /srv/longshore/bin/longshore site-list)
+  sites=$(ssh longshore@container001.mayfirst.org /srv/longshore/bin/longshore site-list)
   for site in $sites; do
     long_log "Checking: %s" info "$site"
     disabled_count=$(echo "$disabled_addons" | grep ',' -o |wc -w)
