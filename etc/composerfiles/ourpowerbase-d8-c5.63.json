@@ -337,7 +337,7 @@
                 "type": "git"
             },
             "mosaico": {
-                "url": "https://github.com/veda-consulting-company/uk.co.vedaconsulting.mosaico/archive/refs/tags/3.2.zip",
+                "url": "https://download.civicrm.org/extension/uk.co.vedaconsulting.mosaico/3.2.1691060437/uk.co.vedaconsulting.mosaico-3.2.1691060437.zip",
                 "path": "web/extensions/mosaico",
                 "type": "archive"
             },
