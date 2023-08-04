@@ -398,7 +398,7 @@ projects[mosaico][download][type] = "file"
 ; Use file download because  mosaico has a build script that won't get executed.
 ; Check for latest release and download link here:
 ; https://civicrm.org/extensions/email-template-builder
-projects[mosaico][download][url] = "https://github.com/veda-consulting-company/uk.co.vedaconsulting.mosaico/archive/refs/tags/3.2.zip"
+projects[mosaico][download][url] = "https://download.civicrm.org/extension/uk.co.vedaconsulting.mosaico/3.2.1691060437/uk.co.vedaconsulting.mosaico-3.2.1691060437.zip"
 
 ; Required for mosaico
 projects[shoreditch][type] = "library"
