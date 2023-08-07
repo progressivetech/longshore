@@ -262,7 +262,7 @@
                 "type": "git"
             },
             "stripe": {
-                "url": "https://lab.civicrm.org/extensions/stripe.git@4e16e7d513fe27de8401ef93c4e840abd1d4f3b4",
+                "url": "https://lab.civicrm.org/extensions/stripe.git@714e6c229ca32c958793ae02de7e5bb6da2862e5",
                 "path": "web/extensions/stripe",
                 "type": "git"
             },
@@ -492,7 +492,7 @@
                 "type": "git"
             },
             "setup": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@6eeb80ac8fae6f4513b28e9b7597f01d3077e9b0",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@f6504894d602e8da79dc9bb50e0fece39fe217e4",
                 "path": "web/extensions/setup",
                 "type": "git"
             },
