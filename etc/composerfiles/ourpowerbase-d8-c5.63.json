@@ -262,7 +262,7 @@
                 "type": "git"
             },
             "stripe": {
-                "url": "https://lab.civicrm.org/extensions/stripe.git@714e6c229ca32c958793ae02de7e5bb6da2862e5",
+                "url": "https://lab.civicrm.org/extensions/stripe.git@4e16e7d513fe27de8401ef93c4e840abd1d4f3b4",
                 "path": "web/extensions/stripe",
                 "type": "git"
             },
