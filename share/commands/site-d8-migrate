@@ -107,3 +107,6 @@ for theme_name in $(ls "$d7_themes" | grep -iv readme); do
   long_exec_drush_cmd "$d8site" "lsd:prepare-theme --name=$theme_name"
   long_exec_drush_cmd "$d8site" "lsd:migrate-theme-logo --name=$theme_name"
 done
+
+# Now upgrade themekey
+long_exec_drush_cmd "$d8site" ctn:importd7
