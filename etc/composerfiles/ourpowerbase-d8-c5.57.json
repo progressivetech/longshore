@@ -656,11 +656,6 @@
                 "path": "web/extensions/ogp",
                 "type": "git"
             },
-            "emailarchiver": {
-                "url": "https://git.progressivetech.org/extensions/emailarchiver@c57a3558c63f6fcc541c877965f3aab6ffe01e74",
-                "path": "web/extensions/emailarchiver",
-                "type": "git"
-            },
             "validate": {
                 "url": "https://git.progressivetech.org/extensions/validate@7988206b6bc24d24a37f70d147a60965c289d3b9",
                 "path": "web/extensions/validate",
@@ -697,7 +692,7 @@
                 "type": "git"
             },
             "archivemailing": {
-                "url": "https://lab.civicrm.org/extensions/archivemailing.git@bf619a2869839196a7624d6e61a3a62d6568445c",
+                "url": "https://lab.civicrm.org/jamie/archivemailing.git@030e1d4b27c8ec0fa77eb96cefb0baa958b420de",
                 "path": "web/extensions/archivemailing",
                 "type": "git"
             },
@@ -717,12 +712,12 @@
                 "type": "git"
             },
             "osdi-client": {
-                "url": "https://github.com/lemniscus/osdi-client.git@cdc9690d011f2fa58102e154a3771c06f78d2b88",
+                "url": "https://github.com/lemniscus/osdi-client.git@4d880d108d1e0037da2eddce2f801f7f32e5f327",
                 "path": "web/extensions/osdi-client",
                 "type": "git"
             },
             "tce-osdi": {
-                "url": "https://codeberg.org/artfulrobot/tce-osdi.git@e5cf0dd8fd265b6a98e757f3f7b73c7726786c74",
+                "url": "https://codeberg.org/artfulrobot/tce-osdi.git@144e32a56335666476e57d217da13ccd952ef4ef",
                 "path": "web/extensions/tce-osdi",
                 "type": "git"
             },

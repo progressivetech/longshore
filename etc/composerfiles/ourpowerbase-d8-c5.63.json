@@ -712,12 +712,12 @@
                 "type": "git"
             },
             "osdi-client": {
-                "url": "https://github.com/lemniscus/osdi-client.git@4278749e3616918364561dcfc1f072d1c877208d",
+                "url": "https://github.com/lemniscus/osdi-client.git@4d880d108d1e0037da2eddce2f801f7f32e5f327",
                 "path": "web/extensions/osdi-client",
                 "type": "git"
             },
             "tce-osdi": {
-                "url": "https://codeberg.org/artfulrobot/tce-osdi.git@e5cf0dd8fd265b6a98e757f3f7b73c7726786c74",
+                "url": "https://codeberg.org/artfulrobot/tce-osdi.git@144e32a56335666476e57d217da13ccd952ef4ef",
                 "path": "web/extensions/tce-osdi",
                 "type": "git"
             },
