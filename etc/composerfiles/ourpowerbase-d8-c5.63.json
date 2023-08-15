@@ -9,6 +9,10 @@
     },
     "repositories": [
         {
+            "type": "vcs",
+            "url": "https://git.drupal.org/issue/webform_migrate-3381251.git"
+        },
+        {
           "type": "composer",
           "url": "https://packages.drupal.org/8"
         },
@@ -81,7 +85,7 @@
         "drupal/masquerade": "2.0-rc1",
         "drupal/r4032login": "2.2.1",
         "drupal/asset_injector": "2.16",
-        "drupal/webform_migrate": "^1.2",
+        "drupal/webform_migrate": "dev-3381251-after-migrating-webforms-1.x as 1.2",
         "drupal/migrate_upgrade": "^4.0",
         "drupal/migrate_plus": "^6.0",
         "drupal/webform_migrate_plus": "1.x-dev",
