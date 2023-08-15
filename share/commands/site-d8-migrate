@@ -51,6 +51,12 @@ if ! grep --quiet 'migrate' "$d8_local_settings"; then
 ];\n" "$d7site" "$d7site" "$password" >> "$d8_local_settings"
 fi
 
+# Ensure our private files setting is added.
+if ! grep --quiet 'file_private_path' "$d8_local_settings"; then
+  printf "
+\$settings['file_private_path'] = \$app_root . '/sites/default/private';\n" >> "$d8_local_settings"
+fi
+
 # Ensure webform_components doesn't have any entries that will cause problems.
 long_exec_drush_cmd "$d7site" "lsd-prepare-webform-migration"
 
@@ -65,6 +71,7 @@ else
 fi
 long_exec_drush_cmd "$d8site" "migrate:upgrade --legacy-db-key=migrate --legacy-root=https://$domain --configure-only"
 migrations="
+  system_site
   d7_user_role 
   d7_user
   upgrade_d7_user_role 

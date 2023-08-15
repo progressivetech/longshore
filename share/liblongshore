@@ -1136,6 +1136,9 @@ long_create_site_directories() {
     chmod 0775 "${dir}/drupal/private/temp"
   fi
 
+  # Ensure drupal private files directory is htaccess protected.
+  cp "${LONG_SRV}/share/templates/htaccess" "${dir}/drupal/private/.htaccess"
+
   # Now that the right modes are set, chown the files to the right users. 
   local web_writable="drupal/files drupal/private"
   for foo in $web_writable; do
