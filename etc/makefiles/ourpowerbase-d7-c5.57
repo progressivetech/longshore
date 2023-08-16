@@ -140,6 +140,9 @@ projects[tfa][version] = "2.1"
 projects[tfa_basic][type] = "module"
 projects[tfa_basic][version] = "1.1"
 
+projects[hide_submit][type] = "module"
+projects[hide_submit][version] = "2.4"
+
 ; **************
 ; custom modules
 ; *************
