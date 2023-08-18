@@ -759,7 +759,7 @@ projects[electoral][type] = "library"
 projects[electoral][destination] = "extensions"
 projects[electoral][download][type] = "git"
 projects[electoral][download][url] = "https://github.com/progressivetech/com.jlacey.electoral"
-projects[electoral][download][revision] = "f4ec1c7386f29d3a099bdbe57dc3551cb722758f"
+projects[electoral][download][revision] = "29e4d43f62b4c454c34fe07ddd4ebe0f9210dae7"
 
 projects[templateredact][type] = "library"
 projects[templateredact][destination] = "extensions"
