@@ -855,7 +855,7 @@ projects[osdi-client][type] = "library"
 projects[osdi-client][destination] = "extensions"
 projects[osdi-client][download][type] = "git"
 projects[osdi-client][download][url] = "https://github.com/lemniscus/osdi-client.git"
-projects[osdi-client][download][revision] = "4d880d108d1e0037da2eddce2f801f7f32e5f327"
+projects[osdi-client][download][revision] = "227491f21a96564fb1ed51457c6da665042d8f00"
 
 projects[tce-osdi][type] = "library"
 projects[tce-osdi][destination] = "extensions"
