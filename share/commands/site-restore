@@ -91,10 +91,20 @@ if [ "$reply" = "y" ]; then
     mv "$db_path" "${site_path}/backup/${site}.sql.gz"
   fi
 
-  long_log "Creating site" info
-  long_create_container site "$site" "$db" "$platform"
+  long_prompt "Creating site"
+  if [ "$reply" = "y" ]; then
+    long_create_container site "$site" "$db" "$platform"
+  else
+    long_log "Not creating site."
+  fi
   docker start "$site"
-  long_setup_site "$site"
+
+  long_prompt "Seting up site"
+  if [ "$reply" = "y" ]; then
+    long_setup_site "$site"
+  else
+    long_log "Not seting up site."
+  fi
   long_exec_drush_cmd "$site" "lsd-admin-password"
   long_nginx_reload
 
