@@ -53,6 +53,9 @@ function lsd_drush_command() {
     'description' => "Update webform component table to avoid errors when migrating to Drupal 8+",
   ];
 
+  $items['lsd-admin-password'] = [
+    'description' => "Set admin password to database password.",
+  ];
   return $items;
 }
 
@@ -96,6 +99,11 @@ function drush_lsd_dev() {
   // admin one to match.
   lsd_set_admin_password(); 
 }
+
+function drush_lsd_admin_password() {
+  lsd_set_admin_password(); 
+}
+
 /**
  * Implementation of command lsd-setup.
  *
