@@ -95,6 +95,7 @@ if [ "$reply" = "y" ]; then
   long_create_container site "$site" "$db" "$platform"
   docker start "$site"
   long_setup_site "$site"
+  long_exec_drush_cmd "$site" "lsd-admin-password"
   long_nginx_reload
 
   long_prompt "Updating DNS"
