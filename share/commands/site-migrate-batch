@@ -272,7 +272,6 @@ for site in $sites; do
 
   if ! long_exec_cv_cmd "$site" apiv4 PowerbaseUtilities.DeleteOldStripeWebhook; then
     long_log "upgrade:%s Failed to delete stripe webhooks" error "$site"
-    continue
   fi
 
   long_log "upgrade:%s Updated extensions" info "$site"
