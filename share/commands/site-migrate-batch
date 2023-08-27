@@ -125,7 +125,11 @@ long_prompt "Starting migration..."
 # Reduce noise, turn off all output (all log messages will go to logger).
 LONG_LOG_LEVEL=error
 
+# Create backup log directory.
+logdir=$(mktemp -d powerbase-upgrade.XXXX)
 for site in $sites; do
+  # Create backup log file
+  logfile=$(mktemp --tmpdir "$logdir" "${site}-XXXX")
   new_platform=$(grep ":$site:" "$path" | cut -d: -f3 | tr -d ' ')
   new_version=$(echo "$new_platform" | egrep -o "[0-9]+\.[0-9]+(\.[0-9]+)?$" | tr -d ' ')
   if [ -z "$new_platform" -o -z "$new_version" ]; then
@@ -135,7 +139,7 @@ for site in $sites; do
     long_die "Can't find the new platform (%s)." 1 "$new_platform"
   fi
 
-  printf "\n____Migrating %s to platform %s running %s.____\n" "$site" "$new_platform" "$new_version"
+  printf "\n____Migrating %s to platform %s running %s log file %s.____\n" "$site" "$new_platform" "$new_version" "$logfile"
   # Run some sanity checks.
   if ! long_check_site_exists "$site"; then
     long_log "upgrade:%s: Site doesn't exist." error "$site"
@@ -167,6 +171,24 @@ for site in $sites; do
 
   if [ "$new_platform" = "$old_platform" ]; then
     long_log "upgrade:%s: Site is already running that platform." error "$site"
+    continue
+  fi
+
+  # 5.63 specials
+  temp=$(mktemp)
+  echo "UPDATE civicrm_contribution_page SET frontend_title = 'Donation Page', title = 'Donation Page' WHERE title IS NULL;" > "$temp"
+  query="$temp"
+
+  if ! long_execute_site_query "$site" "$query"; then
+    long_log "upgrade:%s Failed to execute query to set frontend title." error "$site"
+    rm "$query"
+    continue
+  fi
+  rm "$query"
+
+  # Ensure we can reconcile - bail early if we can't
+  if ! long_clear_cache "$site" reconcile; then
+    long_log "upgrade:%s Failed to reconcile managed entities." error "$site"
     continue
   fi
 
@@ -226,7 +248,7 @@ for site in $sites; do
   post_upgrade_version=$(long_execute_site_query "$site" "$temp" | tail -n1 | sed "s/\.beta[0-9]*$//") 
 
   printf ".db."
-  if ! long_exec_drush_cmd "$site" "-y civicrm-upgrade-db"; then
+  if ! long_exec_drush_cmd "$site" "-y civicrm-upgrade-db" 2>> "$logfile" 1>> "$logfile"; then
     long_log "upgrade:%s Failed to upgrade database." error "$site"
     continue
   fi
@@ -256,14 +278,14 @@ for site in $sites; do
   long_log "upgrade:%s Updated multi-lingual schemas" info "$site"
   printf "."
 
-  if ! long_exec_cv_cmd "$site" ext:upgrade-db; then
+  if ! long_exec_cv_cmd "$site" ext:upgrade-db 2>> "$logfile" 1>> "$logfile"; then
     long_log "upgrade:%s Failed to update extensions" error "$site"
     continue
   fi
   long_log "upgrade:%s Updated extensions" info "$site"
   printf "."
 
-  if ! long_exec_drush_cmd "$site" "-y updatedb"; then
+  if ! long_exec_drush_cmd "$site" "-y updatedb" 2>> "$logfile" 1>> "$logfile"; then
     long_log "upgrade:%s Failed to update drupal modules" error "$site"
     continue
   fi
