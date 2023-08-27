@@ -1,18 +1,16 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-transfer <site> <sibling> [db-host]
+long_usage_message="usage: $(basename $0) site-transfer <site> <sibling>
 Move a site from the current sibling to a new sibling.
 
 Arguments
   <site> - The site to transfer.
-  <sibling> - The sibling to transfer the site to.
-  <db-host> - Optionally provide db host on target"
+  <sibling> - The sibling to transfer the site to."
 
 long_check_args "$2" "$#" 2
 
 site="$2"
 sibling="$3"
-db_host="$4"
 
 # Run some sanity checks.
 if [ ! -d "${LONG_SRV}/services/sites/${site}" ]; then
@@ -37,11 +35,6 @@ fi
 # Record existing platform
 long_set_site_platform "$site"
 platform="$LONG_SITE_PLATFORM"
-
-if [ -z "$db_host" ]; then
-  db_host=$(long_set_default_db "$site")
-fi
-
 
 # Empty sessions table for quicker restore and to ensure everyone is 
 # logged out for upgrade.
@@ -72,7 +65,7 @@ fi
 
 long_prompt "Restoring site on new sibling..."
 if [ "$reply" = "y" ]; then
-  ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-restore '$site' '$backup_target_path' '$db_host' '$platform'"
+  ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-restore '$site' '$backup_target_path' '$platform'"
   ssh -tt "${sibling}.mayfirst.org" "${LONG_SRV}/bin/longshore site-drush '$site' '-y vset maintenance_mode 0'"
 fi
 
