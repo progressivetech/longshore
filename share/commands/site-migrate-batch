@@ -270,7 +270,7 @@ for site in $sites; do
   long_log "upgrade:%s Updated drupal modules" info "$site"
   printf "."
 
-  if ! long_exec_cv_cmd "$site" apiv4 PowerbaseUtilities.DeleteOldStripeWebhooks; then
+  if ! long_exec_cv_cmd "$site" api4 PowerbaseUtilities.DeleteOldStripeWebhooks; then
     long_log "upgrade:%s Failed to delete stripe webhooks" error "$site"
   fi
 
