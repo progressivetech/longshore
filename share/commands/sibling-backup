@@ -13,7 +13,8 @@ host=$(hostname)
 backups_path="${LONG_BACKUPS}/${host}"
 
 # We only rsync files younger than 3 months to all servers to save disk space.
+# And skip preupgrades - also to save disk space.
 for sibling in $LONG_SIBLINGS; do
-  find "$backups_path" -type f -mtime -90 -exec rsync -t "{}" ${sibling}.mayfirst.org:"${backups_path}/" \;
+  find "$backups_path" -type f -mtime -90 ! -name '*preupgrade*' -exec rsync -t "{}" ${sibling}.mayfirst.org:"${backups_path}/" \;
 done
 
