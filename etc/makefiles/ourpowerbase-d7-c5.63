@@ -20,7 +20,7 @@ projects[drupal][version] = "7.98"
 projects[civicrm][type] = "module" 
 projects[civicrm][directory_name] = "civicrm" 
 projects[civicrm][download][type] = "git" 
-projects[civicrm][download][revision] = "60c0e7f9083461128bf9810eddba9d40868a6e42"
+projects[civicrm][download][revision] = "3cee8daa7d608c3756fe92ac23e3ddd843797ab9"
 projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
 
 ; Packages
@@ -28,7 +28,7 @@ projects[civicrm_packages][type] = "library"
 projects[civicrm_packages][destination] = "modules/civicrm" 
 projects[civicrm_packages][directory_name] = "packages" 
 projects[civicrm_packages][download][type] = "git" 
-projects[civicrm_packages][download][revision] = "8a3062b642c75487a910cdd8d8b42f77913d6203"
+projects[civicrm_packages][download][revision] = "a9ad02e411db3de5a57af04932faf9dc4a806402"
 projects[civicrm_packages][download][url] = "git://git.progressivetech.org/civicrm/civicrm-packages"
 
 ; Drupal
@@ -36,7 +36,7 @@ projects[civicrm_drupal][type] = "library"
 projects[civicrm_drupal][destination] = "modules/civicrm" 
 projects[civicrm_drupal][directory_name] = "drupal" 
 projects[civicrm_drupal][download][type] = "git" 
-projects[civicrm_drupal][download][revision] = "9ba8e6da333cfdf1f126e6a87a894261cf681768"
+projects[civicrm_drupal][download][revision] = "403c39875ae790a18438c5cffffffc1fe4c97a06"
 projects[civicrm_drupal][download][url] = "git://git.progressivetech.org/civicrm/civicrm-drupal"
 
 ;****************************************
