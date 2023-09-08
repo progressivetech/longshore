@@ -10,6 +10,17 @@
             "DEMO_USER": "demo",
             "SITE_TOKEN": "not-used",
             "TEST_DB_DSN": "mysql://root:root@mysqlhost/civitest?new_link=true"
+        },
+        "/var/www/powerbase/sites/default/civicrm.settings.php": {
+            "ADMIN_EMAIL": "admin@example.com",
+            "ADMIN_PASS": "not-used",
+            "ADMIN_USER": "admin",
+            "CMS_TITLE": "Test Database",
+            "DEMO_EMAIL": "demo@example.com",
+            "DEMO_PASS": "not-used",
+            "DEMO_USER": "demo",
+            "SITE_TOKEN": "not-used",
+            "TEST_DB_DSN": "mysql://root:root@mysqlhost/civitest?new_link=true"
         }
     }
 }
