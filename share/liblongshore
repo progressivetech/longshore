@@ -3250,5 +3250,7 @@ long_clear_cache() {
       rm "$temp"
     fi
   fi
-
+  if [ "$cache" == "settings" ]; then
+    long_exec_cv_cmd "$site" "php:eval" 'Civi::cache("settings")->flush();'
+  fi
 }
