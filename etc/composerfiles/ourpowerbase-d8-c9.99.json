@@ -26,18 +26,6 @@
         },
         {
             "type": "vcs",
-            "url": "https://git.progressivetech.org/civicrm/civicrm-core"
-        },
-        {
-            "type": "vcs",
-            "url": "https://git.progressivetech.org/civicrm/civicrm-packages"
-        },
-        {
-            "type": "vcs",
-            "url": "https://git.progressivetech.org/civicrm/civicrm-drupal-8"
-        },
-        {
-            "type": "vcs",
             "url": "https://git.progressivetech.org/powerbase/lsd"
         },
         {
@@ -70,9 +58,9 @@
         "drupal/core-project-message": "9.5.10",
         "drupal/core-recommended": "9.5.10",
         "drush/drush": "10.6.2",
-        "civicrm/civicrm-core": "dev-ptp5.63-2023-08-04 as 5.63.4",
-        "civicrm/civicrm-drupal-8": "~5.63.4+esr",
-        "civicrm/civicrm-packages": "~5.63.4+esr",
+        "civicrm/civicrm-core": "dev-master",
+        "civicrm/civicrm-drupal-8": "dev-master",
+        "civicrm/civicrm-packages": "dev-master",
         "powerbase/lsd": "dev-main",
         "powerbase/pbadmin": "dev-master",
         "powerbase/pbpublic": "dev-master",

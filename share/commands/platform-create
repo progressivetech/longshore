@@ -219,17 +219,21 @@ if [ -z "$source_platform_path_temp" ]; then
     php7.4 /usr/local/bin/composer --verbose install || long_die "Failed to install with composer"
     # Get internationalization files.
     civicrm_post_full_version=$(grep -o -P 'dev-ptp[0-9-.]+ as [0-9.]+' composer.json | grep -o -P '[0-9.]+$')
-    if echo "$civicrm_post_full_version" | grep -E "^5\.57\." > /dev/null; then
-      civicrm_post_full_version=5.57.3
+    if echo "$civicrm_post_full_version" | grep -E "^5\.63\." > /dev/null; then
+      civicrm_post_full_version=5.63.3
     fi
-    wget https://download.civicrm.org/civicrm-${civicrm_post_full_version}-l10n.tar.gz
-    tar -zxf civicrm-${civicrm_post_full_version}-l10n.tar.gz
-    cd civicrm/
-    cp -R l10n/ ../vendor/civicrm/civicrm-core/
-    cp -R sql/ ../vendor/civicrm/civicrm-core/
-    cd ..
-    rm -rf civicrm/
-    rm civicrm-${civicrm_post_full_version}-l10n.tar.gz
+    # If we are installing from the tip of the civicrm git archive, we won't have a
+    # $civicrm_post_ful_version variable and we will simply skip the l10n files.
+    if [ -n "$civicrm_post_full_version" ] ; then
+      wget https://download.civicrm.org/civicrm-${civicrm_post_full_version}-l10n.tar.gz
+      tar -zxf civicrm-${civicrm_post_full_version}-l10n.tar.gz
+      cd civicrm/
+      cp -R l10n/ ../vendor/civicrm/civicrm-core/
+      cp -R sql/ ../vendor/civicrm/civicrm-core/
+      cd ..
+      rm -rf civicrm/
+      rm civicrm-${civicrm_post_full_version}-l10n.tar.gz
+    fi
     # Symlink our custom modules and themes.
     ln -s /var/www/powerbase/web/sites/default/themes web/themes/custom
     ln -s /var/www/powerbase/web/sites/default/modules web/modules/custom

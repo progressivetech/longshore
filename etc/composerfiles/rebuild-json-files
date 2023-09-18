@@ -3,14 +3,27 @@
 composer_base=/srv/longshore/etc/composerfiles
 make_base=/srv/longshore/etc/makefiles
 
-# Find json files to rebuild.
+# Keep track of the last makefile (the one with the
+# highest version number).
+last_makefile=""
+
+# Find json files to rebuild. They will be in order from oldest
+# (lowest version numbers) to newest (highest version numbers).
 for composerfile in $(ls "${composer_base}"/*.json); do
   # Find corresponding make file.
   filename=$(basename "$composerfile" .json | sed "s/d8/d7/")
   makefile="${make_base}/${filename}"
   if [ ! -f "$makefile" ]; then
-    printf "Can't find make file: %s\n" "$makefile" 
-    exit 1
+    # If we are operating on the special 9.99 composer file for
+    # civicrm head, then we use that high make file available.
+    if [ -n "$last_makefile" ]; then
+      makefile="$last_makefile"
+    else
+      printf "Can't find make file: %s\n" "$makefile" 
+      exit 1
+    fi
+  else
+    last_makefile="$makefile"
   fi
 
   temp=$(mktemp)
