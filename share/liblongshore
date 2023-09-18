@@ -2976,8 +2976,16 @@ long_set_site_contacts_count() {
 long_set_site_recent_logins_count() {
   local site="$1"
   local temp=$(mktemp)
+  long_set_site_platform "$site"
+  long_set_site_drupal_version "$platform"
+
   # Limit to last two weeks.
-  printf 'SELECT COUNT(DISTINCT(uid)) FROM users WHERE uid != 0 AND name != "civicron" AND login > UNIX_TIMESTAMP() - 14 * 86400;' >> "$temp"
+  if [ "$LONG_SITE_DRUPAL_VERSION" -lt "8" ]; then
+    printf 'SELECT COUNT(DISTINCT(uid)) FROM users WHERE uid != 0 AND name != "civicron" AND login > UNIX_TIMESTAMP() - 14 * 86400;' >> "$temp"
+  else
+    printf 'SELECT COUNT(DISTINCT(uid)) FROM users_field_data WHERE uid != 0 AND login >= UNIX_TIMESTAMP(NOW() - INTERVAL 2 WEEK);' >> "$temp"
+  fi
+
   LONG_SITE_RECENT_LOGINS_COUNT=$(long_execute_site_query "$site" "$temp" | tail -n1)
   rm "$temp"
 }
