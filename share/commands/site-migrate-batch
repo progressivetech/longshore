@@ -250,7 +250,7 @@ for site in $sites; do
   post_upgrade_version=$(long_execute_site_query "$site" "$temp" | tail -n1 | sed "s/\.beta[0-9]*$//") 
 
   printf ".db."
-  if ! long_exec_drush_cmd "$site" "-y civicrm-upgrade-db" 2>> "$logfile" 1>> "$logfile"; then
+  if ! long_exec_cv_cmd "$site" "upgrade:db" 2>> "$logfile" 1>> "$logfile"; then
     long_log "upgrade:%s Failed to upgrade database." error "$site"
     continue
   fi
