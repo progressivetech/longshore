@@ -1,28 +1,37 @@
 # Based on https://github.com/AsavarTzeth/docker-php5-fpm
 # Used for PowerBase sites.
-FROM my-bullseye:latest
+FROM my-bookworm:latest
 
-ARG php_version=7.4
+ARG php_version=8.1
 
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
+RUN apt-get update && \
+    export DEBIAN_FRONTEND=noninteractive && \ 
+    apt-get install -y \
+    lsb-release \
+    ca-certificates \
+    curl
+
+RUN curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
+RUN sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
 
 # Install packages only needed by powerbase.
 RUN apt-get update && \
     export DEBIAN_FRONTEND=noninteractive && \ 
     apt-get install -y \
     --no-install-recommends \
-    php-fpm \
-    php-apcu \
-    php-mysql \
-    php-curl \
-    php-gd \
-    php-xml \
-    php-soap \
-    php-bcmath \
-    php-mbstring \
-    php-imagick \
-    php-zip \
-    php-memcached \
+    php8.1-fpm \
+    php8.1-apcu \
+    php8.1-mysql \
+    php8.1-curl \
+    php8.1-gd \
+    php8.1-xml \
+    php8.1-soap \
+    php8.1-bcmath \
+    php8.1-mbstring \
+    php8.1-imagick \
+    php8.1-zip \
+    php8.1-memcached \
     fonts-linuxlibertine \
     wkhtmltopdf \
     xauth \
@@ -41,19 +50,21 @@ RUN apt-get update && \
     libssl-dev \
     xfonts-75dpi \
     xfonts-base \
-    php-xdebug \
-    php-intl \
+    php8.1-xdebug \
+    php8.1-intl \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
-# Download most recent version of drush
-RUN cd /usr/local/bin && wget -q -O drush https://github.com/drush-ops/drush/releases/download/8.4.8/drush.phar && chmod 755 drush
+# Download most recent version of drush8 for drupal7 sites.
+RUN cd /usr/local/bin && wget -q -O drush https://github.com/drush-ops/drush/releases/download/8.4.12/drush.phar && chmod 755 drush
+
+# For Drupal 9+ sites a more modern drush will be provided via composer. 
 
 # And cv
 RUN cd /usr/local/bin && wget -q -O cv https://download.civicrm.org/cv/cv.phar && chmod 755 cv 
 
-# And phpunit7
-RUN cd /usr/local/bin && wget -q -O phpunit7 https://phar.phpunit.de/phpunit-7.phar  && chmod 755 phpunit7 
+# And phpunit8
+RUN cd /usr/local/bin && wget -q -O phpunit8 https://phar.phpunit.de/phpunit-8.phar  && chmod 755 phpunit8 
 
 # Listen on 127.0.0.1 
 RUN sed -i "s#listen = /run/php/php${php_version}-fpm.sock#listen = 9000#" "/etc/php/${php_version}/fpm/pool.d/www.conf"
