@@ -115,7 +115,7 @@ function drush_lsd_setup() {
     'file_private_path' => 'sites/default/private',
     'file_temporary_path' => 'sites/default/private/temp'
   );
-  while(list($k, $v) = each($settings)) {
+  foreach($settings as $k => $v) {
     if(variable_get($k, NULL) != $v) {
       variable_set($k, $v);
     }
@@ -241,7 +241,7 @@ function lsd_grant_admin_all_perms() {
   // $all_permissions = drupal_map_assoc(array_keys(module_invoke_all('permission')));
   $all_permissions = array_keys(module_invoke_all('permission'));
   $admin_permissions = array();
-  while(list(,$perm) = each($all_permissions)) {
+  foreach ($all_permissions as $perm) {
     if (in_array($perm, $exceptions)) {
       continue;
     }
@@ -452,7 +452,7 @@ function lsd_set_blocks_for_theme($theme) {
     ),
   );
 
-  while(list(,$block) = each ($blocks)) {
+  foreach ($blocks as $block) {
 
     $sql = "SELECT bid FROM {block} WHERE theme = :theme AND ".
       "module = :module AND delta = :delta";
@@ -470,7 +470,7 @@ function lsd_set_blocks_for_theme($theme) {
 
     reset($block);
     $fields = array();
-    while(list($k,$v) = each($block)) {
+    foreach ($blocks as $k => $v) {
       $field = trim($k,':');
       $fields[$field] = $v;
     }
@@ -594,7 +594,7 @@ function lsd_set_powerbase_roles_and_perms() {
     user_role_revoke_permissions($role_obj->rid, $user_exceptions);
   }
   // Remove them from the list to grant access to
-  while(list(,$exception) = each($user_exceptions)) {
+  foreach ($user_exceptions as $exception) {
     if(false !== ($key = array_search($exception, $perms['Powerbase User']))) {
       unset($perms['Powerbase User'][$key]);
     }
@@ -660,7 +660,7 @@ function lsd_set_powerbase_roles_and_perms() {
   $perms['Powerbase Administrator'][] = 'access user profiles';
   $perms['Powerbase Administrator'][] = 'change own username';
 
-  while(list(,$role) = each($roles)) {
+  foreach ($roles as $role) {
     $role_obj = user_role_load_by_name($role);
     if(!$role_obj) {
       // add the role
@@ -693,7 +693,7 @@ function lsd_enable_modules() {
 
   $modules_already_enabled = pbd_module_list();
   $modules_to_enable = array();
-  while(list(,$module) = each($modules_wanted)) {
+  foreach ($modules_wanted as $module) {
     if(!in_array($module, $modules_already_enabled)) {
       $modules_to_enable[] = $module;
     }
@@ -761,7 +761,7 @@ function lsd_disable_modules() {
 
   $modules_enabled = drush_module_list();
   $modules_to_disable = array();
-  while(list(,$module) = each($disable)) {
+  foreach ($disable as $module) {
     if(in_array($module, $modules_enabled)) {
       $modules_to_disable[] = $module;
     }
@@ -797,13 +797,13 @@ function lsd_set_anonymous_and_authenticated_perms() {
 
   $problem_anon_perms = array_diff($default_anon_perms,$available_perms);
   $key = null;
-  while(list(,$perm) = each($problem_anon_perms)) {
+  foreach ($problem_anon_perms as $perm) {
     $key = array_search($perm, $default_anon_perms);
     if($key || $key == 0) unset($default_anon_perms[$key]);
   }
   $problem_auth_perms = array_diff($default_auth_perms,$available_perms);
   $key = null;
-  while(list(,$perm) = each($problem_auth_perms)) {
+  foreach ($problem_auth_perm as $perm) {
     $key = array_search($perm, $default_auth_perms);
     if($key || $key == 0) unset($default_auth_perms[$key]);
   }
