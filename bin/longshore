@@ -7,8 +7,8 @@ command="$1"
 [ -z "$command" ] && command=help
 
 # Parse global arguments
-if [ "$command" = "-f" -o "$command" = "--force" ]; then
-  LONG_FORCE=1
+if [ "$command" = "-f" ] || [ "$command" = "--force" ]; then
+  export LONG_FORCE=1
   shift
   command="$1"
 fi
@@ -22,14 +22,14 @@ if [ "$command" = "-x" ]; then
 fi
 
 # Pass -v for more noisy 
-if [ "$command" = "-v" -o "$command" = "--verbose" ]; then
+if [ "$command" = "-v" ] || [ "$command" = "--verbose" ]; then
   LONG_LOG_LEVEL=info
   shift
   command="$1"
 fi
 
 # Try to find a config file
-locations="~/.config/longshore/longshore.conf /etc/longshore/longshore.conf /usr/local/etc/longshore/longshore.conf"
+locations="${HOME}/.config/longshore/longshore.conf /etc/longshore/longshore.conf /usr/local/etc/longshore/longshore.conf"
 
 config_file=
 for location in $locations; do
@@ -61,7 +61,7 @@ source "$config_file"
 LONG_LOG_LEVEL=${LONG_LOG_LEVEL:-$LONG_DEFAULT_LOG_LEVEL}
 
 # Get the bash library
-source ${LONG_SHARE}/liblongshore
+source "${LONG_SHARE}"/liblongshore
 
 # Set the LONG_DOCKER_LOG variable based on the LONG_LOG one.
 long_set_docker_log_arg
