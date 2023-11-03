@@ -1,6 +1,6 @@
 # Based on https://github.com/AsavarTzeth/docker-php5-fpm
 # Minimal PHP server used for phpmyadmin
-FROM my-bullseye:latest
+FROM my-bookworm:latest
 
 ARG php_version=7.4
 
