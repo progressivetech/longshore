@@ -243,8 +243,18 @@ for file in $(find ~/.config/bash_completion.d/ -type f -o -type l); do
 done' >> /home/longshore/.profile
 fi
 
-# Check for some settings that should be set manually.
 
+# Check for some settings that should be set manually.
+#
+# Ensure my.cnf file is here and has the correct permissions.
+mycnf="${LONG_ETC}/my.cnf"
+if [ ! -f "$mycnf"  ]; then
+  printf "Please add %s file with MySQL database connection details.\n" "$mycnf"
+else
+  # Ensure it is the correct ownership and permission
+  chown longshore:longshore "$mycnf"
+  chmod 0600 "$mycnf"
+fi
 # Ensure cron job is set.
 if ! crontab -u "$LONG_HOST_USER" -l | grep site-backup > /dev/null; then
   printf "FYI, site-backup cron job is not set.\n"
