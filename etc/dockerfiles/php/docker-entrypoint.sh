@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-php_version=7.4
+php_version=8.2
 # If the command passed to docker run/exec starts with a - or -- then
 # set the command to php5-cgi and pass whatever follows as an argument to
 # php5-cgi.

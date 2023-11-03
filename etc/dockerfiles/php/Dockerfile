@@ -2,7 +2,7 @@
 # Minimal PHP server used for phpmyadmin
 FROM my-bookworm:latest
 
-ARG php_version=7.4
+ARG php_version=8.2
 
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 
