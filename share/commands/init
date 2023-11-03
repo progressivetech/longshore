@@ -255,6 +255,15 @@ else
   chown longshore:longshore "$mycnf"
   chmod 0600 "$mycnf"
 fi
+redcnf="${HOME}/.red-api-password"
+if [ ! -f "$redcnf"  ]; then
+  printf "Please add %s file with the red control panel password.\n" "$redcnf"
+else
+  # Ensure it is the correct ownership and permission
+  chown longshore:longshore "$redcnf"
+  chmod 0600 "$redcnf"
+fi
+
 # Ensure cron job is set.
 if ! crontab -u "$LONG_HOST_USER" -l | grep site-backup > /dev/null; then
   printf "FYI, site-backup cron job is not set.\n"
