@@ -5,7 +5,7 @@ Create an image if it doesn't already exist. See also
 image-upgrade which rebuilds images that need updates.
 
 Arguments
-  <type> - The image type you want to create (ptp-mysql, etc.) or '--all'
+  <type> - The image type you want to create (ptp-powerbase, etc.) or '--all'
     to create all images
 Pass LONG_FORCE=1 to force the building of an existing image." 
 
@@ -14,7 +14,7 @@ long_check_args "$2" "$#" 1
 itypes="$2"
 
 if [ "$itypes" = "--all" ]; then
-  itypes="my-${LONG_DEBIAN_VERSION} ptp-mysql ptp-php ptp-powerbase"
+  itypes="my-${LONG_DEBIAN_VERSION} ptp-php ptp-powerbase"
 fi
 
 for itype in $itypes; do

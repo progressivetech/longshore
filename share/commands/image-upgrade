@@ -7,7 +7,7 @@ that are out of date if action is print. Pass LONG_FORCE=1 to
 rebuild the image even if there are no new upgrades.
 
 Arguments
-  <type> - The image type you want to upgrade (ptp-mysql, etc.) or '--all'
+  <type> - The image type you want to upgrade (ptp-powerbase, etc.) or '--all'
     to create all images
   <action> - Indicate whether you want to upgrade (default) or just print
     packages that are out of date."
@@ -29,7 +29,7 @@ if [ "$action" = "print" -a "$LONG_FORCE" = "1" ]; then
   long_die "Don't pass LONG_FORCE if you want to print the packages."
 fi
 
-possible_itypes="my-${LONG_DEBIAN_VERSION} ptp-mysql ptp-php ptp-powerbase"
+possible_itypes="my-${LONG_DEBIAN_VERSION} ptp-php ptp-powerbase"
 
 if [ "$itypes" = "--all" ]; then
   itypes="$possible_itypes"

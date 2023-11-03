@@ -4,12 +4,12 @@ long_usage_message="usage: $(basename $0) image-run <type>
 Launch a bash shell in a given image for testing purposes.
 
 Arguments
-  <type> - The image type you want to run (ptp-mysql, etc.)"
+  <type> - The image type you want to run (ptp-php, etc.)"
 
 long_check_args "$2" "$#" 1
 
 itype="$2"
-possible_itypes="my-${LONG_DEBIAN_VERSION} ptp-mysql ptp-php ptp-powerbase"
+possible_itypes="my-${LONG_DEBIAN_VERSION} ptp-php ptp-powerbase"
 
 if ! echo "$possible_itypes" | egrep "(^| )$itype( |\$)" > /dev/null; then
   long_die "Unknown image type %s." 1 "$itype"
