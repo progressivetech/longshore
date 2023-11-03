@@ -255,7 +255,7 @@ else
   chown longshore:longshore "$mycnf"
   chmod 0600 "$mycnf"
 fi
-redcnf="${HOME}/.red-api-password"
+redcnf="/home/longshore/.red-api-password"
 if [ ! -f "$redcnf"  ]; then
   printf "Please add %s file with the red control panel password.\n" "$redcnf"
 else
