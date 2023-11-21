@@ -1586,6 +1586,7 @@ long_initialize_site() {
   long_init_site_tmp_var "$site"
 
   # install lsd module for drupal 8+
+  long_set_site_platform "$site"
   long_set_site_drupal_version
   if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
     long_log "Enabling lsd module" info
