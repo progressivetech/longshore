@@ -813,7 +813,7 @@ projects[configurabledefaults][type] = "library"
 projects[configurabledefaults][destination] = "extensions"
 projects[configurabledefaults][download][type] = "git"
 projects[configurabledefaults][download][url] = "git://git.progressivetech.org/extensions/configurabledefaults"
-projects[configurabledefaults][download][revision] = "a71928ddbaca5a1661e3ad0da398209afa213202"
+projects[configurabledefaults][download][revision] = "ebcb5327d07cfedb91dad1571511078bbf3d8cde"
 
 projects[authnet][type] = "library"
 projects[authnet][destination] = "extensions"
