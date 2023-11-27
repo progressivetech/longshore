@@ -937,21 +937,6 @@ long_create_phpmyadmin_container() {
   # Make sure we have our base directories
   mkdir -p "$dir/src"
 
-  # Create the server.list file with all db servers on this host
-  long_set_db_containers
-  echo "$LONG_DB_CONTAINERS" > "${dir}/src/servers.list"
-
-  if [ -f "$LONG_ETC/my.cnf" ]; then
-    # We need the address of the central db
-    echo "$LONG_MYSQL_HOST_IP" >> "${dir}/src/servers.list"
-  fi
-
-  # Create the --link argument
-  local link=
-  for link_db in $LONG_DB_CONTAINERS; do
-    link="$link --link $link_db:$link_db"
-  done
-
   # We have to publish the port to the host so nginx can communicate
   # with it. Each PHP container has to have a unique port.
   long_set_php_port phpmyadmin
@@ -961,8 +946,10 @@ long_create_phpmyadmin_container() {
   publish="-p 127.0.0.1:$LONG_PHP_PORT:9000"
 
   # Copy in the config.inc.php.sample file with blowfish secret
-  long_pwgen "50"
-  cat ${LONG_SHARE}/templates/phpmyadmin.config.inc.php.sample | sed "s/BLOWFISHSECRET/$LONG_PASSWORD/" \
+  long_pwgen "32"
+  cat ${LONG_SHARE}/templates/phpmyadmin.config.inc.php.sample | \
+    sed "s/BLOWFISHSECRET/$LONG_PASSWORD/" \
+    sed "s/LONG_MYSQL_HOST_IP/$LONG_MYSQL_HOST_IP/" \
     > "${dir}/src/config.inc.php" 
 
   # Create nginx configuration
