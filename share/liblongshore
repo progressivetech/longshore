@@ -981,7 +981,7 @@ long_create_phpmyadmin_container() {
     -e "LONG_LIVE=$LONG_LIVE" \
     $LONG_DOCKER_MEMORY_LIMIT \
     --restart unless-stopped \
-    ptp-php:latest php-fpm${LONG_PHP_VERSION}  || long_die "Failed to create the phpmyadmin container"
+    ptp-php:latest php-fpm${LONG_PHPMYADMIN_PHP_VERSION}  || long_die "Failed to create the phpmyadmin container"
 }
 
 # Build out the required directories and permissions

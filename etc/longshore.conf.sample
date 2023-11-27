@@ -105,6 +105,7 @@ LONG_SIBLING_CACHE=~/.long-sibling-cache
 
 LONG_DEBIAN_VERSION=buster
 LONG_PHP_VERSION=7.4
+LONG_PHPMYADMIN_PHP_VERSION=8.2
 # Only used on dev sites - the host used when getting info about a site.
 # LONG_DEFAULT_HOST=neruda
 LONG_OUTBOUND_MAIL_HOST=newyork.bulk.progressivetech.org
