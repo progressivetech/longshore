@@ -807,7 +807,7 @@ projects[eventics][type] = "library"
 projects[eventics][destination] = "extensions"
 projects[eventics][download][type] = "git"
 projects[eventics][download][url] = "https://lab.civicrm.org/extensions/eventics.git"
-projects[eventics][download][revision] = "ea1fa2cb84e42342a293e656957d9eaef1826159"
+projects[eventics][download][revision] = "09307291f8d405e2049d6a9e07c0fe4adda51e61"
 
 projects[configurabledefaults][type] = "library"
 projects[configurabledefaults][destination] = "extensions"
