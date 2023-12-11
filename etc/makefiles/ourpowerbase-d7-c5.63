@@ -186,7 +186,7 @@ projects[sumfields][download][revision] = "e1002717f5c9d5ad0270d4f475cb783ea82e6
 projects[simplepetitionemail][type] = "library"
 projects[simplepetitionemail][destination] = "extensions"
 projects[simplepetitionemail][download][type] = "git"
-projects[simplepetitionemail][download][url] = "https://gitlab.com/jamie/com.aghstrategies.petitionemail"
+projects[simplepetitionemail][download][url] = "https://lab.civicrm.org/jamie/com.aghstrategies.petitionemail"
 projects[simplepetitionemail][download][revision] = "a9809229022d2e6e0bf354c0e09f515e68a41b8a"
 
 projects[advancedfundraising][type] = "library"
@@ -752,7 +752,7 @@ projects[pricesetbuttons][download][revision] = "fa204a0d2c9bef1e960681316027c39
 projects[electoral][type] = "library"
 projects[electoral][destination] = "extensions"
 projects[electoral][download][type] = "git"
-projects[electoral][download][url] = "https://gitlab.com/jamie/com.jlacey.electoral"
+projects[electoral][download][url] = "https://lab.civicrm.org/jamie/com.jlacey.electoral"
 projects[electoral][download][revision] = "03342d29bbaab7d25f4e7caed8415539a8215576"
 
 projects[templateredact][type] = "library"
