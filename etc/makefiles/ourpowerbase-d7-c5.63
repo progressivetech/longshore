@@ -186,7 +186,7 @@ projects[sumfields][download][revision] = "e1002717f5c9d5ad0270d4f475cb783ea82e6
 projects[simplepetitionemail][type] = "library"
 projects[simplepetitionemail][destination] = "extensions"
 projects[simplepetitionemail][download][type] = "git"
-projects[simplepetitionemail][download][url] = "https://lab.civicrm.org/jamie/petitionemail"
+projects[simplepetitionemail][download][url] = "https://lab.civicrm.org/jamii/petitionemail"
 projects[simplepetitionemail][download][revision] = "a9809229022d2e6e0bf354c0e09f515e68a41b8a"
 
 projects[advancedfundraising][type] = "library"
@@ -590,7 +590,7 @@ projects[setup][type] = "library"
 projects[setup][destination] = "extensions"
 projects[setup][download][type] = "git"
 projects[setup][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.setup"
-projects[setup][download][revision] = "74302eeeac55c29fdf9fc0d55e1bf7901ac2021c"
+projects[setup][download][revision] = "a9d031ccc37b3e61547ad5bee92541a942e0b86c"
 
 projects[contactlayout][type] = "library"
 projects[contactlayout][destination] = "extensions"
