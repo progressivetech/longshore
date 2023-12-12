@@ -453,28 +453,28 @@ function lsd_set_blocks_for_theme($theme) {
   );
 
   foreach ($blocks as $block) {
-
-    $sql = "SELECT bid FROM {block} WHERE theme = :theme AND ".
-      "module = :module AND delta = :delta";
-    // add theme
+    // Add theme to the block array.
     $block[':theme'] = $theme;
 
+    // Check for a matching block that exists in the database.
+    $sql = "SELECT bid FROM {block} WHERE theme = :theme AND ".
+      "module = :module AND delta = :delta";
+    
     $params = $block;
     // unset unused params for select query
     unset($params[':region']);
     unset($params[':status']);
     unset($params[':weight']);
     unset($params[':title']);
-
     $result = db_query($sql, $params);
+    $record = $result->fetch();
 
-    reset($block);
-    $fields = array();
-    foreach ($blocks as $k => $v) {
+    // Update the record with the new values.
+    $fields = [];
+    foreach ($block as $k => $v) {
       $field = trim($k,':');
       $fields[$field] = $v;
     }
-    $record = $result->fetch();
     if(empty($record)) {
       $fields['pages'] = '';
       db_insert('block')
@@ -486,7 +486,7 @@ function lsd_set_blocks_for_theme($theme) {
         ->condition('bid', $record->bid, '=')
         ->execute();
     }
-    db_query($sql, $params);
+    // db_query($sql, $params);
     // Seems to be bug in some versions of drush
     if(function_exists('drush_cache_clear_block')) {
       drush_cache_clear_block();
