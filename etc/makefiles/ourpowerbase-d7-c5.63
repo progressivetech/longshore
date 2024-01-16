@@ -186,7 +186,7 @@ projects[sumfields][download][revision] = "c96d6ab263bcf4fcd7e4008448da04943611a
 projects[simplepetitionemail][type] = "library"
 projects[simplepetitionemail][destination] = "extensions"
 projects[simplepetitionemail][download][type] = "git"
-projects[simplepetitionemail][download][url] = "https://lab.civicrm.org/jamie/petitionemail"
+projects[simplepetitionemail][download][url] = "https://lab.civicrm.org/extensions/petitionemail"
 projects[simplepetitionemail][download][revision] = "d3cb29a8e2dbcb6ecd6d6f463a61456cd6d9b81e"
 
 projects[advancedfundraising][type] = "library"
@@ -752,8 +752,8 @@ projects[pricesetbuttons][download][revision] = "fa204a0d2c9bef1e960681316027c39
 projects[electoral][type] = "library"
 projects[electoral][destination] = "extensions"
 projects[electoral][download][type] = "git"
-projects[electoral][download][url] = "https://lab.civicrm.org/jamie/electoral"
-projects[electoral][download][revision] = "58df58ae7c618decd7f908e754e8ab8e6ba0df65"
+projects[electoral][download][url] = "https://lab.civicrm.org/extensions/electoral"
+projects[electoral][download][revision] = "10a5eedad4586e2a806f90cf3eeb734b43111b28"
 
 projects[templateredact][type] = "library"
 projects[templateredact][destination] = "extensions"
