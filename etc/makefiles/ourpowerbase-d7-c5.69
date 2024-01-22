@@ -3,13 +3,13 @@
 ;****************************************
 ; FIXME add md5 sums when http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=676251 is resolved
 ; drush make API version
-api = "2" 
+api = "2"
 
 ;****************************************
 ; Drupal Core
 ;****************************************
 
-core = "7.x" 
+core = "7.x"
 projects[drupal][version] = "7.98"
 
 ;****************************************
@@ -17,30 +17,30 @@ projects[drupal][version] = "7.98"
 ;****************************************
 
 ; CiviCRM Core
-projects[civicrm][type] = "module" 
-projects[civicrm][directory_name] = "civicrm" 
-projects[civicrm][download][type] = "git" 
+projects[civicrm][type] = "module"
+projects[civicrm][directory_name] = "civicrm"
+projects[civicrm][download][type] = "git"
 projects[civicrm][download][revision] = "51ff7d0ee8076b2fff2a5239bff475558e71425b"
 projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
 
 ; Packages
-projects[civicrm_packages][type] = "library" 
-projects[civicrm_packages][destination] = "modules/civicrm" 
-projects[civicrm_packages][directory_name] = "packages" 
-projects[civicrm_packages][download][type] = "git" 
+projects[civicrm_packages][type] = "library"
+projects[civicrm_packages][destination] = "modules/civicrm"
+projects[civicrm_packages][directory_name] = "packages"
+projects[civicrm_packages][download][type] = "git"
 projects[civicrm_packages][download][revision] = "b29d61ac6aab9c15d344d4ed759d9e8a7ce9154f"
 projects[civicrm_packages][download][url] = "git://git.progressivetech.org/civicrm/civicrm-packages"
 
 ; Drupal
-projects[civicrm_drupal][type] = "library" 
-projects[civicrm_drupal][destination] = "modules/civicrm" 
-projects[civicrm_drupal][directory_name] = "drupal" 
-projects[civicrm_drupal][download][type] = "git" 
+projects[civicrm_drupal][type] = "library"
+projects[civicrm_drupal][destination] = "modules/civicrm"
+projects[civicrm_drupal][directory_name] = "drupal"
+projects[civicrm_drupal][download][type] = "git"
 projects[civicrm_drupal][download][revision] = "96630e1f37e0b71a66c6c4591793fcb9c2094250"
 projects[civicrm_drupal][download][url] = "git://git.progressivetech.org/civicrm/civicrm-drupal"
 
 ;****************************************
-; Drupal third party modules 
+; Drupal third party modules
 ;****************************************
 
 projects[page_theme][type] = "module"
@@ -111,10 +111,10 @@ projects[autologout][type] = "module"
 projects[autologout][version] = "4.6"
 
 projects[css_injector][type] = "module"
-projects[css_injector][version] = "1.8" 
+projects[css_injector][version] = "1.8"
 
 projects[js_injector][type] = "module"
-projects[js_injector][version] = "2.1" 
+projects[js_injector][version] = "2.1"
 
 projects[l10n_update][type] = "module"
 projects[l10n_update][version] = "2.4"
@@ -186,8 +186,8 @@ projects[sumfields][download][revision] = "c96d6ab263bcf4fcd7e4008448da04943611a
 projects[simplepetitionemail][type] = "library"
 projects[simplepetitionemail][destination] = "extensions"
 projects[simplepetitionemail][download][type] = "git"
-projects[simplepetitionemail][download][url] = "https://lab.civicrm.org/jamie/petitionemail"
-projects[simplepetitionemail][download][revision] = "a9809229022d2e6e0bf354c0e09f515e68a41b8a"
+projects[simplepetitionemail][download][url] = "https://lab.civicrm.org/extensions/petitionemail"
+projects[simplepetitionemail][download][revision] = "68499a59754edbb56250b23e19fb9b245ca17658"
 
 projects[advancedfundraising][type] = "library"
 projects[advancedfundraising][destination] = "extensions"
@@ -222,8 +222,8 @@ projects[engage][download][revision] = "41a9b393e7e59efa2e954c922a50b431468fad51
 projects[civimobile][type] = "library"
 projects[civimobile][destination] = "extensions"
 projects[civimobile][download][type] = "git"
-projects[civimobile][download][url] = "https://github.com/webaccess/com.webaccessglobal.module.civimobile"
-projects[civimobile][download][revision] = "114980fbb78614c24c462c0ccd97a4abc2e3ee54"
+projects[civimobile][download][url] = "https://lab.civicrm.org/extensions/civimobile"
+projects[civimobile][download][revision] = "f9f169651158cc4e756e827e84c6197f5b118bf1"
 
 projects[noverwrite][type] = "library"
 projects[noverwrite][destination] = "extensions"
@@ -265,7 +265,7 @@ projects[extendedreport][type] = "library"
 projects[extendedreport][destination] = "extensions"
 projects[extendedreport][download][type] = "git"
 projects[extendedreport][download][url] = "https://github.com/progressivetech/nz.co.fuzion.extendedreport.git"
-projects[extendedreport][download][revision] = "3bff335cfec837703fc0eebb90f47d68c70241c2"
+projects[extendedreport][download][revision] = "f1c0c0396a6de09cdf55410b4d14c17ffae6ce9a"
 
 projects[iats][type] = "library"
 projects[iats][destination] = "extensions"
@@ -590,7 +590,7 @@ projects[setup][type] = "library"
 projects[setup][destination] = "extensions"
 projects[setup][download][type] = "git"
 projects[setup][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.setup"
-projects[setup][download][revision] = "fcdaf9847286d13cf298a535514a9805ea6fee24"
+projects[setup][download][revision] = "cedc09f04dd23005025ba5e65cf9bcab2542e4e9"
 
 projects[contactlayout][type] = "library"
 projects[contactlayout][destination] = "extensions"
@@ -752,8 +752,8 @@ projects[pricesetbuttons][download][revision] = "fa204a0d2c9bef1e960681316027c39
 projects[electoral][type] = "library"
 projects[electoral][destination] = "extensions"
 projects[electoral][download][type] = "git"
-projects[electoral][download][url] = "https://lab.civicrm.org/jamie/electoral"
-projects[electoral][download][revision] = "a1daa23b90c75ba315f394241dde7d9b869a920a"
+projects[electoral][download][url] = "https://lab.civicrm.org/extensions/electoral"
+projects[electoral][download][revision] = "150610a0a5023a8aa01c69148fe98139190d283c"
 
 projects[templateredact][type] = "library"
 projects[templateredact][destination] = "extensions"
@@ -874,7 +874,7 @@ projects[CiviVersafix][download][revision] = "c47bca9cb4106d82af0845131e15e1bdc9
 
 
 ;****************************************
-; Drupal themes 
+; Drupal themes
 ;****************************************
 
 projects[newsflash][type] = "theme"
