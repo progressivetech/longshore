@@ -1115,7 +1115,7 @@ function demo_add_contact($params) {
   foreach ($params['contact'] as $key => $value) {
     $result = $result->addValue($key, $value);
   }
-  $contact_id = $result->execute()->first()['contact_id'];
+  $contact_id = $result->execute()->first()['id'];
 
   // Create the standard extra entities.
   foreach (['phone', 'email', 'address'] as $entity) {
