@@ -996,13 +996,6 @@ function demo_contacts() {
   }
 
   if (($handle = fopen(__dir__  . "/contacts.csv", "r")) !== FALSE) {
-    // Until skipping geo coding is fixed...
-    // https://support.ourpowerbase.net/ticket/2292
-    $params = array(
-      'geoProvider' => "",
-      'mapProvider' => "",
-    );
-    civicrm_api3('Setting', 'create', $params); 
     $i = 0;
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
       $i++;
@@ -1016,43 +1009,42 @@ function demo_contacts() {
       // name is in format: "LAST, FIRST MIDDLE"
       $name = explode(',', $data[1]);
 
-      $params = array(
-        'skip_geocode' => true,
+      $params['contact'] = array(
         'contact_type' => 'Individual'
       );
-      $params['last_name'] = trim(ucwords(strtolower(array_shift($name))));
+      $params['contact']['last_name'] = trim(ucwords(strtolower(array_shift($name))));
       $remaining_names = explode(' ', $name[0]);
-      $params['first_name'] = trim(ucwords(strtolower(array_pop($remaining_names))));
+      $params['contact']['first_name'] = trim(ucwords(strtolower(array_pop($remaining_names))));
 
       /**
-       * Voter ifo
+       * Voter data 
        **/
-      // precinct (precinct code)
-      $id = 'custom_' . demo_custom_id_for_name('voterfields_precinct');
-      $params[$id] = $data[11];
-      // city district (municipal district)
-      $id = 'custom_' . demo_custom_id_for_name('voterfields_city_district');
-      $params[$id] = $data[12];
-      // congressional district
-      $id = 'custom_' . demo_custom_id_for_name('voterfields_congressional_district');
-      $params[$id] = $data[14];
+      $params['electoral'] = [];
+      // House of Reps 
+      $params['electoral'][] = [
+        'electoral_chamber' => 'lower',
+        'electoral_level' => 'country',
+        'electoral_states_provinces.name' => 'North Carolina',
+        'electoral_district' => $data[14],
+      ];
       // state assembly (NC house)
-      $id = 'custom_' . demo_custom_id_for_name('voterfields_state_assembly_district');
-      $params[$id] = $data[18];
+      $params['electoral'][] = [
+        'electoral_chamber' => 'lower',
+        'electoral_level' => 'administrativeArea1',
+        'electoral_states_provinces.name' => 'North Carolina',
+        'electoral_district' => $data[18],
+      ];
       // state senate (NC senate)
-      $id = 'custom_' . demo_custom_id_for_name('voterfields_state_senate_district');
-      $params[$id] = $data[17];
-      // school district
-      $id = 'custom_' . demo_custom_id_for_name('voterfields_school_district');
-      $params[$id] = $data[20];
+      $params['electoral'][] = [
+        'electoral_chamber' => 'upper',
+        'electoral_level' => 'administrativeArea1',
+        'electoral_states_provinces.name' => 'North Carolina',
+        'electoral_district' => $data[17],
+      ];
 
-      // Constituent type
-      $id = 'custom_' . demo_custom_id_for_name('constituentfields_individual_constituent_type');
-      $params[$id] = [demo_get_random_constituent_type()];
-
-      $id = 'custom_' . demo_custom_id_for_name('constituentfields_subscribe_to_newsletter');
-      $fifty_fifty = rand(0,1);
-      $params[$id] = $fifty_fifty;
+      // Constituent type and newsletter.
+      $params['contact']['constituentfields_individual_fields.constituentfields_individual_constituent_type'] = [demo_get_random_constituent_type()];
+      $params['contact']['constituentfields_individual_fields.constituentfields_subscribe_to_newsletter'] = rand(0,1);
 
        // City State Zip is in format: CITY, STATE ZIP
       $street_address = $data[9];
@@ -1069,7 +1061,7 @@ function demo_contacts() {
         $geo_code_2 = $geo[$street_address]['geo_code_2'];
       }
 
-      $params['api.address.create'] = array(
+      $params['address'] = [ 
         'street_address' => $street_address,
         'city' => $city,
         'state_province_id' => 'North Carolina',
@@ -1078,9 +1070,9 @@ function demo_contacts() {
         'location_type_id' => 1,
         'geo_code_1' => $geo_code_1,
         'geo_code_2' => $geo_code_2
-      );
-      $email_address = $params['first_name'] . '.' .  $params['last_name'];
-      if ($params['first_name'] == 'Anne' && $params['last_name'] == 'Irvin') {
+      ];
+      $email_address = $params['contact']['first_name'] . '.' .  $params['contact']['last_name'];
+      if ($params['contact']['first_name'] == 'Anne' && $params['contact']['last_name'] == 'Irvin') {
         // no op. For our training curriculum, we want Anne Irvin to be a dupe,
         // so we have to ensure she has a consistent email address so it is matched.
       }
@@ -1089,32 +1081,61 @@ function demo_contacts() {
       }
       $email_address .= '@example.net';
 
-      $params['api.email.create'] = array(
+      $params['email'] = [ 
         'email' => $email_address,
         'is_primary' => 1,
         'location_type_id' => 1
-      );
+      ];
 
       $phone_first = rand(100,999);
       $phone_last = rand(1000,9999);
       $phone = '(555) ' . $phone_first . '-' . $phone_last; 
 
-      $params['api.phone.create'] = array(
+      $params['phone'] = [
         'phone' => $phone,
         'phone_type_id' => 2, // Mobile
         'is_primary' => 1,
         'location_type_id' => 1 // Home
-      );
+      ];
 
-      civicrm_api3('Contact', 'create', $params);
+      demo_add_contact($params);
 
       // We want to intentionally create one duplicate.
       if ($i == 2) {
-        civicrm_api3('Contact', 'create', $params);
+        demo_add_contact($params);
       }
     }
     fclose($handle);
   }
+}
+
+function demo_add_contact($params) {
+  // Create the contact, get the contact id
+  $result = \Civi\Api4\Contact::create();
+  foreach ($params['contact'] as $key => $value) {
+    $result = $result->addValue($key, $value);
+  }
+  $contact_id = $result->execute()->first()['contact_id'];
+
+  // Create the standard extra entities.
+  foreach (['phone', 'email', 'address'] as $entity) {
+    $entity_name = ucfirst($entity);
+    $class_name = "\\Civi\\Api4\\$entity_name";
+    $result = $class_name::create();
+    $result = $result->addvalue('contact_id', $contact_id);
+    foreach ($params[$entity] as $key => $value) {
+      $result = $result->addValue($key, $value);
+    }
+    $result->execute();
+  }
+
+  // Create electoral data.
+  $result = \Civi\Api4\CustomValue::create('electoral_districts');
+  $result = $result->addValue('entity_id', $contact_id);
+  foreach ($params['contact'] as $key => $value) {
+    $result = $result->addValue($key, $value);
+  }
+  $result->execute();
 }
 
 function demo_campaign() {
@@ -1314,10 +1335,11 @@ function demo_enable_extensions() {
     'net.ourpowerbase.report.dbhealth',
     'net.ourpowerbase.search.eventcount',
     'net.ourpowerbase.turnout',
-    'net.ourpowerbase.voterfields',
     'com.aghstrategies.petitionemail',
   );
+  drush_log(dt("Enabling extensions..."), 'ok');
   civicrm_api3('Extension', 'install', ['keys' => $keys]);
+  drush_log(dt("Finished enabling extensions."), 'ok');
 
   // Try to configure the electoral extension by setting the api keys for our
   // various services. The API Keys should be set in our configuration file
@@ -1359,12 +1381,9 @@ function demo_enable_extensions() {
   if (count($apiProviders) > 0) {
     \Civi::settings()->set('electoralApiProviders:name', $apiProviders);
   }
-  $config = CRM_Core_Config::singleton(); 
-  $config->cleanup(1, FALSE); 
-  CRM_Core_Config::clearDBCache(); 
+  // We seem to have to clear the session or we get weird cached data
+  // related errors.
   Civi::cache("session")->clear(); 
-  CRM_Utils_System::flushCache();
-
 }
 
 function demo_add_sms_provider() {
