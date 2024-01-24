@@ -1130,12 +1130,14 @@ function demo_add_contact($params) {
   }
 
   // Create electoral data.
-  $result = \Civi\Api4\CustomValue::create('electoral_districts');
-  $result = $result->addValue('entity_id', $contact_id);
-  foreach ($params['contact'] as $key => $value) {
-    $result = $result->addValue($key, $value);
+  foreach ($params['electoral'] as $electoral) {
+    $result = \Civi\Api4\CustomValue::create('electoral_districts');
+    $result = $result->addValue('entity_id', $contact_id);
+    foreach ($electoral as $key => $value) {
+      $result = $result->addValue($key, $value);
+    }
+    $result->execute();
   }
-  $result->execute();
 }
 
 function demo_campaign() {
