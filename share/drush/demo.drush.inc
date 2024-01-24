@@ -974,7 +974,7 @@ function demo_contacts() {
   // Only run if we have less than 2 contacts already.
   // geocoding.csv is created from a Powerbase site that had geo-coding run on it.
   // We import the geo-coding to save on geo coding expenses.
-  $sql = "SELECT COUNT(*) AS count FROM civicrm_contact";
+  $sql = "SELECT COUNT(*) AS count FROM civicrm_contact WHERE is_deleted = 0";
   $dao = CRM_Core_DAO::executeQuery($sql);
   $dao->fetch();
   if ($dao->count > 3) {
