@@ -1317,12 +1317,7 @@ function demo_enable_extensions() {
     'net.ourpowerbase.voterfields',
     'com.aghstrategies.petitionemail',
   );
-  foreach($keys as $key) {
-    $key = escapeshellarg($key);
-    // We call a separate process to avoid all the crazy cache problems we have
-    // enabling these in the same session.
-    drush_shell_cd_and_exec("/var/www/powerbase", "/usr/local/bin/cv --user=admin ext:enable $key");
-  }
+  civicrm_api3('Extension', 'install', ['keys' => $keys]);
 
   // Try to configure the electoral extension by setting the api keys for our
   // various services. The API Keys should be set in our configuration file
@@ -1364,6 +1359,12 @@ function demo_enable_extensions() {
   if (count($apiProviders) > 0) {
     \Civi::settings()->set('electoralApiProviders:name', $apiProviders);
   }
+  $config = CRM_Core_Config::singleton(); 
+  $config->cleanup(1, FALSE); 
+  CRM_Core_Config::clearDBCache(); 
+  Civi::cache("session")->clear(); 
+  CRM_Utils_System::flushCache();
+
 }
 
 function demo_add_sms_provider() {
