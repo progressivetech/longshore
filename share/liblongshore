@@ -2601,7 +2601,7 @@ long_rerun_over_network() {
     # interactive.
     local t=-t
   fi
-  ssh -q $t "${LONG_SITE_SIBLING}.mayfirst.org" "/srv/longshore/bin/longshore $@" 
+  ssh -q $t "${LONG_SITE_SIBLING}.mayfirst.org" "LONG_LOG_LEVEL=$LONG_LOG_LEVEL /srv/longshore/bin/longshore $@" 
   if [ "$?" != "0" ]; then
     long_log "Rerunning %s for site %s over network failed." error "$subcmd" "$site"
   fi
