@@ -24,4 +24,6 @@ if ! long_container_running "$site"; then
   long_die "Not executing command for %s because it is not running." 1 "$site"
 fi
 
+# Boost log level to get output.
+LONG_LOG_LEVEL=info
 long_exec_cv_cmd "$site" api4 PowerbaseUtilities.OptOutComplainers header="$header"
