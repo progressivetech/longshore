@@ -1,0 +1,27 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-cmd <site> <header>
+Opt out the contact that triggered the abuse complaint with the provided
+X-CiviMail-Bounce header.
+
+Arguments
+  <site> - Pass the site if you only want to run the command on that site.
+  <header> - Pass the value of the X-CiviMail-Bounce header."
+
+long_check_args "$2" "$#" 2
+
+# Run for all local sites
+hostname=$(hostname)
+
+site="$2"
+header="$3"
+
+long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+long_rerun_over_network "$@" && exit
+
+# If the site is not running we can't run a command.
+if ! long_container_running "$site"; then
+  long_die "Not executing command for %s because it is not running." 1 "$site"
+fi
+
+long_exec_cv_cmd "$site" api4 PowerbaseUtilities.OptOutComplainers header="$header"
