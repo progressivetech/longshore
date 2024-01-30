@@ -294,11 +294,24 @@ for site in $sites; do
   long_log "upgrade:%s Updated drupal modules" info "$site"
   printf "."
 
-  if ! long_exec_cv_cmd "$site" api4 PowerbaseUtilities.DeleteOldStripeWebhooks; then
-    long_log "upgrade:%s Failed to delete stripe webhooks" error "$site"
-  fi
+  # Do we still need this?
+  #if ! long_exec_cv_cmd "$site" api4 PowerbaseUtilities.DeleteOldStripeWebhooks; then
+  #  long_log "upgrade:%s Failed to delete stripe webhooks" error "$site"
+  #fi
+  #long_log "upgrade:%s deleted old stripe web hooks" info "$site"
+  #printf "."
 
-  long_log "upgrade:%s deleted old stripe web hooks" info "$site"
+  # One time steps for 5.69.
+  if ! long_exec_cv_cmd "$site" api4 PowerbaseUtilities.HideSmartyCheck; then
+    long_log "upgrade:%s Failed to hide smarty check" error "$site"
+  fi
+  long_log "upgrade:%s Hid smarty checks" info "$site"
+  printf "."
+
+  if ! long_exec_cv_cmd "$site" vset 'civimail_unsubscribe_methods=["mailto","http","oneclick"]'; then
+    long_log "upgrade:%s Failed to hide smarty check" error "$site"
+  fi
+  long_log "upgrade:%s Hid smarty checks" info "$site"
   printf "."
 
   if ! long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"; then
