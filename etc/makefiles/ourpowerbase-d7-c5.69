@@ -222,7 +222,7 @@ projects[engage][download][revision] = "41a9b393e7e59efa2e954c922a50b431468fad51
 projects[civimobile][type] = "library"
 projects[civimobile][destination] = "extensions"
 projects[civimobile][download][type] = "git"
-projects[civimobile][download][url] = "https://lab.civicrm.org/extensions/civimobile"
+projects[civimobile][download][url] = "https://lab.civicrm.org/jamie/civimobile"
 projects[civimobile][download][revision] = "585d95d00c97f57c69109f081fd360c1b9c7e88e"
 
 projects[noverwrite][type] = "library"
