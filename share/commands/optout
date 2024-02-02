@@ -1,0 +1,16 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) eval <header>
+Opt out the contact that triggered the abuse complaint with the provided
+X-CiviMail-Bounce header. This command will parse out the site
+and then call site-optout with the proper arguments.
+
+Arguments
+  <header> - Pass the value of the X-CiviMail-Bounce header."
+
+long_check_args "$2" "$#" 1
+
+header="$2"
+site=$(echo "$header" | cut -d- -f1)
+
+longshore site-optout "$site" "$header"
