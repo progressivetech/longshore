@@ -403,12 +403,10 @@ projects[mosaico][download][type] = "file"
 ; https://civicrm.org/extensions/email-template-builder
 projects[mosaico][download][url] = "https://download.civicrm.org/extension/uk.co.vedaconsulting.mosaico/3.3.1697392242/uk.co.vedaconsulting.mosaico-3.3.1697392242.zip"
 
-; Required for mosaico
-projects[shoreditch][type] = "library"
-projects[shoreditch][destination] = "extensions"
-projects[shoreditch][download][type] = "git"
-projects[shoreditch][download][url] = "https://github.com/civicrm/org.civicrm.shoreditch.git"
-projects[shoreditch][download][revision] = "95f6aca5bf36246169345ddc3716fe134021f00e"
+projects[theislands][type] = "library"
+projects[theislands][destination] = "extensions"
+projects[theislands][download][type] = "git"
+projects[theislands][download][url] = "https://lab.civicrm.org/extensions/theisland/-/archive/2.3.1/theisland-2.3.1.zip"
 
 projects[exportpermission][type] = "library"
 projects[exportpermission][destination] = "extensions"
