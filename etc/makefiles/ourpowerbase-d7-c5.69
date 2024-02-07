@@ -405,7 +405,7 @@ projects[mosaico][download][url] = "https://download.civicrm.org/extension/uk.co
 
 projects[theislands][type] = "library"
 projects[theislands][destination] = "extensions"
-projects[theislands][download][type] = "git"
+projects[theislands][download][type] = "file"
 projects[theislands][download][url] = "https://lab.civicrm.org/extensions/theisland/-/archive/2.3.1/theisland-2.3.1.zip"
 
 projects[exportpermission][type] = "library"
