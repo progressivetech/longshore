@@ -403,10 +403,10 @@ projects[mosaico][download][type] = "file"
 ; https://civicrm.org/extensions/email-template-builder
 projects[mosaico][download][url] = "https://download.civicrm.org/extension/uk.co.vedaconsulting.mosaico/3.3.1697392242/uk.co.vedaconsulting.mosaico-3.3.1697392242.zip"
 
-projects[theislands][type] = "library"
-projects[theislands][destination] = "extensions"
-projects[theislands][download][type] = "file"
-projects[theislands][download][url] = "https://lab.civicrm.org/extensions/theisland/-/archive/2.3.1/theisland-2.3.1.zip"
+projects[theisland][type] = "library"
+projects[theisland][destination] = "extensions"
+projects[theisland][download][type] = "file"
+projects[theisland][download][url] = "https://lab.civicrm.org/extensions/theisland/-/archive/2.3.1/theisland-2.3.1.zip"
 
 projects[exportpermission][type] = "library"
 projects[exportpermission][destination] = "extensions"
