@@ -22,7 +22,7 @@ fi
 fqdn="${selector}.domainkey.${site}.ourpowerbase.net"
 
 if ! long_check_site_exists "$site"; then 
-  long_prompt "The ${siate} does not exist. You can still make the dkim record for domain ${fqdn} and address ${domain}."
+  long_prompt "The site '${site}' does not exist. You can still make the dkim record for domain ${fqdn} and address ${domain}."
   if [ "$reply" != "y" ]; then
     long_log "Not continuing." info
     exit 0
