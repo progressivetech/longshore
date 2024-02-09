@@ -19,11 +19,19 @@ if [ -z "$selector" ]; then
   selector=pb1
 fi
 
-long_check_site_exists "$site" || long_die "Site doesn't exist (%s)." 1 "$site"
+fqdn="${selector}.domainkey.${site}.ourpowerbase.net"
+
+if ! long_check_site_exists "$site"; then 
+  long_prompt "The ${siate} does not exist. You can still make the dkim record for domain ${fqdn} and address ${domain}."
+  if [ "$reply" != "y" ]; then
+    long_log "Not continuing." info
+    exit 0
+  fi
+fi
+
 long_generate_dkim_key "$domain" "$selector"
 
 if [ -n "$LONG_SITE_DKIM_TXT" ]; then
-  fqdn="${selector}.domainkey.${site}.ourpowerbase.net"
   long_create_dkim_dns "$fqdn" "$LONG_SITE_DKIM_TXT"
 else
   long_die "Not configuring DNS for empty DKIM txt record."
