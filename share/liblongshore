@@ -1826,7 +1826,9 @@ long_destroy_site() {
       done
     fi
     temp=$(mktemp)
-    echo "DROP DATABASE IF EXISTS \`$site\`" > "$temp"
+    dbname="${site//-/_}" 
+
+    echo "DROP DATABASE IF EXISTS \`$dbname\`" > "$temp"
     long_log "Dropping database (%s) on host (%s)." info "$site" "$LONG_SITE_DB_HOST"
     long_execute_root_query "$LONG_SITE_DB_HOST" "$temp"  
     rm "$temp"
