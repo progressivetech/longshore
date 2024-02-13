@@ -3068,9 +3068,9 @@ long_add_initial_site_theme() {
 
   # A dash is the only character in a site name that cannot be in a themename.
   local themename=$(echo "$site" | tr -d '-')
-
   local themes="${LONG_SRV}/services/sites/${site}/drupal/themes"
-  if [ ! -d "${themes}/${site}" ]; then
+
+  if [ ! -d "$themes" ]; then
     mkdir -p "$themes"
   fi
 
