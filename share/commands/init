@@ -277,8 +277,8 @@ fi
 if ! grep "worker_processes auto;" /etc/nginx/nginx.conf > /dev/null; then
   printf "FYI, 'worker_processes auto;' is not set in /etc/nginx/nginx.conf.\n"
 fi
-if ! grep 'cgroup_enable=memory swapaccount=1' /etc/default/grub >/dev/null; then
-  printf "FYI, 'cgroup_enable=memory swapaccount=1' not set in /etc/default/grub.\n"
+if ! grep 'cgroup_enable=memory' /etc/default/grub >/dev/null; then
+  printf "FYI, 'cgroup_enable=memory' not set in /etc/default/grub.\n"
 fi
 
 if ! su - -c 'git config --global user.email' longshore >/dev/null; then
