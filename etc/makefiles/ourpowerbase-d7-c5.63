@@ -637,7 +637,7 @@ projects[recentmenu][download][revision] = "d2f1557de4ef95fb9a4fe55b5ab776cc3133
 projects[extrafee][type] = "library"
 projects[extrafee][destination] = "extensions"
 projects[extrafee][download][type] = "git"
-projects[extrafee][download][url] = "https://github.com/progressivetech/nz.co.fuzion.extrafee"
+projects[extrafee][download][url] = "https://github.com/fuzionnz/nz.co.fuzion.extrafee"
 projects[extrafee][download][revision] = "c20ea27a0bb40a77d61fea7511c25d0e32bbb2ff"
 
 projects[qdep][type] = "library"
