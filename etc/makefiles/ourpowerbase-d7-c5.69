@@ -811,7 +811,7 @@ projects[configurabledefaults][type] = "library"
 projects[configurabledefaults][destination] = "extensions"
 projects[configurabledefaults][download][type] = "git"
 projects[configurabledefaults][download][url] = "git://git.progressivetech.org/extensions/configurabledefaults"
-projects[configurabledefaults][download][revision] = "cec749f5f67936f53f01b93d8d75ad675a131d31"
+projects[configurabledefaults][download][revision] = "8e25b6a6bcf80f448187aeb789dbd6dd60972855"
 
 projects[authnet][type] = "library"
 projects[authnet][destination] = "extensions"
