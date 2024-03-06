@@ -68,6 +68,9 @@ fi
 long_prompt "Entering maintenance mode..."
 [ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"
 
+long_prompt "Uninstall shoreditch"
+[ "$reply" = "y" ] && long_exec_cv_cmd "$site" ext:uninstall org.civicrm.shoreditch
+
 long_prompt "Stopping and removing site container..."
 if [ "$reply" = "y" ]; then
   docker stop "$site"
@@ -122,9 +125,15 @@ long_prompt "Updating Drupal"
 long_prompt "Updating CiviCRM Extensions on %s" "$site"
 [ "$reply" = "y" ] &&  long_exec_cv_cmd "$site" ext:upgrade-db
 
+# One time steps for 5.69.
+long_prompt "Hide Smarty Checks %s" "$site"
+[ "$reply" = "y" ] && long_exec_cv_cmd "$site" api4 PowerbaseUtilities.HideSmartyCheck
+
+long_prompt "Set Unsub methods %s" "$site"
+[ "$reply" = "y" ] && long_exec_cv_cmd "$site" vset 'civimail_unsubscribe_methods=["mailto","http","oneclick"]'
+
+long_prompt "Enable the Island %s" "$site"
+[ "$reply" = "y" ] &&  long_exec_cv_cmd "$site" ext:enable theisland
+
 long_prompt "Removing maintenance mode..."
 [ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"
-
-long_prompt "Running site-cc..."
-[ "$reply" = "y" ] && long_clear_cache "$site" all
-
