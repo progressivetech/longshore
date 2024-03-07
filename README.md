@@ -1,10 +1,10 @@
-= longshore =
+# longshore
 
 longshore helps configure [Progressive Technology Project](http://progressivetech.org)'s PowerBase network using docker and linux containers.
 
 It is a set of bash helper scripts providing a thin wrapper around docker commands.
 
-== Installing on Debian Buster ==
+## Installing on Debian Buster
 
  * Install docker.io and debootstrap from debian 
 
@@ -22,7 +22,7 @@ It is a set of bash helper scripts providing a thin wrapper around docker comman
 
  * As root: chown root /srv && /srv/longshore/bin/longshore init
 
-== Setting up overlay2 and docker ==
+## Setting up overlay2 and docker ==
 
 Create a 100GB logical volume and format it as ext4.
 
