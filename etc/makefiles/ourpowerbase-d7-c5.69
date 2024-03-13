@@ -641,8 +641,8 @@ projects[recentmenu][download][revision] = "4f802378222b2267f1c697c0b022cd83d4da
 projects[extrafee][type] = "library"
 projects[extrafee][destination] = "extensions"
 projects[extrafee][download][type] = "git"
-projects[extrafee][download][url] = "https://github.com/fuzionnz/nz.co.fuzion.extrafee"
-projects[extrafee][download][revision] = "c20ea27a0bb40a77d61fea7511c25d0e32bbb2ff"
+projects[extrafee][download][url] = "https://github.com/jitendrapurohit/nz.co.fuzion.extrafee"
+projects[extrafee][download][revision] = "a56ad8d25f20363a1d5cf099f4c874e2e13fa736"
 
 projects[doctorwhen][type] = "library"
 projects[doctorwhen][destination] = "extensions"
