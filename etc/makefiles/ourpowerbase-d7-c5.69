@@ -702,7 +702,7 @@ projects[allcontactinfo][type] = "library"
 projects[allcontactinfo][destination] = "extensions"
 projects[allcontactinfo][download][type] = "git"
 projects[allcontactinfo][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.report.allcontactinfo"
-projects[allcontactinfo][download][revision] = "4be6c0b29de7ee4f6c35eaff8a6a071346146192"
+projects[allcontactinfo][download][revision] = "81f6b3271df81a919ab48f3acbf9fc43e6908fb0"
 
 projects[contributeprogress][type] = "library"
 projects[contributeprogress][destination] = "extensions"
