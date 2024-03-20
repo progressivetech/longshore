@@ -853,13 +853,13 @@ projects[osdi-client][type] = "library"
 projects[osdi-client][destination] = "extensions"
 projects[osdi-client][download][type] = "git"
 projects[osdi-client][download][url] = "https://github.com/lemniscus/osdi-client.git"
-projects[osdi-client][download][revision] = "577f748327ab94e5b342ffdba2176f70111a8633"
+projects[osdi-client][download][revision] = "71cef89657ac5ae9e862c11c35fdbe295e32a5ac"
 
 projects[tce-osdi][type] = "library"
 projects[tce-osdi][destination] = "extensions"
 projects[tce-osdi][download][type] = "git"
 projects[tce-osdi][download][url] = "https://codeberg.org/artfulrobot/tce-osdi.git"
-projects[tce-osdi][download][revision] = "e63aba933314d7052e58c08461d3e58415f54a26"
+projects[tce-osdi][download][revision] = "dae8e07950f493f97932c0038f945ce2c9a4b371"
 
 ;########
 ; CiviCRM Mosaico Templates
