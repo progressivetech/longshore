@@ -13,6 +13,6 @@ long_check_args "$2" "$#" 1
 header="$2"
 # Example header: afj-ny-returns+b.3781.1861847.e2e5chnautnvbcjp@civimail.ourpowerbase.net
 # Remove everything after the last dash, including the last dash
-site=${header%-*}"
+site="${header%-*}"
 
 longshore site-optout "$site" "$header"
