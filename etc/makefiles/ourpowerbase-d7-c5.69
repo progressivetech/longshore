@@ -745,7 +745,7 @@ projects[pricesetbuttons][type] = "library"
 projects[pricesetbuttons][destination] = "extensions"
 projects[pricesetbuttons][download][type] = "git"
 projects[pricesetbuttons][download][url] = "https://lab.civicrm.org/jamie/pricesetbuttons.git/"
-projects[pricesetbuttons][download][revision] = "b893d73db3aa01b18746baac9044ed250b4641fd"
+projects[pricesetbuttons][download][revision] = "a53ea88e0487d15ea69c54680980d7df5379bbf8"
 
 projects[electoral][type] = "library"
 projects[electoral][destination] = "extensions"
