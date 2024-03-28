@@ -37,7 +37,7 @@ foreach ($lines as $line) {
           $value = str_replace('git://git.progressivetech.org', 'https://git.progressivetech.org', $value);
           // Add the directory name.
           // The mosaico URL is a zip file. Needs special attention.
-          if (preg_match('/uk\.co\.vedaconsulting\.mosaico/', $value)) {
+          if (preg_match('/\.zip$/', $value)) {
             $type = 'archive';
             $extensions[$name]['revision'] = NULL;
           }
@@ -69,7 +69,7 @@ foreach($extensions as $name => $extension) {
   $type = $extension['type'];
   $dir = $extension['dir'];
   $url = $extension['url'];
-  $revision = $extension['revision'];
+  $revision = $extension['revision'] ?? NULL;
   if ($revision) {
     $url = "${url}@${revision}";
   }
