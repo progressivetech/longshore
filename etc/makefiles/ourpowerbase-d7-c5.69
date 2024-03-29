@@ -20,7 +20,7 @@ projects[drupal][version] = "7.99"
 projects[civicrm][type] = "module"
 projects[civicrm][directory_name] = "civicrm"
 projects[civicrm][download][type] = "git"
-projects[civicrm][download][revision] = "a763bb5a2b5352f243506e5291385ba4291e3ac0"
+projects[civicrm][download][revision] = "0b660ace53c3d952be14a72bf55eeed7035e4e48"
 projects[civicrm][download][url] = "git://git.progressivetech.org/civicrm/civicrm-core"
 
 ; Packages
@@ -367,8 +367,8 @@ projects[cjcase][download][revision] = "51d20f9015bf00e0cad9376ecc8f888d6a039a84
 projects[civirules][type] = "library"
 projects[civirules][destination] = "extensions"
 projects[civirules][download][type] = "git"
-projects[civirules][download][url] = "https://lab.civicrm.org/extensions/civirules.git"
-projects[civirules][download][revision] = "8a8299cd007544f2c76ad594afac176cc28dd94f"
+projects[civirules][download][url] = "https://lab.civicrm.org/jamie/civirules.git"
+projects[civirules][download][revision] = "acfc635a67faaa27dcfe3a0d15092efe2a7c1034"
 
 projects[emailapi][type] = "library"
 projects[emailapi][destination] = "extensions"
@@ -423,8 +423,8 @@ projects[exportpermission][download][revision] = "bb01c6dffc59d53c99c5c6db32003c
 projects[mailchimpsync][type] = "library"
 projects[mailchimpsync][destination] = "extensions"
 projects[mailchimpsync][download][type] = "git"
-projects[mailchimpsync][download][url] = "https://lab.civicrm.org/extensions/mailchimpsync.git"
-projects[mailchimpsync][download][revision] = "5735d0c8217302ad043e81ec6dd1088deb668f14"
+projects[mailchimpsync][download][url] = "https://lab.civicrm.org/jamie/mailchimpsync.git"
+projects[mailchimpsync][download][revision] = "83cbd5ee530dc4582338d909261d7f447201179c"
 
 projects[notificationlog][type] = "library"
 projects[notificationlog][destination] = "extensions"
