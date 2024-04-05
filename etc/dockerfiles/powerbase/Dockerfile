@@ -113,13 +113,6 @@ RUN chown www-data:www-data /var/www/.cv.json
 # Yahoo and payment processors
 RUN sed -i 's/^!//g' /etc/ca-certificates.conf && update-ca-certificates
 
-# Copy over wkhtmltopdf that is compiled with patched qt library so 
-# line breaks work. Also copy over bash wrapper to handle broken
-# ssl in wkhtmltopdf. The wrapper is a backward compatibility shim
-# for when we didn't have version 12.5 of wkhtmltopdf.
-COPY wkhtmltopdf.0.12.5 /usr/bin/wkhtmltopdf
-COPY wkhtmltopdf.wrapper /usr/bin/wkhtmltopdf.wrapper
-
 EXPOSE 9000
 
 ENTRYPOINT ["/entrypoint.sh"]
