@@ -804,8 +804,8 @@ projects[formdisabler][download][revision] = "ef4bbe9f4afe6c6a787af10cfe72ff3ff8
 projects[eventics][type] = "library"
 projects[eventics][destination] = "extensions"
 projects[eventics][download][type] = "git"
-projects[eventics][download][url] = "https://lab.civicrm.org/extensions/eventics.git"
-projects[eventics][download][revision] = "09307291f8d405e2049d6a9e07c0fe4adda51e61"
+projects[eventics][download][url] = "https://lab.civicrm.org/jamie/eventics.git"
+projects[eventics][download][revision] = "64cfb8a5bbc8270ecf2c5326fa19a4cd8b7b159c"
 
 projects[configurabledefaults][type] = "library"
 projects[configurabledefaults][destination] = "extensions"
