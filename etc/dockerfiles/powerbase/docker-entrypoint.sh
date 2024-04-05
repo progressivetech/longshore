@@ -50,7 +50,7 @@ if [ "$LONG_LIVE" = "n" ]; then
   fi
 
   # And relay email to the smtp server, not bulk.mayfirst.org.
-  sed -i "s/newyork\.bulk\.progressivetech\.org/smtp/" /etc/esmtprc
+  sed -i "s/newyork\.bulk\.progressivetech\.org/dockerhost/" /etc/esmtprc
   sed -i "s/starttls=enabled/starttls=disabled/" /etc/esmtprc
 else
   # Ensure we do not have debugging enabled.
