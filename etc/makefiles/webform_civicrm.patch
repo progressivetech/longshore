@@ -1,11 +1,15 @@
---- includes/wf_crm_webform_postprocess.inc.orig	2018-02-28 10:19:13.120269628 -0500
-+++ includes/wf_crm_webform_postprocess.inc	2018-02-27 13:16:33.238440338 -0500
-@@ -797,7 +797,7 @@
-               continue;
-             }
-             // Reset calculated values when updating an address
--            $params['master_id'] = $params['geo_code_1'] = $params['geo_code_2'] = 'null';
-+            $params['master_id'] = $params['geo_code_1'] = $params['geo_code_2'] = null;
-           }
-           $params['contact_id'] = $cid;
-           if (!empty($existing[$i])) {
+--- includes/utils.inc.orig	2024-04-05 16:48:34.888000000 -0400
++++ includes/utils.inc	2024-04-05 16:49:28.904000000 -0400
+@@ -397,8 +397,10 @@
+   static $types = [];
+   if (!$types) {
+     foreach (wf_crm_apivalues('relationship_type', 'get', ['is_active' => 1]) as $r) {
+-      $r['type_a'] = strtolower(wf_crm_aval($r, 'contact_type_a'));
+-      $r['type_b'] = strtolower(wf_crm_aval($r, 'contact_type_b'));
++      $contact_type_a = wf_crm_aval($r, 'contact_type_a') ?? '';
++      $contact_type_b = wf_crm_aval($r, 'contact_type_b') ?? '';
++      $r['type_a'] = strtolower($contact_type_a);
++      $r['type_b'] = strtolower($contact_type_b);
+       $r['sub_type_a'] = wf_crm_aval($r, 'contact_sub_type_a');
+       $r['sub_type_b'] = wf_crm_aval($r, 'contact_sub_type_b');
+       $types[$r['id']] = $r;
