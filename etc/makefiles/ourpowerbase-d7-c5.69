@@ -752,7 +752,7 @@ projects[electoral][type] = "library"
 projects[electoral][destination] = "extensions"
 projects[electoral][download][type] = "git"
 projects[electoral][download][url] = "https://lab.civicrm.org/extensions/electoral"
-projects[electoral][download][revision] = "390ed546563f775d3ebe195509002d44983bd6ab"
+projects[electoral][download][revision] = "aa4edbfed09d8279cdad287793d931214c9c99cf"
 
 projects[templateredact][type] = "library"
 projects[templateredact][destination] = "extensions"
