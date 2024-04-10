@@ -26,6 +26,18 @@
         },
         {
             "type": "vcs",
+            "url": "https://git.progressivetech.org/civicrm/civicrm-core"
+        },
+        {
+            "type": "vcs",
+            "url": "https://git.progressivetech.org/civicrm/civicrm-packages"
+        },
+        {
+            "type": "vcs",
+            "url": "https://git.progressivetech.org/civicrm/civicrm-drupal-8"
+        },
+        {
+            "type": "vcs",
             "url": "https://git.progressivetech.org/powerbase/lsd"
         },
         {
@@ -54,10 +66,10 @@
         "wikimedia/composer-merge-plugin": "dev-master",
         "civicrm/composer-downloads-plugin": "dev-git-support as 3.1",
         "composer/installers": "^1.9",
-        "drupal/core-composer-scaffold": "9.5.11",
-        "drupal/core-project-message": "9.5.11",
-        "drupal/core-recommended": "9.5.10",
-        "drush/drush": "10.6.2",
+        "drupal/core-composer-scaffold": "10.2.4",
+        "drupal/core-project-message": "10.2.4",
+        "drupal/core-recommended": "10.2.4",
+        "drush/drush": "~12",
         "civicrm/civicrm-core": "dev-master",
         "civicrm/civicrm-drupal-8": "dev-master",
         "civicrm/civicrm-packages": "dev-master",
@@ -66,23 +78,23 @@
         "powerbase/pbpublic": "dev-master",
         "powerbase/pbclaro": "dev-master",
         "powerbase/civicrm_theme_negotiator": "dev-master",
-        "drupal/webform": "6.1.4",
-        "drupal/webform_civicrm": "6.2.3",
+        "drupal/webform": "6.2.2",
+        "drupal/webform_civicrm": "6.2.5",
         "drupal/autologout": "1.4",
-        "drupal/antibot": "2.0.2",
+        "drupal/antibot": "2.0.3",
         "drupal/x_frame_options_configuration": "1.3",
-        "drupal/devel": "~5.0.0",
-        "drupal/bootstrap": "3.26",
+        "drupal/devel": "~5.0",
+        "drupal/bootstrap": "3.30",
         "drupal/backup_migrate": "5.0.3",
-        "drupal/captcha": "1.10",
+        "drupal/captcha": "2.0.5",
         "drupal/recaptcha": "3.2",
-        "drupal/tfa": "1.0",
-        "drupal/social_auth_google": "3.0.0",
-        "drupal/masquerade": "2.0-rc1",
+        "drupal/tfa": "1.5",
+        "drupal/social_auth_google": "^3.0",
+        "drupal/masquerade": "2.0-rc4",
         "drupal/r4032login": "2.2.1",
-        "drupal/asset_injector": "2.16",
+        "drupal/asset_injector": "2.19",
         "drupal/webform_migrate": "dev-3381251-after-migrating-webforms-1.x as 1.2",
-        "drupal/migrate_upgrade": "^4.0",
+        "drupal/migrate_upgrade": "^4.0.1",
         "drupal/migrate_plus": "^6.0",
         "drupal/webform_migrate_plus": "1.x-dev",
         "drupal/webform_civicrm_migrate": "0.x-dev"
