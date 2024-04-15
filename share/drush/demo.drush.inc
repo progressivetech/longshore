@@ -816,7 +816,8 @@ function demo_site_name() {
     'street_address' => '825 Hastings Hill Rd',
     'city' => 'Kernersville',
     'postal_code' => '27284',
-    'state_province_id' => 1032
+    'state_province_id' => 1032,
+    'country_id' => 1228 
   ];
   civicrm_api3('Address', 'create', $params);
 
