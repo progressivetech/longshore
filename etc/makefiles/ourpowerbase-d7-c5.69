@@ -218,7 +218,7 @@ projects[engage][type] = "library"
 projects[engage][destination] = "extensions"
 projects[engage][download][type] = "git"
 projects[engage][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.engage.git"
-projects[engage][download][revision] = "8b4545454cd321990686966b0cc7dfd7635772f9"
+projects[engage][download][revision] = "7d2eb1906aeb80f349db29312295bcf481fd5c3d"
 
 projects[civimobile][type] = "library"
 projects[civimobile][destination] = "extensions"
