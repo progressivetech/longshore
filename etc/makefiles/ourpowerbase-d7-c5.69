@@ -302,7 +302,7 @@ projects[stripe][type] = "library"
 projects[stripe][destination] = "extensions"
 projects[stripe][download][type] = "git"
 ;projects[stripe][download][url] = "https://lab.civicrm.org/extensions/stripe.git"
-projects[stripe][download][url] = "git://git.progressivetech.org/extensions/stripe.git"
+projects[stripe][download][url] = "git://git.progressivetech.org/extensions/com.drastikbydesign.stripe"
 projects[stripe][download][revision] = "68b654959c6dca465761ea87c8c5bebcc82a68bf"
 
 projects[firewall][type] = "library"
