@@ -801,7 +801,7 @@ projects[formdisabler][type] = "library"
 projects[formdisabler][destination] = "extensions"
 projects[formdisabler][download][type] = "git"
 projects[formdisabler][download][url] = "git://git.progressivetech.org/extensions/formdisabler"
-projects[formdisabler][download][revision] = "ef4bbe9f4afe6c6a787af10cfe72ff3ff831a220"
+projects[formdisabler][download][revision] = "e761aea3b3e93910683ebdfb3b3bc3126ad457a5"
 
 projects[eventics][type] = "library"
 projects[eventics][destination] = "extensions"
