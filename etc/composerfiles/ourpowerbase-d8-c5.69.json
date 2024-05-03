@@ -204,7 +204,7 @@
                 "type": "git"
             },
             "engage": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.engage.git@bfbcecde7337854cf4e3ac13bb644f05bf934881",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.engage.git@7d2eb1906aeb80f349db29312295bcf481fd5c3d",
                 "path": "web/extensions/engage",
                 "type": "git"
             },
@@ -259,7 +259,7 @@
                 "type": "git"
             },
             "twilio": {
-                "url": "https://github.com/civicrm/org.civicrm.sms.twilio.git@494728cf13bb65c228429665c158d899cd7e6dc1",
+                "url": "https://lab.civicrm.org/extensions/twilio.git@72161002821f42950735668687baaed81f70e553",
                 "path": "web/extensions/twilio",
                 "type": "git"
             },
@@ -274,7 +274,7 @@
                 "type": "git"
             },
             "stripe": {
-                "url": "https://lab.civicrm.org/extensions/stripe.git@d42e5e0a4f3644f7c589403a34b90bf59734622b",
+                "url": "https://git.progressivetech.org/extensions/com.drastikbydesign.stripe@68b654959c6dca465761ea87c8c5bebcc82a68bf",
                 "path": "web/extensions/stripe",
                 "type": "git"
             },
@@ -324,12 +324,12 @@
                 "type": "git"
             },
             "civirules": {
-                "url": "https://lab.civicrm.org/extensions/civirules.git@8a8299cd007544f2c76ad594afac176cc28dd94f",
+                "url": "https://lab.civicrm.org/jamie/civirules.git@ef8c3b377eb86c6570a797192c49e761d81f71c6",
                 "path": "web/extensions/civirules",
                 "type": "git"
             },
             "emailapi": {
-                "url": "https://lab.civicrm.org/extensions/emailapi.git@172d547abcc9c026878745ceff31f04f667eea50",
+                "url": "https://lab.civicrm.org/jamie/emailapi.git@44c78cd94c7c5badeab38cc9faa8558bf5cfb4a5",
                 "path": "web/extensions/emailapi",
                 "type": "git"
             },
@@ -369,7 +369,7 @@
                 "type": "git"
             },
             "mailchimpsync": {
-                "url": "https://lab.civicrm.org/extensions/mailchimpsync.git@5735d0c8217302ad043e81ec6dd1088deb668f14",
+                "url": "https://lab.civicrm.org/jamie/mailchimpsync.git@83cbd5ee530dc4582338d909261d7f447201179c",
                 "path": "web/extensions/mailchimpsync",
                 "type": "git"
             },
@@ -379,7 +379,7 @@
                 "type": "git"
             },
             "gbm": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.gbm@7c4e04fed60d9d6c30ee021eedde55701a9f478f",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.gbm@4f33640a5ad70c6fb4373bd2ded2b8030b8b39c8",
                 "path": "web/extensions/gbm",
                 "type": "git"
             },
@@ -509,7 +509,7 @@
                 "type": "git"
             },
             "setup": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@2ab3053524df98fcc0379bbb75e60059f403274d",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@a88fbb94592e2cf51c78141c15c5983d7599a06d",
                 "path": "web/extensions/setup",
                 "type": "git"
             },
@@ -549,7 +549,7 @@
                 "type": "git"
             },
             "extrafee": {
-                "url": "https://github.com/jitendrapurohit/nz.co.fuzion.extrafee@cfe461b1c9716903d0d15122d23841bf5b21bea7",
+                "url": "https://github.com/progressivetech/nz.co.fuzion.extrafee@c2516d164884dcef721ebc42443cd393f2bea358",
                 "path": "web/extensions/extrafee",
                 "type": "git"
             },
@@ -639,7 +639,7 @@
                 "type": "git"
             },
             "electoral": {
-                "url": "https://lab.civicrm.org/extensions/electoral@31f6d6cba524d17de4c702c3c75450813641aaf3",
+                "url": "https://lab.civicrm.org/extensions/electoral@aa4edbfed09d8279cdad287793d931214c9c99cf",
                 "path": "web/extensions/electoral",
                 "type": "git"
             },
@@ -679,12 +679,12 @@
                 "type": "git"
             },
             "formdisabler": {
-                "url": "https://git.progressivetech.org/extensions/formdisabler@ef4bbe9f4afe6c6a787af10cfe72ff3ff831a220",
+                "url": "https://git.progressivetech.org/extensions/formdisabler@e761aea3b3e93910683ebdfb3b3bc3126ad457a5",
                 "path": "web/extensions/formdisabler",
                 "type": "git"
             },
             "eventics": {
-                "url": "https://lab.civicrm.org/extensions/eventics.git@09307291f8d405e2049d6a9e07c0fe4adda51e61",
+                "url": "https://lab.civicrm.org/extensions/eventics.git@ca6e4a67cdb7d3b5dc2f140e27c9d8ccd578217c",
                 "path": "web/extensions/eventics",
                 "type": "git"
             },
@@ -724,12 +724,12 @@
                 "type": "git"
             },
             "osdi-client": {
-                "url": "https://github.com/lemniscus/osdi-client.git@71cef89657ac5ae9e862c11c35fdbe295e32a5ac",
+                "url": "https://github.com/lemniscus/osdi-client.git@6d6664a067a37baf58bf9107a93386964768b011",
                 "path": "web/extensions/osdi-client",
                 "type": "git"
             },
             "tce-osdi": {
-                "url": "https://codeberg.org/artfulrobot/tce-osdi.git@dae8e07950f493f97932c0038f945ce2c9a4b371",
+                "url": "https://codeberg.org/artfulrobot/tce-osdi.git@57162e16feb682a73b40f4f0bf2437a13206f7ac",
                 "path": "web/extensions/tce-osdi",
                 "type": "git"
             },
