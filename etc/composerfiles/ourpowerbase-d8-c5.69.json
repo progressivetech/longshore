@@ -18,11 +18,11 @@
         },
         {
             "type": "vcs",
-            "url": "https://github.com/fuzionnz/webform_civicrm_migrate"
+            "url": "https://github.com/progressivetech/webform_civicrm_migrate"
         },
         {
             "type": "vcs",
-            "url": "https://github.com/fuzionnz/webform_migrate_plus"
+            "url": "https://github.com/progressivetech/webform_migrate_plus"
         },
         {
             "type": "vcs",
@@ -96,8 +96,8 @@
         "drupal/webform_migrate": "dev-3381251-after-migrating-webforms-1.x as 1.2",
         "drupal/migrate_upgrade": "^4.0.1",
         "drupal/migrate_plus": "^6.0",
-        "drupal/webform_migrate_plus": "1.x-dev",
-        "drupal/webform_civicrm_migrate": "0.x-dev"
+        "progressivetech/webform_migrate_plus": "1.x-dev",
+        "drupal/webform_civicrm_migrate": "ptp-dev"
     },
     "conflict": {
         "drupal/drupal": "*"

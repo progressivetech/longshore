@@ -21,17 +21,6 @@ fi
 # Make sure the webform migration files have been copied
 long_set_site_platform "$d8site"
 long_set_site_platform_path
-webform_migrations_dir="${LONG_SITE_PLATFORM_PATH}/modules/contrib/webform/migrations"
-if [ ! -d "$webform_migrations_dir" ]; then
-  mkdir "$webform_migrations_dir"
-fi
-migrate_files="d7_webform_submission.yml d7_webform.yml"
-for migrate_file in $migrate_files; do
-  dest="${webform_migrations_dir}/${migrate_file}"
-  if [ ! -f "$dest" ]; then
-    cp "${LONG_SITE_PLATFORM_PATH}/modules/contrib/webform_migrate/migration_templates/d7/${migrate_file}" "$dest"
-  fi
-done
 
 # Ensure our migration database settings are present.
 d8_local_settings="${LONG_SRV}/services/sites/${d8site}/drupal/local.settings.php"
@@ -62,7 +51,7 @@ long_exec_drush_cmd "$d7site" "lsd-prepare-webform-migration"
 
 # This should pull in all dependencies
 
-long_exec_drush_cmd "$d8site" "pm:enable -y webform_migrate_plus migrate_upgrade"
+long_exec_drush_cmd "$d8site" "pm:enable -y webform_migrate_plus migrate_upgrade webform_civicrm_migrate"
 
 if [ "$LONG_LIVE" = "n" ]; then
   domain="https://$d7site.loc.cx"
@@ -78,6 +67,7 @@ migrations="
   upgrade_d7_user
   d7_system_date
   upgrade_d7_node_type
+  upgrade_d7_url_alias
   upgrade_d7_node_complete_webform
   upgrade_d7_webform
   upgrade_d7_webform_submission
