@@ -831,7 +831,7 @@ projects[archivemailing][type] = "library"
 projects[archivemailing][destination] = "extensions"
 projects[archivemailing][download][type] = "git"
 projects[archivemailing][download][url] = "https://lab.civicrm.org/jamie/archivemailing.git"
-projects[archivemailing][download][revision] = "962f36a4af84cad178ee4aa42a8ea6d86607a328"
+projects[archivemailing][download][revision] = "3365d49893527e19cc3c8d5a926a20c6c9bc344e"
 
 projects[contacteditor][type] = "library"
 projects[contacteditor][destination] = "extensions"
