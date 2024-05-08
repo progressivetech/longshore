@@ -1,14 +1,20 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-d8-migrate <d8site>
+long_usage_message="usage: $(basename $0) site-d8-migrate <d8site> [skip]
 Migrate the Drupal data from a D7 to D8 site. Pass in the d8 site name.
 
 Arguments
   <d8site> - The site you want to provision a d8 site for, e.g. ptpd8
+  skip - Optionally pass skip if you want to skip loading the slow webform submissions
 "
 long_check_args "$2" "$#" 1
 
 d8site="$2"
+skip="$3"
+
+if [ -n "$skip" ] && [ "$skip" != "skip" ]; then
+  long_die "Please pass skip as the third argument or nothing at all."
+fi
 
 d7site=$(echo "$d8site" | sed 's/d8$//')
 
@@ -55,21 +61,22 @@ long_exec_drush_cmd "$d7site" "lsd-prepare-webform-migration"
 #    it is intended to be temporary and eventually included in core. Thanksfully we
 #    don't have any fixes to this one.
 #  * webform_migrate: the main module for migrating webform. Still in alpha. PTP maintains a repo
-#    so we can have the d7_upgrade_node_webform migration to get the nodes. See 
+#    so we can have the d7_webform_node:webform migration to get the nodes. See 
 #    https://www.drupal.org/project/webform_migrate/issues/3308959
 #  * webform_migrate_plus: really? Another module that fixes something missing from webform_migrate.
 #    And, of course, we have to maintain a repo to fix php8.1 notices
 #  * webform_civicrm_migrate: pulls in the CiviCRM specific bits of webforms. PTP maintains a repo
 #    that brings in some of the un-merged PR's (https://github.com/fuzionnz/webform_civicrm_migrate)
 
-long_exec_drush_cmd "$d8site" "pm:enable -y webform_migrate_plus migrate_upgrade webform_civicrm_migrate"
 
+#long_exec_drush_cmd "$d8site" "pm:enable -y webform_migrate_plus migrate_upgrade webform_civicrm_migrate"
+long_exec_drush_cmd "$d8site" "pm:enable -y webform_migrate webform_migrate_plus webform_civicrm_migrate"
 if [ "$LONG_LIVE" = "n" ]; then
   domain="https://$d7site.loc.cx"
 else
   domain="https://$d7site.ourpowerbase.net"
 fi
-long_exec_drush_cmd "$d8site" "migrate:upgrade --legacy-db-key=migrate --legacy-root=https://$domain --configure-only"
+#long_exec_drush_cmd "$d8site" "migrate:upgrade --legacy-db-key=migrate --legacy-root=https://$domain --configure-only"
 
 # upgrade_d7_webform upgrades the webforms as webform entities, but not the
 # nodes. upgrade_d7_webform_node_webform comes from webform_migrate and imports
@@ -78,22 +85,26 @@ long_exec_drush_cmd "$d8site" "migrate:upgrade --legacy-db-key=migrate --legacy-
 # upgrade_d7_node_complete_webform fixes the last modified date.
 
 migrations="
-  upgrade_system_site
-  upgrade_d7_user_role 
-  upgrade_d7_user
-  upgrade_d7_filter_format
-  upgrade_d7_system_date
-  upgrade_d7_node_type
-  upgrade_d7_url_alias
-  upgrade_d7_webform
-  upgrade_d7_webform_node_webform
-  upgrade_d7_node_complete_webform
-  upgrade_d7_webform_submission
+  system_site
+  d7_user_role 
+  d7_user
+  d7_filter_format
+  d7_system_date
+  d7_node_type
+  d7_url_alias
+  d7_webform
+  d7_webform_node:webform
 "
+
+if [ -z "$skip" ]; then
+  migrations="${migrations} d7_webform_submission"
+fi
 
 #  upgrade_d7_webform_node_webform
 for migration in $migrations; do
+   long_log "Running migrate:import on %s\n" "info" "$migration"
    long_exec_drush_cmd "$d8site" "migrate:import $migration"
+   long_log "Completed migrate:import on %s\n" "info" "$migration"
 done
 
 # Now let's copy themes.
@@ -102,6 +113,7 @@ d8_themes="${LONG_SRV}/services/sites/${d8site}/drupal/themes"
 
 mkdir -p "$d8_themes"
 for theme_name in $(ls "$d7_themes" | grep -iv readme); do
+  long_log "Checking: %s theme" "info" "$theme_name"
   theme_path="${d8_themes}/${theme_name}"
   if [ -d "$theme_path" ]; then
     # Already converted.
