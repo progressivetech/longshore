@@ -88,9 +88,9 @@ migrations="
   upgrade_d7_webform
   upgrade_d7_webform_node_webform
   upgrade_d7_node_complete_webform
+  upgrade_d7_webform_submission
 "
 
-#  upgrade_d7_webform_submission
 #  upgrade_d7_webform_node_webform
 for migration in $migrations; do
    long_exec_drush_cmd "$d8site" "migrate:import $migration"
