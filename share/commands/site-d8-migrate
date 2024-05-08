@@ -59,21 +59,26 @@ else
   domain="https://$d7site.ourpowerbase.net"
 fi
 long_exec_drush_cmd "$d8site" "migrate:upgrade --legacy-db-key=migrate --legacy-root=https://$domain --configure-only"
+
+# upgrade_d7_webform_node_webform comes from webform_migrate and imports the webform notes along
+# with the webform that should be attached to them. But it messes up the last modified date.
+# upgrade_d7_node_complete_webform fixes the last modified date.
+
 migrations="
   upgrade_system_site
   upgrade_d7_user_role 
   upgrade_d7_user
-  upgrade_d7_user_role 
-  upgrade_d7_user
+  upgrade_d7_filter_format
   upgrade_d7_system_date
   upgrade_d7_node_type
   upgrade_d7_url_alias
   upgrade_d7_webform
   upgrade_d7_webform_node_webform
+  upgrade_d7_node_complete_webform
 "
+
 #  upgrade_d7_webform_submission
 #  upgrade_d7_webform_node_webform
-#  upgrade_d7_node_complete_webform
 for migration in $migrations; do
    long_exec_drush_cmd "$d8site" "migrate:import $migration"
 done
