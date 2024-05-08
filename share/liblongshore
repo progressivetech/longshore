@@ -3098,6 +3098,23 @@ long_add_initial_site_theme() {
   fi
 }
 
+long_delete_leftover_tables() {
+  site="$1"
+  list_temp=$(mktemp)
+  drop_temp=$(mktemp)
+  echo "SHOW TABLES LIKE 'civicrm_temp_%';" > "$list_temp"
+  for table in $(long_execute_site_query "$site" "$list_temp" | grep ^civicrm); do
+    echo "DROP TABLE $table;" >> "$drop_temp"
+  done
+  echo "DROP TABLE IF EXISTS  civicrm_stripe_subscriptions;" >> "$drop_temp"
+  echo "DROP TABLE IF EXISTS  civicrm_stripe_plans;" >> "$drop_temp"
+  echo "DROP TABLE IF EXISTS  civicrm_install_canary;" >> "$drop_temp"
+  echo "DROP TABLE IF EXISTS  civirule_rule_action_backup;" >> "$drop_temp"
+  long_execute_site_query "$site" "$drop_temp"
+  rm -f "$temp"
+  rm -f "$drop_temp"
+}
+
 long_clear_cache() {
   local site="$1"
   local cache="$2"

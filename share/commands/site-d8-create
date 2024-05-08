@@ -26,6 +26,9 @@ docker start "$d8site"
 # Clear the cache before backing up.
 long_clear_cache "$d7site" all
 
+# Drop any civicrm temp tables.
+long_delete_leftover_tables "$d7site"
+
 # Dump the CiviCRM tables from the d7 site to a backup file in the d8 site directory.
 civicrm_backup="/srv/longshore/services/sites/${d8site}/backup/${d8site}.civicrm.sql"
 defaults_file="--defaults-file=/srv/longshore/etc/my.cnf"

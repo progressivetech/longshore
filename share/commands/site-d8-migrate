@@ -60,18 +60,20 @@ else
 fi
 long_exec_drush_cmd "$d8site" "migrate:upgrade --legacy-db-key=migrate --legacy-root=https://$domain --configure-only"
 migrations="
-  system_site
-  d7_user_role 
-  d7_user
+  upgrade_system_site
   upgrade_d7_user_role 
   upgrade_d7_user
-  d7_system_date
+  upgrade_d7_user_role 
+  upgrade_d7_user
+  upgrade_d7_system_date
   upgrade_d7_node_type
   upgrade_d7_url_alias
-  upgrade_d7_node_complete_webform
   upgrade_d7_webform
-  upgrade_d7_webform_submission
+  upgrade_d7_webform_node_webform
 "
+#  upgrade_d7_webform_submission
+#  upgrade_d7_webform_node_webform
+#  upgrade_d7_node_complete_webform
 for migration in $migrations; do
    long_exec_drush_cmd "$d8site" "migrate:import $migration"
 done

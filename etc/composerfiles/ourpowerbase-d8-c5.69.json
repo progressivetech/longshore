@@ -9,10 +9,6 @@
     },
     "repositories": [
         {
-            "type": "vcs",
-            "url": "https://git.drupal.org/issue/webform_migrate-3381251.git"
-        },
-        {
           "type": "composer",
           "url": "https://packages.drupal.org/8"
         },
@@ -23,6 +19,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/progressivetech/webform_migrate_plus"
+        },
+        {
+            "type": "vcs",
+            "url": "https://git.progressivetech.org/powerbase/webform_migrate"
         },
         {
             "type": "vcs",
@@ -66,9 +66,9 @@
         "wikimedia/composer-merge-plugin": "dev-master",
         "civicrm/composer-downloads-plugin": "dev-git-support as 3.1",
         "composer/installers": "^1.9",
-        "drupal/core-composer-scaffold": "10.2.4",
-        "drupal/core-project-message": "10.2.4",
-        "drupal/core-recommended": "10.2.4",
+        "drupal/core-composer-scaffold": "10.2.6",
+        "drupal/core-project-message": "10.2.6",
+        "drupal/core-recommended": "10.2.6",
         "drush/drush": "~12",
         "civicrm/civicrm-core": "dev-ptp5.69-2024-01-05 as 5.69.5",
         "civicrm/civicrm-drupal-8": "~5.69.5",
@@ -93,11 +93,11 @@
         "drupal/masquerade": "2.0-rc4",
         "drupal/r4032login": "2.2.1",
         "drupal/asset_injector": "2.19",
-        "drupal/webform_migrate": "dev-3381251-after-migrating-webforms-1.x as 1.2",
+        "powerbase/webform_migrate": "dev-ptp",
         "drupal/migrate_upgrade": "^4.0.1",
         "drupal/migrate_plus": "^6.0",
         "progressivetech/webform_migrate_plus": "1.x-dev",
-        "drupal/webform_civicrm_migrate": "ptp-dev"
+        "drupal/webform_civicrm_migrate": "dev-ptp"
     },
     "conflict": {
         "drupal/drupal": "*"
