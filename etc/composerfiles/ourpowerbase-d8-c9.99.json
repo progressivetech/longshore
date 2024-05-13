@@ -704,7 +704,7 @@
                 "type": "git"
             },
             "archivemailing": {
-                "url": "https://lab.civicrm.org/jamie/archivemailing.git@962f36a4af84cad178ee4aa42a8ea6d86607a328",
+                "url": "https://lab.civicrm.org/jamie/archivemailing.git@3365d49893527e19cc3c8d5a926a20c6c9bc344e",
                 "path": "web/extensions/archivemailing",
                 "type": "git"
             },
