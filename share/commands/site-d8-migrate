@@ -56,10 +56,6 @@ fi
 long_exec_drush_cmd "$d7site" "lsd-prepare-webform-migration"
 
 
-#  * migrate_upgrade: provides the migrate:upgrade drush commmand. What does that do?? Also does 
-#    something special when a migration is prefixed with upgrade_. Not sure what?? The README says
-#    it is intended to be temporary and eventually included in core. Thanksfully we
-#    don't have any fixes to this one.
 #  * webform_migrate: the main module for migrating webform. Still in alpha. PTP maintains a repo
 #    so we can have the d7_webform_node:webform migration to get the nodes. See 
 #    https://www.drupal.org/project/webform_migrate/issues/3308959
@@ -68,21 +64,18 @@ long_exec_drush_cmd "$d7site" "lsd-prepare-webform-migration"
 #  * webform_civicrm_migrate: pulls in the CiviCRM specific bits of webforms. PTP maintains a repo
 #    that brings in some of the un-merged PR's (https://github.com/fuzionnz/webform_civicrm_migrate)
 
-
-#long_exec_drush_cmd "$d8site" "pm:enable -y webform_migrate_plus migrate_upgrade webform_civicrm_migrate"
 long_exec_drush_cmd "$d8site" "pm:enable -y webform_migrate webform_migrate_plus webform_civicrm_migrate"
 if [ "$LONG_LIVE" = "n" ]; then
   domain="https://$d7site.loc.cx"
 else
   domain="https://$d7site.ourpowerbase.net"
 fi
-#long_exec_drush_cmd "$d8site" "migrate:upgrade --legacy-db-key=migrate --legacy-root=https://$domain --configure-only"
 
-# upgrade_d7_webform upgrades the webforms as webform entities, but not the
-# nodes. upgrade_d7_webform_node_webform comes from webform_migrate and imports
-# the webform nodes along with the name of the webform that should be attached
-# to them. But it messes up the last modified date.
-# upgrade_d7_node_complete_webform fixes the last modified date.
+# d7_webform upgrades the webforms as webform entities, but not the nodes. 
+#
+# d7_webform_node:webform comes from webform_migrate and imports the webform
+# nodes along with the name of the webform that should be attached to them 
+# (which doesn't happen if you use the generic drupal node migrate code).
 
 migrations="
   system_site
