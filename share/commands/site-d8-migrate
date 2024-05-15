@@ -71,15 +71,15 @@ else
   domain="https://$d7site.ourpowerbase.net"
 fi
 
-# d7_webform upgrades the webforms as webform entities, but not the nodes. 
+# d7_webform upgrades the webforms as webform entities, but not the nodes.
 #
 # d7_webform_node:webform comes from webform_migrate and imports the webform
-# nodes along with the name of the webform that should be attached to them 
+# nodes along with the name of the webform that should be attached to them
 # (which doesn't happen if you use the generic drupal node migrate code).
 
 migrations="
   system_site
-  d7_user_role 
+  d7_user_role
   d7_user
   d7_filter_format
   d7_system_date
@@ -132,3 +132,9 @@ done
 
 # Now upgrade themekey
 long_exec_drush_cmd "$d8site" ctn:importd7
+
+# Lastly drop the civicrm installation canary table if it exists
+temp=$(mktemp)
+printf 'DROP TABLE IF EXISTS `civicrm_install_canary`' >> "$temp"
+long_execute_site_query "$d8site" "$temp"
+rm -f "$temp"
