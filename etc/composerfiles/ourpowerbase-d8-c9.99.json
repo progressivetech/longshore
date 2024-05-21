@@ -299,7 +299,7 @@
                 "type": "git"
             },
             "civivolunteer": {
-                "url": "https://github.com/civicrm/org.civicrm.volunteer.git@e6bdfbbb4dd218a2f73c1660bbeb2da82815beae",
+                "url": "https://github.com/progressivetech/org.civicrm.volunteer.git@e6bdfbbb4dd218a2f73c1660bbeb2da82815beae",
                 "path": "web/extensions/civivolunteer",
                 "type": "git"
             },

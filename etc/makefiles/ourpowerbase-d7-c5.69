@@ -332,7 +332,7 @@ projects[civisualize][download][revision] = "d4eb2429865eb5b5532c75c6cc6c6fe27a0
 projects[civivolunteer][type] = "library"
 projects[civivolunteer][destination] = "extensions"
 projects[civivolunteer][download][type] = "git"
-projects[civivolunteer][download][url] = "https://github.com/civicrm/org.civicrm.volunteer.git"
+projects[civivolunteer][download][url] = "https://github.com/progressivetech/org.civicrm.volunteer.git"
 projects[civivolunteer][download][revision] = "e6bdfbbb4dd218a2f73c1660bbeb2da82815beae"
 
 ; required for civivolunteer
