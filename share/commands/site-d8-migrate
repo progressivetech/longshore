@@ -79,15 +79,15 @@ fi
 
 migrations="
   system_site
+  d7_system_date
   d7_user_role
   d7_user
   d7_filter_format
-  d7_system_date
-  d7_node_type
-  d7_url_alias
   d7_webform
-  d7_webform_node:webform
 "
+
+# d7_node_type
+# d7_webform_node:webform
 
 if [ -z "$skip" ]; then
   migrations="${migrations} d7_webform_submission"
@@ -99,6 +99,11 @@ for migration in $migrations; do
    long_exec_drush_cmd "$d8site" "migrate:import $migration"
    long_log "Completed migrate:import on %s\n" "info" "$migration"
 done
+
+# Update webform path aliases so the old aliases point to the new
+# webform link.
+long_log "Updating webform aliases" "info"
+long_exec_drush_cmd "$d8site" "lsd:migrate-webform-aliases"
 
 # Now let's copy themes.
 d7_themes="${LONG_SRV}/services/sites/${d7site}/drupal/themes"
