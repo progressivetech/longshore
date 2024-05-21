@@ -299,7 +299,7 @@
                 "type": "git"
             },
             "civivolunteer": {
-                "url": "https://github.com/civicrm/org.civicrm.volunteer.git@ff3d5d1effad302cfe4241d34fe517c79c8d8cab",
+                "url": "https://github.com/civicrm/org.civicrm.volunteer.git@e6bdfbbb4dd218a2f73c1660bbeb2da82815beae",
                 "path": "web/extensions/civivolunteer",
                 "type": "git"
             },
@@ -459,7 +459,7 @@
                 "type": "git"
             },
             "remoteform": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.remoteform@c4d33cddb29399af101107119f2e2d4e252aefc9",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.remoteform@e28535dc0acc426193d5e052400430bc18ac0b35",
                 "path": "web/extensions/remoteform",
                 "type": "git"
             },
@@ -469,7 +469,7 @@
                 "type": "git"
             },
             "sqlexport": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.sqlexport@a41eb420374ddf844b482fd6f6832e26f5d70e47",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.sqlexport@5b654f216c04b7446d8803923a8fc9837b615938",
                 "path": "web/extensions/sqlexport",
                 "type": "git"
             },
@@ -719,7 +719,7 @@
                 "type": "git"
             },
             "dynamic_theme_selector": {
-                "url": "https://git.progressivetech.org/extensions/dynamic_theme_selector@76bfdec7b1c9905de489c545970c1afe50c2d9bd",
+                "url": "https://git.progressivetech.org/extensions/dynamic_theme_selector@80075ebc2fc4053b98219f3bd32c7eadeb14bce2",
                 "path": "web/extensions/dynamic_theme_selector",
                 "type": "git"
             },
