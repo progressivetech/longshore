@@ -1001,8 +1001,11 @@ long_create_site_directories() {
       drupal/custom-civicrm/templates"
   else
     # It is a dev instance or clone, so git pull instead of adding these files.
-    mkdir -p "${dir}/drupal"
-    long_gitify_site "$site"
+    # (Unless we are building a d8 version of the site).
+    if [[ $site != *d8 ]]; then
+      mkdir -p "${dir}/drupal"
+      long_gitify_site "$site"
+    fi
   fi
   local create=
   for create in $creates; do
