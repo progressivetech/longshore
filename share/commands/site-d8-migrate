@@ -1,20 +1,14 @@
 #!/bin/bash
 
-long_usage_message="usage: $(basename $0) site-d8-migrate <d8site> [skip]
+long_usage_message="usage: $(basename $0) site-d8-migrate <d8site>
 Migrate the Drupal data from a D7 to D8 site. Pass in the d8 site name.
 
 Arguments
   <d8site> - The site you want to provision a d8 site for, e.g. ptpd8
-  skip - Optionally pass skip if you want to skip loading the slow webform submissions
 "
 long_check_args "$2" "$#" 1
 
 d8site="$2"
-skip="$3"
-
-if [ -n "$skip" ] && [ "$skip" != "skip" ]; then
-  long_die "Please pass skip as the third argument or nothing at all."
-fi
 
 d7site=$(echo "$d8site" | sed 's/d8$//')
 
@@ -86,12 +80,13 @@ migrations="
   d7_webform
 "
 
+# We don't want any nodes - no need since we can access webform entities directly
 # d7_node_type
 # d7_webform_node:webform
 
-if [ -z "$skip" ]; then
-  migrations="${migrations} d7_webform_submission"
-fi
+# Also, submissions seem to come in via d7_webform. If we explicitly import them
+# then they seem to get "processed" meaning contacts are re-added to Powerbase.
+# d7_webform_submission"
 
 #  upgrade_d7_webform_node_webform
 for migration in $migrations; do
