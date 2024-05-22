@@ -26,6 +26,10 @@
         },
         {
             "type": "vcs",
+            "url": "https://git.progressivetech.org/powerbase/webform_civicrm"
+        },
+        {
+            "type": "vcs",
             "url": "https://git.progressivetech.org/civicrm/civicrm-core"
         },
         {
@@ -79,7 +83,6 @@
         "powerbase/pbclaro": "dev-master",
         "powerbase/civicrm_theme_negotiator": "dev-master",
         "drupal/webform": "6.2.2",
-        "drupal/webform_civicrm": "6.2.5",
         "drupal/autologout": "1.4",
         "drupal/antibot": "2.0.3",
         "drupal/x_frame_options_configuration": "1.3",
@@ -97,7 +100,8 @@
         "drupal/migrate_upgrade": "^4.0.1",
         "drupal/migrate_plus": "^6.0",
         "progressivetech/webform_migrate_plus": "1.x-dev",
-        "drupal/webform_civicrm_migrate": "dev-ptp"
+        "drupal/webform_civicrm_migrate": "dev-ptp",
+        "drupal/webform_civicrm": "dev-ptp"
     },
     "conflict": {
         "drupal/drupal": "*"
