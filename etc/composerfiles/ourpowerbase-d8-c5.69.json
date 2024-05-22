@@ -9,10 +9,6 @@
     },
     "repositories": [
         {
-          "type": "composer",
-          "url": "https://packages.drupal.org/8"
-        },
-        {
             "type": "vcs",
             "url": "https://github.com/progressivetech/webform_civicrm_migrate"
         },
@@ -26,7 +22,7 @@
         },
         {
             "type": "vcs",
-            "url": "https://git.progressivetech.org/powerbase/webform_civicrm"
+            "url": "https://github.com/progressivetech/webform_civicrm"
         },
         {
             "type": "vcs",
@@ -63,6 +59,10 @@
         {
             "type": "vcs",
             "url": "https://git.progressivetech.org/powerbase/civicrm_theme_negotiator"
+        },
+        {
+          "type": "composer",
+          "url": "https://packages.drupal.org/8"
         }
     ],
     "require": {
@@ -101,7 +101,7 @@
         "drupal/migrate_plus": "^6.0",
         "progressivetech/webform_migrate_plus": "1.x-dev",
         "drupal/webform_civicrm_migrate": "dev-ptp",
-        "drupal/webform_civicrm": "dev-ptp"
+        "drupal/webform_civicrm": "dev-ptp as 6.2.5"
     },
     "conflict": {
         "drupal/drupal": "*"

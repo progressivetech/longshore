@@ -78,17 +78,12 @@ migrations="
   d7_user
   d7_filter_format
   d7_webform
+ d7_webform_submission
 "
 
 # We don't want any nodes - no need since we can access webform entities directly
 # d7_node_type
 # d7_webform_node:webform
-
-# Also, submissions seem to come in via d7_webform. If we explicitly import them
-# then they seem to get "processed" meaning contacts are re-added to Powerbase.
-# d7_webform_submission"
-
-#  upgrade_d7_webform_node_webform
 for migration in $migrations; do
    long_log "Running migrate:import on %s\n" "info" "$migration"
    long_exec_drush_cmd "$d8site" "migrate:import $migration"
