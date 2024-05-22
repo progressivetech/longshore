@@ -90,10 +90,16 @@ for migration in $migrations; do
    long_log "Completed migrate:import on %s\n" "info" "$migration"
 done
 
+# Now disable the migrate modules
+long_exec_drush_cmd "$d8site" "pm:uninstall -y webform_migrate webform_migrate_plus webform_civicrm_migrate migrate migrate_drupal migrate_plus"
+
 # Update webform path aliases so the old aliases point to the new
 # webform link.
 long_log "Updating webform aliases" "info"
 long_exec_drush_cmd "$d8site" "lsd:migrate-webform-aliases"
+
+# Reset permissions
+long_exec_drush_cmd "$d8site" "lsd:set-perms"
 
 # Now let's copy themes.
 d7_themes="${LONG_SRV}/services/sites/${d7site}/drupal/themes"
