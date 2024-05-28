@@ -1065,7 +1065,8 @@ function demo_contacts() {
       $params['address'] = [ 
         'street_address' => $street_address,
         'city' => $city,
-        'state_province_id' => 'North Carolina',
+        'state_province_id' => 1032, // North Carolina,
+        'country_id' => 1228, // United States,
         'postal_code' => $postal_code,
         'is_primary' => 1,
         'location_type_id' => 1,
