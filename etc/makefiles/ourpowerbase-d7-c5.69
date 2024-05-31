@@ -863,6 +863,12 @@ projects[tce-osdi][download][type] = "git"
 projects[tce-osdi][download][url] = "https://codeberg.org/artfulrobot/tce-osdi.git"
 projects[tce-osdi][download][revision] = "57162e16feb682a73b40f4f0bf2437a13206f7ac"
 
+projects[activitytypeacl][type] = "library"
+projects[activitytypeacl][destination] = "extensions"
+projects[activitytypeacl][download][type] = "git"
+projects[activitytypeacl][download][url] = "https://lab.civicrm.org/extensions/activitytypeacl"
+projects[activitytypeacl][download][revision] = "30adc4590ff39577d50d646dcc21953b4e2f2d5c"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
