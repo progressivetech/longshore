@@ -869,6 +869,12 @@ projects[activitytypeacl][download][type] = "git"
 projects[activitytypeacl][download][url] = "https://lab.civicrm.org/extensions/activitytypeacl"
 projects[activitytypeacl][download][revision] = "30adc4590ff39577d50d646dcc21953b4e2f2d5c"
 
+projects[ncn-civi-zoom][type] = "library"
+projects[ncn-civi-zoom][destination] = "extensions"
+projects[ncn-civi-zoom][download][type] = "git"
+projects[ncn-civi-zoom][download][url] = "https://lab.civicrm.org/extensions/ncn-civi-zoom"
+projects[ncn-civi-zoom][download][revision] = "fdefcf7fc96fb9f3b319ca794bb7db1314a68378"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
