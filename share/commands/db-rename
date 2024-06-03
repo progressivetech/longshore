@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# See: https://stackoverflow.com/questions/67093/how-do-i-rename-a-mysql-database-change-schema-name
+
+long_usage_message="usage: $(basename $0) db-rename <oldname> <newname>
+Rename a database.
+
+Arguments
+  <oldname> - old name 
+  <newname> - new name."
+
+long_check_args "$2" "$#" 2
+
+oldname="$2"
+newname="$3"
+
+if ! long_check_alpha_numeric "$oldname"; then
+  long_die "Your oldname should only contain alpha numeric characters."
+fi
+
+if ! long_check_alpha_numeric "$newname"; then
+  long_die "Your newname should only contain alpha numeric characters."
+fi
+
+long_prompt "This will drop the database named %s if it exists. Continue? " "$newname"
+if [ "$reply" != "y" ]; then
+  long_die "Not proceeding."
+fi
+
+root_query() {
+  sql="$1"
+  tmp=$(mktemp)
+  echo "$sql" > "$tmp"
+  long_execute_root_query mysqlhost "$tmp"
+  rm "$tmp"
+}
+site_query() {
+  site="$1"
+  sql="$2"
+  tmp=$(mktemp)
+  echo "$sql" > "$tmp"
+  echo "here in site with $sql"
+  long_execute_site_query "$site" "$tmp"
+  rm "$tmp"
+}
+root_query "DROP DATABASE IF EXISTS $newname"
+ts=$(date +%s)
+character_set=$(root_query "SELECT default_character_set_name FROM information_schema.SCHEMATA WHERE schema_name = '$oldname'")
+tables=$(root_query "SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema='$oldname' AND TABLE_TYPE='BASE TABLE'")
+views=$(root_query "SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema='$oldname' AND TABLE_TYPE='VIEW'")
+triggers=$(site_query "$oldname" "SHOW TRIGGERS\G" | grep Trigger: | awk '{print $2}')
+if [ -z "$tables" ]; then
+  long_die "Error retrieving tables from %s" 1 "$oldname"
+fi
+
+root_query "CREATE database $newname DEFAULT CHARACTER SET $character_set"
+if [ -n "$views" ]; then
+  views_tmp=$(mktemp --suffix .sql)
+  long_dump_database "$oldname" "$views_tmp" $view_tmp
+fi
+
+triggers_tmp=$(mktemp --suffix .sql)
+mysqldump --defaults-file="${LONG_SRV}/etc/my.cnf"  --no-data --no-create-info --routines --events "$oldname" > "$triggers_tmp"
+for trigger in $triggers; do
+    site_query "$oldname" "DROP TRIGGER $trigger"
+done
+for table in $tables; do
+  root_query "SET FOREIGN_KEY_CHECKS=0; RENAME TABLE ${oldname}.${table} to ${newname}.${table}"
+done
+if [ -n "$views" ]; then
+    site_query "$newname" "$views_tmp"
+    rm "$views_tmp"
+fi
+site_query "$newname" "$triggers_tmp"
+rm "$triggers_tmp"
+
+remaining_tables=$(root_query "SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema='$oldname' and TABLE_TYPE='BASE TABLE'")
+if [ -n "$remaining_tables" ]; then
+  long_log "Tables remain in old database: %s" error "$remaining_tables"
+fi

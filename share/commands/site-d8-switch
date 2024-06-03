@@ -1,0 +1,22 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-d8-switch <site>
+Switch databases. After running site-d8-create and site-d8-migrate,
+call site-d8-switch, passing in the site name of the d8 site.
+The d8 version of the site will be removed and the 'old' version
+of the site will be replaced with the d8 version. This is the final
+'clean up' step.
+
+Arguments
+  <site> - The site you want to provision a d8 site for, e.g. ptp 
+"
+long_check_args "$2" "$#" 2
+
+d8site="$2"
+d7site="$(echo "$d8site" | sed 's/d8^//')"
+
+# Drop the d7 database
+
+# Rename the d8 database
+
+# Swith the d7 site to use the d8 platform.
