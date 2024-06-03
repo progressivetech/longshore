@@ -682,7 +682,7 @@ long_execute_root_query() {
     long_die "The my.cnf file doesn't exist for this database (%s)" 1 "$mycnf"
   fi
   
-  mysql --defaults-file="$mycnf" < "$file"
+  mysql --defaults-file="$mycnf" --silent --silent --silent < "$file"
 }
 
 # Initialize the LONG_SITE_TMP variable. 
@@ -2243,6 +2243,8 @@ long_create_dns() {
 long_dump_database() {
   local site="$1"
   local dest="$2"
+  shift 2
+  local objects="$@"
   local temp=$(mktemp)
   local out
 
@@ -2256,7 +2258,7 @@ long_dump_database() {
 
   # All databases are named after the site name. Set pipefail so if 
   # mysqldump fails but gzip succeeds we get an error message.
-  out=$(set -o pipefail && mysqldump --defaults-file="$mycnf" "$dbname" | gzip --to-stdout > "$temp")
+  out=$(set -o pipefail && mysqldump --defaults-file="$mycnf" "$dbname" $objects | gzip --to-stdout > "$temp")
   
   # Only move into place if it was successful.
   if [ "$?" = 0 ]; then
