@@ -16,7 +16,10 @@
 long_die() {
   local msg="$1"
   local exit_code="$2"
-  shift 2
+  shift
+  if [ -n "$1" ]; then
+    shift
+  fi
   [ -z "$exit_code" ] && exit_code=1
   long_log "$msg" error "$@"
   exit "$exit_code"
@@ -184,7 +187,10 @@ long_log() {
   if [ -z "$log_level" ]; then
     log_level=info
   fi
-  shift 2
+  shift
+  if [ -n "$1" ]; then
+    shift
+  fi
   local log_out=n
   # Always output critical
   if [ "$log_level" = "critical" ]; then
@@ -2243,7 +2249,11 @@ long_create_dns() {
 long_dump_database() {
   local site="$1"
   local dest="$2"
-  shift 2
+  shift
+
+  if [ -n "$1" ]; then
+    shift
+  fi
   local objects="$@"
   local temp=$(mktemp)
   local out
