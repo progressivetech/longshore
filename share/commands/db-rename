@@ -37,11 +37,14 @@ root_query() {
 site_query() {
   site="$1"
   sql="$2"
-  tmp=$(mktemp)
-  echo "$sql" > "$tmp"
-  echo "here in site with $sql"
-  long_execute_site_query "$site" "$tmp"
-  rm "$tmp"
+  if [ -f "$sql" ]; then
+    long_execute_site_query "$site" "$sql"
+  else
+    tmp=$(mktemp)
+    echo "$sql" > "$tmp"
+    long_execute_site_query "$site" "$tmp"
+    rm "$tmp"
+  fi
 }
 root_query "DROP DATABASE IF EXISTS $newname"
 ts=$(date +%s)
