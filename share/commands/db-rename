@@ -38,16 +38,20 @@ site_query() {
   site="$1"
   sql="$2"
   if [ -f "$sql" ]; then
+    cat "$sql"
     long_execute_site_query "$site" "$sql"
   else
     tmp=$(mktemp)
     echo "$sql" > "$tmp"
+    cat "$tmp"
     long_execute_site_query "$site" "$tmp"
     rm "$tmp"
   fi
 }
+# Ensure we don't have a naming conflict.
 root_query "DROP DATABASE IF EXISTS $newname"
-ts=$(date +%s)
+
+# Get the basics from the old table - table names, views names, and triggers/events, etc.
 character_set=$(root_query "SELECT default_character_set_name FROM information_schema.SCHEMATA WHERE schema_name = '$oldname'")
 tables=$(root_query "SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema='$oldname' AND TABLE_TYPE='BASE TABLE'")
 views=$(root_query "SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema='$oldname' AND TABLE_TYPE='VIEW'")
@@ -56,27 +60,44 @@ if [ -z "$tables" ]; then
   long_die "Error retrieving tables from %s" 1 "$oldname"
 fi
 
-root_query "CREATE database $newname DEFAULT CHARACTER SET $character_set"
+# If we have views, dump them to a file
 if [ -n "$views" ]; then
   views_tmp=$(mktemp --suffix .sql)
-  long_dump_database "$oldname" "$views_tmp" $view_tmp
+  long_dump_database "$oldname" "$views_tmp" $views
+  # Rename the definer to remove the d8 part.
+  sed -i 's/d8`@/`@/g' "$views_tmp"
 fi
 
+# Dump all manner of routines, triggers, events, etc to a file.
 triggers_tmp=$(mktemp --suffix .sql)
 mysqldump --defaults-file="${LONG_SRV}/etc/my.cnf"  --no-data --no-create-info --routines --events "$oldname" > "$triggers_tmp"
+# Rename the definer to remove the d8 part.
+sed -i 's/d8`@/`@/g' "$triggers_tmp"
+
+# If we have triggers, drop them to avoid having them go off while we rename the tables.
 for trigger in $triggers; do
     site_query "$oldname" "DROP TRIGGER $trigger"
 done
+
+# Create the new database
+root_query "CREATE database $newname DEFAULT CHARACTER SET $character_set"
+
+# Rename each table.
 for table in $tables; do
   root_query "SET FOREIGN_KEY_CHECKS=0; RENAME TABLE ${oldname}.${table} to ${newname}.${table}"
 done
+
+# Import the views.
 if [ -n "$views" ]; then
     site_query "$newname" "$views_tmp"
     rm "$views_tmp"
 fi
+
+# Import the triggers.
 site_query "$newname" "$triggers_tmp"
 rm "$triggers_tmp"
 
+# Check to see if we missed anything.
 remaining_tables=$(root_query "SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema='$oldname' and TABLE_TYPE='BASE TABLE'")
 if [ -n "$remaining_tables" ]; then
   long_log "Tables remain in old database: %s" error "$remaining_tables"
