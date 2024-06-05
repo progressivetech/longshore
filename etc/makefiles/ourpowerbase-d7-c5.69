@@ -875,6 +875,12 @@ projects[ncn-civi-zoom][download][type] = "git"
 projects[ncn-civi-zoom][download][url] = "https://lab.civicrm.org/extensions/ncn-civi-zoom"
 projects[ncn-civi-zoom][download][revision] = "fdefcf7fc96fb9f3b319ca794bb7db1314a68378"
 
+projects[localvocal][type] = "library"
+projects[localvocal][destination] = "extensions"
+projects[localvocal][download][type] = "git"
+projects[localvocal][download][url] = "git://git.progressivetech.org/extensions/localvocal"
+projects[localvocal][download][revision] = "65133d6a6e18a569fee065b07dfbc8351abb5606"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########

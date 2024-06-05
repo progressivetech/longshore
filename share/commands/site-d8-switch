@@ -8,15 +8,42 @@ of the site will be replaced with the d8 version. This is the final
 'clean up' step.
 
 Arguments
-  <site> - The site you want to provision a d8 site for, e.g. ptp 
+  <site> - The site you want to switch, e.g. ptpd8 
 "
-long_check_args "$2" "$#" 2
+long_check_args "$2" "$#" 1
 
 d8site="$2"
-d7site="$(echo "$d8site" | sed 's/d8^//')"
+d7site="$(echo "$d8site" | sed 's/d8$//')"
 
-# Drop the d7 database
+# Get the platform of the d8 site
+long_set_site_platform "$d8site"
+platform="$LONG_SITE_PLATFORM"
 
-# Rename the d8 database
+echo "D7 site: $d7site and $platform"
+if [ ! -d "/srv/longshore/platforms/${platform}" ]; then
+  long_die "Failed to locate platform %s." 1 "$platform"
+fi
+
+# Rename the d8 database to the d7 name
+#(longshore db-rename "$d8site" "$d7site") || long_die "Failed to rename the database"
 
 # Swith the d7 site to use the d8 platform.
+long_log "Stopping d7 site"
+if ! docker stop "$d7site" 2>/dev/null 1>/dev/null; then
+  long_die "%s Failed to stop docker container" 1 "$d7site"
+fi
+long_log "Removing d7 site container"
+if ! docker rm "$d7site" 2>/dev/null 1>/dev/null; then
+  long_die "%s Failed to remove docker container" 1 "$d7site"
+fi
+
+long_log "Starting site with new platform"
+# Send to /dev/null because even with --quiet docker emits some info.
+if ! long_container_up site "$d7site" mysqlhost "$platform" > /dev/null; then
+  long_die "%s Failed to bring up new container" 1 "$d7site"
+fi
+
+if ! long_nginx_reload; then
+  long_die ":%s Failed to reload nginx" 1 "$d7site"
+fi
+

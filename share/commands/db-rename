@@ -38,12 +38,10 @@ site_query() {
   site="$1"
   sql="$2"
   if [ -f "$sql" ]; then
-    cat "$sql"
     long_execute_site_query "$site" "$sql"
   else
     tmp=$(mktemp)
     echo "$sql" > "$tmp"
-    cat "$tmp"
     long_execute_site_query "$site" "$tmp"
     rm "$tmp"
   fi
