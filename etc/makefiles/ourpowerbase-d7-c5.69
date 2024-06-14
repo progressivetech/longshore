@@ -881,6 +881,12 @@ projects[localvocal][download][type] = "git"
 projects[localvocal][download][url] = "git://git.progressivetech.org/extensions/localvocal"
 projects[localvocal][download][revision] = "65133d6a6e18a569fee065b07dfbc8351abb5606"
 
+projects[deduper][type] = "library"
+projects[deduper][destination] = "extensions"
+projects[deduper][download][type] = "git"
+projects[deduper][download][url] = "https://github.com/eileenmcnaughton/deduper"
+projects[deduper][download][revision] = "03e5808d8f214b89f0ae5d341097dab275c1179e"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
