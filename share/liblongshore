@@ -714,6 +714,11 @@ long_create_drupal_settings() {
   # Copy the template into place.
   cp "$source" "$target"
 
+  # Add a random salt.
+  long_pwgen 50
+  local salt="$LONG_PASSWORD"
+  sed -i "s/\$settings['hash_salt'] = '';/\$settings['hash_salt'] = '$salt';/" "$target"
+
   # And then append the database configuration.
   source="${LONG_SHARE}/templates/db.php"
   cat "$source" | \
@@ -1741,7 +1746,7 @@ long_configure_dev() {
     long_die "Not running dev code on live site."
   fi
   long_exec_drush_cmd "$site" lsd-dev
-  #long_exec_cv_cmd "$site" api4 PowerbaseSetup.SetDevOptions
+  long_exec_cv_cmd "$site" api4 PowerbaseSetup.SetDevOptions
 }
 
 # Ensure we have a Drupal and CiviCRM database installed and the settings.php
