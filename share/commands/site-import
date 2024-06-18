@@ -22,6 +22,7 @@ long_log "Importing backup file." info
 long_import_backup "$site" "$path"
 
 if [ "$LONG_LIVE" = "n" ]; then
+  long_log "Configuring Dev Settings." info
   long_configure_dev "$site"
 fi
 

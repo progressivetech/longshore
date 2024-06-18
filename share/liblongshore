@@ -769,7 +769,7 @@ long_create_civicrm_settings() {
   local dbpass=$(grep ^password "${dir}/my.cnf" | cut -d= -f2)
   local dbuser=$(grep ^user "${dir}/my.cnf" | cut -d= -f2)
   local dbname=$(grep ^database "${dir}/my.cnf" | cut -d= -f2)
-  
+
   if [ "${LONG_SITE_DRUPAL_VERSION}" -gt 7 ]; then
     local source="${LONG_SRV}/platforms/${LONG_SITE_PLATFORM}/vendor/civicrm/civicrm-core/templates/CRM/common/civicrm.settings.php.template"
   else
@@ -788,15 +788,17 @@ long_create_civicrm_settings() {
 
   local cms=Drupal
   local web=""
+  local root="${web}/sites/all/modules/civicrm"
   if [ "${LONG_SITE_DRUPAL_VERSION}" -gt 7 ]; then
     cms="${cms}${LONG_SITE_DRUPAL_VERSION}"
     web="/web"
+    root="/vendor/civicrm/civicrm-core"
   fi
 
   # And then replace all the variables.
   cat "$source" | \
     sed \
-    -e "s#%%crmRoot%%#/var/www/powerbase${web}/sites/all/modules/civicrm#" \
+    -e "s#%%crmRoot%%#/var/www/powerbase${root}#" \
     -e "s#%%templateCompileDir%%#/var/www/powerbase${web}/sites/default/files/civicrm/templates_c#" \
     -e "s#%%frontEnd#0#" \
     -e "s#%%cms%%#${cms}#" \
@@ -1739,7 +1741,7 @@ long_configure_dev() {
     long_die "Not running dev code on live site."
   fi
   long_exec_drush_cmd "$site" lsd-dev
-  long_exec_cv_cmd "$site" api4 PowerbaseSetup.SetDevOptions
+  #long_exec_cv_cmd "$site" api4 PowerbaseSetup.SetDevOptions
 }
 
 # Ensure we have a Drupal and CiviCRM database installed and the settings.php
