@@ -717,7 +717,7 @@ long_create_drupal_settings() {
   # Add a random salt.
   long_pwgen 50
   local salt="$LONG_PASSWORD"
-  sed -i "s/\$settings['hash_salt'] = '';/\$settings['hash_salt'] = '$salt';/" "$target"
+  sed -i "s/\$settings\['hash_salt'\] = '';/\$settings['hash_salt'] = '$salt';/" "$target"
 
   # And then append the database configuration.
   source="${LONG_SHARE}/templates/db.php"
