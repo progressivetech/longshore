@@ -513,7 +513,7 @@
                 "type": "git"
             },
             "setup": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@a88fbb94592e2cf51c78141c15c5983d7599a06d",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@c3533686cd394ea9fbb72f01db5c09556cda7219",
                 "path": "web/extensions/setup",
                 "type": "git"
             },
@@ -735,6 +735,26 @@
             "tce-osdi": {
                 "url": "https://codeberg.org/artfulrobot/tce-osdi.git@57162e16feb682a73b40f4f0bf2437a13206f7ac",
                 "path": "web/extensions/tce-osdi",
+                "type": "git"
+            },
+            "activitytypeacl": {
+                "url": "https://lab.civicrm.org/extensions/activitytypeacl@30adc4590ff39577d50d646dcc21953b4e2f2d5c",
+                "path": "web/extensions/activitytypeacl",
+                "type": "git"
+            },
+            "ncn-civi-zoom": {
+                "url": "https://lab.civicrm.org/extensions/ncn-civi-zoom@fdefcf7fc96fb9f3b319ca794bb7db1314a68378",
+                "path": "web/extensions/ncn-civi-zoom",
+                "type": "git"
+            },
+            "localvocal": {
+                "url": "https://git.progressivetech.org/extensions/localvocal@65133d6a6e18a569fee065b07dfbc8351abb5606",
+                "path": "web/extensions/localvocal",
+                "type": "git"
+            },
+            "deduper": {
+                "url": "https://github.com/eileenmcnaughton/deduper@03e5808d8f214b89f0ae5d341097dab275c1179e",
+                "path": "web/extensions/deduper",
                 "type": "git"
             },
             "CiviVersafix": {
