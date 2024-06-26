@@ -15,17 +15,27 @@ long_check_args "$2" "$#" 1
 d8site="$2"
 d7site="$(echo "$d8site" | sed 's/d8$//')"
 
+if [[ ! "$d8site" =~ d8$ ]]; then
+  long_die "Please pass the d8 version of the site name."
+fi
 # Get the platform of the d8 site
 long_set_site_platform "$d8site"
 platform="$LONG_SITE_PLATFORM"
 
-echo "D7 site: $d7site and $platform"
 if [ ! -d "/srv/longshore/platforms/${platform}" ]; then
   long_die "Failed to locate platform %s." 1 "$platform"
 fi
 
 # Rename the d8 database to the d7 name
-#(longshore db-rename "$d8site" "$d7site") || long_die "Failed to rename the database"
+temp=$(mktemp)
+printf 'SHOW TABLES' >> "$temp"
+remaining_tables=$(long_execute_site_query "$d8site" "$temp" | tail -n1)
+
+if [ -z "$remaining_tables" ]; then
+  long_log "Database has already been renamed." info
+else
+  (longshore db-rename "$d8site" "$d7site") || long_die "Failed to rename the database"
+fi
 
 # Swith the d7 site to use the d8 platform.
 long_log "Stopping d7 site"
@@ -42,6 +52,41 @@ long_log "Starting site with new platform"
 if ! long_container_up site "$d7site" mysqlhost "$platform" > /dev/null; then
   long_die "%s Failed to bring up new container" 1 "$d7site"
 fi
+
+d7dir="${LONG_SRV}/services/sites/${d7site}"
+d8dir="${LONG_SRV}/services/sites/${d8site}"
+
+# Gather db details.
+d7dbpassword=$(grep ^password "${d7dir}/my.cnf" | cut -d= -f2)
+d7dbuser=$(grep ^user "${d7dir}/my.cnf" | cut -d= -f2)
+d7dbname=$(grep ^database "${d7dir}/my.cnf" | cut -d= -f2)
+
+d8dbpassword=$(grep ^password "${d8dir}/my.cnf" | cut -d= -f2)
+d8dbuser=$(grep ^user "${d8dir}/my.cnf" | cut -d= -f2)
+d8dbname=$(grep ^database "${d8dir}/my.cnf" | cut -d= -f2)
+
+# Copy d8 settings file.
+cp "${d8dir}/drupal/settings.php" "${d7dir}/drupal/settings.php"
+# Replace with d7 db settings.
+sed -i "s'$d8dbpassword'$d7dbpassword'" "${d7dir}/drupal/settings.php"
+sed -i "s'$d8dbuser'$d7dbuser'" "${d7dir}/drupal/settings.php"
+sed -i "s'$d8dbname'$d7dbname'" "${d7dir}/drupal/settings.php"
+sudo /bin/chgrp longshore-php "${d7dir}/drupal/settings.php"
+
+# Change key civicrm.settings.php values.
+sed -i "s/'Drupal'/'Drupal8'/g" "${d7dir}/drupal/civicrm.settings.php"
+sed -i "s#sites/all/modules/civicrm#vendor/civicrm/civicrm-core#g" "${d7dir}/drupal/civicrm.settings.php"
+sed -i "s#powerbase/sites/default/files#powerbase/web/sites/default/files#g" "${d7dir}/drupal/civicrm.settings.php"
+sudo /bin/chgrp longshore-php "${d7dir}/drupal/civicrm.settings.php"
+
+# Replace themes
+rsync --delete -a "${d8dir}/drupal/themes/" "${d7dir}/drupal/themes/"
+
+# Update admin password
+long_exec_drush_cmd "$d7site" "lsd:set-admin-password"
+
+# Make needed additions to local.settings.php
+long_modify_settings_dot_php "$d7site"
 
 if ! long_nginx_reload; then
   long_die ":%s Failed to reload nginx" 1 "$d7site"

@@ -20,8 +20,7 @@ long_set_default_db "$site"
 db="$LONG_DEFAULT_DB"
 
 long_log "D7 Site: %s, D8 Site: %s DB: %s, Platform: %s\n" info "$d7site" "$d8site" "$db" "$platform"
-long_create_container site "$d8site" "$db" "$platform"
-docker start "$d8site"
+long_prompt "Creating d8 version of site."
 
 # Clear the cache before backing up.
 long_clear_cache "$d7site" all
@@ -29,14 +28,39 @@ long_clear_cache "$d7site" all
 # Drop any civicrm temp tables.
 long_delete_leftover_tables "$d7site"
 
-# Dump the CiviCRM tables from the d7 site to a backup file in the d8 site directory.
-civicrm_backup="/srv/longshore/services/sites/${d8site}/backup/${d8site}.civicrm.sql"
-defaults_file="--defaults-file=/srv/longshore/etc/my.cnf"
-long_log "Dumping CiviCRM tables from %s to %s" info "$d7site" "$civicrm_backup"
-mysqldump "$defaults_file" ptp $(mysql "$defaults_file" --database "$d7site" --batch --silent --execute "SHOW TABLES LIKE 'civi%'") > "$civicrm_backup"
+long_prompt "Backing up d7 site"
+if [ "$reply" = "y" ]; then
+  if ! (LONG_LOG_LEVEL=error longshore site-backup "$site" "preupgrade"); then
+    long_die "Failed to backup site."
+    continue
+  fi
+fi
 
-# Install fresh civicrm and drupal.
-long_setup_site "$d8site"
+long_prompt "Create and start d8 site"
+if [ "$reply" = "y" ]; then
+  long_create_container site "$d8site" "$db" "$platform"
+  docker start "$d8site"
+fi
+
+long_log "Setting maintenance mode" info
+if ! long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"; then
+  long_die "Failed to set maintenance mode."
+fi
+
+long_prompt "Dump Civi Tables to backup location"
+if [ "$reply" = "y" ]; then
+  # Dump the CiviCRM tables from the d7 site to a backup file in the d8 site directory.
+  civicrm_backup="/srv/longshore/services/sites/${d8site}/backup/${d8site}.civicrm.sql"
+  defaults_file="--defaults-file=/srv/longshore/etc/my.cnf"
+  long_log "Dumping CiviCRM tables from %s to %s" info "$d7site" "$civicrm_backup"
+  mysqldump "$defaults_file" ptp $(mysql "$defaults_file" --database "$d7site" --batch --silent --execute "SHOW TABLES LIKE 'civi%'") > "$civicrm_backup"
+fi
+
+long_prompt "Install fresh civicrm and drupal"
+if [ "$reply" = "y" ]; then
+  # Install fresh civicrm and drupal.
+  long_setup_site "$d8site"
+fi
 
 # These are the drupal only pieces of long_initialize_site:
 # Populate the $LONG_SITE_TMP_VAR variable which is used to execute

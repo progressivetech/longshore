@@ -105,14 +105,21 @@ if [ "$reply" = "y" ]; then
   else
     long_log "Not seting up site."
   fi
-  long_exec_drush_cmd "$site" "lsd-admin-password"
+
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    long_exec_drush_cmd "$site" "lsd:set-admin-password"
+  else
+    long_exec_drush_cmd "$site" "lsd-admin-password"
+  fi
   long_nginx_reload
 
-  long_prompt "Updating DNS"
-  if [ "$reply" = "y" ]; then
-    long_create_dns "$site"
-  else
-    long_log "Not updating DNS."
+  if [ "$LONG_LIVE" = "y" ]; then
+    long_prompt "Updating DNS"
+    if [ "$reply" = "y" ]; then
+      long_create_dns "$site"
+    else
+      long_log "Not updating DNS."
+    fi
   fi
   long_log "Clearing cache"
   long_clear_cache "$site" all

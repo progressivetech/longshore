@@ -707,17 +707,14 @@ long_create_drupal_settings() {
   local dbuser=$(grep ^user "${dir}/my.cnf" | cut -d= -f2)
   local dbname=$(grep ^database "${dir}/my.cnf" | cut -d= -f2)
   long_set_site_platform "$site"
-  
+
   local source="${LONG_SITE_PLATFORM_PATH}/sites/default/default.settings.php"
   local target="${dir}/drupal/settings.php"
 
   # Copy the template into place.
   cp "$source" "$target"
 
-  # Add a random salt.
-  long_pwgen 50
-  local salt="$LONG_PASSWORD"
-  sed -i "s/\$settings\['hash_salt'\] = '';/\$settings['hash_salt'] = '$salt';/" "$target"
+  long_ensure_settings_has_salt "$target"
 
   # And then append the database configuration.
   source="${LONG_SHARE}/templates/db.php"
@@ -731,6 +728,19 @@ long_create_drupal_settings() {
   # Ensure proper permissions
   chmod 0640 "$target"
   sudo chgrp longshore-php "$target"
+}
+
+# Add salt to a Drupal settings file.
+long_ensure_settings_has_salt() {
+  local target="$1"
+  long_set_site_drupal_version
+  if [ "$LONG_SITE_DRUPAL_VERSION" -lt 8 ]; then
+    return
+  fi
+  # Add a random salt.
+  long_pwgen 50
+  local salt="$LONG_PASSWORD"
+  sed -i "s/\$settings\['hash_salt'\] = '';/\$settings['hash_salt'] = '$salt';/" "$target"
 }
 
 # Give a site, set a variable for the base_url
@@ -884,6 +894,7 @@ long_exec_drush_cmd() {
     quiet=-q
   fi
   long_init_site_tmp_var "$site"
+
   local file=$(mktemp "${LONG_SITE_TMP}/drupal.XXXXXXX");
   chmod 755 "$file"
   printf "#!/bin/bash\n" > "$file"
@@ -898,14 +909,9 @@ long_exec_drush_cmd() {
   long_set_site_drupal_version
   if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
     printf 'cd /var/www/powerbase/web/sites/default && ' >> "$file"
-  else
-    printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
-  fi
-  long_set_site_platform "$site"
-  long_set_site_drupal_version
-  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
     printf "drush $quiet $cmd\n" >> "$file"
   else
+    printf 'cd /var/www/powerbase/sites/default && ' >> "$file"
     printf "drush $quiet --user=admin $cmd\n" >> "$file"
   fi
   long_exec_in_container "$site" "$file"
@@ -1067,9 +1073,9 @@ long_create_site_directories() {
     chmod 0775 "${dir}/drupal/private/temp"
   fi
 
-  # Ensure drupal private files directory is htaccess protected.
-  # fixme: must fix permission problem and check if it exists.
-  #cp "${LONG_SRV}/share/templates/htaccess" "${dir}/drupal/private/.htaccess"
+  if [ ! -f "${dir}/drupal/private/.htaccess" ]; then
+    cp "${LONG_SRV}/share/templates/htaccess" "${dir}/drupal/private/.htaccess"
+  fi
 
   # Now that the right modes are set, chown the files to the right users. 
   local web_writable="drupal/files drupal/private"
@@ -1526,7 +1532,6 @@ long_drop_tables() {
 # CiviCRM are minimally functional and email delivery is ready to go.
 long_setup_site() {
   local site="$1"
-
   if ! long_container_running "$site"; then
     long_die "The container is not running. Please start it first." 
   fi
@@ -1575,7 +1580,6 @@ long_setup_site() {
     docker $LONG_DOCKER_LOG_ARG exec "$site" /bin/sed -i 's/^hostname=bulk.progressivetech.org:25$/hostname=smtp:25/' \
       /etc/esmtprc
   fi
-
   long_modify_settings_dot_php "$site" 
 }
 
@@ -1628,6 +1632,8 @@ long_modify_settings_dot_php() {
   local site="$1"
 
   long_init_site_tmp_var "$site"
+  long_set_site_platform "$site"
+  long_set_site_drupal_version
 
   # Ensure CIVICRM_MAIL_SMARTY is configured so we can use smarty in our
   # mail templates.
@@ -1670,6 +1676,17 @@ long_modify_settings_dot_php() {
       printf "'^${subdomain}\.${domain}\$',\n" >> "${drupal}/local.settings.php"
     done
     printf '];\n' >> "${drupal}/local.settings.php"
+
+    # Add sync settings (we don't sync so we use tmp dir)
+    printf '$settings["config_sync_directory"] = "/tmp/";\n' >>  "${drupal}/local.settings.php"
+
+    # Change isolation level.
+    printf '$databases["default"]["default"]["init_commands"] = [\n' >> "${drupal}/local.settings.php"
+    printf '  "isolation_level" => "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED",\n' >> "${drupal}/local.settings.php"
+    printf '];\n' >> "${drupal}/local.settings.php"
+
+    # Private files
+    printf '$settings["file_private_path"] = $app_root . "/sites/default/private";\n' >> "${drupal}/local.settings.php"
   fi
 }
 
@@ -2121,14 +2138,8 @@ long_fetch_site() {
   local source_drupal="${source_base}/drupal"
   local target_base=${LONG_SRV}/services/sites/${site}
 
-  long_prompt "\nSource: %s\ntarget: %s\n" "$source_base" "$target_base"
-
   # Append drupal for convenience.
   target_drupal="${target_base}/drupal"
-
-  if [ "$reply" != "y" ]; then
-    long_die "Not continuing."
-  fi
 
   # Make sure source git repo is clean and warn if it isn't.
   long_check_remote_git_clean "$site" "$host"
@@ -2148,15 +2159,23 @@ long_fetch_site() {
   rm -rf "${target_drupal}"/files/css/*
   rm -rf "${target_drupal}"/files/civicrm/templates_c/*
 
-  long_log "Sync'ing files" info
-  rsync -a --no-owner --no-perms --delete --exclude 'js/*' \
-    --exclude 'css/*' --exclude 'civicrm/templates_c/*' \
-    --exclude 'civicrm/ConfigAndLog/*' \
-    "${source_drupal}/files/" "${target_drupal}/files/"
+  long_log "Sync'ing .htaccess files to avoid permission errors" info
+  rsync -a --no-owner --no-perms "${source_drupal}/files/.htaccess" "${target_drupal}/files/"
+  rsync -a --no-owner --no-perms "${source_drupal}/private/.htaccess" "${target_drupal}/private/"
 
-  long_log "Sync'ing private" info
-  rsync -a --no-owner --no-perms --delete \
-    "${source_drupal}/private/" "${target_drupal}/private/"
+  long_prompt "Sync files?"
+
+  if [ "$reply" = "y" ]; then
+    long_log "Sync'ing files" info
+    rsync -a --no-owner --no-perms --delete --exclude 'js/*' \
+      --exclude 'css/*' --exclude 'civicrm/templates_c/*' \
+      --exclude 'civicrm/ConfigAndLog/*' \
+      "${source_drupal}/files/" "${target_drupal}/files/"
+
+    long_log "Sync'ing private" info
+    rsync -a --no-owner --no-perms --delete \
+      "${source_drupal}/private/" "${target_drupal}/private/"
+  fi
 
   long_log "Sync'ing database dump" info
   rsync "${source_base}/backup/${site}.sql.gz" "${target_base}/backup/"
