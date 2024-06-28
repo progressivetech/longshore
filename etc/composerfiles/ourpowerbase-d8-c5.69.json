@@ -343,7 +343,7 @@
                 "type": "git"
             },
             "ptp": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.ptp.git@254efb45ab79457c4f171ea2b6a015c8f86f4776",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.ptp.git@5abc257bfe9c7c0f48990c7190941c41d3fa96a0",
                 "path": "web/extensions/ptp",
                 "type": "git"
             },
