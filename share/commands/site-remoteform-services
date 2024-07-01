@@ -1,0 +1,18 @@
+#!/bin/bash
+
+long_usage_message="usage: $(basename $0) site-remoteform-services <site>
+Generate a services.yml file for the given D8 site that matches the
+settings in the database for web sites allowed to use remote form.
+
+Arguments
+  <site> - The site you want to operate on. 
+"
+long_check_args "$2" "$#" 1
+
+site="$2"
+
+out=$(LONG_LOG_LEVEL=info long_exec_cv_cmd "$site" api4 Remoteform.GenerateCorsServices)
+file=$(echo "$out" | grep file | cut -d: -f2 | tr -d ' "')
+docker cp "${site}:${file}" "$LONG_SRV/services/sites/${site}/drupal/services.yml"
+chmod 644 "$LONG_SRV/services/sites/${site}/drupal/services.yml"
+long_exec_in_container "$site" "rm '$file'"
