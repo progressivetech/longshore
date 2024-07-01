@@ -296,15 +296,12 @@ long_create_nginx_site_conf() {
   # of the platform directory.
   local web=""
   local remoteform_redirect_or_not=""
+  # By default keep d8 lines commented out.
+  d8comment='#'
   if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
     web=/web
-    remoteform_redirect_or_not=$(cat << EOF
-  # Ensure remoteform calls work after upgrade to Drupal 10.
-  location /sites/all/extensions/remoteform/ {
-      rewrite ^/sites/all/extensions/remoteform/(.*)$ /extensions/remoteform/$1 permanent;
-  }
-EOF
-)
+    # remote d8 comment lines
+    d8comment=''
   fi
   local LONG_WEB_ROOT="/var/www/powerbase/${platform}${web}"
   local LONG_PHP_ROOT="/var/www/powerbase${web}"
@@ -319,8 +316,9 @@ EOF
     -e "s#LONG_PHP_ROOT#$LONG_PHP_ROOT#" \
     -e "s#LONG_CGI_PORT#$LONG_CGI_PORT#" \
     -e "s#LONG_SITE#$site#" \
-    -e "s#LONG_REMOTEFORM_REDIRECT_OR_NOT#$remoteform_redirect_or_not#" \
+    -e "s/#LONG_D8_COMMENT/$d8comment/" \
     > "$target"
+
 }
 
 # Return 0 if it's the latest and 1 if it's not and 2 for an error.
@@ -1048,6 +1046,7 @@ long_create_site_directories() {
     mkdir -p "${dir}/${create}"
     perms=$(stat -c "%A" "${dir}/${create}")
     if [ "$perms" != "drwxr-xr-x" ]; then
+      echo chmod 0755 "${dir}/${create}"
       chmod 0755 "${dir}/${create}"
     fi
   done
