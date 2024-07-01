@@ -290,9 +290,17 @@ long_create_nginx_site_conf() {
   long_set_site_drupal_version "$platform"
   # D8 and above are built with composer, so are in the web subdirectory.
   # of the platform directory.
-  web=""
+  local web=""
+  local remoteform_redirect_or_not=""
   if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
     web=/web
+    remoteform_redirect_or_not=$(cat << EOF
+  # Ensure remoteform calls work after upgrade to Drupal 10.
+  location /sites/all/extensions/remoteform/ {
+      rewrite ^/sites/all/extensions/remoteform/(.*)$ /extensions/remoteform/$1 permanent;
+  }
+EOF
+)
   fi
   local LONG_WEB_ROOT="/var/www/powerbase/${platform}${web}"
   local LONG_PHP_ROOT="/var/www/powerbase${web}"
@@ -308,6 +316,7 @@ long_create_nginx_site_conf() {
     -e "s#LONG_PHP_ROOT#$LONG_PHP_ROOT#" \
     -e "s#LONG_CGI_PORT#$LONG_CGI_PORT#" \
     -e "s#LONG_SITE#$site#" \
+    -e "s#LONG_REMOTEFORM_REDIRECT_OR_NOT#$remoteform_redirect_or_not#" \
     > "$target"
 }
 
