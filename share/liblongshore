@@ -26,10 +26,12 @@ long_die() {
 }
 
 # Return defined $long_usage_message and die 
+# shellcheck disable=SC2120
 long_usage() {
   local exit_code="$1"
   [ -z "$exit_code" ] && exit_code=1
-  long_die "$long_usage_message" "$exit_code"
+  # shellcheck disable=SC2154
+  long_die "$long_usage_message" "$exit_code" 
 }
 
 # Ensure the number of required arguments have been passed
@@ -76,6 +78,7 @@ long_always_prompt() {
 long_prompt() {
   local prompt_msg=$1
   shift
+  # shellcheck disable=2059
   printf "${prompt_msg}\n" "$@"
   if [ "$LONG_YES" = "1" ]; then
     printf " Automatically proceeding without prompt.\n"
@@ -84,7 +87,7 @@ long_prompt() {
     reply=y
     return
   fi
-  read -p "Proceed? [Yn] "
+  read -rp "Proceed? [Yn] "
   reply=n
   if [ -z "$REPLY" ] || [ "$REPLY" == "Y" ] || [ "$REPLY" == "y" ]; then
     reply=y
@@ -100,7 +103,7 @@ long_debug() {
     echo "$debug_msg" | /srv/longshore/bin/longshore notify warning
   else
     echo "$debug_subject" >&2
-    echo "$deubg_msg" >&2
+    echo "$debug_msg" >&2
   fi
 }
 
@@ -115,6 +118,7 @@ long_container_or_image_exists() {
   local name="$1"
   [ -z "$name" ] && return 1
   # This command returns 1 if the container doesn't exist and 0 if it does.
+  # shellcheck disable=SC2086
   docker $LONG_DOCKER_LOG_ARG inspect "$name" 2>/dev/null 1>/dev/null
   return "$?"
 }
@@ -128,7 +132,8 @@ long_container_running() {
   if [ "$name" = "mysqlhost" ];then
     return 0
   fi
-
+  # shellcheck disable=SC2086
+  # shellcheck disable=SC1083
   container_running=$(docker $LONG_DOCKER_LOG_ARG inspect -f {{.State.Running}} "$name")
   [ "$container_running" = "true" ] && return 0
   return 1
@@ -197,20 +202,22 @@ long_log() {
     log_out=y
   fi
   # Output error if we are set to info or error
-  if [ "$log_level" = "error" -a "$LONG_LOG_LEVEL" = "info" ];  then
+  if [ "$log_level" = "error" ] && [ "$LONG_LOG_LEVEL" = "info" ];  then
     log_out=y
   fi
-  if [ "$log_level" = "error" -a "$LONG_LOG_LEVEL" = "error" ];  then
+  if [ "$log_level" = "error" ] && [ "$LONG_LOG_LEVEL" = "error" ];  then
     log_out=y
   fi
   # Output info if we are set to info
-  if [ "$log_level" = "info" -a "$LONG_LOG_LEVEL" = "info" ];  then
+  if [ "$log_level" = "info" ] && [ "$LONG_LOG_LEVEL" = "info" ];  then
     log_out=y
   fi
   if [ "$log_out" = "y" ]; then
+    # shellcheck disable=SC2059
     printf "$log_msg\n" "$@"
   fi
   # Always log to syslog
+  # shellcheck disable=SC2059
   printf "$log_msg" "$@" | logger -t longshore
 }
 
@@ -218,8 +225,7 @@ long_log() {
 long_create_nginx_tls_conf() {
   local template="${LONG_SHARE}/templates/nginx-tls.conf"
   local target="$LONG_NGINX_TLS_PATH"
-  cat "$template" | \
-    sed \
+  sed "$template" \
     -e "s:LONG_TLS_KEY_PATH:$LONG_TLS_KEY_PATH:" \
     -e "s#LONG_IP_ADDR#$LONG_IP_ADDR#" \
     -e "s:LONG_X509_CERT_PATH:$LONG_X509_CERT_PATH:" \
@@ -232,6 +238,7 @@ long_create_nginx_phpmyadmin_conf() {
   local port="$1"
   local template="${LONG_SHARE}/templates/nginx-phpmyadmin.conf"
   local target="${LONG_NGINX_SITES_ENABLED}/phpmyadmin.conf"
+  # shellcheck disable=SC2153
   LONG_SITE_URL="$LONG_PHPMYADMIN_URL"
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
     local tls_or_not="include $LONG_NGINX_TLS_PATH;"
@@ -241,8 +248,7 @@ long_create_nginx_phpmyadmin_conf() {
     local tls_or_not="listen ${LONG_IP_ADDR}:80;"
   fi
   LONG_CGI_PORT="$port"
-  cat "$template" | \
-    sed \
+  sed "$template" \
     -e "s#LONG_TLS_OR_NOT#$tls_or_not#" \
     -e "s:LONG_SITE_URL:$LONG_SITE_URL:" \
     -e "s:LONG_CGI_PORT:$LONG_CGI_PORT:" \
@@ -258,8 +264,7 @@ long_create_nginx_redirect() {
 
   local template="${LONG_SHARE}/templates/nginx-redirect-https.conf"
   local target="${LONG_NGINX_SITES_ENABLED}/${site}-redirect.conf"
-  cat "$template" | \
-    sed \
+  sed "$template" \
     -e "s#LONG_SITE_URL#$site_url#" \
     -e "s#LONG_ALIASES#$aliases#" \
     -e "s#LONG_IP_ADDR#$LONG_IP_ADDR#" \
@@ -276,7 +281,6 @@ long_create_nginx_site_conf() {
   local template="${LONG_SHARE}/templates/nginx-site.conf"
   local target="${LONG_NGINX_SITES_ENABLED}/${site}.conf"
   local long_site_url="${site}.${LONG_DEFAULT_DOMAIN}"
-  local drupal_version=$(echo "$platform" | grep -P -o '\-d[0-9]+-' | tr -d 'd-')
 
   if [ -f "$LONG_NGINX_TLS_PATH" ]; then
     local tls_or_not="include $LONG_NGINX_TLS_PATH;"
@@ -306,8 +310,7 @@ EOF
   local LONG_PHP_ROOT="/var/www/powerbase${web}"
   local LONG_CGI_PORT="$port"
 
-  cat "$template" | \
-    sed \
+  sed "$template" \
     -e "s#LONG_TLS_OR_NOT#$tls_or_not#" \
     -e "s#LONG_ACCESS_LOG#$LONG_ACCESS_LOG#" \
     -e "s#LONG_SITE_URL#$long_site_url#" \
@@ -349,6 +352,8 @@ long_phpmyadmin_is_latest() {
 
 # This variable containing the names of all database containers
 long_set_db_containers() {
+  # shellcheck disable=SC2034
+  # shellcheck disable=SC2010
   LONG_DB_CONTAINERS=$(ls "${LONG_SRV}/services/databases/" | grep -v "lost+found")
 }
 
@@ -367,7 +372,7 @@ long_create_image() {
     elif [ "$image_tag" = "my-${LONG_DEBIAN_VERSION}" ]; then
       image_path=""
     else
-      long_die "I don't know how to make an image of that type (%s)." 1 "$itype"
+      long_die "I don't know how to make an image of that image tag (%s)." 1 "$image_tag"
     fi
   fi
 
@@ -378,7 +383,7 @@ long_create_image() {
     create_image=1
   fi
 
-  if [ "$create_image" -eq "1" -o "$LONG_FORCE" = "1" ]; then
+  if [ "$create_image" -eq "1" ] || [ "$LONG_FORCE" = "1" ]; then
     long_log "Creating image (%s)" info "$image_tag"
     if [ "$image_tag" = "my-${LONG_DEBIAN_VERSION}" ]; then
       # If the image name begins with "my-" (e.g. my-stretch), then
@@ -407,9 +412,9 @@ long_create_base_image() {
   long_log "Creating base image" info
   # Adjust output based on LONG_LOG_LEVEL
   if [ "$LONG_LOG_LEVEL" = "error" ]; then 
-    sudo ${LONG_SRV}/bin/longshore-create-base-image >/dev/null
+    sudo "${LONG_SRV}/bin/longshore-create-base-image" >/dev/null
   else
-    sudo ${LONG_SRV}/bin/longshore-create-base-image
+    sudo "${LONG_SRV}/bin/longshore-create-base-image"
   fi
 }
 
@@ -418,6 +423,7 @@ long_delete_image() {
   local tag="$1"
   if long_image_exists "$tag"; then
     long_log "Deleting  image (%s)" info "$tag"
+    # shellcheck disable=SC2086
     docker $LONG_DOCKER_LOG_ARG rmi "$tag"
   fi
 }
@@ -429,7 +435,7 @@ long_container_up() {
   local db="$3"
   local platform="$4"
 
-  if [ "$type" = "mysql" -a "$name" = "mysqlhost" ]; then
+  if [ "$type" = "mysql" ] && [ "$name" = "mysqlhost" ]; then
     # mysqlhost mysql server should always be running.
     return
   fi
@@ -445,13 +451,14 @@ long_container_up() {
 
   if ! long_container_running "$label"; then
     long_log "Starting container (%s)" info "$label"
-    if [ "$type" = "site"  -a "$db" != "mysqlhost" ]; then
+    if [ "$type" = "site" ] && [ "$db" != "mysqlhost" ]; then
       # Ensure db container is running first.
       long_set_site_db_host "$name"
       long_container_up mysql "$LONG_SITE_DB_HOST"
     fi
 
     # Start the container.
+    # shellcheck disable=SC2086
     docker $LONG_DOCKER_LOG_ARG start "$label" || long_die "Failed to start the container %s" 1 "$label"
 
     if [ "$type" = "mysql" ]; then
@@ -462,6 +469,7 @@ long_container_up() {
         sleep 10 
       done
       long_log "Running mysql_upgrade."
+      # shellcheck disable=SC2086
       docker $LONG_DOCKER_LOG_ARG exec "$name" mysql_upgrade -h localhost --port 3306
       long_log "Finished running mysql_upgrade."
     fi
@@ -492,7 +500,7 @@ long_set_mysql_port() {
     if [ -z "$last_port" ]; then
       LONG_DB_PORT="$LONG_MYSQL_START_PORT"
     else
-      LONG_DB_PORT=$(( $last_port + 1 ))
+      LONG_DB_PORT=$(( last_port + 1 ))
     fi
   fi
 }
@@ -519,7 +527,7 @@ long_set_php_port() {
 
     # Make sure it is not being used by another site (e.g., we may be transferring
     # this site to another server and the port could be in use).
-    if ! docker ps | egrep -v " ${name}\$" | grep "127.0.0.1:$port_candidate" >/dev/null; then
+    if ! docker ps | grep -E -v " ${name}\$" | grep "127.0.0.1:$port_candidate" >/dev/null; then
       LONG_PHP_PORT="$port_candidate"
     fi
   fi
@@ -530,7 +538,7 @@ long_set_php_port() {
     if [ -z "$last_port" ]; then
       LONG_PHP_PORT="$LONG_PHP_START_PORT"
     else
-      LONG_PHP_PORT=$(( $last_port + 1 ))
+      LONG_PHP_PORT=$(( last_port + 1 ))
     fi
   fi
   mkdir -p "$envdir"
@@ -3198,7 +3206,7 @@ long_clear_cache() {
       /var/www/powerbase/sites/default/files/civicrm/templates_c/en_US/*"
   fi
 
-  if [ "cache" == "all" -o "$cache" == 'extensions' ]; then
+  if [ "$cache" == "all" -o "$cache" == 'extensions' ]; then
     long_exec_cv_cmd "$site" "php:eval" '$config = CRM_Core_Config::singleton(); $config->cleanupCaches(FALSE);'
   fi
 
