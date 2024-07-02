@@ -459,7 +459,7 @@
                 "type": "git"
             },
             "remoteform": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.remoteform@e28535dc0acc426193d5e052400430bc18ac0b35",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.remoteform@6a3d912e9f77682314422ddf4dcf6db60fb89c05",
                 "path": "web/extensions/remoteform",
                 "type": "git"
             },
