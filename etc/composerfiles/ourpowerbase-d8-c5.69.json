@@ -757,6 +757,11 @@
                 "path": "web/extensions/deduper",
                 "type": "git"
             },
+            "kamlanguage": {
+                "url": "https://lab.civicrm.org/extensions/kamlanguage@07a11b9d1e6ed4c0102a67ddca87f28b7211485e",
+                "path": "web/extensions/kamlanguage",
+                "type": "git"
+            },
             "CiviVersafix": {
                 "url": "https://lab.civicrm.org/MikeyMJCO/CiviVersafix@c47bca9cb4106d82af0845131e15e1bdc9b19e18",
                 "path": "web/templates/mosaico_tpl/CiviVersafix",

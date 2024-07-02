@@ -887,6 +887,12 @@ projects[deduper][download][type] = "git"
 projects[deduper][download][url] = "https://github.com/eileenmcnaughton/deduper"
 projects[deduper][download][revision] = "03e5808d8f214b89f0ae5d341097dab275c1179e"
 
+projects[kamlanguage][type] = "library"
+projects[kamlanguage][destination] = "extensions"
+projects[kamlanguage][download][type] = "git"
+projects[kamlanguage][download][url] = "https://lab.civicrm.org/extensions/kamlanguage"
+projects[kamlanguage][download][revision] = "07a11b9d1e6ed4c0102a67ddca87f28b7211485e"
+
 ;########
 ; CiviCRM Mosaico Templates
 ;########
