@@ -11,6 +11,22 @@ long_check_args "$2" "$#" 1
 
 site="$2"
 
+# Check if remoteform is enabled.
+enabled=$(LONG_LOG_LEVEL=info longshore site-extension-status "$site" net.ourpowerbase.remoteform | grep "${site}: enabled")
+
+long_set_site_platform "$site"
+long_set_site_drupal_version
+
+if [ "$LONG_SITE_DRUPAL_VERSION" -lt 8 ]; then
+  long_log "Not running on Drupal 7 site." info
+  exit 0
+fi
+
+if [ -z "$enabled" ]; then
+  long_log "Remoteform is not enabled on %s." info "$site"
+  exit 0
+fi
+
 out=$(LONG_LOG_LEVEL=info long_exec_cv_cmd "$site" api4 Remoteform.GenerateCorsServices)
 file=$(echo "$out" | grep file | cut -d: -f2 | tr -d ' "')
 docker cp "${site}:${file}" "$LONG_SRV/services/sites/${site}/drupal/services.yml"

@@ -88,6 +88,9 @@ long_exec_drush_cmd "$d7site" "lsd:set-admin-password"
 # Make needed additions to local.settings.php
 long_modify_settings_dot_php "$d7site"
 
+# Generate services.yml file if site is running remoteform.
+longshore site-remoteform-services "$d7site"
+
 if ! long_nginx_reload; then
   long_die ":%s Failed to reload nginx" 1 "$d7site"
 fi
