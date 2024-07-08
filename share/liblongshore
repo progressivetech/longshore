@@ -316,6 +316,7 @@ long_create_nginx_site_conf() {
     -e "s#LONG_PHP_ROOT#$LONG_PHP_ROOT#" \
     -e "s#LONG_CGI_PORT#$LONG_CGI_PORT#" \
     -e "s#LONG_SITE#$site#" \
+    -e "s#LONG_PLATFORM#$platform#" \
     -e "s/#LONG_D8_COMMENT/$d8comment/" \
     > "$target"
 
