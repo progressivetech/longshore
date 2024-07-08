@@ -6,7 +6,8 @@ updates or if any packages are not in use.
 
 Arguments:
  <make-file-path> path to a drush make file.
- <check> either new or unused. Defaults to new.
+ <check> either check for 'new' updated extensions or modules or check for  
+ 'unused' modules or extensions. Defaults to new.
  <site> optionally, indicate which site to test upgrades on. This site will 
    have the upgrade module enabled and then disabled when we're done. Without
    this option, drupal module updates are not checked." 
