@@ -56,6 +56,13 @@ function lsd_drush_command() {
   $items['lsd-admin-password'] = [
     'description' => "Set admin password to database password.",
   ];
+  $items['lsd-unused-addons'] = [
+    'description' => "Check provided list of modules and extensions, return list that are not used on any site.",
+    'options' => array(
+      'addons' => 'Comma separated list of addons, with d: prefix for drupal modules and c: prefix for civi extensions.',
+      'include' => 'Indicate whether you want a report of modules and extensions that are uninstalled or disabled.'
+    ),
+  ];
   return $items;
 }
 
@@ -989,5 +996,64 @@ function drush_lsd_prepare_webform_migration() {
     ];
     db_query($sql, $params);
   }    
+}
+
+/**
+ * Implementation of lsd-unused-addons
+ *
+ **/
+function drush_lsd_unused_addons() {
+  _civicrm_init();
+  $addons = drush_get_option('addons', '');
+  $include_status = drush_get_option('include', 'uninstalled');
+  if (empty($addons)) {
+    drush_log("Please pass addons to checked via --addons.", 'error');
+    return;
+  }
+  $addons = explode(',', $addons);
+  $ret = []; 
+  $extensions = [];
+  $modules = [];
+  foreach ($addons as $addon) {
+    $addon_parts = explode(':', $addon);
+    if ($addon_parts[0] == 'c') {
+      $extensions[] = $addon_parts[1];
+    }
+    else {
+      $modules[] = $addon_parts[1];
+    }
+  }
+  foreach($extensions as $extension) {
+    $params = [ 0 => [ $extension, 'String' ] ];
+    $sql = "SELECT is_active FROM civicrm_extension WHERE full_name = %0";
+    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+    $dao->fetch();
+    if ($dao->N == 0 && $include_status == 'uninstalled') {
+      // Not installed.
+      $ret[] = 'c:' . $extension; 
+    }
+    elseif (isset($dao->is_active) && $dao->is_active == 0 && $include_status == 'disabled') {
+      // disabled but needs to be uninstalled.
+      $ret[] = 'c:' . $extension;
+    }
+
+  }
+  foreach($modules as $module) {
+    $params = [ 0 => [ $module, 'String' ] ];
+    $sql = "SELECT status, schema_version FROM system WHERE type = 'module' AND name = %0";
+    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+    $dao->fetch();
+    if ($include_status == 'uninstalled' && ($dao->N == 0 || ($dao->status == 0 && $dao->schema_version == -1))) {
+      // Uninstalled.
+      $ret[] = 'd:' . $module;
+    }
+    elseif ($dao->status == 0 && $include_status == 'disabled') {
+      // disabled but needs to be uninstalled.
+      $ret[] = 'd:' . $module;
+    }
+
+  }
+
+  return implode(',', $ret);
 }
 
