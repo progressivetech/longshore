@@ -30,6 +30,7 @@ docker start "$site"
 long_setup_site "$site"
 if [ "$LONG_LIVE" = "n" ]; then
   long_configure_dev "$site"
+  long_exec_drush_cmd "$site" "lsd:set-admin-password"
 fi
 
 long_nginx_reload

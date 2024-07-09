@@ -42,7 +42,7 @@ long_prompt "Truncating sessions table"
 [ "$reply" = "y" ] && long_clear_sessions "$site"
 
 long_prompt "Entering maintenance mode..."
-[ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"
+[ "$reply" = "y" ] && long_enable_maintenance_mode "$site"
 
 # Make a backup 
 long_prompt "Making a backup..."

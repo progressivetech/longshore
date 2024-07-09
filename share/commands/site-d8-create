@@ -43,7 +43,7 @@ if [ "$reply" = "y" ]; then
 fi
 
 long_log "Setting maintenance mode" info
-if ! long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"; then
+if ! long_enable_maintenance_mode "$site"; then
   long_die "Failed to set maintenance mode."
 fi
 

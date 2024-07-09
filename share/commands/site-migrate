@@ -66,10 +66,7 @@ if [ "$reply" = "y" ]; then
 fi
 
 long_prompt "Entering maintenance mode..."
-[ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"
-
-long_prompt "Uninstall shoreditch"
-[ "$reply" = "y" ] && long_exec_cv_cmd "$site" ext:uninstall org.civicrm.shoreditch
+[ "$reply" = "y" ] && long_enable_maintenance_mode "$site"
 
 long_prompt "Stopping and removing site container..."
 if [ "$reply" = "y" ]; then
@@ -105,7 +102,7 @@ while [ 1 ]; do
       (longshore site-import "$site") || long_die "Failed to restore the backup."
 
       long_always_prompt "Entering maintenance mode..."
-      [ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"
+      [ "$reply" = "y" ] && long_enable_maintenance_mode "$site"
     fi
   else
     # If we are not upgrading, break out of while loop.
@@ -125,15 +122,5 @@ long_prompt "Updating Drupal"
 long_prompt "Updating CiviCRM Extensions on %s" "$site"
 [ "$reply" = "y" ] &&  long_exec_cv_cmd "$site" ext:upgrade-db
 
-# One time steps for 5.69.
-long_prompt "Hide Smarty Checks %s" "$site"
-[ "$reply" = "y" ] && long_exec_cv_cmd "$site" api4 PowerbaseUtilities.HideSmartyCheck
-
-long_prompt "Set Unsub methods %s" "$site"
-[ "$reply" = "y" ] && long_exec_cv_cmd "$site" vset 'civimail_unsubscribe_methods=["mailto","http","oneclick"]'
-
-long_prompt "Enable the Island %s" "$site"
-[ "$reply" = "y" ] &&  long_exec_cv_cmd "$site" ext:enable theisland
-
 long_prompt "Removing maintenance mode..."
-[ "$reply" = "y" ] && long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"
+[ "$reply" = "y" ] && long_disable_maintenance_mode "$site"

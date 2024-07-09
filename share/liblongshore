@@ -1042,6 +1042,15 @@ long_create_site_directories() {
       long_gitify_site "$site"
     fi
   fi
+
+  # These web writable directories need to be writable by the longshore user
+  # first, so we can create the subdirectories, then, below they are properly
+  # chowned to the longshore-php user.
+  local web_writable="drupal/files drupal/private"
+  for foo in $web_writable; do
+    [ -d "${dir}/${foo}" ] && sudo chown -R "$LONG_HOST_USER" "${dir}/${foo}"
+  done
+
   local create=
   for create in $creates; do
     mkdir -p "${dir}/${create}"
@@ -1077,10 +1086,10 @@ long_create_site_directories() {
     mkdir -p "${dir}/${create}"
     perms=$(stat -c "%A" "${dir}/${create}")
     if [ "$perms" != "drwxr-x---" ]; then
-      chmod 0750 "${dir}/${create}" 
+      chmod 0750 "${dir}/${create}"
     fi
   done
-  
+
   # One exception: private/temp should be writable by the group ($LONG_HOST_USER)
   # so that the host can create temporary files to be deleted after being
   # executed in the container. See the long_exec_in_container function.
@@ -1094,8 +1103,7 @@ long_create_site_directories() {
     cp "${LONG_SRV}/share/templates/htaccess" "${dir}/drupal/private/.htaccess"
   fi
 
-  # Now that the right modes are set, chown the files to the right users. 
-  local web_writable="drupal/files drupal/private"
+  # Now that the right modes are set, chown the files to the right users.
   for foo in $web_writable; do
     # Maintain group ownership by the $LONG_HOST_USER user so we can read the
     # files from the host for convenience and trouble-shooting.
@@ -3171,6 +3179,30 @@ long_delete_leftover_tables() {
   long_execute_site_query "$site" "$drop_temp"
   rm -f "$temp"
   rm -f "$drop_temp"
+}
+
+long_enable_maintenance_mode() {
+  local site="$1"
+  long_set_site_platform "$site"
+  long_set_site_drupal_version
+  if [ "$LONG_SITE_DRUPAL_VERSION" -lt "8" ]; then
+    long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"
+  else
+    long_exec_drush_cmd "$site" "state:set system.maintenance_mode 1"
+    long_exec_drush_cmd "$site" "cache-rebuild"
+  fi
+}
+
+
+long_disable_maintenance_mode() {
+  local site="$1"
+  long_set_site_drupal_version
+  if [ "$LONG_SITE_DRUPAL_VERSION" -lt "8" ]; then
+    long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"
+  else
+    long_exec_drush_cmd "$site" "state:set system.maintenance_mode 0"
+    long_exec_drush_cmd "$site" "cache-rebuild"
+  fi
 }
 
 long_clear_cache() {

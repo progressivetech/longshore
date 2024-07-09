@@ -201,16 +201,8 @@ for site in $sites; do
   long_log "upgrade:%s: Backed up site." info "$site"
   printf "."
 
-  if ! long_exec_drush_cmd "$site" "-y vset maintenance_mode 1"; then
+  if ! long_enable_maintenance_mode "$site"; then
     long_log "upgrade:%s Failed to set maintenance mode." error "$site"
-    continue
-  fi
-  long_log "upgrade:%s: Maintenance mode entered." info "$site"
-  printf "."
-
-  # 5.69 special. Uninstall shoreditch.
-  if ! long_exec_cv_cmd "$site" ext:uninstall org.civicrm.shoreditch; then
-    long_log "upgrade:%s Failed to uninstall shoreditch." error "$site"
     continue
   fi
   long_log "upgrade:%s: Maintenance mode entered." info "$site"
@@ -290,32 +282,7 @@ for site in $sites; do
   long_log "upgrade:%s Updated drupal modules" info "$site"
   printf "."
 
-  # Do we still need this?
-  #if ! long_exec_cv_cmd "$site" api4 PowerbaseUtilities.DeleteOldStripeWebhooks; then
-  #  long_log "upgrade:%s Failed to delete stripe webhooks" error "$site"
-  #fi
-  #long_log "upgrade:%s deleted old stripe web hooks" info "$site"
-  #printf "."
-
-  # One time steps for 5.69.
-  if ! long_exec_cv_cmd "$site" api4 PowerbaseUtilities.HideSmartyCheck; then
-    long_log "upgrade:%s Failed to hide smarty check" error "$site"
-  fi
-  long_log "upgrade:%s Hid smarty checks" info "$site"
-  printf "."
-
-  if ! long_exec_cv_cmd "$site" vset 'civimail_unsubscribe_methods=["mailto","http","oneclick"]'; then
-    long_log "upgrade:%s Failed to hide smarty check" error "$site"
-  fi
-  long_log "upgrade:%s Hid smarty checks" info "$site"
-  printf "."
-
-  if ! long_exec_cv_cmd "$site" ext:enable theisland; then
-    long_log "upgrade:%s Failed to enable the island." error "$site"
-    continue
-  fi
-
-  if ! long_exec_drush_cmd "$site" "-y vset maintenance_mode 0"; then
+  if ! long_disable_maintenance_mode "$site"; then
     long_log "upgrade:%s Failed to remove maintenance mode" error "$site"
     continue
   fi
