@@ -127,6 +127,10 @@ for theme_name in $(ls "$d7_themes" | grep -iv readme); do
   mkdir "${theme_path}/css"
   cp "${d7_themes}/${theme_name}/${theme_name}.css" "${theme_path}/css/style.css"
   cp "${d7_themes}/${theme_name}/${theme_name}-logo.png" "${theme_path}/"
+  if [ ! -f "${theme_path}/favicon.ico" ]; then
+    d7platform=$(ls -d /srv/longshore/platforms/ourpowerbase-d7* | head -n1)
+    cp "${d7platform}/sites/all/themes/pb_custom_theme_elements/poweron.ico" "${theme_path}/favicon.ico"
+  fi
   long_exec_drush_cmd "$d8site" "lsd:prepare-theme --name=$theme_name"
   long_exec_drush_cmd "$d8site" "lsd:migrate-theme-logo --name=$theme_name"
 done
