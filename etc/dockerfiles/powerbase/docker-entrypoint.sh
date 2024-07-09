@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-php_version=8.1
+php_version=8.2
 
 # If the command passed to docker run/exec starts with a - or -- then
 # set the command.

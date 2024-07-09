@@ -2,7 +2,7 @@
 # Used for PowerBase sites.
 FROM my-bookworm:latest
 
-ARG php_version=8.1
+ARG php_version=8.2
 
 MAINTAINER Jamie McClelland <jamie@progressivetech.org>
 RUN apt-get update && \
@@ -12,26 +12,28 @@ RUN apt-get update && \
     ca-certificates \
     curl
 
-RUN curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/apt.gpg
-RUN sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
+# Enable when we need a different version than the one provided in Debian.
+# For now, php8.2 is what we want.
+#RUN curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/apt.gpg
+#RUN sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
 
 # Install packages only needed by powerbase.
 RUN apt-get update && \
     export DEBIAN_FRONTEND=noninteractive && \ 
     apt-get install -y \
     --no-install-recommends \
-    php8.1-fpm \
-    php8.1-apcu \
-    php8.1-mysql \
-    php8.1-curl \
-    php8.1-gd \
-    php8.1-xml \
-    php8.1-soap \
-    php8.1-bcmath \
-    php8.1-mbstring \
-    php8.1-imagick \
-    php8.1-zip \
-    php8.1-memcached \
+    php8.2-fpm \
+    php8.2-apcu \
+    php8.2-mysql \
+    php8.2-curl \
+    php8.2-gd \
+    php8.2-xml \
+    php8.2-soap \
+    php8.2-bcmath \
+    php8.2-mbstring \
+    php8.2-imagick \
+    php8.2-zip \
+    php8.2-memcached \
     fonts-linuxlibertine \
     wkhtmltopdf \
     xauth \
@@ -50,8 +52,8 @@ RUN apt-get update && \
     libssl-dev \
     xfonts-75dpi \
     xfonts-base \
-    php8.1-xdebug \
-    php8.1-intl \
+    php8.2-xdebug \
+    php8.2-intl \
     xvfb && \
     rm -rf /var/lib/apt/lists/*
 
