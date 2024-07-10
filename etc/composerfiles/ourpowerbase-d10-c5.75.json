@@ -188,7 +188,7 @@
                 "type": "git"
             },
             "advancedfundraising": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.report.advancedfundraising@3345cff6bf9fee2342565d4022a3bd9b80e35160",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.report.advancedfundraising@57ae780ca84b3c4a8d99239b1f57d17e7b7bef19",
                 "path": "web/extensions/advancedfundraising",
                 "type": "git"
             },
@@ -503,7 +503,7 @@
                 "type": "git"
             },
             "setup": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@7fb589a5826c9d9fa4921952d7c0107ec95a19db",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.setup@0991e82e39dd7beec4ecf2605f0583de3dcf2290",
                 "path": "web/extensions/setup",
                 "type": "git"
             },
