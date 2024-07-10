@@ -3261,3 +3261,19 @@ long_clear_cache() {
     long_exec_cv_cmd "$site" "php:eval" 'Civi::cache("settings")->flush();'
   fi
 }
+
+long_switch_to_smarty4() {
+  local site="$1"
+
+  long_set_site_platform "$site"
+  long_set_site_platform_path
+  settings="${LONG_SRV}/services/sites/${site}/drupal/civicrm.settings.php"
+  # Change smarty3 to smarty
+  sed -i "s/SMARTY3/SMARTY/g" "$settings"
+  sed -i "s/smarty3/smarty/g" "$settings"
+  # Uncomment
+  sed -i "s#// define('CIVICRM_SMARTY_AUTOLOAD_PATH#   define('CIVICRM_SMARTY_AUTOLOAD_PATH#" "$settings"
+  if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
+    sed -i "s#/packages/smarty/vendor/autoload.php#/civicrm-packages/smarty/vendor/autoload.php#" "$settings"
+  fi
+}
