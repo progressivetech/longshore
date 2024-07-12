@@ -584,7 +584,7 @@ projects[setup][type] = "library"
 projects[setup][destination] = "extensions"
 projects[setup][download][type] = "git"
 projects[setup][download][url] = "git://git.progressivetech.org/extensions/net.ourpowerbase.setup"
-projects[setup][download][revision] = "0991e82e39dd7beec4ecf2605f0583de3dcf2290"
+projects[setup][download][revision] = "c3533686cd394ea9fbb72f01db5c09556cda7219"
 
 projects[contactlayout][type] = "library"
 projects[contactlayout][destination] = "extensions"
