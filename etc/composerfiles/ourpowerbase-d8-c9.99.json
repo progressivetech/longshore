@@ -689,7 +689,7 @@
                 "type": "git"
             },
             "configurabledefaults": {
-                "url": "https://git.progressivetech.org/extensions/configurabledefaults@29655a97a8f8b23cc4f0d480367cbe0499644cb7",
+                "url": "https://git.progressivetech.org/extensions/configurabledefaults@9b2d1d3530da05baec6f4d9610c54e8cba58722a",
                 "path": "web/extensions/configurabledefaults",
                 "type": "git"
             },
