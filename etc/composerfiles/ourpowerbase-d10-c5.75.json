@@ -203,7 +203,7 @@
                 "type": "git"
             },
             "surveylinks": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.surveylinks.git@2a200f500759d31a52c55e45a87f6a30cf53add2",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.surveylinks.git@c735245b1ca1766b0d757a373c1e13702049ee8f",
                 "path": "web/extensions/surveylinks",
                 "type": "git"
             },
@@ -213,7 +213,7 @@
                 "type": "git"
             },
             "civimobile": {
-                "url": "https://lab.civicrm.org/jamie/civimobile@585d95d00c97f57c69109f081fd360c1b9c7e88e",
+                "url": "https://lab.civicrm.org/jamie/civimobile@53fb1e27aa3c34c096bd9a289a97783b48efe794",
                 "path": "web/extensions/civimobile",
                 "type": "git"
             },
@@ -338,7 +338,7 @@
                 "type": "git"
             },
             "normalize": {
-                "url": "https://github.com/cividesk/com.cividesk.normalize.git@e9d8f71366b7fef1345e2872a56944db618bcb9f",
+                "url": "https://github.com/progressivetech/com.cividesk.normalize.git@842f08eb9f7206d2aee1b723c1b1ddff8f95c552",
                 "path": "web/extensions/normalize",
                 "type": "git"
             },
@@ -398,7 +398,7 @@
                 "type": "git"
             },
             "profiles": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.profiles@e58ea31a30d417a067f31c7372a1580dd7830e83",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.profiles@0a9d7eeec1e18b49f727942ff0de2f944a9d4895",
                 "path": "web/extensions/profiles",
                 "type": "git"
             },
@@ -478,12 +478,12 @@
                 "type": "git"
             },
             "mediafields": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.mediafields@b0e032ddeef8f5109d77788efe085275b0b4e583",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.mediafields@8bd2efb514a10ae7c798d515068429cb3117d10e",
                 "path": "web/extensions/mediafields",
                 "type": "git"
             },
             "participantfields": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.participantfields@ba02e73f1348e07f51de0b9d5d3df307d0d97161",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.participantfields@047593bdb2c3a22c6df986779dac27c765217f58",
                 "path": "web/extensions/participantfields",
                 "type": "git"
             },
@@ -493,7 +493,7 @@
                 "type": "git"
             },
             "turnout": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.turnout@6582461d8b0783644d78feb93231f9c8793f3c25",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.turnout@4a2f43bf3b370894c934b0fc43aa077a0f5662d3",
                 "path": "web/extensions/turnout",
                 "type": "git"
             },
