@@ -258,7 +258,7 @@
                 "type": "git"
             },
             "clickatell": {
-                "url": "https://github.com/veda-consulting/org.civicrm.sms.clickatell@aca99ae2f785d63034ff7aa3ea5191ea82ad0653",
+                "url": "https://github.com/progressivetech/org.civicrm.sms.clickatell@d223fffff67cb31949e583178cb779699e1e3245",
                 "path": "web/extensions/clickatell",
                 "type": "git"
             },
