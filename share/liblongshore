@@ -860,6 +860,10 @@ long_create_civicrm_settings() {
     -e "s#%%dbSSL%%##" \
     > "$target"
 
+  # Disable TEMPLATE compile check to improve performance.
+  # https://docs.civicrm.org/sysadmin/en/latest/setup/optimizations/#disable-compile-check
+  sed -i -E "s#//\s*define\('CIVICRM_TEMPLATE_COMPILE_CHECK', FALSE\);#  define('CIVICRM_TEMPLATE_COMPILE_CHECK', FALSE);#" "$target"
+
   # Ensure proper permissions
   sudo chown "$LONG_HOST_USER" "$target"
   sudo chgrp longshore-php "$target"
