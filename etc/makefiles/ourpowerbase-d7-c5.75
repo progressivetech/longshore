@@ -188,7 +188,7 @@ projects[simplepetitionemail][type] = "library"
 projects[simplepetitionemail][destination] = "extensions"
 projects[simplepetitionemail][download][type] = "git"
 projects[simplepetitionemail][download][url] = "https://lab.civicrm.org/extensions/petitionemail"
-projects[simplepetitionemail][download][revision] = "c3533686cd394ea9fbb72f01db5c09556cda7219"
+projects[simplepetitionemail][download][revision] = "1b58c315373fbc40f688fabb1661dfa10eca3be7"
 
 projects[advancedfundraising][type] = "library"
 projects[advancedfundraising][destination] = "extensions"

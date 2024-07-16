@@ -821,7 +821,7 @@ long_create_civicrm_settings() {
   local web=""
   local root="${web}/sites/all/modules/civicrm"
   if [ "${LONG_SITE_DRUPAL_VERSION}" -gt 7 ]; then
-    cms="${cms}${LONG_SITE_DRUPAL_VERSION}"
+    cms="${cms}8"
     web="/web"
     root="/vendor/civicrm/civicrm-core"
   fi
@@ -3270,10 +3270,10 @@ long_switch_to_smarty4() {
   settings="${LONG_SRV}/services/sites/${site}/drupal/civicrm.settings.php"
   # Change smarty3 to smarty
   sed -i "s/SMARTY3/SMARTY/g" "$settings"
-  sed -i "s/smarty3/smarty/g" "$settings"
+  sed -i "s/smarty3/smarty4/g" "$settings"
   # Uncomment
   sed -i "s#// define('CIVICRM_SMARTY_AUTOLOAD_PATH#   define('CIVICRM_SMARTY_AUTOLOAD_PATH#" "$settings"
   if [ "$LONG_SITE_DRUPAL_VERSION" -gt 7 ]; then
-    sed -i "s#/packages/smarty/vendor/autoload.php#/civicrm-packages/smarty/vendor/autoload.php#" "$settings"
+    sed -i "s#/packages/smarty4/vendor/autoload.php#/civicrm-packages/smarty4/vendor/autoload.php#" "$settings"
   fi
 }

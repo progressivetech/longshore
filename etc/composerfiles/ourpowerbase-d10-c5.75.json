@@ -183,7 +183,7 @@
                 "type": "git"
             },
             "simplepetitionemail": {
-                "url": "https://lab.civicrm.org/extensions/petitionemail@c3533686cd394ea9fbb72f01db5c09556cda7219",
+                "url": "https://lab.civicrm.org/extensions/petitionemail@1b58c315373fbc40f688fabb1661dfa10eca3be7",
                 "path": "web/extensions/simplepetitionemail",
                 "type": "git"
             },
