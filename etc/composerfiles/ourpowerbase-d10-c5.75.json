@@ -308,7 +308,7 @@
                 "type": "git"
             },
             "angularprofiles": {
-                "url": "https://lab.civicrm.org/extensions/angularprofiles.git@0a9d7eeec1e18b49f727942ff0de2f944a9d4895",
+                "url": "https://lab.civicrm.org/extensions/angularprofiles.git@e58ea31a30d417a067f31c7372a1580dd7830e83",
                 "path": "web/extensions/angularprofiles",
                 "type": "git"
             },
@@ -398,7 +398,7 @@
                 "type": "git"
             },
             "profiles": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.profiles@e879d8987cae8ecbf096b6100ad46f274ad383ef",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.profiles@e58ea31a30d417a067f31c7372a1580dd7830e83",
                 "path": "web/extensions/profiles",
                 "type": "git"
             },
