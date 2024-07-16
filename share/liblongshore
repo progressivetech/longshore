@@ -808,14 +808,25 @@ long_create_civicrm_settings() {
   fi
   local target="${dir}/drupal/civicrm.settings.php"
 
-  # Use our password generation utility which uses /dev/urandom.
-  # long_pwgen will assign a new password to the variable $LONG_PASSWORD.
-  long_pwgen 50
-  local site_key="$LONG_PASSWORD"
-  long_pwgen 50
-  local cred_key="$LONG_PASSWORD"
-  long_pwgen 50
-  local sign_key="$LONG_PASSWORD"
+  local site_key=
+  local cred_key=
+  local sign_key=
+  if [ -f "$target" ]; then
+    # If we are rebuilding, capture our existing variables to avoid breaking
+    # API calls.
+    site_key=$(grep -E "^\s*define\(\s*'CIVICRM_SITE_KEY'" "$target" | cut -d"'" -f4)
+    cred_key=$(grep -E "^\s*define\(\s*'_CIVICRM_CRED_KEYS'" "$target" | cut -d: -f3 | tr -d "');")
+    sign_key=$(grep -E "^\s*define\(\s*'_CIVICRM_SIGN_KEYS'" "$target" | cut -d: -f3 | tr -d "');")
+  else
+    # Use our password generation utility which uses /dev/urandom.
+    # long_pwgen will assign a new password to the variable $LONG_PASSWORD.
+    long_pwgen 50
+    site_key="$LONG_PASSWORD"
+    long_pwgen 50
+    cred_key="$LONG_PASSWORD"
+    long_pwgen 50
+    sign_key="$LONG_PASSWORD"
+  fi
 
   local cms=Drupal
   local web=""
@@ -847,7 +858,7 @@ long_create_civicrm_settings() {
     -e "s#%%signKeys%%#jwt-hs256:hkdf-sha256:${sign_key}#" \
     -e "s#%%CMSdbSSL%%##" \
     -e "s#%%dbSSL%%##" \
-    >> "$target"
+    > "$target"
 
   # Ensure proper permissions
   sudo chown "$LONG_HOST_USER" "$target"
