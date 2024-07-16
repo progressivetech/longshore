@@ -282,11 +282,11 @@ for site in $sites; do
   long_log "upgrade:%s Updated drupal modules" info "$site"
   printf "."
 
-  if ! long_switch_to_smarty4 "$site"  2>> "$logfile" 1>> "$logfile"; then
-    long_log "upgrade:%s Failed to switch to smarty4" error "$site"
+  if ! long_create_civicrm_settings "$site" 2>> "$logfile" 1>> "$logfile"; then
+    long_log "upgrade:%s Failed to rebuild civicrm settings file" error "$site"
     continue
   fi
-  long_log "upgrade:%s Switched to Smarty 4" info "$site"
+  long_log "upgrade:%s Rebuilt civicrm settings file" info "$site"
   printf "."
 
   if ! long_disable_maintenance_mode "$site"; then

@@ -122,8 +122,8 @@ long_prompt "Updating Drupal"
 long_prompt "Updating CiviCRM Extensions on %s" "$site"
 [ "$reply" = "y" ] &&  long_exec_cv_cmd "$site" ext:upgrade-db
 
-long_prompt "Switch to Smarty4 on %s" "$site"
-[ "$reply" = "y" ] &&  long_switch_to_smarty4 "$site"
+long_prompt "Rebuild civicrm settings file on %s" "$site"
+[ "$reply" = "y" ] && long_create_civicrm_settings  "$site"
 
 long_prompt "Removing maintenance mode..."
 [ "$reply" = "y" ] && long_disable_maintenance_mode "$site"
