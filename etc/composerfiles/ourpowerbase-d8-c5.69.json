@@ -317,6 +317,11 @@
                 "path": "web/extensions/simpledonate",
                 "type": "git"
             },
+            "zip2state": {
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.zip2state.git@0996c75e55ce2dbc048f8301fd28e21d5c46acdc",
+                "path": "web/extensions/zip2state",
+                "type": "git"
+            },
             "merge": {
                 "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.merge.git@1a5cf50c648e526dde73b96ef77b4124879b3721",
                 "path": "web/extensions/merge",

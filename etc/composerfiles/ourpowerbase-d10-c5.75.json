@@ -198,7 +198,7 @@
                 "type": "git"
             },
             "quickentry": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.quickentry.git@9ac2582db4427b64802066d6f5edada619e57bb5",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.quickentry.git@1aca7b3224023966d6f199d0d2261cb7b0e48292",
                 "path": "web/extensions/quickentry",
                 "type": "git"
             },
@@ -315,6 +315,11 @@
             "simpledonate": {
                 "url": "https://github.com/progressivetech/com.webaccessglobal.simpledonate.git@9da1a4c1eda36611a1e78963fe296e5c4a405ae6",
                 "path": "web/extensions/simpledonate",
+                "type": "git"
+            },
+            "zip2state": {
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.zip2state.git@bf248c0a2a84232c66552cd3ba54ff3a478ca7ed",
+                "path": "web/extensions/zip2state",
                 "type": "git"
             },
             "merge": {
@@ -473,7 +478,7 @@
                 "type": "git"
             },
             "foundationfields": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.foundationfields@ba76c303f42910fc957cc307a9f7c07c10a850cd",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.foundationfields@8867636f34f923d9c6433c55c22d29e1930dc40c",
                 "path": "web/extensions/foundationfields",
                 "type": "git"
             },
@@ -488,7 +493,7 @@
                 "type": "git"
             },
             "voterfields": {
-                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.voterfields@bf03971d62881062c386fb1abd689de57221267a",
+                "url": "https://git.progressivetech.org/extensions/net.ourpowerbase.voterfields@a068805eea194a845a26ffdabfb7857ec0dc850a",
                 "path": "web/extensions/voterfields",
                 "type": "git"
             },
